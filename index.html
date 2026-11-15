@@ -67,6 +67,7 @@
    <button data-page="Retention & Backup">▣ Retention & Backup</button>
    <button data-page="Report Designer">▧ Report Designer</button>
    <button data-page="Report Signatures">✍ Report Signatures</button>
+   <button data-page="Permission Manager">🔐 Permission Manager</button>
   </nav></aside>
   <section class="card" id="content" aria-live="polite"></section>
  </section>
@@ -85,7 +86,7 @@ const DB_NAME='acd_bittu_lab_cloud_local';
 const DB_VERSION=2;
 const defaults={lab:{name:'',address:'',phone:'',email:''},doctors:[],tests:[],fields:[]};
 function loadData(){try{return {...defaults,...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch{return structuredClone(defaults)}}
-let store=loadData(), db;
+let store=loadData(), db, currentUser=null, currentPlatformRole='';
 function saveData(){localStorage.setItem(KEY,JSON.stringify(store));}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function msg(text,kind='error'){ $('loginMessage').textContent=text;$('loginMessage').className='message '+kind; }
@@ -100,7 +101,14 @@ async function saveSetting(key,value){return await dbRequest(db.transaction('set
 async function fileToDataURL(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=()=>reject(r.error);r.readAsDataURL(file);});}
 function makePatientId(){const d=new Date(),date=[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('');return 'ACD-'+date+'-'+Math.random().toString(36).slice(2,7).toUpperCase();}
 async function updatePatientCount(){try{$('patientCount').textContent=(await getPatients()).length;}catch{$('patientCount').textContent='!';}}
-function showApp(user){$('loginView').classList.add('hidden');$('appView').classList.remove('hidden');$('signedInEmail').textContent=user.email||'Signed-in user';$('topStatus').textContent='AUTHENTICATED';render('Overview');updatePatientCount();}
+async function loadPlatformRole(user){
+ currentUser=user; currentPlatformRole='';
+ try{
+  const {data,error}=await client.from('profiles').select('platform_role').eq('id',user.id).maybeSingle();
+  if(!error && data) currentPlatformRole=data.platform_role||'';
+ }catch(e){console.warn('Could not load platform role',e);}
+}
+async function showApp(user){await loadPlatformRole(user);$('loginView').classList.add('hidden');$('appView').classList.remove('hidden');$('signedInEmail').textContent=user.email||'Signed-in user';$('topStatus').textContent='AUTHENTICATED';render('Overview');updatePatientCount();}
 function showLogin(){$('appView').classList.add('hidden');$('loginView').classList.remove('hidden');$('topStatus').textContent='SECURE LOGIN';}
 $('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginButton').disabled=true;$('loginButton').textContent='Signing in…';msg('');try{const {data,error}=await client.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error;showApp(data.user);}catch(err){msg(err.message||'Sign-in failed.');}finally{$('loginButton').disabled=false;$('loginButton').textContent='Sign in';}});
 $('resetButton').addEventListener('click',async()=>{const email=$('email').value.trim();if(!email){msg('Enter your email address first.');return;}try{const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});if(error)throw error;msg('If this email has an account, a password reset link will be sent.','success');}catch(err){msg(err.message||'Could not request password reset.');}});
@@ -118,7 +126,9 @@ async function render(page){
  if(page==='Patients'){await renderPatients(c);return;}
  if(page==='Report Signatures'){await renderReportSignatures(c);return;}
  if(page==='Report Designer'){await renderReportDesigner(c);return;}
- const descriptions={'Test Orders':'Test booking, sample tracking and billing will be developed next.','Results & Reports':'Result entry, verification and PDF report generation will be developed after test orders.','Staff & Roles':'Staff invitations and secure role permissions require server-side functions.','Retention & Backup':'Encrypted cloud backup, restore tests and retention controls are not implemented yet.'};
+ if(page==='Permission Manager'){await renderPermissionManager(c);return;}
+ const descriptions={'Test Orders':'Test booking, sample tracking and billing will be developed next.','Results & Reports':'Result entry, verification and PDF report generation will be developed after test orders.','Staff & Roles':'Staff invitations and secure role permissions require server-side functions.','Retention & Backup':'Encrypted cloud backup, restore tests and retention controls are not implemented yet.',
+ 'Permission Manager':'Owner-only permission settings are being prepared.'};
  c.innerHTML=`<div class="panel-head"><h3>${esc(page)}</h3></div><div class="empty"><strong>Not enabled yet</strong>${esc(descriptions[page]||'This module is planned for a later development step.')}</div>`;
 }
 
@@ -197,6 +207,40 @@ async function renderReportSignatures(c){
    $('signatureMessage').className='message success';
    await renderReportSignatures(c);
   }catch(err){$('signatureMessage').textContent=err.message||'Could not save settings.';$('signatureMessage').className='message error';}
+ });
+}
+
+
+async function renderPermissionManager(c){
+ if(currentPlatformRole!=='super_admin'){
+  c.innerHTML=`<div class="panel-head"><h3>Permission Manager</h3></div><div class="notice"><b>Access restricted.</b> This section is available only to the authenticated platform owner account.</div><p class="muted">Your current platform role could not be verified as super_admin.</p>`;
+  return;
+ }
+ const defs=[
+  ['report_structure','Report Designer master structure','owner'],
+  ['header_footer','Header & Footer permissions','lab_admin'],
+  ['fonts_colors','Fonts & Colors','lab_admin'],
+  ['test_catalogue','Test Catalogue','lab_admin'],
+  ['patient_form','Patient Form & Custom Fields','lab_admin'],
+  ['staff_permissions','Staff Permissions','owner'],
+  ['lab_management','Create / Disable Labs','owner'],
+  ['security_backup','Security, Backup & Retention','owner'],
+  ['modules','Enable / Disable Modules','owner'],
+  ['report_signatures','Report Signatures','lab_admin']
+ ];
+ const saved=(await getSetting('permissionConfig'))||{};
+ const labels={owner:'Owner Only',lab_admin:'Owner + Lab Admin'};
+ c.innerHTML=`<div class="panel-head"><h3>Permission Manager</h3><span class="muted">Platform role: ${esc(currentPlatformRole)}</span></div>
+ <div class="notice"><b>Owner control.</b> Choose which settings Lab Admins may manage. Owner can change these defaults at any time.</div>
+ <form id="permissionForm"><div class="tablewrap"><table><thead><tr><th>Setting / Feature</th><th>Who can manage it?</th></tr></thead><tbody>
+ ${defs.map(([key,label,def])=>`<tr><td>${esc(label)}</td><td><select class="input" name="${key}"><option value="owner" ${(saved[key]||def)==='owner'?'selected':''}>Owner Only</option><option value="lab_admin" ${(saved[key]||def)==='lab_admin'?'selected':''}>Owner + Lab Admin</option></select></td></tr>`).join('')}
+ </tbody></table></div><p><button class="btn" type="submit">Save Permission Preferences</button></p></form>
+ <div class="notice"><b>Important implementation status:</b> These preferences are currently saved only in this browser's IndexedDB. They are not yet enforced by Supabase Row Level Security or server-side authorization, and therefore are not a security boundary. Do not invite other users or store real patient data based on these settings until server-side enforcement is implemented and tested.</div>`;
+ $('permissionForm').addEventListener('submit',async e=>{
+  e.preventDefault();const f=new FormData(e.target),obj={};
+  for(const [k,v] of f.entries())obj[k]=v;
+  await saveSetting('permissionConfig',obj);
+  alert('Permission preferences saved on this device. Server-side enforcement is still pending.');
  });
 }
 
