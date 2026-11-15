@@ -1,84 +1,116 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#123c63">
-  <title>ACD BITTU LAB CLOUD</title>
-  <style>
-    :root{--navy:#123c63;--blue:#1769aa;--teal:#12a89a;--bg:#f3f6fa;--ink:#172536;--muted:#718096;--line:#e4eaf1;--white:#fff}
-    *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
-    .top{background:linear-gradient(115deg,#102f50,#1769aa);color:#fff;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-    .brand{display:flex;align-items:center;gap:12px}.logo{width:42px;height:42px;border-radius:13px;background:#fff;color:var(--navy);display:grid;place-items:center;font-weight:900;font-size:18px}
-    .brand h1{font-size:18px;margin:0;letter-spacing:.3px}.brand small{display:block;color:#d7e8f8;font-size:12px;margin-top:2px}
-    .status{font-size:12px;border:1px solid #ffffff66;border-radius:30px;padding:7px 11px;white-space:nowrap}
-    .wrap{max-width:1180px;margin:24px auto;padding:0 16px}.welcome{display:flex;justify-content:space-between;align-items:end;gap:12px;margin-bottom:20px}.welcome h2{margin:0 0 5px;font-size:25px}.welcome p{margin:0;color:var(--muted);font-size:14px}
-    .demo{background:#fff4d6;color:#76530b;border:1px solid #f2d78b;padding:10px 13px;border-radius:10px;font-size:12px;max-width:360px}
-    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.card{background:var(--white);border:1px solid var(--line);border-radius:15px;padding:17px;box-shadow:0 2px 8px #1b36500a}
-    .stat-label{font-size:13px;color:var(--muted)}.stat-value{font-size:27px;font-weight:750;margin-top:8px}.stat-note{font-size:12px;color:var(--muted);margin-top:3px}
-    .layout{display:grid;grid-template-columns:230px 1fr;gap:16px;margin-top:17px}.side{align-self:start;padding:10px}.nav{display:flex;flex-direction:column;gap:5px}.nav button{border:0;background:transparent;text-align:left;padding:12px;border-radius:9px;color:#42536a;font:inherit;cursor:pointer}.nav button.active,.nav button:hover{background:#eaf3fb;color:var(--blue);font-weight:650}
-    .main{min-height:360px}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:15px}.panel-head h3{margin:0;font-size:18px}.btn{border:0;background:var(--blue);color:#fff;padding:10px 14px;border-radius:9px;font-weight:650;cursor:pointer}.btn.secondary{background:#eaf3fb;color:var(--blue)}
-    .empty{border:1px dashed #cbd7e4;border-radius:12px;padding:35px 15px;text-align:center;color:var(--muted)}.empty strong{display:block;color:#34465b;margin-bottom:6px}
-    .table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:12px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-weight:600;background:#f8fafc}
-    .fields{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}.field input,.field select{width:100%;padding:11px;border:1px solid #d8e1eb;border-radius:8px;font:inherit;background:#fff}
-    .footer{text-align:center;color:#8794a4;font-size:12px;padding:22px}
-    @media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}.side{padding:8px}.nav{display:grid;grid-template-columns:repeat(2,1fr)}.welcome{align-items:start;flex-direction:column}.fields{grid-template-columns:1fr}.top{padding:14px}.brand h1{font-size:15px}}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#123c63">
+<title>ACD BITTU LAB CLOUD</title>
+<style>
+:root{--navy:#123c63;--blue:#1769aa;--teal:#128a89;--bg:#f3f6fa;--ink:#172536;--muted:#718096;--line:#e4eaf1;--white:#fff;--red:#b42318}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+.top{background:linear-gradient(115deg,#102f50,#1769aa);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:5}
+.brand{display:flex;align-items:center;gap:11px}.logo{width:42px;height:42px;border-radius:12px;background:#fff;color:var(--navy);display:grid;place-items:center;font-weight:900}.brand h1{font-size:17px;margin:0}.brand small{display:block;color:#d7e8f8;font-size:11px}.status{font-size:11px;border:1px solid #ffffff66;border-radius:30px;padding:7px 10px}
+.wrap{max-width:1200px;margin:22px auto;padding:0 15px}.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 2px 8px #1b36500a}
+.login{max-width:430px;margin:55px auto;padding:24px}.field{margin:14px 0}.field label{display:block;font-size:13px;margin-bottom:6px}.field input,.field select,.field textarea,input,select,textarea{font:inherit}.field input,.input{width:100%;padding:11px;border:1px solid #d8e1eb;border-radius:9px;background:#fff}
+.btn{border:0;background:var(--blue);color:#fff;padding:10px 14px;border-radius:9px;font-weight:650;cursor:pointer}.btn.secondary{background:#eaf3fb;color:var(--blue)}.btn.danger{background:#fff0ef;color:var(--red)}.btn:disabled{opacity:.55}
+.muted{color:var(--muted);font-size:13px}.hidden{display:none!important}.message{font-size:13px;margin-top:10px}.error{color:var(--red)}.success{color:#087443}
+.notice{background:#fff4d6;color:#76530b;border:1px solid #f2d78b;padding:11px 13px;border-radius:10px;font-size:12px;margin-bottom:15px}
+.welcome{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}.welcome h2{margin:0 0 4px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stat-label{font-size:12px;color:var(--muted)}.stat-value{font-size:25px;font-weight:750;margin-top:7px}
+.layout{display:grid;grid-template-columns:225px 1fr;gap:14px;margin-top:14px}.nav{display:flex;flex-direction:column;gap:4px}.nav button{border:0;background:transparent;text-align:left;padding:10px;border-radius:8px;color:#42536a;font:inherit;cursor:pointer}.nav button.active,.nav button:hover{background:#eaf3fb;color:var(--blue);font-weight:650}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}.panel-head h3{margin:0}.empty{border:1px dashed #cbd7e4;border-radius:11px;padding:28px 14px;text-align:center;color:var(--muted)}.empty strong{display:block;color:#34465b;margin-bottom:5px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>*{flex:1}.row .btn{flex:0 0 auto}.list{display:grid;gap:8px;margin-top:12px}.item{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--line);padding:10px;border-radius:9px}.item span{overflow-wrap:anywhere}
+.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:520px}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);font-size:13px}th{background:#f7f9fc;color:#526276}
+.footer{text-align:center;color:#8794a4;font-size:11px;padding:22px}
+@media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}.nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.welcome{align-items:flex-start;flex-direction:column}.top{padding:12px}.brand h1{font-size:14px}.card{padding:13px}}
+</style>
 </head>
 <body>
 <header class="top">
-  <div class="brand"><div class="logo">ACD</div><div><h1>ACD BITTU LAB CLOUD</h1><small>Multi-Lab Pathology Management</small></div></div>
-  <div class="status">DEMO PREVIEW · NOT CONNECTED</div>
+ <div class="brand"><div class="logo">ACD</div><div><h1>ACD BITTU LAB CLOUD</h1><small>Multi-Lab Pathology Management</small></div></div>
+ <div class="status" id="topStatus">SECURE LOGIN</div>
 </header>
-<div class="wrap">
-  <section class="welcome">
-    <div><h2>Lab Dashboard</h2><p>Manage your laboratory workflow from one place.</p></div>
-    <div class="demo"><b>Preview only:</b> This screen is a design prototype. Login, database, PDF reports, backups and offline sync are not connected yet. Do not enter real patient information.</div>
-  </section>
-  <section class="stats">
-    <div class="card"><div class="stat-label">Total Patients</div><div class="stat-value">—</div><div class="stat-note">Patient register</div></div>
-    <div class="card"><div class="stat-label">Today’s Orders</div><div class="stat-value">—</div><div class="stat-note">Test requests</div></div>
-    <div class="card"><div class="stat-label">Reports Ready</div><div class="stat-value">—</div><div class="stat-note">Verified reports</div></div>
-    <div class="card"><div class="stat-label">Pending Reports</div><div class="stat-value">—</div><div class="stat-note">Awaiting completion</div></div>
-  </section>
-  <section class="layout">
-    <aside class="card side">
-      <nav class="nav" aria-label="Main navigation">
-        <button class="active" data-page="overview">▦ Overview</button>
-        <button data-page="patients">♙ Patients</button>
-        <button data-page="orders">▤ Test Orders</button>
-        <button data-page="results">✓ Results & Reports</button>
-        <button data-page="tests">⚗ Test Catalogue</button>
-        <button data-page="doctors">♧ Doctors</button>
-        <button data-page="staff">♙ Staff & Roles</button>
-        <button data-page="settings">⚙ Lab Settings</button>
-        <button data-page="backup">▣ Retention & Backup</button>
-      </nav>
-    </aside>
-    <main class="card main" id="content">
-      <div class="panel-head"><h3>Overview</h3><button class="btn secondary" type="button" onclick="alert('This is a visual preview. Backend setup comes next.')">System status</button></div>
-      <div class="empty"><strong>Welcome to ACD BITTU LAB CLOUD</strong>Your lab workspace will appear here after secure setup and login.</div>
-    </main>
-  </section>
-  <div class="footer">© ACD BITTU LAB CLOUD · Prototype interface</div>
-</div>
+<main class="wrap">
+<section id="loginView" class="card login">
+ <h2>Sign in</h2><p class="muted">Sign in to your ACD BITTU LAB CLOUD account.</p>
+ <form id="loginForm">
+  <div class="field"><label for="email">Email address</label><input id="email" type="email" autocomplete="username" required placeholder="you@example.com"></div>
+  <div class="field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required placeholder="Your password"></div>
+  <button class="btn" id="loginButton" type="submit" style="width:100%">Sign in</button>
+ </form>
+ <div style="text-align:center;margin-top:12px"><button id="resetButton" class="btn secondary">Forgot password?</button></div>
+ <div id="loginMessage" class="message" role="status"></div>
+ <p class="muted" style="font-size:12px;margin-top:18px">Accounts are created by the platform administrator. Public sign-up is disabled.</p>
+</section>
+
+<section id="appView" class="hidden">
+ <div class="welcome"><div><h2>Platform workspace</h2><div class="muted">Signed in as <span id="signedInEmail"></span></div></div><button id="logoutButton" class="btn">Sign out</button></div>
+ <div class="notice"><b>Setup / test mode:</b> This release adds editable setup lists that save on this device and remain available offline. They do not yet sync to Supabase or other devices. Do not enter real patient records until database security, tenant isolation, backups and sync are completed.</div>
+ <section class="stats">
+  <div class="card"><div class="stat-label">Patients</div><div class="stat-value">—</div><div class="muted">Database connection pending</div></div>
+  <div class="card"><div class="stat-label">Today's Orders</div><div class="stat-value">—</div><div class="muted">Database connection pending</div></div>
+  <div class="card"><div class="stat-label">Reports Ready</div><div class="stat-value">—</div><div class="muted">Report module pending</div></div>
+  <div class="card"><div class="stat-label">Connection</div><div class="stat-value" id="networkState" style="font-size:18px">Checking…</div><div class="muted">Internet status of this device</div></div>
+ </section>
+ <section class="layout">
+  <aside class="card"><nav class="nav" aria-label="Main navigation">
+   <button class="active" data-page="Overview">▦ Overview</button>
+   <button data-page="Lab Setup">⚙ Lab Setup</button>
+   <button data-page="Doctors">♧ Doctors</button>
+   <button data-page="Test Catalogue">⚗ Test Catalogue</button>
+   <button data-page="Custom Fields">▤ Custom Fields / Columns</button>
+   <button data-page="Patients">♙ Patients</button>
+   <button data-page="Test Orders">▣ Test Orders</button>
+   <button data-page="Results & Reports">✓ Results & Reports</button>
+   <button data-page="Staff & Roles">♙ Staff & Roles</button>
+   <button data-page="Retention & Backup">▣ Retention & Backup</button>
+  </nav></aside>
+  <section class="card" id="content" aria-live="polite"></section>
+ </section>
+</section>
+<div class="footer">© ACD BITTU LAB CLOUD · Initial setup build</div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const pages={
- overview:['Overview','Your lab summary and daily activity will appear here.'],
- patients:['Patients','Patient registration, search and patient history will be available here.'],
- orders:['Test Orders','Create test orders, add tests and track sample status here.'],
- results:['Results & Reports','Enter results, review, approve and generate PDF reports here.'],
- tests:['Test Catalogue','Add, edit or deactivate test names, rates, units and reference ranges here.'],
- doctors:['Doctors','Manage doctor names, qualifications and report signatories here.'],
- staff:['Staff & Roles','Invite staff and control permissions for each lab here.'],
- settings:['Lab Settings','Manage lab name, logo, address, contact details and report layout here.'],
- backup:['Retention & Backup','Configure report retention, archive, deletion permissions and backup status here.']
-};
-document.querySelectorAll('[data-page]').forEach(button=>button.addEventListener('click',()=>{
- document.querySelectorAll('[data-page]').forEach(b=>b.classList.remove('active'));button.classList.add('active');
- const [title,description]=pages[button.dataset.page];
- document.getElementById('content').innerHTML=`<div class="panel-head"><h3>${title}</h3></div><div class="empty"><strong>${title}</strong>${description}<br><br><span style="font-size:12px">Module not connected in this preview.</span></div>`;
-}));
+/* Supabase publishable key is intended for browser use; protect data with RLS policies. */
+const SUPABASE_URL='https://axfvvquhswapimwmrepe.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_n6jRvVDjw2kOF7CS46omqQ_6qGkdR-q';
+const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const $=id=>document.getElementById(id);
+const KEY='acd_bittu_lab_cloud_setup_v1';
+const defaults={lab:{name:'',address:'',phone:'',email:''},doctors:[],tests:[],fields:[]};
+function loadData(){try{return {...defaults,...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch{return structuredClone(defaults)}}
+let store=loadData();
+function saveData(){localStorage.setItem(KEY,JSON.stringify(store));}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function msg(text,kind='error'){ $('loginMessage').textContent=text;$('loginMessage').className='message '+kind; }
+function showApp(user){$('loginView').classList.add('hidden');$('appView').classList.remove('hidden');$('signedInEmail').textContent=user.email||'Signed-in user';$('topStatus').textContent='AUTHENTICATED';render('Overview');}
+function showLogin(){$('appView').classList.add('hidden');$('loginView').classList.remove('hidden');$('topStatus').textContent='SECURE LOGIN';}
+$('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginButton').disabled=true;$('loginButton').textContent='Signing in…';msg('');try{const {data,error}=await client.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error;showApp(data.user);}catch(err){msg(err.message||'Sign-in failed.');}finally{$('loginButton').disabled=false;$('loginButton').textContent='Sign in';}});
+$('resetButton').addEventListener('click',async()=>{const email=$('email').value.trim();if(!email){msg('Enter your email address first.');return;}try{const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});if(error)throw error;msg('If this email has an account, a password reset link will be sent.','success');}catch(err){msg(err.message||'Could not request password reset.');}});
+$('logoutButton').addEventListener('click',async()=>{await client.auth.signOut();showLogin();});
+function setPage(p){document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===p));render(p);}
+document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>setPage(b.dataset.page)));
+function listMarkup(items,type){if(!items.length)return '<div class="empty">No items added yet.</div>';return '<div class="list">'+items.map((x,i)=>`<div class="item"><span><b>${esc(x.name)}</b>${x.detail?' · '+esc(x.detail):''}</span><button class="btn danger" data-remove="${type}" data-index="${i}">Remove</button></div>`).join('')+'</div>';}
+function bindRemove(){document.querySelectorAll('[data-remove]').forEach(b=>b.addEventListener('click',()=>{const t=b.dataset.remove,i=Number(b.dataset.index);if(confirm('Remove this item from this device?')){store[t].splice(i,1);saveData();render(t==='doctors'?'Doctors':t==='tests'?'Test Catalogue':'Custom Fields');}}));}
+function render(page){
+ const c=$('content');
+ if(page==='Overview'){c.innerHTML=`<div class="panel-head"><h3>Welcome to ACD BITTU LAB CLOUD</h3></div><div class="empty"><strong>Platform setup started successfully</strong>Use Lab Setup, Doctors, Test Catalogue and Custom Fields to configure your workspace on this device. Patient database, PDF reports and cross-device sync are the next development steps.</div><p class="muted" style="margin-top:14px">Offline setup data saved on this browser: ${store.doctors.length} doctors · ${store.tests.length} tests · ${store.fields.length} custom fields.</p>`;return;}
+ if(page==='Lab Setup'){c.innerHTML=`<div class="panel-head"><h3>Lab Setup</h3></div><form id="labForm"><div class="field"><label>Lab / workspace name</label><input class="input" name="name" value="${esc(store.lab.name)}" placeholder="Enter lab name"></div><div class="field"><label>Address</label><input class="input" name="address" value="${esc(store.lab.address)}" placeholder="Lab address"></div><div class="row"><div class="field"><label>Phone</label><input class="input" name="phone" value="${esc(store.lab.phone)}" placeholder="Phone number"></div><div class="field"><label>Email</label><input class="input" name="email" type="email" value="${esc(store.lab.email)}" placeholder="Lab email"></div></div><button class="btn">Save on this device</button></form><p class="muted">This is local device setup only. It is not yet shared with other lab users.</p>`;$('labForm').addEventListener('submit',e=>{e.preventDefault();store.lab=Object.fromEntries(new FormData(e.target));saveData();alert('Lab settings saved on this device.');});return;}
+ const cfg={Doctors:{key:'doctors',title:'Doctors',placeholder:'Doctor name',detail:'Qualification / registration (optional)'},'Test Catalogue':{key:'tests',title:'Test Catalogue',placeholder:'Test name',detail:'Rate / sample type (optional)'},'Custom Fields':{key:'fields',title:'Custom Fields / Columns',placeholder:'Column or field name',detail:'Where it is used (optional)'}};
+ if(cfg[page]){const q=cfg[page],items=store[q.key];c.innerHTML=`<div class="panel-head"><h3>${q.title}</h3></div><form id="addForm"><div class="field"><label>${q.placeholder}</label><input class="input" name="name" required maxlength="80" placeholder="${q.placeholder}"></div><div class="field"><label>${q.detail}</label><input class="input" name="detail" maxlength="100" placeholder="${q.detail}"></div><button class="btn">Add ${q.title==='Custom Fields'?'field':q.title.slice(0,-1)}</button></form>${listMarkup(items,q.key)}<p class="muted">Additions and removals save locally on this browser and work offline. Online multi-user sync will be added after the secure database tables and permissions are configured.</p>`;$('addForm').addEventListener('submit',e=>{e.preventDefault();const f=new FormData(e.target);store[q.key].push({name:f.get('name').trim(),detail:f.get('detail').trim()});saveData();render(page);});bindRemove();return;}
+ const descriptions={
+ 'Patients':'Patient registration, search and history will be enabled after secure tenant-isolated database setup.',
+ 'Test Orders':'Create orders, assign tests and track sample status after database setup.',
+ 'Results & Reports':'Result entry, verification, PDF generation and saved report archive are not enabled in this build.',
+ 'Staff & Roles':'Staff invitations and role permissions will be configured through secure server-side functions.',
+ 'Retention & Backup':'Five-year report retention and independent encrypted backups require separate storage and restore testing.'
+ };
+ c.innerHTML=`<div class="panel-head"><h3>${esc(page)}</h3></div><div class="empty"><strong>Not enabled yet</strong>${esc(descriptions[page]||'This module is planned for a later development step.')}</div>`;
+}
+function network(){ $('networkState').textContent=navigator.onLine?'Online':'Offline'; }
+window.addEventListener('online',network);window.addEventListener('offline',network);network();
+client.auth.getSession().then(({data})=>{if(data.session)showApp(data.session.user);});
 </script>
 </body>
 </html>
