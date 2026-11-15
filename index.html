@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#123c63">
-<title>ACD BITTU LAB CLOUD</title>
+<title>ACD BITTU LAB CLOUD – Consolidated Build</title>
 <style>
 :root{--navy:#123c63;--blue:#1769aa;--bg:#f3f6fa;--ink:#172536;--muted:#718096;--line:#e4eaf1;--red:#b42318}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
@@ -83,17 +83,30 @@ const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY)
 const $=id=>document.getElementById(id);
 const KEY='acd_bittu_lab_cloud_setup_v1';
 const DB_NAME='acd_bittu_lab_cloud_local';
-const DB_VERSION=2;
+const DB_VERSION=4;
 const defaults={lab:{name:'',address:'',phone:'',email:''},doctors:[],tests:[],fields:[]};
 function loadData(){try{return {...defaults,...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch{return structuredClone(defaults)}}
 let store=loadData(), db, currentUser=null, currentPlatformRole='';
 function saveData(){localStorage.setItem(KEY,JSON.stringify(store));}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function msg(text,kind='error'){ $('loginMessage').textContent=text;$('loginMessage').className='message '+kind; }
-function openLocalDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open(DB_NAME,DB_VERSION);req.onupgradeneeded=()=>{const d=req.result;if(!d.objectStoreNames.contains('patients')){const s=d.createObjectStore('patients',{keyPath:'id'});s.createIndex('name','name',{unique:false});s.createIndex('createdAt','createdAt',{unique:false});}if(!d.objectStoreNames.contains('settings'))d.createObjectStore('settings',{keyPath:'key'});};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}
+function openLocalDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open(DB_NAME,DB_VERSION);req.onupgradeneeded=()=>{const d=req.result;if(!d.objectStoreNames.contains('patients')){const s=d.createObjectStore('patients',{keyPath:'id'});s.createIndex('name','name',{unique:false});s.createIndex('createdAt','createdAt',{unique:false});}if(!d.objectStoreNames.contains('settings'))d.createObjectStore('settings',{keyPath:'key'});
+ if(!d.objectStoreNames.contains('orders')){const o=d.createObjectStore('orders',{keyPath:'id'});o.createIndex('createdAt','createdAt',{unique:false});o.createIndex('patientId','patientId',{unique:false});}
+ if(!d.objectStoreNames.contains('samples'))d.createObjectStore('samples',{keyPath:'id'});
+ if(!d.objectStoreNames.contains('results'))d.createObjectStore('results',{keyPath:'id'});
+ if(!d.objectStoreNames.contains('expenses'))d.createObjectStore('expenses',{keyPath:'id'});
+ if(!d.objectStoreNames.contains('inventory'))d.createObjectStore('inventory',{keyPath:'id'});
+ if(!d.objectStoreNames.contains('staff'))d.createObjectStore('staff',{keyPath:'id'});};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}
 function patientStore(mode='readonly'){return db.transaction('patients',mode).objectStore('patients');}
 function dbRequest(req){return new Promise((resolve,reject)=>{req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}
 async function getPatients(){return await dbRequest(patientStore().getAll());}
+function orderStore(mode='readonly'){return db.transaction('orders',mode).objectStore('orders');}
+async function getOrders(){return await dbRequest(orderStore().getAll());}
+async function saveOrder(o){await dbRequest(orderStore('readwrite').put(o));}
+async function deleteOrder(id){await dbRequest(orderStore('readwrite').delete(id));}
+function makeOrderId(){const d=new Date(),date=[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('');return 'ORD-'+date+'-'+Math.random().toString(36).slice(2,7).toUpperCase();}
+function money(n){return '₹'+(Number(n)||0).toFixed(2);}
+function parseTestRate(detail){const m=String(detail||'').match(/(?:₹|rs\.?\s*)?([0-9]+(?:\.[0-9]{1,2})?)/i);return m?Number(m[1]):0;}
 async function savePatient(p){await dbRequest(patientStore('readwrite').put(p));}
 async function deletePatient(id){await dbRequest(patientStore('readwrite').delete(id));}
 async function getSetting(key){return await dbRequest(db.transaction('settings').objectStore('settings').get(key));}
@@ -108,7 +121,7 @@ async function loadPlatformRole(user){
   if(!error && data) currentPlatformRole=data.platform_role||'';
  }catch(e){console.warn('Could not load platform role',e);}
 }
-async function showApp(user){await loadPlatformRole(user);$('loginView').classList.add('hidden');$('appView').classList.remove('hidden');$('signedInEmail').textContent=user.email||'Signed-in user';$('topStatus').textContent='AUTHENTICATED';render('Overview');updatePatientCount();}
+async function showApp(user){await loadPlatformRole(user);$('loginView').classList.add('hidden');$('appView').classList.remove('hidden');$('signedInEmail').textContent=user.email||'Signed-in user';$('topStatus').textContent='AUTHENTICATED';render('Overview');updatePatientCount();updateOrderCount();}
 function showLogin(){$('appView').classList.add('hidden');$('loginView').classList.remove('hidden');$('topStatus').textContent='SECURE LOGIN';}
 $('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginButton').disabled=true;$('loginButton').textContent='Signing in…';msg('');try{const {data,error}=await client.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error;showApp(data.user);}catch(err){msg(err.message||'Sign-in failed.');}finally{$('loginButton').disabled=false;$('loginButton').textContent='Sign in';}});
 $('resetButton').addEventListener('click',async()=>{const email=$('email').value.trim();if(!email){msg('Enter your email address first.');return;}try{const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});if(error)throw error;msg('If this email has an account, a password reset link will be sent.','success');}catch(err){msg(err.message||'Could not request password reset.');}});
@@ -124,10 +137,14 @@ async function render(page){
  const cfg={Doctors:{key:'doctors',title:'Doctors',placeholder:'Doctor name',detail:'Qualification / registration (optional)'},'Test Catalogue':{key:'tests',title:'Test Catalogue',placeholder:'Test name',detail:'Rate / sample type (optional)'},'Custom Fields':{key:'fields',title:'Custom Fields / Columns',placeholder:'Column or field name',detail:'Where it is used (optional)'}};
  if(cfg[page]){const q=cfg[page],items=store[q.key];c.innerHTML=`<div class="panel-head"><h3>${q.title}</h3></div><form id="addForm"><div class="field"><label>${q.placeholder}</label><input class="input" name="name" required maxlength="80" placeholder="${q.placeholder}"></div><div class="field"><label>${q.detail}</label><input class="input" name="detail" maxlength="100" placeholder="${q.detail}"></div><button class="btn">Add ${q.title==='Custom Fields'?'field':q.title.slice(0,-1)}</button></form>${listMarkup(items,q.key)}<p class="muted">Saved locally in this browser. Sync is not connected.</p>`;$('addForm').addEventListener('submit',e=>{e.preventDefault();const f=new FormData(e.target);store[q.key].push({name:f.get('name').trim(),detail:f.get('detail').trim()});saveData();render(page);});bindRemove();return;}
  if(page==='Patients'){await renderPatients(c);return;}
+ if(page==='Test Orders'){await renderTestOrders(c);return;}
+ if(['Sample Tracking','Results Entry','Accounts','Inventory','Staff Directory'].includes(page)){await renderLocalModule(page,c);return;}
+ if(page==='Backup & Restore'){await renderBackupRestore(c);return;}
+ if(page==='Cloud Setup'){await renderCloudSetup(c);return;}
  if(page==='Report Signatures'){await renderReportSignatures(c);return;}
  if(page==='Report Designer'){await renderReportDesigner(c);return;}
  if(page==='Permission Manager'){await renderPermissionManager(c);return;}
- const descriptions={'Test Orders':'Test booking, sample tracking and billing will be developed next.','Results & Reports':'Result entry, verification and PDF report generation will be developed after test orders.','Staff & Roles':'Staff invitations and secure role permissions require server-side functions.','Retention & Backup':'Encrypted cloud backup, restore tests and retention controls are not implemented yet.',
+ const descriptions={'Test Orders':'Offline test booking and billing module.','Results & Reports':'Result entry, verification and PDF report generation will be developed after test orders.','Staff & Roles':'Staff invitations and secure role permissions require server-side functions.','Retention & Backup':'Encrypted cloud backup, restore tests and retention controls are not implemented yet.',
  'Permission Manager':'Owner-only permission settings are being prepared.'};
  c.innerHTML=`<div class="panel-head"><h3>${esc(page)}</h3></div><div class="empty"><strong>Not enabled yet</strong>${esc(descriptions[page]||'This module is planned for a later development step.')}</div>`;
 }
@@ -242,6 +259,111 @@ async function renderPermissionManager(c){
   await saveSetting('permissionConfig',obj);
   alert('Permission preferences saved on this device. Server-side enforcement is still pending.');
  });
+}
+
+
+async function renderTestOrders(c){
+ const patients=(await getPatients()).sort((a,b)=>a.name.localeCompare(b.name));
+ const orders=(await getOrders()).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+ const testList=store.tests||[];
+ c.innerHTML=`<div class="panel-head"><h3>Test Booking & Billing</h3><span class="muted">${orders.length} local orders</span></div>
+ <div class="notice"><b>Development mode:</b> Bookings and payment entries are saved in this browser's IndexedDB for offline use only. They do not sync to the cloud, print invoices, or create diagnostic reports yet. Use demo data only.</div>
+ ${!patients.length?'<div class="empty"><strong>Register a patient first</strong>Open Patients and save a demo patient before booking tests.</div>':''}
+ ${!testList.length?'<div class="empty"><strong>Test catalogue is empty</strong>Add tests and their rates in Test Catalogue first.</div>':''}
+ <form id="orderForm">
+  <div class="field"><label>Patient *</label><select class="input" name="patientId" required><option value="">Select patient</option>${patients.map(p=>`<option value="${esc(p.id)}">${esc(p.name)} · ${esc(p.id)}</option>`).join('')}</select></div>
+  <div class="field"><label>Select Tests *</label><div class="list">${testList.map((t,i)=>`<label class="item"><span><input type="checkbox" name="testIndex" value="${i}"> <b>${esc(t.name)}</b><small class="muted"> · ${esc(t.detail||'Rate not set')}</small></span><b>${money(parseTestRate(t.detail))}</b></label>`).join('')||'<p class="muted">No tests available.</p>'}</div></div>
+  <div class="row"><div class="field"><label>Discount (₹)</label><input class="input" name="discount" type="number" min="0" step="0.01" value="0"></div><div class="field"><label>Amount Paid (₹)</label><input class="input" name="paid" type="number" min="0" step="0.01" value="0"></div></div>
+  <div class="field"><label>Payment Method</label><select class="input" name="paymentMethod"><option>Cash</option><option>UPI</option><option>Card</option><option>Bank Transfer</option><option>Credit / Due</option></select></div>
+  <div class="field"><label>Booking Notes</label><textarea class="input" name="notes" rows="2" maxlength="300" placeholder="Optional notes"></textarea></div>
+  <div class="card" style="margin:12px 0;background:#f7f9fc"><div class="row"><span>Subtotal</span><b id="orderSubtotal">₹0.00</b></div><div class="row"><span>Net Total</span><b id="orderNet">₹0.00</b></div><div class="row"><span>Balance Due</span><b id="orderDue">₹0.00</b></div></div>
+  <button class="btn" type="submit" ${(!patients.length||!testList.length)?'disabled':''}>Save Booking Offline</button><span id="orderMessage" class="message"></span>
+ </form>
+ <div class="panel-head" style="margin-top:25px"><h3>Recent Bookings</h3></div>
+ <div class="tablewrap"><table><thead><tr><th>Order ID</th><th>Patient</th><th>Tests</th><th>Total</th><th>Paid</th><th>Due</th><th>Status</th><th></th></tr></thead><tbody>${orders.map(o=>`<tr><td>${esc(o.id)}</td><td>${esc(o.patientName)}</td><td>${o.items.map(x=>esc(x.name)).join(', ')}</td><td>${money(o.total)}</td><td>${money(o.paid)}</td><td>${money(o.due)}</td><td>${esc(o.paymentStatus)}</td><td><button class="btn danger" type="button" data-order-delete="${esc(o.id)}">Delete</button></td></tr>`).join('')||'<tr><td colspan="8">No bookings yet.</td></tr>'}</tbody></table></div>`;
+ const form=$('orderForm');
+ const calc=()=>{
+  const chosen=[...form.querySelectorAll('input[name="testIndex"]:checked')].map(x=>testList[Number(x.value)]).filter(Boolean);
+  const subtotal=chosen.reduce((a,t)=>a+parseTestRate(t.detail),0);
+  const discount=Math.max(0,Number(form.elements.discount.value)||0);
+  const net=Math.max(0,subtotal-discount);
+  const paid=Math.max(0,Number(form.elements.paid.value)||0);
+  $('orderSubtotal').textContent=money(subtotal);$('orderNet').textContent=money(net);$('orderDue').textContent=money(Math.max(0,net-paid));
+  return {chosen,subtotal,discount,net,paid};
+ };
+ form.addEventListener('input',calc);
+ form.addEventListener('submit',async e=>{
+  e.preventDefault();const v=calc();
+  if(!v.chosen.length){$('orderMessage').textContent='Select at least one test.';return;}
+  if(v.discount>v.subtotal){$('orderMessage').textContent='Discount cannot exceed subtotal.';return;}
+  if(v.paid>v.net){$('orderMessage').textContent='Paid amount cannot exceed net total.';return;}
+  const patient=patients.find(p=>p.id===form.elements.patientId.value);if(!patient)return;
+  const now=new Date().toISOString(),order={id:makeOrderId(),patientId:patient.id,patientName:patient.name,items:v.chosen.map(t=>({name:t.name,detail:t.detail||'',rate:parseTestRate(t.detail)})),subtotal:v.subtotal,discount:v.discount,total:v.net,paid:v.paid,due:Math.max(0,v.net-v.paid),paymentMethod:form.elements.paymentMethod.value,paymentStatus:v.paid===0?'Unpaid':v.paid<v.net?'Partial':'Paid',notes:form.elements.notes.value.trim(),status:'Booked',createdAt:now,updatedAt:now,syncStatus:'local_only'};
+  try{await saveOrder(order);$('orderMessage').textContent='Booking saved locally. Cloud sync is not connected.';$('orderMessage').className='message success';renderTestOrders(c);updateOrderCount();}catch(err){$('orderMessage').textContent='Could not save: '+err.message;}
+ });
+ c.querySelectorAll('[data-order-delete]').forEach(b=>b.addEventListener('click',async()=>{if(confirm('Delete this local booking?')){await deleteOrder(b.dataset.orderDelete);renderTestOrders(c);updateOrderCount();}}));
+ calc();
+}
+async function updateOrderCount(){
+ try{const today=new Date().toISOString().slice(0,10),orders=await getOrders();$('todayOrderCount').textContent=orders.filter(o=>o.createdAt.startsWith(today)).length;}catch{}
+}
+
+
+function localStore(name,mode='readonly'){return db.transaction(name,mode).objectStore(name);}
+async function localAll(name){return dbRequest(localStore(name).getAll());}
+async function localPut(name,obj){return dbRequest(localStore(name,'readwrite').put(obj));}
+async function localDelete(name,id){return dbRequest(localStore(name,'readwrite').delete(id));}
+function localId(prefix){return prefix+'-'+Date.now().toString(36).toUpperCase()+'-'+Math.random().toString(36).slice(2,6).toUpperCase();}
+async function renderLocalModule(page,c){
+ const config={
+ 'Sample Tracking':{store:'samples',title:'Sample Collection & Tracking',fields:[['orderId','Order ID'],['sampleType','Sample Type'],['collectedBy','Collected By'],['status','Status']],opts:['Collected','Received','Rejected','Processing']},
+ 'Results Entry':{store:'results',title:'Results Entry (Draft)',fields:[['orderId','Order ID'],['testName','Test Name'],['parameter','Parameter'],['value','Result Value'],['unit','Unit'],['referenceRange','Reference Range'],['enteredBy','Entered By']],opts:['Draft','Verified']},
+ 'Accounts':{store:'expenses',title:'Accounts & Expenses',fields:[['description','Description'],['amount','Amount (₹)'],['category','Category']],opts:['Expense','Income']},
+ 'Inventory':{store:'inventory',title:'Inventory & Stock',fields:[['item','Item / Reagent'],['quantity','Quantity'],['unit','Unit'],['expiry','Expiry Date']],opts:['In Stock','Low Stock','Expired']},
+ 'Staff Directory':{store:'staff',title:'Staff Directory (local register)',fields:[['name','Staff Name'],['role','Role'],['phone','Phone']],opts:['Active','Inactive']}
+ }[page];
+ const rows=(await localAll(config.store)).sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+ c.innerHTML=`<div class="panel-head"><h3>${config.title}</h3><span class="muted">${rows.length} saved locally</span></div>
+ <div class="notice"><b>Local development module.</b> Entries are stored only on this device. No cloud sync, barcode printing, verified clinical workflow, accounting ledger, stock valuation, or server-side staff permissions are active. Use demo data only.</div>
+ <form id="localModuleForm"><div class="row">${config.fields.map(([k,l])=>`<div class="field"><label>${l}</label><input class="input" name="${k}" ${k==='expiry'?'type="date"':k==='amount'||k==='quantity'?'type="number" step="0.01"':'type="text"'} required></div>`).join('')}</div>
+ <div class="field"><label>Status / Type</label><select class="input" name="status">${config.opts.map(x=>`<option>${x}</option>`).join('')}</select></div><button class="btn" type="submit">Save ${page} Entry Offline</button></form>
+ <div class="tablewrap" style="margin-top:18px"><table><thead><tr>${config.fields.map(x=>`<th>${x[1]}</th>`).join('')}<th>Status</th><th>Created</th><th></th></tr></thead><tbody>${rows.map(r=>`<tr>${config.fields.map(([k])=>`<td>${esc(r[k]||'')}</td>`).join('')}<td>${esc(r.status||'')}</td><td>${esc((r.createdAt||'').slice(0,10))}</td><td><button class="btn danger" data-local-delete="${esc(r.id)}" type="button">Delete</button></td></tr>`).join('')||`<tr><td colspan="${config.fields.length+3}">No entries yet.</td></tr>`}</tbody></table></div>`;
+ $('localModuleForm').addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData(e.target),o={id:localId(page.slice(0,3).toUpperCase()),createdAt:new Date().toISOString(),status:fd.get('status')};for(const [k] of config.fields)o[k]=String(fd.get(k)||'').trim();await localPut(config.store,o);renderLocalModule(page,c);});
+ c.querySelectorAll('[data-local-delete]').forEach(b=>b.addEventListener('click',async()=>{if(confirm('Delete this local demo entry?')){await localDelete(config.store,b.dataset.localDelete);renderLocalModule(page,c);}}));
+}
+
+
+async function renderBackupRestore(c){
+ const stores=['patients','orders','settings','samples','results','expenses','inventory','staff'];
+ c.innerHTML=`<div class="panel-head"><h3>Backup & Restore</h3></div>
+ <div class="notice"><b>Important:</b> This creates a backup of data stored in this browser only. It is not an encrypted cloud backup. Keep the downloaded file private and store it safely.</div>
+ <div class="card"><h4>Export local backup</h4><p class="muted">Download your local patient, booking, report-setting and operational records as one JSON file.</p><button class="btn" id="exportBackup">Download Backup</button></div>
+ <div class="card" style="margin-top:12px"><h4>Restore local backup</h4><p class="muted">Restoring replaces matching local records in this browser. Export a backup first.</p><input id="backupFile" class="input" type="file" accept=".json,application/json"><button class="btn danger" id="restoreBackup" style="margin-top:10px">Restore Selected Backup</button><div id="backupMessage" class="message"></div></div>`;
+ $('exportBackup').onclick=async()=>{
+  const payload={product:'ACD BITTU LAB CLOUD',formatVersion:1,createdAt:new Date().toISOString(),localSetup:store,data:{}};
+  for(const n of stores){try{payload.data[n]=await dbRequest(db.transaction(n).objectStore(n).getAll())}catch{payload.data[n]=[]}}
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download='acd-bittu-lab-cloud-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(url);
+  $('backupMessage').textContent='Backup downloaded. Store it securely.';$('backupMessage').className='message success';
+ };
+ $('restoreBackup').onclick=async()=>{
+  const file=$('backupFile').files[0];if(!file){$('backupMessage').textContent='Select a backup JSON file first.';return}
+  try{
+   const payload=JSON.parse(await file.text());if(payload.product!=='ACD BITTU LAB CLOUD'||!payload.data)throw new Error('This is not a valid ACD BITTU LAB CLOUD backup.');
+   if(!confirm('Restore this backup? Existing local records with the same IDs will be replaced.'))return;
+   if(payload.localSetup){store={...defaults,...payload.localSetup};saveData()}
+   for(const n of stores){const rows=payload.data[n];if(!Array.isArray(rows))continue;const tx=db.transaction(n,'readwrite'),os=tx.objectStore(n);for(const row of rows)os.put(row);await new Promise((res,rej)=>{tx.oncomplete=res;tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error)})}
+   $('backupMessage').textContent='Backup restored to this device. Cloud sync is not performed.';$('backupMessage').className='message success';
+  }catch(e){$('backupMessage').textContent='Restore failed: '+e.message}
+ };
+}
+async function renderCloudSetup(c){
+ const role=currentPlatformRole;
+ c.innerHTML=`<div class="panel-head"><h3>Cloud Setup & System Readiness</h3></div>
+ <div class="notice"><b>Cloud connection:</b> Supabase Authentication is connected. Local IndexedDB modules are not automatically synchronized to cloud yet.</div>
+ <div class="card"><h4>Current readiness</h4><ul><li>Authentication: Connected</li><li>Local offline database: Enabled on this device</li><li>Cross-device cloud sync: Not implemented</li><li>Server-enforced tenant isolation: Not verified</li><li>Automatic cloud backup and restore: Not implemented</li><li>Online report sharing and QR verification: Not implemented</li></ul></div>
+ <div class="notice"><b>Security warning:</b> Do not enter real patient data or invite lab users until tenant-level Row Level Security, server-side roles, audit enforcement and tested backups are completed. This page deliberately does not run unreviewed SQL against your live database.</div>
+ <p class="muted">Signed-in platform role: ${esc(role||'Not verified')}</p>`;
 }
 
 async function renderPatients(c){
