@@ -6,12 +6,12 @@
 <meta name="theme-color" content="#123c63">
 <title>ACD BITTU LAB CLOUD</title>
 <style>
-:root{--navy:#123c63;--blue:#1769aa;--teal:#128a89;--bg:#f3f6fa;--ink:#172536;--muted:#718096;--line:#e4eaf1;--white:#fff;--red:#b42318}
+:root{--navy:#123c63;--blue:#1769aa;--bg:#f3f6fa;--ink:#172536;--muted:#718096;--line:#e4eaf1;--red:#b42318}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
 .top{background:linear-gradient(115deg,#102f50,#1769aa);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:5}
 .brand{display:flex;align-items:center;gap:11px}.logo{width:42px;height:42px;border-radius:12px;background:#fff;color:var(--navy);display:grid;place-items:center;font-weight:900}.brand h1{font-size:17px;margin:0}.brand small{display:block;color:#d7e8f8;font-size:11px}.status{font-size:11px;border:1px solid #ffffff66;border-radius:30px;padding:7px 10px}
 .wrap{max-width:1200px;margin:22px auto;padding:0 15px}.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 2px 8px #1b36500a}
-.login{max-width:430px;margin:55px auto;padding:24px}.field{margin:14px 0}.field label{display:block;font-size:13px;margin-bottom:6px}.field input,.field select,.field textarea,input,select,textarea{font:inherit}.field input,.input{width:100%;padding:11px;border:1px solid #d8e1eb;border-radius:9px;background:#fff}
+.login{max-width:430px;margin:55px auto;padding:24px}.field{margin:14px 0}.field label{display:block;font-size:13px;margin-bottom:6px}.field input,.field select,.field textarea,input,select,textarea{font:inherit}.field input,.field select,.field textarea,.input{width:100%;padding:11px;border:1px solid #d8e1eb;border-radius:9px;background:#fff}
 .btn{border:0;background:var(--blue);color:#fff;padding:10px 14px;border-radius:9px;font-weight:650;cursor:pointer}.btn.secondary{background:#eaf3fb;color:var(--blue)}.btn.danger{background:#fff0ef;color:var(--red)}.btn:disabled{opacity:.55}
 .muted{color:var(--muted);font-size:13px}.hidden{display:none!important}.message{font-size:13px;margin-top:10px}.error{color:var(--red)}.success{color:#087443}
 .notice{background:#fff4d6;color:#76530b;border:1px solid #f2d78b;padding:11px 13px;border-radius:10px;font-size:12px;margin-bottom:15px}
@@ -22,6 +22,7 @@
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>*{flex:1}.row .btn{flex:0 0 auto}.list{display:grid;gap:8px;margin-top:12px}.item{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--line);padding:10px;border-radius:9px}.item span{overflow-wrap:anywhere}
 .tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:520px}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);font-size:13px}th{background:#f7f9fc;color:#526276}
 .footer{text-align:center;color:#8794a4;font-size:11px;padding:22px}
+.report-preview{background:#eef2f6;padding:14px;border-radius:12px;overflow:auto}.paper{background:#fff;color:#172536;margin:auto;box-shadow:0 2px 12px #102f5022;min-height:520px;padding:20px;max-width:650px}.paper-head{text-align:center;border-bottom:1px solid #bbb;padding-bottom:10px}.paper-foot{text-align:center;border-top:1px solid #bbb;padding-top:10px;margin-top:24px}.designer-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.designer-grid .field{margin:7px 0}.move-list{display:grid;gap:6px}.move-item{display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--line);border-radius:8px;background:#fff}.move-item button{padding:5px 9px}.move-item span{flex:1}@media(max-width:560px){.designer-grid{grid-template-columns:1fr}}
 @media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}.nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.welcome{align-items:flex-start;flex-direction:column}.top{padding:12px}.brand h1{font-size:14px}.card{padding:13px}}
 </style>
 </head>
@@ -45,11 +46,11 @@
 
 <section id="appView" class="hidden">
  <div class="welcome"><div><h2>Platform workspace</h2><div class="muted">Signed in as <span id="signedInEmail"></span></div></div><button id="logoutButton" class="btn">Sign out</button></div>
- <div class="notice"><b>Setup / test mode:</b> This release adds editable setup lists that save on this device and remain available offline. They do not yet sync to Supabase or other devices. Do not enter real patient records until database security, tenant isolation, backups and sync are completed.</div>
+ <div class="notice"><b>Development / test mode:</b> Patient records added in this version are stored in this browser's IndexedDB for offline use. They are not yet synced to Supabase or other devices. Do not use real patient data until tenant security, server-side permissions, encryption, backup and sync have been independently tested.</div>
  <section class="stats">
-  <div class="card"><div class="stat-label">Patients</div><div class="stat-value">—</div><div class="muted">Database connection pending</div></div>
-  <div class="card"><div class="stat-label">Today's Orders</div><div class="stat-value">—</div><div class="muted">Database connection pending</div></div>
-  <div class="card"><div class="stat-label">Reports Ready</div><div class="stat-value">—</div><div class="muted">Report module pending</div></div>
+  <div class="card"><div class="stat-label">Patients on this device</div><div class="stat-value" id="patientCount">0</div><div class="muted">Local IndexedDB</div></div>
+  <div class="card"><div class="stat-label">Today's Orders</div><div class="stat-value">—</div><div class="muted">Not enabled</div></div>
+  <div class="card"><div class="stat-label">Reports Ready</div><div class="stat-value">—</div><div class="muted">Not enabled</div></div>
   <div class="card"><div class="stat-label">Connection</div><div class="stat-value" id="networkState" style="font-size:18px">Checking…</div><div class="muted">Internet status of this device</div></div>
  </section>
  <section class="layout">
@@ -64,27 +65,42 @@
    <button data-page="Results & Reports">✓ Results & Reports</button>
    <button data-page="Staff & Roles">♙ Staff & Roles</button>
    <button data-page="Retention & Backup">▣ Retention & Backup</button>
+   <button data-page="Report Designer">▧ Report Designer</button>
+   <button data-page="Report Signatures">✍ Report Signatures</button>
   </nav></aside>
   <section class="card" id="content" aria-live="polite"></section>
  </section>
 </section>
-<div class="footer">© ACD BITTU LAB CLOUD · Initial setup build</div>
+<div class="footer">© ACD BITTU LAB CLOUD · Development build</div>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-/* Supabase publishable key is intended for browser use; protect data with RLS policies. */
+/* Browser key is publishable; database access must be protected by correctly tested RLS. */
 const SUPABASE_URL='https://axfvvquhswapiwmvrepe.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_n6jRvVDjw2kOF7CS46omqQ_6qGkdR-q';
 const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const $=id=>document.getElementById(id);
 const KEY='acd_bittu_lab_cloud_setup_v1';
+const DB_NAME='acd_bittu_lab_cloud_local';
+const DB_VERSION=2;
 const defaults={lab:{name:'',address:'',phone:'',email:''},doctors:[],tests:[],fields:[]};
 function loadData(){try{return {...defaults,...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch{return structuredClone(defaults)}}
-let store=loadData();
+let store=loadData(), db;
 function saveData(){localStorage.setItem(KEY,JSON.stringify(store));}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function msg(text,kind='error'){ $('loginMessage').textContent=text;$('loginMessage').className='message '+kind; }
-function showApp(user){$('loginView').classList.add('hidden');$('appView').classList.remove('hidden');$('signedInEmail').textContent=user.email||'Signed-in user';$('topStatus').textContent='AUTHENTICATED';render('Overview');}
+function openLocalDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open(DB_NAME,DB_VERSION);req.onupgradeneeded=()=>{const d=req.result;if(!d.objectStoreNames.contains('patients')){const s=d.createObjectStore('patients',{keyPath:'id'});s.createIndex('name','name',{unique:false});s.createIndex('createdAt','createdAt',{unique:false});}if(!d.objectStoreNames.contains('settings'))d.createObjectStore('settings',{keyPath:'key'});};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}
+function patientStore(mode='readonly'){return db.transaction('patients',mode).objectStore('patients');}
+function dbRequest(req){return new Promise((resolve,reject)=>{req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}
+async function getPatients(){return await dbRequest(patientStore().getAll());}
+async function savePatient(p){await dbRequest(patientStore('readwrite').put(p));}
+async function deletePatient(id){await dbRequest(patientStore('readwrite').delete(id));}
+async function getSetting(key){return await dbRequest(db.transaction('settings').objectStore('settings').get(key));}
+async function saveSetting(key,value){return await dbRequest(db.transaction('settings','readwrite').objectStore('settings').put({key,...value}));}
+async function fileToDataURL(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=()=>reject(r.error);r.readAsDataURL(file);});}
+function makePatientId(){const d=new Date(),date=[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('');return 'ACD-'+date+'-'+Math.random().toString(36).slice(2,7).toUpperCase();}
+async function updatePatientCount(){try{$('patientCount').textContent=(await getPatients()).length;}catch{$('patientCount').textContent='!';}}
+function showApp(user){$('loginView').classList.add('hidden');$('appView').classList.remove('hidden');$('signedInEmail').textContent=user.email||'Signed-in user';$('topStatus').textContent='AUTHENTICATED';render('Overview');updatePatientCount();}
 function showLogin(){$('appView').classList.add('hidden');$('loginView').classList.remove('hidden');$('topStatus').textContent='SECURE LOGIN';}
 $('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginButton').disabled=true;$('loginButton').textContent='Signing in…';msg('');try{const {data,error}=await client.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error;showApp(data.user);}catch(err){msg(err.message||'Sign-in failed.');}finally{$('loginButton').disabled=false;$('loginButton').textContent='Sign in';}});
 $('resetButton').addEventListener('click',async()=>{const email=$('email').value.trim();if(!email){msg('Enter your email address first.');return;}try{const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});if(error)throw error;msg('If this email has an account, a password reset link will be sent.','success');}catch(err){msg(err.message||'Could not request password reset.');}});
@@ -93,24 +109,120 @@ function setPage(p){document.querySelectorAll('[data-page]').forEach(b=>b.classL
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>setPage(b.dataset.page)));
 function listMarkup(items,type){if(!items.length)return '<div class="empty">No items added yet.</div>';return '<div class="list">'+items.map((x,i)=>`<div class="item"><span><b>${esc(x.name)}</b>${x.detail?' · '+esc(x.detail):''}</span><button class="btn danger" data-remove="${type}" data-index="${i}">Remove</button></div>`).join('')+'</div>';}
 function bindRemove(){document.querySelectorAll('[data-remove]').forEach(b=>b.addEventListener('click',()=>{const t=b.dataset.remove,i=Number(b.dataset.index);if(confirm('Remove this item from this device?')){store[t].splice(i,1);saveData();render(t==='doctors'?'Doctors':t==='tests'?'Test Catalogue':'Custom Fields');}}));}
-function render(page){
+async function render(page){
  const c=$('content');
- if(page==='Overview'){c.innerHTML=`<div class="panel-head"><h3>Welcome to ACD BITTU LAB CLOUD</h3></div><div class="empty"><strong>Platform setup started successfully</strong>Use Lab Setup, Doctors, Test Catalogue and Custom Fields to configure your workspace on this device. Patient database, PDF reports and cross-device sync are the next development steps.</div><p class="muted" style="margin-top:14px">Offline setup data saved on this browser: ${store.doctors.length} doctors · ${store.tests.length} tests · ${store.fields.length} custom fields.</p>`;return;}
- if(page==='Lab Setup'){c.innerHTML=`<div class="panel-head"><h3>Lab Setup</h3></div><form id="labForm"><div class="field"><label>Lab / workspace name</label><input class="input" name="name" value="${esc(store.lab.name)}" placeholder="Enter lab name"></div><div class="field"><label>Address</label><input class="input" name="address" value="${esc(store.lab.address)}" placeholder="Lab address"></div><div class="row"><div class="field"><label>Phone</label><input class="input" name="phone" value="${esc(store.lab.phone)}" placeholder="Phone number"></div><div class="field"><label>Email</label><input class="input" name="email" type="email" value="${esc(store.lab.email)}" placeholder="Lab email"></div></div><button class="btn">Save on this device</button></form><p class="muted">This is local device setup only. It is not yet shared with other lab users.</p>`;$('labForm').addEventListener('submit',e=>{e.preventDefault();store.lab=Object.fromEntries(new FormData(e.target));saveData();alert('Lab settings saved on this device.');});return;}
+ if(page==='Overview'){c.innerHTML=`<div class="panel-head"><h3>Welcome to ACD BITTU LAB CLOUD</h3></div><div class="empty"><strong>Offline-first patient module started</strong>Patient records are stored in this browser's IndexedDB and remain available offline on this device. Cross-device sync is not connected yet.</div><p class="muted" style="margin-top:14px">Setup on this browser: ${store.doctors.length} doctors · ${store.tests.length} tests · ${store.fields.length} custom fields.</p>`;return;}
+ if(page==='Lab Setup'){c.innerHTML=`<div class="panel-head"><h3>Lab Setup</h3></div><form id="labForm"><div class="field"><label>Lab / workspace name</label><input class="input" name="name" value="${esc(store.lab.name)}" placeholder="Enter lab name"></div><div class="field"><label>Address</label><input class="input" name="address" value="${esc(store.lab.address)}" placeholder="Lab address"></div><div class="row"><div class="field"><label>Phone</label><input class="input" name="phone" value="${esc(store.lab.phone)}" placeholder="Phone number"></div><div class="field"><label>Email</label><input class="input" name="email" type="email" value="${esc(store.lab.email)}" placeholder="Lab email"></div></div><button class="btn">Save on this device</button></form><p class="muted">Local device setup only; cross-device sync is not connected.</p>`;$('labForm').addEventListener('submit',e=>{e.preventDefault();store.lab=Object.fromEntries(new FormData(e.target));saveData();alert('Lab settings saved on this device.');});return;}
  const cfg={Doctors:{key:'doctors',title:'Doctors',placeholder:'Doctor name',detail:'Qualification / registration (optional)'},'Test Catalogue':{key:'tests',title:'Test Catalogue',placeholder:'Test name',detail:'Rate / sample type (optional)'},'Custom Fields':{key:'fields',title:'Custom Fields / Columns',placeholder:'Column or field name',detail:'Where it is used (optional)'}};
- if(cfg[page]){const q=cfg[page],items=store[q.key];c.innerHTML=`<div class="panel-head"><h3>${q.title}</h3></div><form id="addForm"><div class="field"><label>${q.placeholder}</label><input class="input" name="name" required maxlength="80" placeholder="${q.placeholder}"></div><div class="field"><label>${q.detail}</label><input class="input" name="detail" maxlength="100" placeholder="${q.detail}"></div><button class="btn">Add ${q.title==='Custom Fields'?'field':q.title.slice(0,-1)}</button></form>${listMarkup(items,q.key)}<p class="muted">Additions and removals save locally on this browser and work offline. Online multi-user sync will be added after the secure database tables and permissions are configured.</p>`;$('addForm').addEventListener('submit',e=>{e.preventDefault();const f=new FormData(e.target);store[q.key].push({name:f.get('name').trim(),detail:f.get('detail').trim()});saveData();render(page);});bindRemove();return;}
- const descriptions={
- 'Patients':'Patient registration, search and history will be enabled after secure tenant-isolated database setup.',
- 'Test Orders':'Create orders, assign tests and track sample status after database setup.',
- 'Results & Reports':'Result entry, verification, PDF generation and saved report archive are not enabled in this build.',
- 'Staff & Roles':'Staff invitations and role permissions will be configured through secure server-side functions.',
- 'Retention & Backup':'Five-year report retention and independent encrypted backups require separate storage and restore testing.'
- };
+ if(cfg[page]){const q=cfg[page],items=store[q.key];c.innerHTML=`<div class="panel-head"><h3>${q.title}</h3></div><form id="addForm"><div class="field"><label>${q.placeholder}</label><input class="input" name="name" required maxlength="80" placeholder="${q.placeholder}"></div><div class="field"><label>${q.detail}</label><input class="input" name="detail" maxlength="100" placeholder="${q.detail}"></div><button class="btn">Add ${q.title==='Custom Fields'?'field':q.title.slice(0,-1)}</button></form>${listMarkup(items,q.key)}<p class="muted">Saved locally in this browser. Sync is not connected.</p>`;$('addForm').addEventListener('submit',e=>{e.preventDefault();const f=new FormData(e.target);store[q.key].push({name:f.get('name').trim(),detail:f.get('detail').trim()});saveData();render(page);});bindRemove();return;}
+ if(page==='Patients'){await renderPatients(c);return;}
+ if(page==='Report Signatures'){await renderReportSignatures(c);return;}
+ if(page==='Report Designer'){await renderReportDesigner(c);return;}
+ const descriptions={'Test Orders':'Test booking, sample tracking and billing will be developed next.','Results & Reports':'Result entry, verification and PDF report generation will be developed after test orders.','Staff & Roles':'Staff invitations and secure role permissions require server-side functions.','Retention & Backup':'Encrypted cloud backup, restore tests and retention controls are not implemented yet.'};
  c.innerHTML=`<div class="panel-head"><h3>${esc(page)}</h3></div><div class="empty"><strong>Not enabled yet</strong>${esc(descriptions[page]||'This module is planned for a later development step.')}</div>`;
 }
-function network(){ $('networkState').textContent=navigator.onLine?'Online':'Offline'; }
+
+async function renderReportDesigner(c){
+ const defaults={headerTitle:'',headerLine1:'',headerLine2:'',footerText:'',font:'Arial',fontSize:12,fontColor:'#172536',accentColor:'#123c63',pageSize:'A4',orientation:'portrait',topSpace:28,bottomSpace:24,showPatient:true,showTable:true,showSignatures:true,showQr:true,sections:['Patient Details','Test Details','Result Table','Interpretation','Signatures','QR Code']};
+ const saved=(await getSetting('reportDesign'))||{};const d={...defaults,...saved};
+ const preview=()=>{const paper=$('reportPaper');if(!paper)return;paper.style.fontFamily=d.font;paper.style.fontSize=d.fontSize+'px';paper.style.color=d.fontColor;paper.style.width=d.orientation==='landscape'?'100%':'100%';paper.style.maxWidth=d.orientation==='landscape'?'850px':'650px';paper.innerHTML=`<div style="height:${d.topSpace}px"></div><div class="paper-head" style="color:${d.accentColor}"><h2 style="margin:0 0 5px">${esc(d.headerTitle||store.lab.name||'YOUR LAB NAME')}</h2><div>${esc(d.headerLine1||store.lab.address||'Lab address')}</div><div>${esc(d.headerLine2||store.lab.phone||'Phone / Email')}</div></div>${d.showPatient?'<h3>Patient Details</h3><p>Patient Name: ____________________ &nbsp; Age: ______ &nbsp; Gender: ______</p><p>Mobile: ____________________ &nbsp; Ref. Doctor: ____________________</p>':''}${d.sections.map(x=>x==='Patient Details'?'':x==='Test Details'?'<h3>Test Details</h3><p>Test Name: CBC &nbsp; Report No: ACD-DEMO-001</p>':x==='Result Table'&&d.showTable?'<table style="min-width:0;width:100%;font-size:inherit"><tr style="background:#eef2f7"><th>Investigation</th><th>Result</th><th>Unit</th><th>Reference Range</th></tr><tr><td>Haemoglobin</td><td>—</td><td>g/dL</td><td>—</td></tr><tr><td>WBC</td><td>—</td><td>/cumm</td><td>—</td></tr></table>':x==='Interpretation'?'<h3>Interpretation</h3><p>________________________________________</p>':x==='Signatures'&&d.showSignatures?'<div style="display:flex;justify-content:space-between;margin-top:35px"><span>Technician / DMLT</span><span>Authorized Doctor</span></div>':x==='QR Code'&&d.showQr?'<p style="text-align:right;margin-top:16px">[ QR CODE AREA ]</p>':'').join('')}<div class="paper-foot">${esc(d.footerText||'Report footer text')}</div><div style="height:${d.bottomSpace}px"></div>`;};
+ const sections=d.sections;
+ c.innerHTML=`<div class="panel-head"><h3>Report Designer — Full Customization</h3><button class="btn secondary" id="resetDesign">Reset</button></div>
+ <div class="notice">यह पहला Designer चरण है। बदलाव इस डिवाइस में IndexedDB पर सेव होंगे। नीचे Live Preview है। अभी यह सेटिंग PDF/WhatsApp रिपोर्ट से जुड़ी नहीं है, क्योंकि Report Generation module अगला चरण है।</div>
+ <form id="designForm">
+ <h4>Header & Footer</h4><div class="designer-grid">
+ <div class="field"><label>Header / Lab Title</label><input class="input" name="headerTitle" value="${esc(d.headerTitle)}" placeholder="Lab name"></div>
+ <div class="field"><label>Header Line 1</label><input class="input" name="headerLine1" value="${esc(d.headerLine1)}" placeholder="Address / tagline"></div>
+ <div class="field"><label>Header Line 2</label><input class="input" name="headerLine2" value="${esc(d.headerLine2)}" placeholder="Phone / email"></div>
+ <div class="field"><label>Footer text</label><input class="input" name="footerText" value="${esc(d.footerText)}" placeholder="Footer / disclaimer"></div></div>
+ <h4>Font & Colors</h4><div class="designer-grid">
+ <div class="field"><label>Font family</label><select class="input" name="font">${['Arial','Georgia','Times New Roman','Verdana','Tahoma','Courier New'].map(x=>`<option ${d.font===x?'selected':''}>${x}</option>`).join('')}</select></div>
+ <div class="field"><label>Font size (px)</label><input class="input" name="fontSize" type="number" min="8" max="24" value="${d.fontSize}"></div>
+ <div class="field"><label>Text color</label><input class="input" name="fontColor" type="color" value="${esc(d.fontColor)}"></div>
+ <div class="field"><label>Header / accent color</label><input class="input" name="accentColor" type="color" value="${esc(d.accentColor)}"></div></div>
+ <h4>Page & Spacing</h4><div class="designer-grid">
+ <div class="field"><label>Page size</label><select class="input" name="pageSize"><option ${d.pageSize==='A4'?'selected':''}>A4</option><option ${d.pageSize==='A5'?'selected':''}>A5</option><option ${d.pageSize==='Letter'?'selected':''}>Letter</option></select></div>
+ <div class="field"><label>Orientation</label><select class="input" name="orientation"><option value="portrait" ${d.orientation==='portrait'?'selected':''}>Portrait</option><option value="landscape" ${d.orientation==='landscape'?'selected':''}>Landscape</option></select></div>
+ <div class="field"><label>Blank top space (mm)</label><input class="input" name="topSpace" type="number" min="0" max="100" value="${d.topSpace}"></div>
+ <div class="field"><label>Blank bottom space (mm)</label><input class="input" name="bottomSpace" type="number" min="0" max="100" value="${d.bottomSpace}"></div></div>
+ <h4>Show / Hide Sections</h4><div class="designer-grid"><label><input type="checkbox" name="showPatient" ${d.showPatient?'checked':''}> Patient details</label><label><input type="checkbox" name="showTable" ${d.showTable?'checked':''}> Result table</label><label><input type="checkbox" name="showSignatures" ${d.showSignatures?'checked':''}> Signatures</label><label><input type="checkbox" name="showQr" ${d.showQr?'checked':''}> QR code area</label></div>
+ <h4>Report Section Order</h4><p class="muted">ऊपर/नीचे बटन से सेक्शन का क्रम बदलें। अगली अपडेट में drag-and-drop भी जोड़ा जाएगा।</p><div class="move-list" id="sectionList">${sections.map((x,i)=>`<div class="move-item"><span>${esc(x)}</span><button type="button" class="btn secondary" data-up="${i}" ${i===0?'disabled':''}>↑</button><button type="button" class="btn secondary" data-down="${i}" ${i===sections.length-1?'disabled':''}>↓</button></div>`).join('')}</div>
+ <p><button class="btn" type="submit">Save Design</button> <span class="message" id="designMessage"></span></p></form>
+ <h4>Live Report Preview</h4><div class="report-preview"><div class="paper" id="reportPaper"></div></div>`;
+ const form=$('designForm');form.addEventListener('input',()=>{const fd=new FormData(form);for(const k of ['headerTitle','headerLine1','headerLine2','footerText','font','fontSize','fontColor','accentColor','pageSize','orientation','topSpace','bottomSpace'])if(fd.has(k))d[k]=['fontSize','topSpace','bottomSpace'].includes(k)?Number(fd.get(k)):fd.get(k);for(const k of ['showPatient','showTable','showSignatures','showQr'])d[k]=form.elements[k].checked;preview();});
+ form.addEventListener('submit',async e=>{e.preventDefault();await saveSetting('reportDesign',d);$('designMessage').textContent='Design saved on this device.';$('designMessage').className='message success';});
+ $('sectionList').querySelectorAll('[data-up],[data-down]').forEach(b=>b.addEventListener('click',()=>{const i=Number(b.dataset.up??b.dataset.down),j=b.hasAttribute('data-up')?i-1:i+1;[d.sections[i],d.sections[j]]=[d.sections[j],d.sections[i]];renderReportDesigner(c);}));
+ $('resetDesign').addEventListener('click',async()=>{if(confirm('Reset report design to default?')){await saveSetting('reportDesign',defaults);renderReportDesigner(c);}});preview();
+}
+
+async function renderReportSignatures(c){
+ const saved=(await getSetting('reportSignatures'))||{};
+ const tech=saved.technician||{}, doctor=saved.doctor||{};
+ c.innerHTML=`<div class="panel-head"><h3>Report Signatures & Footer</h3></div>
+ <div class="notice">यह सेटिंग इस डिवाइस के IndexedDB में सेव होगी। अभी PDF रिपोर्ट में हस्ताक्षर जोड़ना और क्लाउड पर साझा करना लागू नहीं है। केवल वास्तविक अधिकृत व्यक्ति के नाम/हस्ताक्षर दर्ज करें।</div>
+ <form id="signatureForm">
+  <h4>Technician / DMLT Details</h4>
+  <div class="field"><label>Name</label><input class="input" name="techName" maxlength="120" value="${esc(tech.name||'')}" placeholder="Technician name"></div>
+  <div class="field"><label>Qualification / Designation</label><input class="input" name="techQualification" maxlength="120" value="${esc(tech.qualification||'')}" placeholder="e.g. DMLT"></div>
+  <div class="field"><label>Technician signature image</label><input class="input" name="techSignature" type="file" accept="image/png,image/jpeg,image/webp"></div>
+  <label><input type="checkbox" name="showTech" ${tech.show!==false?'checked':''}> Show technician details on report</label>
+  <div class="field">${tech.signature?`<img src="${tech.signature}" alt="Saved technician signature" style="max-width:220px;max-height:90px;border:1px solid #ddd;padding:6px;border-radius:8px">`:'<span class="muted">No technician signature uploaded</span>'}</div>
+  <hr style="border:0;border-top:1px solid var(--line);margin:20px 0">
+  <h4>Authorized Doctor Details</h4>
+  <div class="field"><label>Doctor Name</label><input class="input" name="doctorName" maxlength="120" value="${esc(doctor.name||'')}" placeholder="Doctor name"></div>
+  <div class="field"><label>Qualification</label><input class="input" name="doctorQualification" maxlength="120" value="${esc(doctor.qualification||'')}" placeholder="e.g. MBBS, MD"></div>
+  <div class="field"><label>Medical Registration Number</label><input class="input" name="doctorReg" maxlength="80" value="${esc(doctor.registration||'')}" placeholder="Registration number"></div>
+  <div class="field"><label>Doctor signature image</label><input class="input" name="doctorSignature" type="file" accept="image/png,image/jpeg,image/webp"></div>
+  <label><input type="checkbox" name="showDoctor" ${doctor.show!==false?'checked':''}> Show doctor details on report</label>
+  <div class="field">${doctor.signature?`<img src="${doctor.signature}" alt="Saved doctor signature" style="max-width:220px;max-height:90px;border:1px solid #ddd;padding:6px;border-radius:8px">`:'<span class="muted">No doctor signature uploaded</span>'}</div>
+  <div class="field"><label>Additional report footer text</label><textarea class="input" name="footer" rows="2" maxlength="300" placeholder="Optional footer text">${esc(saved.footer||'')}</textarea></div>
+  <button class="btn" type="submit">Save Report Settings on This Device</button>
+  <span id="signatureMessage" class="message" role="status"></span>
+ </form>
+ <p class="muted">Image files are stored locally in this browser's IndexedDB. Keep a separate secure backup. This is a setup screen only; it does not yet create or approve diagnostic reports.</p>`;
+ $('signatureForm').addEventListener('submit',async e=>{
+  e.preventDefault();const f=e.currentTarget,fd=new FormData(f);
+  try{
+   const old=(await getSetting('reportSignatures'))||{};
+   const techFile=f.elements.techSignature.files[0],docFile=f.elements.doctorSignature.files[0];
+   if(techFile&&techFile.size>2*1024*1024)throw new Error('Technician signature image must be 2 MB or smaller.');
+   if(docFile&&docFile.size>2*1024*1024)throw new Error('Doctor signature image must be 2 MB or smaller.');
+   const value={
+    technician:{name:fd.get('techName').trim(),qualification:fd.get('techQualification').trim(),show:f.elements.showTech.checked,signature:techFile?await fileToDataURL(techFile):(old.technician?.signature||'')},
+    doctor:{name:fd.get('doctorName').trim(),qualification:fd.get('doctorQualification').trim(),registration:fd.get('doctorReg').trim(),show:f.elements.showDoctor.checked,signature:docFile?await fileToDataURL(docFile):(old.doctor?.signature||'')},
+    footer:fd.get('footer').trim(),updatedAt:new Date().toISOString()
+   };
+   await saveSetting('reportSignatures',value);
+   $('signatureMessage').textContent='Report signature settings saved locally.';
+   $('signatureMessage').className='message success';
+   await renderReportSignatures(c);
+  }catch(err){$('signatureMessage').textContent=err.message||'Could not save settings.';$('signatureMessage').className='message error';}
+ });
+}
+
+async function renderPatients(c){
+ const patients=(await getPatients()).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+ c.innerHTML=`<div class="panel-head"><h3>Patient Registration</h3><span class="muted">${patients.length} saved on this device</span></div>
+ <div class="notice">Offline local storage is active on this browser. Records are not uploaded to the cloud yet. Use demo/test data only until security and sync are completed.</div>
+ <form id="patientForm">
+  <div class="field"><label>Patient Name *</label><input class="input" name="name" required maxlength="120" placeholder="Enter patient full name"></div>
+  <div class="row"><div class="field"><label>Age *</label><input class="input" name="age" required maxlength="20" placeholder="e.g. 22 years"></div><div class="field"><label>Gender *</label><select class="input" name="gender" required><option value="">Select gender</option><option>Male</option><option>Female</option><option>Other</option></select></div></div>
+  <div class="field"><label>Mobile Number</label><input class="input" name="mobile" inputmode="tel" maxlength="20" placeholder="Patient mobile number"></div>
+  <div class="field"><label>Address</label><textarea class="input" name="address" rows="2" maxlength="300" placeholder="Patient address"></textarea></div>
+  <div class="field"><label>Referring Doctor</label><input class="input" name="referrer" maxlength="120" placeholder="Doctor / hospital name"></div>
+  <button class="btn" type="submit">Save Patient Offline</button><span id="patientSaveMessage" class="message" role="status"></span>
+ </form>
+ <div class="panel-head" style="margin-top:24px"><h3>Saved Patients</h3></div>
+ <div class="field"><label>Search by name, Patient ID or mobile</label><input class="input" id="patientSearch" placeholder="Search patients..."></div>
+ <div id="patientList">${patientTable(patients)}</div>`;
+ $('patientForm').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.target);const now=new Date().toISOString();const p={id:makePatientId(),name:f.get('name').trim(),age:f.get('age').trim(),gender:f.get('gender'),mobile:f.get('mobile').trim(),address:f.get('address').trim(),referrer:f.get('referrer').trim(),createdAt:now,updatedAt:now,syncStatus:'local_only'};try{await savePatient(p);$('patientSaveMessage').textContent='Saved on this device. Cloud sync is not connected.';$('patientSaveMessage').className='message success';e.target.reset();await refreshPatientList();await updatePatientCount();}catch(err){$('patientSaveMessage').textContent='Could not save: '+err.message;$('patientSaveMessage').className='message error';}});
+ $('patientSearch').addEventListener('input',refreshPatientList);
+}
+function patientTable(items){if(!items.length)return '<div class="empty"><strong>No patients saved yet</strong>Register a demo patient using the form above.</div>';return '<div class="tablewrap"><table><thead><tr><th>Patient ID</th><th>Name</th><th>Age / Gender</th><th>Mobile</th><th>Referring Doctor</th><th>Storage</th><th></th></tr></thead><tbody>'+items.map(p=>`<tr><td>${esc(p.id)}</td><td>${esc(p.name)}</td><td>${esc(p.age)} / ${esc(p.gender)}</td><td>${esc(p.mobile)}</td><td>${esc(p.referrer)}</td><td>On this device</td><td><button class="btn danger" data-patient-delete="${esc(p.id)}">Delete</button></td></tr>`).join('')+'</tbody></table></div>';}
+async function refreshPatientList(){const q=$('patientSearch').value.trim().toLowerCase();let ps=(await getPatients()).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));if(q)ps=ps.filter(p=>[p.id,p.name,p.mobile,p.referrer].some(v=>String(v||'').toLowerCase().includes(q)));$('patientList').innerHTML=patientTable(ps);document.querySelectorAll('[data-patient-delete]').forEach(b=>b.addEventListener('click',async()=>{if(confirm('Permanently delete this local demo record?')){await deletePatient(b.dataset.patientDelete);await refreshPatientList();await updatePatientCount();}}));}
+function network(){$('networkState').textContent=navigator.onLine?'Online':'Offline';}
 window.addEventListener('online',network);window.addEventListener('offline',network);network();
-client.auth.getSession().then(({data})=>{if(data.session)showApp(data.session.user);});
+(async()=>{try{db=await openLocalDB();}catch(e){console.error(e);alert('This browser could not open local database storage. Patient saving is unavailable.');return;}try{const {data}=await client.auth.getSession();if(data.session)showApp(data.session.user);}catch(e){console.warn('Session check unavailable offline',e);}})();
 </script>
 </body>
 </html>
