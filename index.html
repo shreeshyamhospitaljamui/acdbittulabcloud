@@ -17,13 +17,13 @@
 .notice{background:#fff4d6;color:#76530b;border:1px solid #f2d78b;padding:11px 13px;border-radius:10px;font-size:12px;margin-bottom:15px}
 .welcome{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}.welcome h2{margin:0 0 4px}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stat-label{font-size:12px;color:var(--muted)}.stat-value{font-size:25px;font-weight:750;margin-top:7px}
-.layout{display:grid;grid-template-columns:225px 1fr;gap:14px;margin-top:14px}.nav{display:flex;flex-direction:column;gap:4px}.nav button{border:0;background:transparent;text-align:left;padding:10px;border-radius:8px;color:#42536a;font:inherit;cursor:pointer}.nav button.active,.nav button:hover{background:#eaf3fb;color:var(--blue);font-weight:650}
+.layout{display:grid;grid-template-columns:225px minmax(0,1fr);gap:14px;margin-top:14px;align-items:start}.nav{display:flex;flex-direction:column;gap:4px;position:sticky;top:82px;max-height:calc(100vh - 100px);overflow-y:auto;overscroll-behavior:contain}.nav button{border:0;background:transparent;text-align:left;padding:10px;border-radius:8px;color:#42536a;font:inherit;cursor:pointer}.nav button.active,.nav button:hover{background:#eaf3fb;color:var(--blue);font-weight:650}
 .panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}.panel-head h3{margin:0}.empty{border:1px dashed #cbd7e4;border-radius:11px;padding:28px 14px;text-align:center;color:var(--muted)}.empty strong{display:block;color:#34465b;margin-bottom:5px}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>*{flex:1}.row .btn{flex:0 0 auto}.list{display:grid;gap:8px;margin-top:12px}.item{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--line);padding:10px;border-radius:9px}.item span{overflow-wrap:anywhere}
 .tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:520px}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);font-size:13px}th{background:#f7f9fc;color:#526276}
 .footer{text-align:center;color:#8794a4;font-size:11px;padding:22px}
 .report-preview{background:#eef2f6;padding:14px;border-radius:12px;overflow:auto}.paper{background:#fff;color:#172536;margin:auto;box-shadow:0 2px 12px #102f5022;min-height:520px;padding:20px;max-width:650px}.paper-head{text-align:center;border-bottom:1px solid #bbb;padding-bottom:10px}.paper-foot{text-align:center;border-top:1px solid #bbb;padding-top:10px;margin-top:24px}.designer-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.designer-grid .field{margin:7px 0}.move-list{display:grid;gap:6px}.move-item{display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--line);border-radius:8px;background:#fff}.move-item button{padding:5px 9px}.move-item span{flex:1}@media(max-width:560px){.designer-grid{grid-template-columns:1fr}}
-@media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}.nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.welcome{align-items:flex-start;flex-direction:column}.top{padding:12px}.brand h1{font-size:14px}.card{padding:13px}}
+@media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}.nav{position:static;max-height:none;overflow:visible;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.welcome{align-items:flex-start;flex-direction:column}.top{padding:12px}.brand h1{font-size:14px}.card{padding:13px}}
 </style>
 </head>
 <body>
@@ -46,7 +46,7 @@
 </section>
 
 <section id="appView" class="hidden">
- <div class="welcome"><div><h2>Platform workspace</h2><div class="muted">Signed in as <span id="signedInEmail"></span></div></div><button id="logoutButton" class="btn">Sign out</button></div>
+ <div class="welcome"><div><h2>Platform workspace</h2><div class="muted">Signed in as <span id="signedInEmail"></span> · Single-screen dashboard</div></div><button id="logoutButton" class="btn">Sign out</button></div>
  <div class="notice"><b>Development / test mode:</b> Patient, test catalogue and booking data use this lab's Supabase cloud workspace when online and IndexedDB cache offline. Do not use real patient data until tenant security, server-side permissions, encryption, backup and sync have been independently tested.</div>
  <section class="stats">
   <div class="card"><div class="stat-label">Patients in this lab</div><div class="stat-value" id="patientCount">0</div><div class="muted">Cloud + offline cache</div></div>
@@ -74,7 +74,7 @@
   <section class="card" id="content" aria-live="polite"></section>
  </section>
 </section>
-<div class="footer">© ACD BITTU LAB CLOUD · Development build</div>
+<div class="footer">© ACD BITTU LAB CLOUD · Single-page dashboard · Print opens the browser print dialog</div>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
