@@ -371,6 +371,7 @@ async function render(page){
  if(page==='Sample Tracking'){await renderSampleTracking(c);return;}
  if(page==='Staff Directory'){await renderStaffRoles(c);return;}
  if(['Accounts','Inventory'].includes(page)){await renderCloudOperations(page,c);return;}
+ if(page==='Results Entry'){await renderCloudResultsEntry(c);return;}
  if(page==='Results Entry'){await renderLocalModule(page,c);return;}
  if(page==='Results & Reports'){await renderResultsReports(c);return;}
  if(page==='Backup & Restore'){await renderBackupRestore(c);return;}
@@ -601,6 +602,33 @@ async function renderCloudOpsModule(page,c){
  c.innerHTML=`<div class="panel-head"><h3>${title}</h3><span class="muted">${rows.length} records · ${rows.filter(x=>x.syncStatus==='synced').length} cloud</span></div><div class="notice">${cloudError?`Cloud read failed: ${esc(cloudError)}. New entries will remain local until sync succeeds.`:'Cloud-backed module with offline queue. Entries are isolated by lab workspace.'}${isAccounts?`<br><b>Net recorded balance: ₹${balance.toFixed(2)}</b>`:''}</div><form id="cloudOpsForm"><div class="row">${fields.map(([k,l])=>`<div class="field"><label>${l}</label><input class="input" name="${k}" ${k==='expiry'?'type="date"':k==='amount'||k==='quantity'?'type="number" step="0.01" min="0"':'type="text"'} required></div>`).join('')}</div><div class="field"><label>${isAccounts?'Entry Type':'Stock Status'}</label><select class="input" name="status">${opts.map(x=>`<option>${x}</option>`).join('')}</select></div><button class="btn" type="submit">Save ${isAccounts?'Account Entry':'Stock Item'}</button><span id="cloudOpsMessage" class="message"></span></form><div class="tablewrap" style="margin-top:18px"><table><thead><tr>${fields.map(x=>`<th>${x[1]}</th>`).join('')}<th>${isAccounts?'Type':'Status'}</th><th>Sync</th><th>Date</th></tr></thead><tbody>${rows.map(r=>`<tr>${fields.map(([k])=>`<td>${esc(r[k]||'')}</td>`).join('')}<td>${esc(r.status||'')}</td><td>${r.syncStatus==='synced'?'Cloud':'Pending'}</td><td>${esc((r.createdAt||'').slice(0,10))}</td></tr>`).join('')||`<tr><td colspan="${fields.length+3}">No entries yet.</td></tr>`}</tbody></table></div>`;
  $('cloudOpsForm').addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData(e.currentTarget),now=new Date().toISOString(),o={id:localId(isAccounts?'FIN':'INV'),labId:currentLab.id,createdAt:now,status:String(fd.get('status')),syncStatus:'pending'};for(const [k] of fields)o[k]=String(fd.get(k)||'').trim();if(isAccounts)o.amount=Number(o.amount);else o.quantity=Number(o.quantity);await localPut(store,o);const m=$('cloudOpsMessage');if(navigator.onLine){try{const row=isAccounts?{id:o.id,lab_id:currentLab.id,description:o.description,amount:o.amount,category:o.category,entry_type:o.status,created_at:now,updated_at:now}:{id:o.id,lab_id:currentLab.id,item:o.item,quantity:o.quantity,unit:o.unit,expiry_date:o.expiry||null,status:o.status,created_at:now,updated_at:now};const {error}=await client.from(table).upsert(row,{onConflict:'id'});if(error)throw error;o.syncStatus='synced';await localPut(store,o);m.textContent='Saved to lab cloud.';m.className='message success';}catch(err){m.textContent='Saved locally; cloud sync pending: '+err.message;m.className='message error';}}else{m.textContent='Saved locally; will sync when online.';m.className='message success';}await renderCloudOpsModule(page,c);});
 }
+async function renderCloudResultsEntry(c){
+ if(!currentLab?.id){c.innerHTML='<div class="notice">Open a lab workspace before entering results.</div>';return;}
+ let orders=[];try{orders=await getOrders();}catch(e){c.innerHTML=`<div class="notice">Could not load bookings: ${esc(e.message)}</div>`;return;}
+ let rows=[];try{rows=await loadCloudResults();}catch(e){c.innerHTML=`<div class="notice">Could not load cloud results: ${esc(e.message)}</div>`;return;}
+ const pending=rows.filter(r=>r.labId===currentLab.id&&r.status!=='Verified');
+ c.innerHTML=`<div class="panel-head"><h3>Results Entry — Cloud Drafts</h3><span class="muted">${pending.length} unverified results</span></div>
+ <div class="notice">Results are stored against this lab and booking. New entries are Draft. Verification must be completed through the authorized Results & Reports workflow.</div>
+ <form id="cloudResultForm"><div class="field"><label>Booking *</label><select class="input" name="orderId" required><option value="">Select booking</option>${orders.map(o=>`<option value="${esc(o.id)}">${esc(o.id)} — ${esc(o.patientName)}</option>`).join('')}</select></div>
+ <div class="row"><div class="field"><label>Test Name *</label><input class="input" name="testName" required></div><div class="field"><label>Parameter *</label><input class="input" name="parameter" required></div></div>
+ <div class="row"><div class="field"><label>Result *</label><input class="input" name="resultValue" required></div><div class="field"><label>Unit</label><input class="input" name="unit"></div></div>
+ <div class="field"><label>Reference Range</label><input class="input" name="referenceRange" placeholder="Use the validated range from your lab method"></div>
+ <button class="btn" id="saveCloudResult">Save Draft Result</button><div id="cloudResultMessage" class="message"></div></form>
+ <h4 style="margin-top:20px">Recent results</h4><div class="tablewrap"><table><thead><tr><th>Booking</th><th>Test</th><th>Parameter</th><th>Result</th><th>Unit</th><th>Status</th></tr></thead><tbody>${rows.filter(r=>r.labId===currentLab.id).slice(0,100).map(r=>`<tr><td>${esc(r.orderId)}</td><td>${esc(r.testName)}</td><td>${esc(r.parameter)}</td><td>${esc(r.resultValue)}</td><td>${esc(r.unit)}</td><td>${esc(r.status)}</td></tr>`).join('')||'<tr><td colspan="6">No results found.</td></tr>'}</tbody></table></div>`;
+ $('cloudResultForm').addEventListener('submit',async e=>{
+  e.preventDefault();const btn=$('saveCloudResult'),msg=$('cloudResultMessage'),fd=new FormData(e.currentTarget);btn.disabled=true;
+  try{
+   const order=orders.find(o=>o.id===String(fd.get('orderId')));
+   if(!order)throw new Error('Select a valid booking.');
+   const r={id:localId('RES'),labId:currentLab.id,orderId:order.id,patientId:order.patientId||'',testName:String(fd.get('testName')).trim(),parameter:String(fd.get('parameter')).trim(),resultValue:String(fd.get('resultValue')).trim(),unit:String(fd.get('unit')||'').trim(),referenceRange:String(fd.get('referenceRange')||'').trim(),status:'Draft',enteredBy:currentUser?.email||'',verifiedBy:null,verifiedAt:null,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),syncStatus:'pending'};
+   await saveCloudResult(r);
+   msg.textContent=r.syncStatus==='synced'?'Draft result saved to cloud.':'Saved locally; cloud sync is pending.';msg.className='message success';
+   await renderCloudResultsEntry(c);
+  }catch(err){msg.textContent='Save failed: '+err.message;msg.className='message error';}
+  finally{btn.disabled=false;}
+ });
+}
+
 async function renderCloudOperations(page,c){
  if(!currentLab?.id){c.innerHTML='<div class="notice">No active lab workspace. Open a lab first.</div>';return;}
  const finance=page==='Accounts';
