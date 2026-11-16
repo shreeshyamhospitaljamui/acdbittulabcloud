@@ -39,14 +39,15 @@
   <div class="field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required placeholder="Your password"></div>
   <button class="btn" id="loginButton" type="submit" style="width:100%">Sign in</button>
  </form>
- <div style="text-align:center;margin-top:12px"><button id="resetButton" class="btn secondary">Forgot password?</button></div>
+ <div class="row" style="margin-top:12px"><button id="showRegister" type="button" class="btn secondary">Register a Lab</button><button id="resetButton" type="button" class="btn secondary">Forgot password?</button></div>
+ <section id="registerPanel" class="hidden" style="border-top:1px solid var(--line);margin-top:18px;padding-top:12px"><h3>Create your lab workspace</h3><p class="muted">Each laboratory registers its own account and enters its own lab details. You do not need to pre-create lab names.</p><form id="registerForm"><div class="field"><label>Owner / Admin name</label><input class="input" name="ownerName" required maxlength="100"></div><div class="field"><label>Lab name</label><input class="input" name="labName" required maxlength="120"></div><div class="field"><label>Lab address</label><input class="input" name="labAddress" maxlength="300"></div><div class="field"><label>Phone</label><input class="input" name="labPhone" maxlength="25"></div><div class="field"><label>Email</label><input class="input" name="regEmail" type="email" required></div><div class="field"><label>Password (minimum 8 characters)</label><input class="input" name="regPassword" type="password" minlength="8" required></div><button class="btn" type="submit" id="registerButton">Create Lab Account</button><div id="registerMessage" class="message" role="status"></div></form></section>
  <div id="loginMessage" class="message" role="status"></div>
- <p class="muted" style="font-size:12px;margin-top:18px">Accounts are created by the platform administrator. Public sign-up is disabled.</p>
+ <p class="muted" style="font-size:12px;margin-top:18px">New laboratories can register their own workspace. Lab creation is protected by a server-side database function.</p>
 </section>
 
 <section id="appView" class="hidden">
  <div class="welcome"><div><h2>Platform workspace</h2><div class="muted">Signed in as <span id="signedInEmail"></span></div></div><button id="logoutButton" class="btn">Sign out</button></div>
- <div class="notice"><b>Development / test mode:</b> Patient records added in this version are stored in this browser's IndexedDB for offline use. They are not yet synced to Supabase or other devices. Do not use real patient data until tenant security, server-side permissions, encryption, backup and sync have been independently tested.</div>
+ <div class="notice"><b>Development / test mode:</b> Patient, test catalogue and booking data use this lab's Supabase cloud workspace when online and IndexedDB cache offline. Do not use real patient data until tenant security, server-side permissions, encryption, backup and sync have been independently tested.</div>
  <section class="stats">
   <div class="card"><div class="stat-label">Patients on this device</div><div class="stat-value" id="patientCount">0</div><div class="muted">Local IndexedDB</div></div>
   <div class="card"><div class="stat-label">Today's Orders</div><div class="stat-value">—</div><div class="muted">Not enabled</div></div>
@@ -68,6 +69,7 @@
    <button data-page="Report Designer">▧ Report Designer</button>
    <button data-page="Report Signatures">✍ Report Signatures</button>
    <button data-page="Permission Manager">🔐 Permission Manager</button>
+   <button data-page="Cloud Setup">☁ Cloud Setup</button>
   </nav></aside>
   <section class="card" id="content" aria-live="polite"></section>
  </section>
@@ -86,7 +88,7 @@ const DB_NAME='acd_bittu_lab_cloud_local';
 const DB_VERSION=4;
 const defaults={lab:{name:'',address:'',phone:'',email:''},doctors:[],tests:[],fields:[]};
 function loadData(){try{return {...defaults,...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch{return structuredClone(defaults)}}
-let store=loadData(), db, currentUser=null, currentPlatformRole='';
+let store=loadData(), db, currentUser=null, currentPlatformRole='', currentLab=null, currentMembership=null;
 function saveData(){localStorage.setItem(KEY,JSON.stringify(store));}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function msg(text,kind='error'){ $('loginMessage').textContent=text;$('loginMessage').className='message '+kind; }
@@ -99,18 +101,21 @@ function openLocalDB(){return new Promise((resolve,reject)=>{const req=indexedDB
  if(!d.objectStoreNames.contains('staff'))d.createObjectStore('staff',{keyPath:'id'});};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}
 function patientStore(mode='readonly'){return db.transaction('patients',mode).objectStore('patients');}
 function dbRequest(req){return new Promise((resolve,reject)=>{req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}
-async function getPatients(){return await dbRequest(patientStore().getAll());}
+async function getPatients(){if(!currentLab?.id)return [];if(navigator.onLine){const {data,error}=await client.from('acd_lab_patients').select('*').eq('lab_id',currentLab.id).order('created_at',{ascending:false});if(error)throw error;const rows=(data||[]).map(r=>({id:r.id,labId:r.lab_id,name:r.name,age:r.age,gender:r.gender,mobile:r.mobile,address:r.address,referrer:r.referrer,createdAt:r.created_at,updatedAt:r.updated_at,syncStatus:'synced'}));for(const r of rows)await dbRequest(patientStore('readwrite').put(r));return rows;}const rows=await dbRequest(patientStore().getAll());return rows.filter(p=>p.labId===currentLab.id);}
 function orderStore(mode='readonly'){return db.transaction('orders',mode).objectStore('orders');}
-async function getOrders(){return await dbRequest(orderStore().getAll());}
-async function saveOrder(o){await dbRequest(orderStore('readwrite').put(o));}
+async function getOrders(){if(!currentLab?.id)return [];if(navigator.onLine){const {data,error}=await client.from('acd_lab_orders').select('*').eq('lab_id',currentLab.id).order('created_at',{ascending:false});if(error)throw error;const rows=(data||[]).map(r=>({id:r.id,labId:r.lab_id,patientId:r.patient_id,patientName:r.patient_name,items:r.items||[],subtotal:Number(r.subtotal),discount:Number(r.discount),total:Number(r.total),paid:Number(r.paid),due:Number(r.due),paymentMethod:r.payment_method,paymentStatus:r.payment_status,notes:r.notes,status:r.status,createdAt:r.created_at,updatedAt:r.updated_at,syncStatus:'synced'}));for(const r of rows)await dbRequest(orderStore('readwrite').put(r));return rows;}return (await dbRequest(orderStore().getAll())).filter(o=>o.labId===currentLab.id);}
+async function saveOrder(o){await dbRequest(orderStore('readwrite').put(o));if(navigator.onLine&&currentLab?.id){const row={id:o.id,lab_id:currentLab.id,patient_id:o.patientId,patient_name:o.patientName,items:o.items,subtotal:o.subtotal,discount:o.discount,total:o.total,paid:o.paid,due:o.due,payment_method:o.paymentMethod||'Cash',payment_status:o.paymentStatus||'Unpaid',notes:o.notes||'',status:o.status||'Booked',created_at:o.createdAt,updated_at:o.updatedAt};const {error}=await client.from('acd_lab_orders').upsert(row,{onConflict:'id'});if(error)throw error;o.syncStatus='synced';await dbRequest(orderStore('readwrite').put(o));}}
 async function deleteOrder(id){await dbRequest(orderStore('readwrite').delete(id));}
 function makeOrderId(){const d=new Date(),date=[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('');return 'ORD-'+date+'-'+Math.random().toString(36).slice(2,7).toUpperCase();}
 function money(n){return '₹'+(Number(n)||0).toFixed(2);}
 function parseTestRate(detail){const m=String(detail||'').match(/(?:₹|rs\.?\s*)?([0-9]+(?:\.[0-9]{1,2})?)/i);return m?Number(m[1]):0;}
-async function savePatient(p){await dbRequest(patientStore('readwrite').put(p));}
-async function deletePatient(id){await dbRequest(patientStore('readwrite').delete(id));}
+async function savePatient(p){await dbRequest(patientStore('readwrite').put(p));if(navigator.onLine&&currentLab?.id){const row={id:p.id,lab_id:currentLab.id,name:p.name,age:p.age||'',gender:p.gender||'',mobile:p.mobile||'',address:p.address||'',referrer:p.referrer||'',created_at:p.createdAt,updated_at:p.updatedAt};const {error}=await client.from('acd_lab_patients').upsert(row,{onConflict:'id'});if(error)throw error;p.syncStatus='synced';await dbRequest(patientStore('readwrite').put(p));}}
+async function deletePatient(id){if(navigator.onLine&&currentLab?.id){const {error}=await client.from('acd_lab_patients').delete().eq('id',id).eq('lab_id',currentLab.id);if(error)throw error;}await dbRequest(patientStore('readwrite').delete(id));}
 async function getSetting(key){return await dbRequest(db.transaction('settings').objectStore('settings').get(key));}
 async function saveSetting(key,value){return await dbRequest(db.transaction('settings','readwrite').objectStore('settings').put({key,...value}));}
+async function loadLabTests(){if(!currentLab?.id)return store.tests||[];if(navigator.onLine){const {data,error}=await client.from('acd_lab_tests').select('id,name,detail').eq('lab_id',currentLab.id).eq('is_active',true).order('name');if(error)throw error;store.tests=(data||[]).map(x=>({id:x.id,name:x.name,detail:x.detail||''}));saveData();return store.tests;}return store.tests||[];}
+async function saveLabTest(t){if(!currentLab?.id)throw new Error('Lab workspace missing');const row={id:t.id,lab_id:currentLab.id,name:t.name,detail:t.detail||'',is_active:true,updated_at:new Date().toISOString()};const {error}=await client.from('acd_lab_tests').upsert(row,{onConflict:'id'});if(error)throw error;}
+async function removeLabTest(t){if(!currentLab?.id)throw new Error('Lab workspace missing');const {error}=await client.from('acd_lab_tests').update({is_active:false,updated_at:new Date().toISOString()}).eq('id',t.id).eq('lab_id',currentLab.id);if(error)throw error;}
 async function fileToDataURL(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=()=>reject(r.error);r.readAsDataURL(file);});}
 function makePatientId(){const d=new Date(),date=[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('');return 'ACD-'+date+'-'+Math.random().toString(36).slice(2,7).toUpperCase();}
 async function updatePatientCount(){try{$('patientCount').textContent=(await getPatients()).length;}catch{$('patientCount').textContent='!';}}
@@ -121,8 +126,27 @@ async function loadPlatformRole(user){
   if(!error && data) currentPlatformRole=data.platform_role||'';
  }catch(e){console.warn('Could not load platform role',e);}
 }
-async function showApp(user){await loadPlatformRole(user);$('loginView').classList.add('hidden');$('appView').classList.remove('hidden');$('signedInEmail').textContent=user.email||'Signed-in user';$('topStatus').textContent='AUTHENTICATED';render('Overview');updatePatientCount();updateOrderCount();}
+async function showApp(user){
+ await loadPlatformRole(user);currentLab=null;currentMembership=null;
+ $('loginView').classList.add('hidden');$('appView').classList.remove('hidden');$('signedInEmail').textContent=user.email||'Signed-in user';$('topStatus').textContent=currentPlatformRole==='super_admin'?'SUPER ADMIN':'AUTHENTICATED';
+ let memberships=[];
+ try{const {data,error}=await client.from('cloud_memberships').select('id,lab_id,role,is_active').eq('user_id',user.id).eq('is_active',true);if(error)throw error;memberships=data||[];}catch(e){console.warn('Membership lookup failed',e);}
+ if(memberships.length){currentMembership=memberships[0];try{const {data,error}=await client.from('cloud_labs').select('id,name,slug,address,phone,is_active').eq('id',currentMembership.lab_id).maybeSingle();if(error)throw error;currentLab=data||null;}catch(e){console.warn('Lab workspace lookup failed',e);}}
+ if(!memberships.length&&currentPlatformRole!=='super_admin'){renderWorkspaceOnboarding();}
+ else if(currentPlatformRole==='super_admin'){render('Overview');}
+ else if(!currentLab){$('content').innerHTML='<div class="notice">Your lab membership was found, but its workspace details could not be loaded. Check the cloud_labs SELECT policy.</div>';}
+ else{render('Overview');}
+ updatePatientCount();updateOrderCount();
+}
+async function renderOwnerOverview(c){
+ c.innerHTML='<div class="panel-head"><h3>Super Admin · Platform Overview</h3><button class="btn secondary" id="refreshLabs">Refresh</button></div><div class="notice">You control the platform. Each lab owner registers their own lab name and contact details. This panel lists workspaces; it does not expose patient records.</div><div class="stats"><div class="card"><div class="stat-label">Registered labs</div><div class="stat-value" id="ownerLabCount">…</div></div><div class="card"><div class="stat-label">Platform role</div><div class="stat-value" style="font-size:18px">Super Admin</div></div></div><div id="ownerLabList" class="list" style="margin-top:14px"><div class="empty">Loading lab workspaces…</div></div>';
+ async function load(){const box=$('ownerLabList');box.innerHTML='<div class="empty">Loading…</div>';try{const {data,error}=await client.from('cloud_labs').select('id,name,slug,address,phone,is_active,created_at').order('created_at',{ascending:false});if(error)throw error;const rows=data||[];$('ownerLabCount').textContent=rows.length;box.innerHTML=rows.length?rows.map(l=>`<div class="item"><span><b>${esc(l.name)}</b><br><small>${esc(l.address||'Address not added')} · ${esc(l.phone||'Phone not added')}</small><br><small class="muted">${esc(l.slug)} · ${l.is_active?'Active':'Inactive'}</small></span><span class="muted">${esc(String(l.id).slice(0,8))}</span></div>`).join(''):'<div class="empty"><strong>No labs registered yet</strong>New lab owners can register from the public sign-in page.</div>';}catch(e){$('ownerLabCount').textContent='—';box.innerHTML=`<div class="notice">Could not load labs: ${esc(e.message||'Check cloud_labs SELECT policy.')}</div>`;}}
+ $('refreshLabs').onclick=load;await load();
+}
+function renderWorkspaceOnboarding(){const c=$('content');c.innerHTML=`<div class="panel-head"><h3>Create your laboratory workspace</h3></div><div class="notice">You are signed in but do not belong to a lab yet. Enter the details of the laboratory you manage. Each lab gets its own isolated workspace.</div><form id="workspaceForm"><div class="field"><label>Laboratory name</label><input class="input" name="name" required maxlength="120"></div><div class="field"><label>Address</label><input class="input" name="address" maxlength="300"></div><div class="field"><label>Phone</label><input class="input" name="phone" maxlength="25"></div><button class="btn" id="createWorkspaceButton">Create Workspace</button><span id="workspaceMessage" class="message"></span></form>`;$('workspaceForm').addEventListener('submit',async e=>{e.preventDefault();const f=e.currentTarget,fd=new FormData(f),b=$('createWorkspaceButton'),m=$('workspaceMessage');b.disabled=true;m.textContent='Creating secure workspace…';try{const {data,error}=await client.rpc('register_lab_workspace',{p_lab_name:String(fd.get('name')).trim(),p_address:String(fd.get('address')||''),p_phone:String(fd.get('phone')||'')});if(error)throw error;m.textContent='Workspace created successfully.';m.className='message success';setTimeout(()=>showApp(currentUser),500);}catch(err){m.textContent=err.message||'Could not create workspace. Apply the supplied database migration first.';m.className='message error';}finally{b.disabled=false;}});}
 function showLogin(){$('appView').classList.add('hidden');$('loginView').classList.remove('hidden');$('topStatus').textContent='SECURE LOGIN';}
+$('showRegister').addEventListener('click',()=>{$('registerPanel').classList.toggle('hidden');});
+$('registerForm').addEventListener('submit',async e=>{e.preventDefault();const f=e.currentTarget,fd=new FormData(f),b=$('registerButton'),m=$('registerMessage');b.disabled=true;b.textContent='Creating account…';m.textContent='';try{const email=String(fd.get('regEmail')).trim(),password=String(fd.get('regPassword')),ownerName=String(fd.get('ownerName')).trim(),labName=String(fd.get('labName')).trim();const {data,error}=await client.auth.signUp({email,password,options:{data:{full_name:ownerName}}});if(error)throw error;if(!data.session){m.textContent='Account created. Verify your email, then sign in and complete lab setup from the onboarding link.';m.className='message success';return;}const {data:labId,error:rpcError}=await client.rpc('register_lab_workspace',{p_lab_name:labName,p_address:String(fd.get('labAddress')||''),p_phone:String(fd.get('labPhone')||'')});if(rpcError)throw rpcError;m.textContent='Lab workspace created. Please sign in to continue.';m.className='message success';$('email').value=email;$('registerPanel').classList.add('hidden');}catch(err){m.textContent=err.message||'Registration failed.';m.className='message error';}finally{b.disabled=false;b.textContent='Create Lab Account';}});
 $('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginButton').disabled=true;$('loginButton').textContent='Signing in…';msg('');try{const {data,error}=await client.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error;showApp(data.user);}catch(err){msg(err.message||'Sign-in failed.');}finally{$('loginButton').disabled=false;$('loginButton').textContent='Sign in';}});
 $('resetButton').addEventListener('click',async()=>{const email=$('email').value.trim();if(!email){msg('Enter your email address first.');return;}try{const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});if(error)throw error;msg('If this email has an account, a password reset link will be sent.','success');}catch(err){msg(err.message||'Could not request password reset.');}});
 $('logoutButton').addEventListener('click',async()=>{await client.auth.signOut();showLogin();});
@@ -132,10 +156,13 @@ function listMarkup(items,type){if(!items.length)return '<div class="empty">No i
 function bindRemove(){document.querySelectorAll('[data-remove]').forEach(b=>b.addEventListener('click',()=>{const t=b.dataset.remove,i=Number(b.dataset.index);if(confirm('Remove this item from this device?')){store[t].splice(i,1);saveData();render(t==='doctors'?'Doctors':t==='tests'?'Test Catalogue':'Custom Fields');}}));}
 async function render(page){
  const c=$('content');
- if(page==='Overview'){c.innerHTML=`<div class="panel-head"><h3>Welcome to ACD BITTU LAB CLOUD</h3></div><div class="empty"><strong>Offline-first patient module started</strong>Patient records are stored in this browser's IndexedDB and remain available offline on this device. Cross-device sync is not connected yet.</div><p class="muted" style="margin-top:14px">Setup on this browser: ${store.doctors.length} doctors · ${store.tests.length} tests · ${store.fields.length} custom fields.</p>`;return;}
- if(page==='Lab Setup'){c.innerHTML=`<div class="panel-head"><h3>Lab Setup</h3></div><form id="labForm"><div class="field"><label>Lab / workspace name</label><input class="input" name="name" value="${esc(store.lab.name)}" placeholder="Enter lab name"></div><div class="field"><label>Address</label><input class="input" name="address" value="${esc(store.lab.address)}" placeholder="Lab address"></div><div class="row"><div class="field"><label>Phone</label><input class="input" name="phone" value="${esc(store.lab.phone)}" placeholder="Phone number"></div><div class="field"><label>Email</label><input class="input" name="email" type="email" value="${esc(store.lab.email)}" placeholder="Lab email"></div></div><button class="btn">Save on this device</button></form><p class="muted">Local device setup only; cross-device sync is not connected.</p>`;$('labForm').addEventListener('submit',e=>{e.preventDefault();store.lab=Object.fromEntries(new FormData(e.target));saveData();alert('Lab settings saved on this device.');});return;}
+ if(page==='Overview'){
+  if(currentPlatformRole==='super_admin'){await renderOwnerOverview(c);return;}
+  c.innerHTML=`<div class="panel-head"><h3>${esc(currentLab?.name||'Lab Workspace')}</h3><span class="badge">${esc(currentMembership?.role||'member')}</span></div><div class="card"><b>Workspace details</b><p>${esc(currentLab?.address||'Address not added')}</p><p>${esc(currentLab?.phone||'Phone not added')}</p><p class="muted">Workspace ID: ${esc(currentLab?.id||'—')}</p></div><div class="notice" style="margin-top:12px"><b>Development / test mode:</b> Local IndexedDB data stays on this device. Cloud patient sync and report generation are not enabled yet. Use demo data only.</div><p class="muted" style="margin-top:14px">Local setup on this device: ${store.doctors.length} doctors · ${store.tests.length} tests · ${store.fields.length} custom fields.</p>`;return;
+ }
+ if(page==='Lab Setup'){c.innerHTML=`<div class="panel-head"><h3>Lab Workspace Settings</h3></div><div class="notice">Each registered laboratory manages its own workspace details. These settings are currently stored on this device only until cloud settings sync is enabled.</div><form id="labForm"><div class="field"><label>Lab / workspace name</label><input class="input" name="name" value="${esc(store.lab.name)}" placeholder="Enter lab name"></div><div class="field"><label>Address</label><input class="input" name="address" value="${esc(store.lab.address)}" placeholder="Lab address"></div><div class="row"><div class="field"><label>Phone</label><input class="input" name="phone" value="${esc(store.lab.phone)}" placeholder="Phone number"></div><div class="field"><label>Email</label><input class="input" name="email" type="email" value="${esc(store.lab.email)}" placeholder="Lab email"></div></div><button class="btn">Save on this device</button></form><p class="muted">Local device setup only; cross-device sync is not connected.</p>`;$('labForm').addEventListener('submit',e=>{e.preventDefault();store.lab=Object.fromEntries(new FormData(e.target));saveData();alert('Lab settings saved on this device.');});return;}
  const cfg={Doctors:{key:'doctors',title:'Doctors',placeholder:'Doctor name',detail:'Qualification / registration (optional)'},'Test Catalogue':{key:'tests',title:'Test Catalogue',placeholder:'Test name',detail:'Rate / sample type (optional)'},'Custom Fields':{key:'fields',title:'Custom Fields / Columns',placeholder:'Column or field name',detail:'Where it is used (optional)'}};
- if(cfg[page]){const q=cfg[page],items=store[q.key];c.innerHTML=`<div class="panel-head"><h3>${q.title}</h3></div><form id="addForm"><div class="field"><label>${q.placeholder}</label><input class="input" name="name" required maxlength="80" placeholder="${q.placeholder}"></div><div class="field"><label>${q.detail}</label><input class="input" name="detail" maxlength="100" placeholder="${q.detail}"></div><button class="btn">Add ${q.title==='Custom Fields'?'field':q.title.slice(0,-1)}</button></form>${listMarkup(items,q.key)}<p class="muted">Saved locally in this browser. Sync is not connected.</p>`;$('addForm').addEventListener('submit',e=>{e.preventDefault();const f=new FormData(e.target);store[q.key].push({name:f.get('name').trim(),detail:f.get('detail').trim()});saveData();render(page);});bindRemove();return;}
+ if(cfg[page]){const q=cfg[page];if(page==='Test Catalogue'){try{await loadLabTests();}catch(err){c.innerHTML=`<div class="notice">Cloud Test Catalogue could not load: ${esc(err.message)}. Apply the v10 database migration and check your lab-admin membership.</div>`;return;}}const items=store[q.key];c.innerHTML=`<div class="panel-head"><h3>${q.title}</h3></div><form id="addForm"><div class="field"><label>${q.placeholder}</label><input class="input" name="name" required maxlength="80" placeholder="${q.placeholder}"></div><div class="field"><label>${q.detail}</label><input class="input" name="detail" maxlength="100" placeholder="${q.detail}"></div><button class="btn">Add ${q.title==='Custom Fields'?'field':q.title.slice(0,-1)}</button></form>${listMarkup(items,q.key)}<p class="muted">${page==='Test Catalogue'?'Cloud-saved to this lab workspace.':'Saved locally in this browser.'}</p>`;$('addForm').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.target),item={id:localId('TST'),name:f.get('name').trim(),detail:f.get('detail').trim()};try{if(page==='Test Catalogue')await saveLabTest(item);store[q.key].push(item);saveData();render(page);}catch(err){alert('Could not save test: '+err.message);}});if(page==='Test Catalogue'){c.querySelectorAll('[data-remove]').forEach(b=>b.onclick=async()=>{const item=items[Number(b.dataset.index)];if(confirm('Remove this test from this lab?'))try{await removeLabTest(item);store.tests.splice(Number(b.dataset.index),1);saveData();render(page);}catch(err){alert(err.message);}});}else bindRemove();return;}
  if(page==='Patients'){await renderPatients(c);return;}
  if(page==='Test Orders'){await renderTestOrders(c);return;}
  if(['Sample Tracking','Results Entry','Accounts','Inventory','Staff Directory'].includes(page)){await renderLocalModule(page,c);return;}
@@ -262,50 +289,62 @@ async function renderPermissionManager(c){
 }
 
 
+function buildBookingPrint(order,patient,design={},signatures={}){
+ const e=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const lab=store.lab||{},m=n=>'₹'+(Number(n)||0).toFixed(2),top=Math.max(0,Number(design.topSpace??28)),bottom=Math.max(0,Number(design.bottomSpace??24));
+ const rows=order.items.map((x,i)=>`<tr><td>${i+1}</td><td>${e(x.name)}</td><td>${e(x.detail)}</td><td>${m(x.rate)}</td></tr>`).join('');
+ const tech=signatures.technician||{},doc=signatures.doctor||{};
+ return `<!doctype html><html><head><meta charset="utf-8"><title>${e(order.id)}</title><style>
+ @page{size:${design.pageSize||'A4'} ${design.orientation||'portrait'};margin:0}*{box-sizing:border-box}body{font-family:${JSON.stringify(design.font||'Arial')};font-size:${Number(design.fontSize)||12}px;color:${design.fontColor||'#172536'};margin:0}
+ .sheet{padding:${top}mm 14mm ${bottom}mm}.head{text-align:center;border-bottom:1px solid #aaa;padding-bottom:8px;color:${design.accentColor||'#123c63'}}.head h2{margin:0}
+ .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;padding:12px;border:1px solid #ddd;margin:12px 0}table{width:100%;border-collapse:collapse;margin-top:14px}td,th{border:1px solid #aaa;padding:8px;text-align:left}th{background:#f2f5f8}.totals{margin:14px 0 0 auto;width:250px}.totals div{display:flex;justify-content:space-between;padding:4px}.sign{display:flex;justify-content:space-between;margin-top:48px}.sign>div{width:45%;text-align:center;border-top:1px solid #555;padding-top:7px}.foot{text-align:center;border-top:1px solid #ddd;margin-top:22px;padding-top:8px}</style></head><body><main class="sheet">
+ <div class="head"><h2>${e(design.headerTitle||lab.name||'')}</h2><div>${e(design.headerLine1||lab.address||'')}</div><div>${e(design.headerLine2||lab.phone||'')}</div></div>
+ <h3 style="text-align:center">LAB TEST BOOKING / RECEIPT</h3>
+ <div class="grid"><div><b>Patient:</b> ${e(patient.name)}</div><div><b>Patient ID:</b> ${e(patient.id)}</div><div><b>Age / Gender:</b> ${e(patient.age)} / ${e(patient.gender)}</div><div><b>Mobile:</b> ${e(patient.mobile)}</div><div><b>Ref. Doctor:</b> ${e(patient.referrer)}</div><div><b>Address:</b> ${e(patient.address)}</div><div><b>Booking ID:</b> ${e(order.id)}</div><div><b>Date:</b> ${e(new Date(order.createdAt).toLocaleString())}</div></div>
+ <table><thead><tr><th>#</th><th>Test</th><th>Details</th><th>Rate</th></tr></thead><tbody>${rows}</tbody></table>
+ <div class="totals"><div><span>Subtotal</span><b>${m(order.subtotal)}</b></div><div><span>Discount</span><b>${m(order.discount)}</b></div><div><span>Net Total</span><b>${m(order.total)}</b></div><div><span>Paid</span><b>${m(order.paid)}</b></div><div><span>Due</span><b>${m(order.due)}</b></div></div>
+ <div class="sign"><div>${doc.signature?`<img src="${doc.signature}" style="max-width:130px;max-height:55px">`:''}<br><b>${e(doc.name||'Authorized Signatory')}</b><br>${e(doc.qualification||'')}<br>${e(doc.registration||'')}</div><div>${tech.signature?`<img src="${tech.signature}" style="max-width:130px;max-height:55px">`:''}<br><b>${e(tech.name||'Lab Technician')}</b><br>${e(tech.qualification||'')}</div></div>
+ <div class="foot">${e(design.footerText||signatures.footer||'')}</div></main><script>window.onload=()=>setTimeout(()=>window.print(),300);<\/script></body></html>`;
+}
+async function printOrder(orderId){
+ const o=(await getOrders()).find(x=>x.id===orderId);if(!o)return alert('Booking not found.');
+ const p=(await getPatients()).find(x=>x.id===o.patientId)||{id:o.patientId,name:o.patientName};
+ const w=window.open('','_blank');if(!w)return alert('Allow pop-ups to print.');
+ w.document.write(buildBookingPrint(o,p,(await getSetting('reportDesign'))||{},(await getSetting('reportSignatures'))||{}));w.document.close();
+}
+async function sendOrderWhatsApp(orderId){
+ const o=(await getOrders()).find(x=>x.id===orderId);if(!o)return;
+ const p=(await getPatients()).find(x=>x.id===o.patientId)||{name:o.patientName,mobile:''};
+ const phone=String(p.mobile||'').replace(/\D/g,'');
+ const text=`ACD BITTU LAB CLOUD\nPatient: ${p.name}\nBooking ID: ${o.id}\nTests: ${o.items.map(x=>x.name).join(', ')}\nTotal: ${money(o.total)} | Paid: ${money(o.paid)} | Due: ${money(o.due)}\nBooking summary only — not a diagnostic report.`;
+ window.open(phone?`https://wa.me/${phone}?text=${encodeURIComponent(text)}`:`https://wa.me/?text=${encodeURIComponent(text)}`,'_blank','noopener');
+}
 async function renderTestOrders(c){
- const patients=(await getPatients()).sort((a,b)=>a.name.localeCompare(b.name));
- const orders=(await getOrders()).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
- const testList=store.tests||[];
- c.innerHTML=`<div class="panel-head"><h3>Test Booking & Billing</h3><span class="muted">${orders.length} local orders</span></div>
- <div class="notice"><b>Development mode:</b> Bookings and payment entries are saved in this browser's IndexedDB for offline use only. They do not sync to the cloud, print invoices, or create diagnostic reports yet. Use demo data only.</div>
- ${!patients.length?'<div class="empty"><strong>Register a patient first</strong>Open Patients and save a demo patient before booking tests.</div>':''}
- ${!testList.length?'<div class="empty"><strong>Test catalogue is empty</strong>Add tests and their rates in Test Catalogue first.</div>':''}
- <form id="orderForm">
-  <div class="field"><label>Patient *</label><select class="input" name="patientId" required><option value="">Select patient</option>${patients.map(p=>`<option value="${esc(p.id)}">${esc(p.name)} · ${esc(p.id)}</option>`).join('')}</select></div>
-  <div class="field"><label>Select Tests *</label><div class="list">${testList.map((t,i)=>`<label class="item"><span><input type="checkbox" name="testIndex" value="${i}"> <b>${esc(t.name)}</b><small class="muted"> · ${esc(t.detail||'Rate not set')}</small></span><b>${money(parseTestRate(t.detail))}</b></label>`).join('')||'<p class="muted">No tests available.</p>'}</div></div>
-  <div class="row"><div class="field"><label>Discount (₹)</label><input class="input" name="discount" type="number" min="0" step="0.01" value="0"></div><div class="field"><label>Amount Paid (₹)</label><input class="input" name="paid" type="number" min="0" step="0.01" value="0"></div></div>
-  <div class="field"><label>Payment Method</label><select class="input" name="paymentMethod"><option>Cash</option><option>UPI</option><option>Card</option><option>Bank Transfer</option><option>Credit / Due</option></select></div>
-  <div class="field"><label>Booking Notes</label><textarea class="input" name="notes" rows="2" maxlength="300" placeholder="Optional notes"></textarea></div>
-  <div class="card" style="margin:12px 0;background:#f7f9fc"><div class="row"><span>Subtotal</span><b id="orderSubtotal">₹0.00</b></div><div class="row"><span>Net Total</span><b id="orderNet">₹0.00</b></div><div class="row"><span>Balance Due</span><b id="orderDue">₹0.00</b></div></div>
-  <button class="btn" type="submit" ${(!patients.length||!testList.length)?'disabled':''}>Save Booking Offline</button><span id="orderMessage" class="message"></span>
- </form>
- <div class="panel-head" style="margin-top:25px"><h3>Recent Bookings</h3></div>
- <div class="tablewrap"><table><thead><tr><th>Order ID</th><th>Patient</th><th>Tests</th><th>Total</th><th>Paid</th><th>Due</th><th>Status</th><th></th></tr></thead><tbody>${orders.map(o=>`<tr><td>${esc(o.id)}</td><td>${esc(o.patientName)}</td><td>${o.items.map(x=>esc(x.name)).join(', ')}</td><td>${money(o.total)}</td><td>${money(o.paid)}</td><td>${money(o.due)}</td><td>${esc(o.paymentStatus)}</td><td><button class="btn danger" type="button" data-order-delete="${esc(o.id)}">Delete</button></td></tr>`).join('')||'<tr><td colspan="8">No bookings yet.</td></tr>'}</tbody></table></div>`;
- const form=$('orderForm');
- const calc=()=>{
-  const chosen=[...form.querySelectorAll('input[name="testIndex"]:checked')].map(x=>testList[Number(x.value)]).filter(Boolean);
-  const subtotal=chosen.reduce((a,t)=>a+parseTestRate(t.detail),0);
-  const discount=Math.max(0,Number(form.elements.discount.value)||0);
-  const net=Math.max(0,subtotal-discount);
-  const paid=Math.max(0,Number(form.elements.paid.value)||0);
-  $('orderSubtotal').textContent=money(subtotal);$('orderNet').textContent=money(net);$('orderDue').textContent=money(Math.max(0,net-paid));
-  return {chosen,subtotal,discount,net,paid};
- };
- form.addEventListener('input',calc);
- form.addEventListener('submit',async e=>{
-  e.preventDefault();const v=calc();
-  if(!v.chosen.length){$('orderMessage').textContent='Select at least one test.';return;}
-  if(v.discount>v.subtotal){$('orderMessage').textContent='Discount cannot exceed subtotal.';return;}
-  if(v.paid>v.net){$('orderMessage').textContent='Paid amount cannot exceed net total.';return;}
-  const patient=patients.find(p=>p.id===form.elements.patientId.value);if(!patient)return;
-  const now=new Date().toISOString(),order={id:makeOrderId(),patientId:patient.id,patientName:patient.name,items:v.chosen.map(t=>({name:t.name,detail:t.detail||'',rate:parseTestRate(t.detail)})),subtotal:v.subtotal,discount:v.discount,total:v.net,paid:v.paid,due:Math.max(0,v.net-v.paid),paymentMethod:form.elements.paymentMethod.value,paymentStatus:v.paid===0?'Unpaid':v.paid<v.net?'Partial':'Paid',notes:form.elements.notes.value.trim(),status:'Booked',createdAt:now,updatedAt:now,syncStatus:'local_only'};
-  try{await saveOrder(order);$('orderMessage').textContent='Booking saved locally. Cloud sync is not connected.';$('orderMessage').className='message success';renderTestOrders(c);updateOrderCount();}catch(err){$('orderMessage').textContent='Could not save: '+err.message;}
- });
- c.querySelectorAll('[data-order-delete]').forEach(b=>b.addEventListener('click',async()=>{if(confirm('Delete this local booking?')){await deleteOrder(b.dataset.orderDelete);renderTestOrders(c);updateOrderCount();}}));
- calc();
+ let tests=store.tests||[];try{tests=await loadLabTests();}catch(err){c.innerHTML=`<div class="notice">Could not load the lab Test Catalogue: ${esc(err.message)}. Apply the v10 migration first.</div>`;return;}const orders=(await getOrders()).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+ c.innerHTML=`<div class="panel-head"><h3>Quick Booking · Print · WhatsApp</h3><span class="muted">${orders.length} local bookings</span></div>
+ <div class="notice"><b>Cloud workspace:</b> Bookings and selected tests are saved to this lab's cloud database when online, with a local cache. WhatsApp opens a booking summary only; it does not attach a PDF or send a diagnostic report.</div>
+ <form id="orderForm"><div class="designer-grid">
+ <div class="field"><label>Patient Name *</label><input class="input" name="patientName" required maxlength="120" placeholder="Patient full name"></div>
+ <div class="field"><label>Doctor / Referrer</label><input class="input" name="referrer" maxlength="120" placeholder="Referring doctor"></div>
+ <div class="field"><label>Mobile Number</label><input class="input" name="mobile" inputmode="tel" maxlength="20" placeholder="Patient mobile"></div>
+ <div class="field"><label>Age</label><input class="input" name="age" maxlength="20" placeholder="Age"></div>
+ <div class="field"><label>Gender</label><select class="input" name="gender"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div>
+ <div class="field"><label>Address</label><input class="input" name="address" maxlength="300" placeholder="Patient address"></div></div>
+ <h3>Add Test</h3>${tests.length?`<div class="list">${tests.map((t,i)=>`<label class="item"><span><input type="checkbox" name="testIndex" value="${i}"> <b>${esc(t.name)}</b> <small class="muted">${esc(t.detail||'Rate not set')}</small></span><b>${money(parseTestRate(t.detail))}</b></label>`).join('')}</div>`:'<div class="empty">Add tests and rates in Test Catalogue first.</div>'}
+ <div class="row"><div class="field"><label>Discount (₹)</label><input class="input" name="discount" type="number" min="0" step=".01" value="0"></div><div class="field"><label>Amount Paid (₹)</label><input class="input" name="paid" type="number" min="0" step=".01" value="0"></div></div>
+ <div class="row"><div class="field"><label>Payment Method</label><select class="input" name="paymentMethod"><option>Cash</option><option>UPI</option><option>Card</option><option>Bank Transfer</option><option>Credit / Due</option></select></div><div class="field"><label>Notes</label><input class="input" name="notes" maxlength="300"></div></div>
+ <div class="card" style="background:#f7f9fc;margin:12px 0"><div class="row"><span>Subtotal</span><b id="orderSubtotal">₹0.00</b></div><div class="row"><span>Net Total</span><b id="orderNet">₹0.00</b></div><div class="row"><span>Due</span><b id="orderDue">₹0.00</b></div></div>
+ <div class="row"><button class="btn" type="submit" value="save">Save Booking</button><button class="btn secondary" type="submit" value="print">Save & Print</button><button class="btn secondary" type="submit" value="wa">Save & WhatsApp</button></div><span id="orderMessage" class="message"></span></form>
+ <h3 style="margin-top:26px">Recent Bookings</h3><div class="tablewrap"><table><thead><tr><th>Booking</th><th>Patient</th><th>Tests</th><th>Total</th><th>Paid</th><th>Due</th><th>Actions</th></tr></thead><tbody>${orders.map(o=>`<tr><td>${esc(o.id)}</td><td>${esc(o.patientName)}</td><td>${o.items.map(x=>esc(x.name)).join(', ')}</td><td>${money(o.total)}</td><td>${money(o.paid)}</td><td>${money(o.due)}</td><td><button class="btn secondary" data-print="${esc(o.id)}">Print</button> <button class="btn secondary" data-wa="${esc(o.id)}">Send</button></td></tr>`).join('')||'<tr><td colspan="7">No bookings yet.</td></tr>'}</tbody></table></div>`;
+ const f=$('orderForm'),calc=()=>{const chosen=[...f.querySelectorAll('[name="testIndex"]:checked')].map(x=>tests[+x.value]).filter(Boolean),sub=chosen.reduce((n,t)=>n+parseTestRate(t.detail),0),discount=Math.max(0,+f.elements.discount.value||0),net=Math.max(0,sub-discount),paid=Math.max(0,+f.elements.paid.value||0);$('orderSubtotal').textContent=money(sub);$('orderNet').textContent=money(net);$('orderDue').textContent=money(Math.max(0,net-paid));return{chosen,sub,discount,net,paid};};
+ f.addEventListener('input',calc);
+ f.addEventListener('submit',async ev=>{ev.preventDefault();const action=ev.submitter?.value||'save',v=calc(),fd=new FormData(f);if(!v.chosen.length)return alert('Select at least one test.');if(v.discount>v.sub||v.paid>v.net)return alert('Please check discount and paid amount.');
+ const now=new Date().toISOString(),p={id:makePatientId(),labId:currentLab.id,name:String(fd.get('patientName')).trim(),age:String(fd.get('age')||''),gender:fd.get('gender')||'',mobile:String(fd.get('mobile')||''),address:String(fd.get('address')||''),referrer:String(fd.get('referrer')||''),createdAt:now,updatedAt:now,syncStatus:'local_only'};if(!p.name)return alert('Enter patient name.');
+ await savePatient(p);const o={id:makeOrderId(),labId:currentLab.id,patientId:p.id,patientName:p.name,items:v.chosen.map(t=>({name:t.name,detail:t.detail||'',rate:parseTestRate(t.detail)})),subtotal:v.sub,discount:v.discount,total:v.net,paid:v.paid,due:v.net-v.paid,paymentMethod:fd.get('paymentMethod'),paymentStatus:v.paid===0?'Unpaid':v.paid<v.net?'Partial':'Paid',notes:String(fd.get('notes')||''),status:'Booked',createdAt:now,updatedAt:now,syncStatus:'local_only'};await saveOrder(o);if(action==='print')await printOrder(o.id);if(action==='wa')await sendOrderWhatsApp(o.id);renderTestOrders(c);updateOrderCount();});
+ c.querySelectorAll('[data-print]').forEach(b=>b.onclick=()=>printOrder(b.dataset.print));c.querySelectorAll('[data-wa]').forEach(b=>b.onclick=()=>sendOrderWhatsApp(b.dataset.wa));calc();
 }
 async function updateOrderCount(){
- try{const today=new Date().toISOString().slice(0,10),orders=await getOrders();$('todayOrderCount').textContent=orders.filter(o=>o.createdAt.startsWith(today)).length;}catch{}
+ try{const today=new Date().toISOString().slice(0,10),orders=await getOrders();const el=$('todayOrderCount');if(el)el.textContent=orders.filter(o=>o.createdAt.startsWith(today)).length;}catch{}
 }
 
 
@@ -367,21 +406,22 @@ async function renderCloudSetup(c){
 }
 
 async function renderPatients(c){
+ if(!currentLab?.id){c.innerHTML='<div class="notice">Patient records are available inside an individual lab workspace. Super Admin manages platform-level settings and should not enter patient data here.</div>';return;}
  const patients=(await getPatients()).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
  c.innerHTML=`<div class="panel-head"><h3>Patient Registration</h3><span class="muted">${patients.length} saved on this device</span></div>
- <div class="notice">Offline local storage is active on this browser. Records are not uploaded to the cloud yet. Use demo/test data only until security and sync are completed.</div>
+ <div class="notice">Patient records load from this lab's cloud workspace when online and use this device's IndexedDB cache when offline. Use test data until full security and backup validation is complete.</div>
  <form id="patientForm">
   <div class="field"><label>Patient Name *</label><input class="input" name="name" required maxlength="120" placeholder="Enter patient full name"></div>
   <div class="row"><div class="field"><label>Age *</label><input class="input" name="age" required maxlength="20" placeholder="e.g. 22 years"></div><div class="field"><label>Gender *</label><select class="input" name="gender" required><option value="">Select gender</option><option>Male</option><option>Female</option><option>Other</option></select></div></div>
   <div class="field"><label>Mobile Number</label><input class="input" name="mobile" inputmode="tel" maxlength="20" placeholder="Patient mobile number"></div>
   <div class="field"><label>Address</label><textarea class="input" name="address" rows="2" maxlength="300" placeholder="Patient address"></textarea></div>
   <div class="field"><label>Referring Doctor</label><input class="input" name="referrer" maxlength="120" placeholder="Doctor / hospital name"></div>
-  <button class="btn" type="submit">Save Patient Offline</button><span id="patientSaveMessage" class="message" role="status"></span>
+  <button class="btn" type="submit">Save Patient</button><span id="patientSaveMessage" class="message" role="status"></span>
  </form>
  <div class="panel-head" style="margin-top:24px"><h3>Saved Patients</h3></div>
  <div class="field"><label>Search by name, Patient ID or mobile</label><input class="input" id="patientSearch" placeholder="Search patients..."></div>
  <div id="patientList">${patientTable(patients)}</div>`;
- $('patientForm').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.target);const now=new Date().toISOString();const p={id:makePatientId(),name:f.get('name').trim(),age:f.get('age').trim(),gender:f.get('gender'),mobile:f.get('mobile').trim(),address:f.get('address').trim(),referrer:f.get('referrer').trim(),createdAt:now,updatedAt:now,syncStatus:'local_only'};try{await savePatient(p);$('patientSaveMessage').textContent='Saved on this device. Cloud sync is not connected.';$('patientSaveMessage').className='message success';e.target.reset();await refreshPatientList();await updatePatientCount();}catch(err){$('patientSaveMessage').textContent='Could not save: '+err.message;$('patientSaveMessage').className='message error';}});
+ $('patientForm').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.target);const now=new Date().toISOString();const p={id:makePatientId(),labId:currentLab?.id||null,name:f.get('name').trim(),age:f.get('age').trim(),gender:f.get('gender'),mobile:f.get('mobile').trim(),address:f.get('address').trim(),referrer:f.get('referrer').trim(),createdAt:now,updatedAt:now,syncStatus:'local_only'};try{await savePatient(p);$('patientSaveMessage').textContent="Saved to this lab's cloud database and local cache.";$('patientSaveMessage').className='message success';e.target.reset();await refreshPatientList();await updatePatientCount();}catch(err){$('patientSaveMessage').textContent='Could not save: '+err.message;$('patientSaveMessage').className='message error';}});
  $('patientSearch').addEventListener('input',refreshPatientList);
 }
 function patientTable(items){if(!items.length)return '<div class="empty"><strong>No patients saved yet</strong>Register a demo patient using the form above.</div>';return '<div class="tablewrap"><table><thead><tr><th>Patient ID</th><th>Name</th><th>Age / Gender</th><th>Mobile</th><th>Referring Doctor</th><th>Storage</th><th></th></tr></thead><tbody>'+items.map(p=>`<tr><td>${esc(p.id)}</td><td>${esc(p.name)}</td><td>${esc(p.age)} / ${esc(p.gender)}</td><td>${esc(p.mobile)}</td><td>${esc(p.referrer)}</td><td>On this device</td><td><button class="btn danger" data-patient-delete="${esc(p.id)}">Delete</button></td></tr>`).join('')+'</tbody></table></div>';}
