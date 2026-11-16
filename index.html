@@ -371,7 +371,7 @@ async function render(page){
  if(page==='Sample Tracking'){await renderSampleTracking(c);return;}
  if(page==='Staff Directory'){await renderStaffRoles(c);return;}
  if(['Accounts','Inventory'].includes(page)){await renderCloudOperations(page,c);return;}
- if(page==='Results Entry'){await renderCloudResultsEntry(c);return;}
+ if(page==='Results Entry'){await renderResultsReports(c);return;}
  if(page==='Results Entry'){await renderLocalModule(page,c);return;}
  if(page==='Results & Reports'){await renderResultsReports(c);return;}
  if(page==='Backup & Restore'){await renderBackupRestore(c);return;}
