@@ -218,6 +218,14 @@ async function getSetting(key){
  if(key!=='permissionConfig'&&navigator.onLine&&currentLab?.id){try{const {data,error}=await client.from('acd_lab_settings').select('settings').eq('lab_id',currentLab.id).maybeSingle();if(!error&&data?.settings&&Object.prototype.hasOwnProperty.call(data.settings,key)){const value=data.settings[key];await dbRequest(db.transaction('settings','readwrite').objectStore('settings').put({key,...(value||{})}));return {key,...(value||{})};}}catch(e){console.warn('Cloud setting read fallback',e);}}
  return await dbRequest(db.transaction('settings').objectStore('settings').get(key));
 }
+async function getReportDesign(){
+ const stored=await getSetting('reportDesign');
+ return stored||{};
+}
+async function getReportSignatures(){
+ const stored=await getSetting('reportSignatures');
+ return stored||{};
+}
 async function saveSetting(key,value){
  const record={key,...value,syncStatus:'pending'};await dbRequest(db.transaction('settings','readwrite').objectStore('settings').put(record));
  if(key!=='permissionConfig'&&navigator.onLine&&currentLab?.id){try{const current=await client.from('acd_lab_settings').select('settings').eq('lab_id',currentLab.id).maybeSingle();if(current.error)throw current.error;const settings={...(current.data?.settings||{}),[key]:value};const {error}=await client.from('acd_lab_settings').upsert({lab_id:currentLab.id,settings,updated_by:currentUser?.id||null,updated_at:new Date().toISOString()},{onConflict:'lab_id'});if(error)throw error;record.syncStatus='synced';await dbRequest(db.transaction('settings','readwrite').objectStore('settings').put(record));}catch(e){console.warn('Cloud setting sync pending',e);}}
