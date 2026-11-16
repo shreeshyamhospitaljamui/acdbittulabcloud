@@ -62,10 +62,13 @@
    <button data-page="Test Catalogue">⚗ Test Catalogue</button>
    <button data-page="Custom Fields">▤ Custom Fields / Columns</button>
    <button data-page="Patients">♙ Patients</button>
-   <button data-page="Test Orders">▣ Test Orders</button>
+   <button data-page="Test Orders">▣ Test Orders / Booking</button>
+   <button data-page="Sample Tracking">🧪 Sample Tracking</button>
    <button data-page="Results & Reports">✓ Results & Reports</button>
+   <button data-page="Accounts">₹ Accounts & Expenses</button>
+   <button data-page="Inventory">📦 Inventory & Stock</button>
    <button data-page="Staff & Roles">♙ Staff & Roles</button>
-   <button data-page="Retention & Backup">▣ Retention & Backup</button>
+   <button data-page="Retention & Backup">▣ Backup & Restore</button>
    <button data-page="Report Designer">▧ Report Designer</button>
    <button data-page="Report Signatures">✍ Report Signatures</button>
    <button data-page="Permission Manager">🔐 Permission Manager</button>
@@ -360,7 +363,7 @@ async function render(page){
  const c=$('content');
  if(page==='Overview'){
   if(currentPlatformRole==='super_admin'){await renderOwnerOverview(c);return;}
-  c.innerHTML=`<div class="panel-head"><h3>${esc(currentLab?.name||'Lab Workspace')}</h3><span class="badge">${esc(currentMembership?.role||'member')}</span></div><div class="card"><b>Workspace details</b><p>${esc(currentLab?.address||'Address not added')}</p><p>${esc(currentLab?.phone||'Phone not added')}</p><p class="muted">Workspace ID: ${esc(currentLab?.id||'—')}</p></div><div class="notice" style="margin-top:12px"><b>Development / test mode:</b> Local IndexedDB data stays on this device. Cloud patient sync and report generation are not enabled yet. Use demo data only.</div><p class="muted" style="margin-top:14px">Local setup on this device: ${store.doctors.length} doctors · ${store.tests.length} tests · ${store.fields.length} custom fields.</p>`;return;
+  c.innerHTML=`<div class="panel-head"><h3>${esc(currentLab?.name||'Lab Workspace')}</h3><span class="badge">${esc(currentMembership?.role||'member')}</span></div><div class="card"><b>Workspace details</b><p>${esc(currentLab?.address||'Address not added')}</p><p>${esc(currentLab?.phone||'Phone not added')}</p><p class="muted">Workspace ID: ${esc(currentLab?.id||'—')}</p></div><div class="notice" style="margin-top:12px"><b>Development / test mode:</b> Patient and booking workflows connect to this lab workspace when online and use this device cache when offline. Result verification, staff permissions, backup restore, and complete sync still require live security and recovery testing. Use demo data only until those checks pass.</div><p class="muted" style="margin-top:14px">Local setup on this device: ${store.doctors.length} doctors · ${store.tests.length} tests · ${store.fields.length} custom fields.</p>`;return;
  }
  if(page==='Lab Setup'){
   const cloudProfile=await getSetting('labProfile')||{};const profile={name:cloudProfile.name||currentLab?.name||'',address:cloudProfile.address||currentLab?.address||'',phone:cloudProfile.phone||currentLab?.phone||'',email:cloudProfile.email||currentUser?.email||''};
@@ -376,9 +379,8 @@ async function render(page){
  if(page==='Staff Directory'){await renderStaffRoles(c);return;}
  if(['Accounts','Inventory'].includes(page)){await renderCloudOperations(page,c);return;}
  if(page==='Results Entry'){await renderResultsReports(c);return;}
- if(page==='Results Entry'){await renderLocalModule(page,c);return;}
  if(page==='Results & Reports'){await renderResultsReports(c);return;}
- if(page==='Backup & Restore'){await renderBackupRestore(c);return;}
+ if(page==='Backup & Restore'||page==='Retention & Backup'){await renderBackupRestore(c);return;}
  if(page==='Cloud Setup'){await renderCloudSetup(c);return;}
  if(page==='Report Signatures'){await renderReportSignatures(c);return;}
  if(page==='Report Designer'){await renderReportDesigner(c);return;}
