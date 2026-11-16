@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#123c63">
-<title>ACD BITTU LAB CLOUD – Consolidated Build</title>
+<title>ACD BITTU LAB CLOUD | Lab Workspace</title>
 <style>
 :root{--navy:#123c63;--blue:#1769aa;--bg:#f3f6fa;--ink:#172536;--muted:#718096;--line:#e4eaf1;--red:#b42318}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
@@ -24,12 +24,55 @@
 .footer{text-align:center;color:#8794a4;font-size:11px;padding:22px}
 .report-preview{background:#eef2f6;padding:14px;border-radius:12px;overflow:auto}.paper{background:#fff;color:#172536;margin:auto;box-shadow:0 2px 12px #102f5022;min-height:520px;padding:20px;max-width:650px}.paper-head{text-align:center;border-bottom:1px solid #bbb;padding-bottom:10px}.paper-foot{text-align:center;border-top:1px solid #bbb;padding-top:10px;margin-top:24px}.designer-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.designer-grid .field{margin:7px 0}.move-list{display:grid;gap:6px}.move-item{display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--line);border-radius:8px;background:#fff}.move-item button{padding:5px 9px}.move-item span{flex:1}@media(max-width:560px){.designer-grid{grid-template-columns:1fr}}
 @media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}.nav{position:static;max-height:none;overflow:visible;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.welcome{align-items:flex-start;flex-direction:column}.top{padding:12px}.brand h1{font-size:14px}.card{padding:13px}}
+
+/* ACD BITTU LAB CLOUD — Excel-style fixed workspace shell */
+:root{--navy:#102b4e;--blue:#176fba;--bg:#f2f5fa;--ink:#172b45;--muted:#6f8095;--line:#e1e8f0;--teal:#16a1ad}
+body{background:var(--bg);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+.top{height:68px;padding:0 26px;background:#102b4e;box-shadow:0 2px 12px #0c25401c}
+.brand h1{font-size:15px;letter-spacing:.35px}.brand small{font-size:10px;color:#b8cee4}
+.logo{border-radius:10px;width:38px;height:38px}
+.wrap{max-width:none;width:100%;margin:0;padding:0 26px 24px}
+#appView{max-width:1600px;margin:0 auto;padding-top:18px}
+#loginView{margin:58px auto}
+#appView>.welcome{background:transparent;margin:0 0 15px;padding:0 2px;align-items:center}
+#appView>.welcome h2{font-size:24px;letter-spacing:-.45px;color:#142d49}
+#appView>.welcome .muted{font-size:12px}
+#appView>.notice{margin-bottom:14px;border-radius:10px}
+.stats{gap:13px;margin-bottom:15px}
+.stats>.card{border:1px solid var(--line);border-radius:13px;padding:15px 17px;box-shadow:0 3px 12px #15375b08;min-height:100px}
+.stat-label{font-size:11px;font-weight:600;color:#718096}.stat-value{font-size:27px;color:#172f4d;margin-top:5px}
+.layout{display:block;margin-top:0}
+.layout>aside.card{padding:0;margin:0 0 13px;position:sticky;top:68px;z-index:4;border:1px solid #dce5ef;border-radius:12px;box-shadow:0 4px 14px #15375b0b;background:#fff}
+.nav{position:static;max-height:none;overflow-x:auto;overflow-y:hidden;display:flex;flex-direction:row;gap:4px;padding:7px;scrollbar-width:thin;white-space:nowrap}
+.nav button{flex:0 0 auto;border:1px solid transparent;border-radius:8px;padding:10px 13px;font-size:12px;color:#52647a;white-space:nowrap}
+.nav button.active{background:#e9f3fc;border-color:#d5e8f8;color:#1268aa;font-weight:750;box-shadow:inset 0 -2px #1677c8}
+.nav button:hover{background:#f0f6fc}
+#content.card{min-height:470px;border:1px solid #dfe7f0;border-radius:14px;padding:21px;background:#fff;box-shadow:0 4px 16px #15375b08;scroll-margin-top:135px}
+.panel-head h3{font-size:17px;color:#193553}
+.btn{border-radius:8px}.btn.secondary{background:#edf5fc;color:#1769aa}
+.field input,.field select,.field textarea,.input{border-radius:8px;border-color:#d9e2ec}
+.notice{line-height:1.5}
+.footer{padding:16px 10px 22px}
+.ribbon-tools{display:flex;gap:8px;align-items:center}
+.ribbon-tools .btn{padding:9px 12px;font-size:12px}
+.dashboard-home{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(260px,.8fr);gap:15px}
+.home-panel{border:1px solid var(--line);border-radius:12px;padding:16px;background:#fff}
+.home-panel h3{font-size:14px;margin:0 0 3px;color:#1b3655}.home-sub{font-size:11px;color:var(--muted);margin-bottom:14px}
+.home-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.home-action{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:7px;padding:14px;border:1px solid var(--line);border-radius:10px;background:#fff;color:#193653;cursor:pointer;min-height:104px}
+.home-action:hover{border-color:#9dc9eb;background:#f8fbff}.home-action .symbol{font-size:20px;color:#1677c8}.home-action b{font-size:12px}.home-action small{font-size:10px;color:var(--muted)}
+.home-side{display:grid;gap:13px;align-content:start}.home-note{background:#f1f7fd;border:1px solid #dcebf8;border-radius:10px;padding:13px;font-size:11px;color:#355a7c}
+.home-note b{display:block;margin-bottom:4px;color:#20486d}.home-list{display:grid;gap:10px}.home-list-row{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #edf1f5;padding:8px 0;font-size:11px}.home-list-row:last-child{border:0}.home-list-row small{display:block;color:var(--muted);margin-top:2px}
+@media(max-width:850px){.wrap{padding:0 14px 20px}.top{padding:0 14px}.dashboard-home{grid-template-columns:1fr}.home-actions{grid-template-columns:repeat(2,minmax(0,1fr))}.layout>aside.card{top:68px}}
+@media(max-width:560px){.top{height:60px}.wrap{padding:0 9px 18px}#appView{padding-top:13px}#appView>.welcome h2{font-size:20px}.stats{gap:8px}.stats>.card{padding:11px;min-height:88px}.stat-value{font-size:23px}.layout>aside.card{top:60px}.nav{padding:5px}.nav button{padding:9px 11px;font-size:11px}#content.card{padding:14px;min-height:420px}.home-actions{gap:7px}.home-action{padding:11px;min-height:95px}.quick-pulse{padding:8px 9px}.quick-pulse span{font-size:11px}}
+@media print{.top,.layout>aside.card,#appView>.welcome,#appView>.notice,.stats,.footer{display:none!important}body,.wrap,#appView{background:#fff!important;margin:0!important;padding:0!important}#content.card{border:0!important;box-shadow:none!important;padding:0!important;min-height:0!important}}
+
 </style>
 </head>
 <body>
 <header class="top">
  <div class="brand"><div class="logo">ACD</div><div><h1>ACD BITTU LAB CLOUD</h1><small>Multi-Lab Pathology Management</small></div></div>
- <div class="row" style="justify-content:flex-end;flex:0 0 auto"><button class="quick-pulse" id="quickBookingPulse" type="button" aria-label="Open quick patient booking" title="Open Quick Booking / Pulse Test Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12h4l3-8 5 16 3-8h5"/></svg><span>Quick Booking</span></button><div class="status" id="topStatus">SECURE LOGIN</div></div>
+ <div class="row" style="justify-content:flex-end;flex:0 0 auto"><button class="quick-pulse" id="quickBookingPulse" type="button" aria-label="Open quick patient booking" title="Open Quick Booking / Pulse Test Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12h4l3-8 5 16 3-8h5"/></svg><span>Quick Booking</span></button><div class="ribbon-tools"><div class="status" id="topStatus">SECURE LOGIN</div></div></div>
 </header>
 <main class="wrap">
 <section id="loginView" class="card login">
@@ -55,7 +98,7 @@
   <div class="card"><div class="stat-label">Connection</div><div class="stat-value" id="networkState" style="font-size:18px">Checking…</div><div class="muted">Internet status of this device</div></div>
  </section>
  <section class="layout">
-  <aside class="card"><nav class="nav" aria-label="Main navigation">
+  <aside class="card"><nav class="nav" aria-label="Dashboard ribbon navigation">
    <button class="active" data-page="Overview">▦ Overview</button>
    <button data-page="Lab Setup">⚙ Lab Setup</button>
    <button data-page="Doctors">♧ Doctors</button>
@@ -213,7 +256,7 @@ async function showApp(user){
  if(!memberships.length&&currentPlatformRole!=='super_admin'){renderWorkspaceOnboarding();}
  else if(currentPlatformRole==='super_admin'){render('Overview');}
  else if(!currentLab){$('content').innerHTML='<div class="notice">Your lab membership was found, but its workspace details could not be loaded. Check the cloud_labs SELECT policy.</div>';}
- else{setPage('Test Orders');}
+ else{setPage('Overview');}
  updatePatientCount();updateOrderCount();
 }
 async function renderOwnerOverview(c){
@@ -229,7 +272,7 @@ $('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginBu
 $('resetButton').addEventListener('click',async()=>{const email=$('email').value.trim();if(!email){msg('Enter your email address first.');return;}try{const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});if(error)throw error;msg('If this email has an account, a password reset link will be sent.','success');}catch(err){msg(err.message||'Could not request password reset.');}});
 $('logoutButton').addEventListener('click',async()=>{await client.auth.signOut();showLogin();});
 let openTestSearchOnRender=false;
-function setPage(p){document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===p));render(p);if(p==='Test Orders'&&openTestSearchOnRender){openTestSearchOnRender=false;setTimeout(()=>{const b=$('openTestSearch');if(b)b.click();},80);}}
+function setPage(p){document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===p));const title=document.querySelector('.welcome h2');if(title&&currentPlatformRole!=='super_admin')title.textContent=p==='Overview'?'Lab Dashboard':p;render(p);if(p==='Test Orders'&&openTestSearchOnRender){openTestSearchOnRender=false;setTimeout(()=>{const b=$('openTestSearch');if(b)b.click();},80);}}
 $('quickBookingPulse').addEventListener('click',()=>{openTestSearchOnRender=true;setPage('Test Orders');});
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>setPage(b.dataset.page)));
 function listMarkup(items,type){if(!items.length)return '<div class="empty">No items added yet.</div>';return '<div class="list">'+items.map((x,i)=>`<div class="item"><span><b>${esc(x.name)}</b>${x.detail?' · '+esc(x.detail):''}</span><button class="btn danger" data-remove="${type}" data-index="${i}">Remove</button></div>`).join('')+'</div>';}
@@ -363,7 +406,22 @@ async function render(page){
  const c=$('content');
  if(page==='Overview'){
   if(currentPlatformRole==='super_admin'){await renderOwnerOverview(c);return;}
-  c.innerHTML=`<div class="panel-head"><h3>${esc(currentLab?.name||'Lab Workspace')}</h3><span class="badge">${esc(currentMembership?.role||'member')}</span></div><div class="card"><b>Workspace details</b><p>${esc(currentLab?.address||'Address not added')}</p><p>${esc(currentLab?.phone||'Phone not added')}</p><p class="muted">Workspace ID: ${esc(currentLab?.id||'—')}</p></div><div class="notice" style="margin-top:12px"><b>Development / test mode:</b> Patient and booking workflows connect to this lab workspace when online and use this device cache when offline. Result verification, staff permissions, backup restore, and complete sync still require live security and recovery testing. Use demo data only until those checks pass.</div><p class="muted" style="margin-top:14px">Local setup on this device: ${store.doctors.length} doctors · ${store.tests.length} tests · ${store.fields.length} custom fields.</p>`;return;
+  const homeOrders=await getOrders().catch(()=>[]);const ready=homeOrders.filter(o=>String(o.status||'').toLowerCase()==='verified'||String(o.status||'').toLowerCase()==='final').length;const due=homeOrders.reduce((n,o)=>n+Number(o.due||0),0);
+  c.innerHTML=`<div class="panel-head"><div><h3>${esc(currentLab?.name||'Lab Workspace')} · Workspace Overview</h3><div class="muted">${esc(currentLab?.address||'Address not added')} · ${esc(currentMembership?.role||'member')}</div></div><span class="status" style="color:#16734f;border-color:#bde5d2;background:#effaf4">● Workspace active</span></div>
+  <div class="dashboard-home"><div><section class="home-panel"><h3>Quick Actions</h3><div class="home-sub">Choose a task — it opens inside this same dashboard</div><div class="home-actions">
+  <button class="home-action" data-jump="Test Orders"><span class="symbol">＋</span><b>New Patient Booking</b><small>Register patient and add multiple tests</small></button>
+  <button class="home-action" data-jump="Results & Reports"><span class="symbol">🧪</span><b>Enter Test Results</b><small>Open pending result entry and verification</small></button>
+  <button class="home-action" data-jump="Results & Reports"><span class="symbol">▤</span><b>Reports & Print</b><small>Verified reports and A4 printing</small></button>
+  <button class="home-action" data-jump="Patients"><span class="symbol">♙</span><b>Patient Records</b><small>Search patient history</small></button>
+  <button class="home-action" data-jump="Accounts"><span class="symbol">₹</span><b>Billing & Accounts</b><small>Payments, income and expenses</small></button>
+  <button class="home-action" data-jump="Lab Setup"><span class="symbol">⚙</span><b>Lab Settings</b><small>Lab profile and workspace details</small></button>
+  </div></section>
+  <section class="home-panel" style="margin-top:14px"><div class="panel-head"><div><h3>Recent Bookings</h3><div class="home-sub" style="margin:3px 0 0">Latest bookings from this lab</div></div><button class="btn secondary" data-jump="Test Orders">View all</button></div>
+  <div class="home-list">${homeOrders.slice(0,5).map(o=>`<div class="home-list-row"><span><b>${esc(o.patientName||'Patient')}</b><small>${esc(o.id)} · ${(o.items||[]).map(x=>esc(x.name||x.testName||'Test')).join(', ')}</small></span><span><b>${money(o.total||0)}</b><small>${esc(o.status||'Booked')}</small></span></div>`).join('')||'<div class="empty">No bookings yet. Start with New Patient Booking.</div>'}</div></section></div>
+  <div class="home-side"><section class="home-panel"><h3>Workspace Snapshot</h3><div class="home-list"><div class="home-list-row"><span>Bookings on this device / cloud</span><b>${homeOrders.length}</b></div><div class="home-list-row"><span>Verified / final bookings</span><b>${ready}</b></div><div class="home-list-row"><span>Total outstanding due</span><b>${money(due)}</b></div><div class="home-list-row"><span>Catalogue tests cached</span><b>${store.tests.length}</b></div><div class="home-list-row"><span>Doctors configured</span><b>${store.doctors.length}</b></div></div></section>
+  <div class="home-note"><b>🔒 Lab workspace isolation</b>Patient, booking, test and report records are scoped to the signed-in lab. Live multi-lab isolation and server-side role enforcement still require independent verification.</div>
+  <section class="home-panel"><h3>Workspace Details</h3><div class="home-sub">${esc(currentLab?.name||'Lab')}</div><div style="font-size:11px;line-height:1.8">${esc(currentLab?.address||'Address not added')}<br>${esc(currentLab?.phone||'Phone not added')}<br><span class="muted">Workspace ID: ${esc(currentLab?.id||'—')}</span></div></section></div></div>`;
+  c.querySelectorAll('[data-jump]').forEach(b=>b.addEventListener('click',()=>setPage(b.dataset.jump)));return;
  }
  if(page==='Lab Setup'){
   const cloudProfile=await getSetting('labProfile')||{};const profile={name:cloudProfile.name||currentLab?.name||'',address:cloudProfile.address||currentLab?.address||'',phone:cloudProfile.phone||currentLab?.phone||'',email:cloudProfile.email||currentUser?.email||''};
