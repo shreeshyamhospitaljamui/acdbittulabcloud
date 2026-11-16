@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#123c63">
+<title>ACD BITTU LAB CLOUD – Consolidated Build</title>
+<style>
+:root{--navy:#123c63;--blue:#1769aa;--bg:#f3f6fa;--ink:#172536;--muted:#718096;--line:#e4eaf1;--red:#b42318}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+.top{background:linear-gradient(115deg,#102f50,#1769aa);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:5}
+.brand{display:flex;align-items:center;gap:11px}.logo{width:42px;height:42px;border-radius:12px;background:#fff;color:var(--navy);display:grid;place-items:center;font-weight:900}.brand h1{font-size:17px;margin:0}.brand small{display:block;color:#d7e8f8;font-size:11px}.status{font-size:11px;border:1px solid #ffffff66;border-radius:30px;padding:7px 10px}.quick-pulse{display:none;align-items:center;justify-content:center;gap:8px;border:1px solid #ffffff70;background:#ffffff18;color:#fff;border-radius:12px;padding:9px 13px;font-weight:700;cursor:pointer}.quick-pulse svg{width:22px;height:22px}.quick-pulse:active{transform:scale(.97)}
+.wrap{max-width:1200px;margin:22px auto;padding:0 15px}.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 2px 8px #1b36500a}
+.login{max-width:430px;margin:55px auto;padding:24px}.field{margin:14px 0}.field label{display:block;font-size:13px;margin-bottom:6px}.field input,.field select,.field textarea,input,select,textarea{font:inherit}.field input,.field select,.field textarea,.input{width:100%;padding:11px;border:1px solid #d8e1eb;border-radius:9px;background:#fff}
+.btn{border:0;background:var(--blue);color:#fff;padding:10px 14px;border-radius:9px;font-weight:650;cursor:pointer}.btn.secondary{background:#eaf3fb;color:var(--blue)}.btn.danger{background:#fff0ef;color:var(--red)}.btn:disabled{opacity:.55}
+.muted{color:var(--muted);font-size:13px}.hidden{display:none!important}.message{font-size:13px;margin-top:10px}.error{color:var(--red)}.success{color:#087443}
+.notice{background:#fff4d6;color:#76530b;border:1px solid #f2d78b;padding:11px 13px;border-radius:10px;font-size:12px;margin-bottom:15px}
+.welcome{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}.welcome h2{margin:0 0 4px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stat-label{font-size:12px;color:var(--muted)}.stat-value{font-size:25px;font-weight:750;margin-top:7px}
+.layout{display:grid;grid-template-columns:225px 1fr;gap:14px;margin-top:14px}.nav{display:flex;flex-direction:column;gap:4px}.nav button{border:0;background:transparent;text-align:left;padding:10px;border-radius:8px;color:#42536a;font:inherit;cursor:pointer}.nav button.active,.nav button:hover{background:#eaf3fb;color:var(--blue);font-weight:650}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}.panel-head h3{margin:0}.empty{border:1px dashed #cbd7e4;border-radius:11px;padding:28px 14px;text-align:center;color:var(--muted)}.empty strong{display:block;color:#34465b;margin-bottom:5px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>*{flex:1}.row .btn{flex:0 0 auto}.list{display:grid;gap:8px;margin-top:12px}.item{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--line);padding:10px;border-radius:9px}.item span{overflow-wrap:anywhere}
+.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:520px}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);font-size:13px}th{background:#f7f9fc;color:#526276}
+.footer{text-align:center;color:#8794a4;font-size:11px;padding:22px}
+.report-preview{background:#eef2f6;padding:14px;border-radius:12px;overflow:auto}.paper{background:#fff;color:#172536;margin:auto;box-shadow:0 2px 12px #102f5022;min-height:520px;padding:20px;max-width:650px}.paper-head{text-align:center;border-bottom:1px solid #bbb;padding-bottom:10px}.paper-foot{text-align:center;border-top:1px solid #bbb;padding-top:10px;margin-top:24px}.designer-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.designer-grid .field{margin:7px 0}.move-list{display:grid;gap:6px}.move-item{display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--line);border-radius:8px;background:#fff}.move-item button{padding:5px 9px}.move-item span{flex:1}@media(max-width:560px){.designer-grid{grid-template-columns:1fr}}
+@media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}.nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.welcome{align-items:flex-start;flex-direction:column}.top{padding:12px}.brand h1{font-size:14px}.card{padding:13px}}
+</style>
+</head>
+<body>
+<header class="top">
+ <div class="brand"><div class="logo">ACD</div><div><h1>ACD BITTU LAB CLOUD</h1><small>Multi-Lab Pathology Management</small></div></div>
+ <div class="row" style="justify-content:flex-end;flex:0 0 auto"><button class="quick-pulse" id="quickBookingPulse" type="button" aria-label="Open quick patient booking" title="Open Quick Booking / Pulse Test Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12h4l3-8 5 16 3-8h5"/></svg><span>Quick Booking</span></button><div class="status" id="topStatus">SECURE LOGIN</div></div>
+</header>
+<main class="wrap">
+<section id="loginView" class="card login">
+ <h2>Sign in</h2><p class="muted">Sign in to your ACD BITTU LAB CLOUD account.</p>
+ <form id="loginForm">
+  <div class="field"><label for="email">Email address</label><input id="email" type="email" autocomplete="username" required placeholder="you@example.com"></div>
+  <div class="field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required placeholder="Your password"></div>
+  <button class="btn" id="loginButton" type="submit" style="width:100%">Sign in</button>
+ </form>
+ <div class="row" style="margin-top:12px"><button id="showRegister" type="button" class="btn secondary">Register a Lab</button><button id="resetButton" type="button" class="btn secondary">Forgot password?</button></div>
+ <section id="registerPanel" class="hidden" style="border-top:1px solid var(--line);margin-top:18px;padding-top:12px"><h3>Create your lab workspace</h3><p class="muted">Each laboratory registers its own account and enters its own lab details. You do not need to pre-create lab names.</p><form id="registerForm"><div class="field"><label>Owner / Admin name</label><input class="input" name="ownerName" required maxlength="100"></div><div class="field"><label>Lab name</label><input class="input" name="labName" required maxlength="120"></div><div class="field"><label>Lab address</label><input class="input" name="labAddress" maxlength="300"></div><div class="field"><label>Phone</label><input class="input" name="labPhone" maxlength="25"></div><div class="field"><label>Email</label><input class="input" name="regEmail" type="email" required></div><div class="field"><label>Password (minimum 8 characters)</label><input class="input" name="regPassword" type="password" minlength="8" required></div><button class="btn" type="submit" id="registerButton">Create Lab Account</button><div id="registerMessage" class="message" role="status"></div></form></section>
+ <div id="loginMessage" class="message" role="status"></div>
+ <p class="muted" style="font-size:12px;margin-top:18px">New laboratories can register their own workspace. Lab creation is protected by a server-side database function.</p>
+</section>
+
+<section id="appView" class="hidden">
+ <div class="welcome"><div><h2>Platform workspace</h2><div class="muted">Signed in as <span id="signedInEmail"></span></div></div><button id="logoutButton" class="btn">Sign out</button></div>
+ <div class="notice"><b>Development / test mode:</b> Patient, test catalogue and booking data use this lab's Supabase cloud workspace when online and IndexedDB cache offline. Do not use real patient data until tenant security, server-side permissions, encryption, backup and sync have been independently tested.</div>
+ <section class="stats">
+  <div class="card"><div class="stat-label">Patients in this lab</div><div class="stat-value" id="patientCount">0</div><div class="muted">Cloud + offline cache</div></div>
+  <div class="card"><div class="stat-label">Today's Orders</div><div class="stat-value" id="todayOrderCount">0</div><div class="muted">Bookings today · local + cloud</div></div>
+  <div class="card"><div class="stat-label">Reports Ready</div><div class="stat-value" id="reportsReadyCount">0</div><div class="muted">Verified reports only</div></div>
+  <div class="card"><div class="stat-label">Connection</div><div class="stat-value" id="networkState" style="font-size:18px">Checking…</div><div class="muted">Internet status of this device</div></div>
+ </section>
+ <section class="layout">
+  <aside class="card"><nav class="nav" aria-label="Main navigation">
+   <button class="active" data-page="Overview">▦ Overview</button>
+   <button data-page="Lab Setup">⚙ Lab Setup</button>
+   <button data-page="Doctors">♧ Doctors</button>
+   <button data-page="Test Catalogue">⚗ Test Catalogue</button>
+   <button data-page="Custom Fields">▤ Custom Fields / Columns</button>
+   <button data-page="Patients">♙ Patients</button>
+   <button data-page="Test Orders">▣ Test Orders</button>
+   <button data-page="Results & Reports">✓ Results & Reports</button>
+   <button data-page="Staff & Roles">♙ Staff & Roles</button>
+   <button data-page="Retention & Backup">▣ Retention & Backup</button>
+   <button data-page="Report Designer">▧ Report Designer</button>
+   <button data-page="Report Signatures">✍ Report Signatures</button>
+   <button data-page="Permission Manager">🔐 Permission Manager</button>
+   <button data-page="Cloud Setup">☁ Cloud Setup</button>
+  </nav></aside>
+  <section class="card" id="content" aria-live="polite"></section>
+ </section>
+</section>
+<div class="footer">© ACD BITTU LAB CLOUD · Development build</div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* Browser key is publishable; database access must be protected by correctly tested RLS. */
+const SUPABASE_URL='https://axfvvquhswapiwmvrepe.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_n6jRvVDjw2kOF7CS46omqQ_6qGkdR-q';
+const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const $=id=>document.getElementById(id);
+const KEY='acd_bittu_lab_cloud_setup_v1';
+const DB_NAME='acd_bittu_lab_cloud_local';
+const DB_VERSION=4;
+const defaults={lab:{name:'',address:'',phone:'',email:''},doctors:[],tests:[],fields:[]};
+function loadData(){try{return {...defaults,...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch{return structuredClone(defaults)}}
+let store=loadData(), db, currentUser=null, currentPlatformRole='', currentLab=null, currentMembership=null;
+function saveData(){localStorage.setItem(KEY,JSON.stringify(store));}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function msg(text,kind='error'){ $('loginMessage').textContent=text;$('loginMessage').className='message '+kind; }
+function openLocalDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open(DB_NAME,DB_VERSION);req.onupgradeneeded=()=>{const d=req.result;if(!d.objectStoreNames.contains('patients')){const s=d.createObjectStore('patients',{keyPath:'id'});s.createIndex('name','name',{unique:false});s.createIndex('createdAt','createdAt',{unique:false});}if(!d.objectStoreNames.contains('settings'))d.createObjectStore('settings',{keyPath:'key'});
+ if(!d.objectStoreNames.contains('orders')){const o=d.createObjectStore('orders',{keyPath:'id'});o.createIndex('createdAt','createdAt',{unique:false});o.createIndex('patientId','patientId',{unique:false});}
+ if(!d.objectStoreNames.contains('samples'))d.createObjectStore('samples',{keyPath:'id'});
+ if(!d.objectStoreNames.contains('results'))d.createObjectStore('results',{keyPath:'id'});
+ if(!d.objectStoreNames.contains('expenses'))d.createObjectStore('expenses',{keyPath:'id'});
+ if(!d.objectStoreNames.contains('inventory'))d.createObjectStore('inventory',{keyPath:'id'});
+ if(!d.objectStoreNames.contains('staff'))d.createObjectStore('staff',{keyPath:'id'});};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}
+function patientStore(mode='readonly'){return db.transaction('patients',mode).objectStore('patients');}
+function dbRequest(req){return new Promise((resolve,reject)=>{req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}
+async function getPatients(){
+ if(!currentLab?.id)return [];
+ const local=(await dbRequest(patientStore().getAll())).filter(p=>p.labId===currentLab.id);
+ if(!navigator.onLine)return local;
+ const {data,error}=await client.from('acd_lab_patients').select('*').eq('lab_id',currentLab.id).order('created_at',{ascending:false});
+ if(error)throw error;
+ const remote=(data||[]).map(r=>({id:r.id,patientCode:r.patient_code||r.id,labId:r.lab_id,name:r.name,age:r.age,ageValue:r.age_value,ageUnit:r.age_unit||'years',dateOfBirth:r.date_of_birth,gender:r.gender,mobile:r.mobile,address:r.address,referrer:r.referrer,createdAt:r.created_at,updatedAt:r.updated_at,syncStatus:'synced'}));
+ const remoteIds=new Set(remote.map(x=>x.id));
+ // Preserve offline-only records until the server confirms an upsert.
+ return [...remote,...local.filter(x=>!remoteIds.has(x.id))].sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
+}
+function orderStore(mode='readonly'){return db.transaction('orders',mode).objectStore('orders');}
+async function getOrders(){
+ if(!currentLab?.id)return [];
+ const local=(await dbRequest(orderStore().getAll())).filter(o=>o.labId===currentLab.id);
+ if(!navigator.onLine)return local;
+ const {data,error}=await client.from('acd_lab_orders').select('*').eq('lab_id',currentLab.id).order('created_at',{ascending:false});
+ if(error)throw error;
+ const remote=(data||[]).map(r=>({id:r.id,labId:r.lab_id,patientId:r.patient_id,patientName:r.patient_name,patientAge:r.patient_age||'',patientGender:r.patient_gender||'',patientMobile:r.patient_mobile||'',patientAddress:r.patient_address||'',referrer:r.referrer||'',items:r.items||[],subtotal:Number(r.subtotal),discount:Number(r.discount),total:Number(r.total),paid:Number(r.paid),due:Number(r.due),paymentMethod:r.payment_method,paymentStatus:r.payment_status,notes:r.notes,status:r.status,createdAt:r.created_at,updatedAt:r.updated_at,syncStatus:'synced'}));
+ const remoteIds=new Set(remote.map(x=>x.id));
+ return [...remote,...local.filter(x=>!remoteIds.has(x.id))].sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
+}
+async function syncPatient(p){
+ if(!navigator.onLine||!currentLab?.id)return false;
+ const row={id:p.id,lab_id:currentLab.id,patient_code:p.patientCode||p.id,name:p.name,age:p.age||'',age_value:p.ageValue??null,age_unit:p.ageUnit||'years',date_of_birth:p.dateOfBirth||null,gender:p.gender||'',mobile:p.mobile||'',address:p.address||'',referrer:p.referrer||'',created_at:p.createdAt,updated_at:p.updatedAt};
+ const {error}=await client.from('acd_lab_patients').upsert(row,{onConflict:'id'});
+ if(error)throw error;
+ p.syncStatus='synced';await dbRequest(patientStore('readwrite').put(p));return true;
+}
+async function syncOrder(o){
+ if(!navigator.onLine||!currentLab?.id)return false;
+ const row={id:o.id,lab_id:currentLab.id,patient_id:o.patientId,patient_name:o.patientName,patient_age:o.patientAge||'',patient_gender:o.patientGender||'',patient_mobile:o.patientMobile||'',patient_address:o.patientAddress||'',referrer:o.referrer||'',items:o.items,subtotal:o.subtotal,discount:o.discount,total:o.total,paid:o.paid,due:o.due,payment_method:o.paymentMethod||'Cash',payment_status:o.paymentStatus||'Unpaid',notes:o.notes||'',status:o.status||'Booked',created_at:o.createdAt,updated_at:o.updatedAt};
+ const {error}=await client.from('acd_lab_orders').upsert(row,{onConflict:'id'});
+ if(error)throw error;
+ o.syncStatus='synced';await dbRequest(orderStore('readwrite').put(o));return true;
+}
+async function syncPendingData(){
+ if(!navigator.onLine||!currentLab?.id)return {patients:0,orders:0,errors:[]};
+ const errors=[];let patients=0,orders=0;
+ const ps=(await dbRequest(patientStore().getAll())).filter(x=>x.labId===currentLab.id&&x.syncStatus!=='synced');
+ for(const p of ps){try{await syncPatient(p);patients++;}catch(e){errors.push('Patient '+p.id+': '+e.message);}}
+ const os=(await dbRequest(orderStore().getAll())).filter(x=>x.labId===currentLab.id&&x.syncStatus!=='synced');
+ for(const o of os){try{await syncOrder(o);orders++;}catch(e){errors.push('Booking '+o.id+': '+e.message);}}
+ const samples=(await localAll('samples')).filter(x=>x.labId===currentLab.id&&x.syncStatus!=='synced');let samplesSynced=0;
+ for(const x of samples){try{const row={id:x.id,lab_id:currentLab.id,order_id:x.orderId,patient_id:x.patientId||'',sample_type:x.sampleType||'',collected_by:x.collectedBy||'',status:x.status||'Collected',rejection_reason:x.rejectionReason||'',collected_at:x.collectedAt||x.createdAt,updated_at:x.updatedAt||x.createdAt};const {error}=await client.from('acd_lab_samples').upsert(row,{onConflict:'id'});if(error)throw error;x.syncStatus='synced';await localPut('samples',x);samplesSynced++;}catch(e){errors.push('Sample '+x.id+': '+e.message);}}
+ const rs=(await localAll('results')).filter(x=>x.labId===currentLab.id&&x.syncStatus!=='synced');let resultsSynced=0;
+ for(const r of rs){try{const row={id:r.id,lab_id:currentLab.id,order_id:r.orderId||'',patient_id:r.patientId||'',test_name:r.testName,parameter:r.parameter,result_value:r.resultValue,unit:r.unit||'',reference_range:r.referenceRange||'',status:r.status||'Draft',entered_by:r.enteredBy||'',verified_by:r.verifiedBy||null,verified_at:r.verifiedAt||null,created_at:r.createdAt,updated_at:r.updatedAt};const {error}=await client.from('acd_lab_results').upsert(row,{onConflict:'id'});if(error)throw error;r.syncStatus='synced';await localPut('results',r);resultsSynced++;}catch(e){errors.push('Result '+r.id+': '+e.message);}}
+ const settingsRows=await dbRequest(db.transaction('settings').objectStore('settings').getAll());
+ const pendingSettings=settingsRows.filter(x=>x.key!=='permissionConfig'&&x.syncStatus==='pending');
+ if(pendingSettings.length){try{const current=await client.from('acd_lab_settings').select('settings').eq('lab_id',currentLab.id).maybeSingle();if(current.error)throw current.error;const settings={...(current.data?.settings||{})};for(const x of pendingSettings){const {key,syncStatus,...value}=x;settings[key]=value;}const {error}=await client.from('acd_lab_settings').upsert({lab_id:currentLab.id,settings,updated_by:currentUser?.id||null,updated_at:new Date().toISOString()},{onConflict:'lab_id'});if(error)throw error;for(const x of pendingSettings){x.syncStatus='synced';await dbRequest(db.transaction('settings','readwrite').objectStore('settings').put(x));}}catch(e){errors.push('Lab settings: '+e.message);}}
+ return {patients,orders,samples:samplesSynced,results:resultsSynced,errors};
+}
+async function saveOrder(o){
+ await dbRequest(orderStore('readwrite').put(o));
+ if(navigator.onLine&&currentLab?.id){try{await syncOrder(o);}catch(e){o.syncStatus='pending';await dbRequest(orderStore('readwrite').put(o));}}
+}
+async function deleteOrder(id){
+ if(navigator.onLine&&currentLab?.id){const {error}=await client.from('acd_lab_orders').delete().eq('id',id).eq('lab_id',currentLab.id);if(error)throw error;}
+ await dbRequest(orderStore('readwrite').delete(id));
+}
+function makeOrderId(){const d=new Date(),date=[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('');return 'ORD-'+date+'-'+Math.random().toString(36).slice(2,7).toUpperCase();}
+function money(n){return '₹'+(Number(n)||0).toFixed(2);}
+function parseTestRate(detail){const m=String(detail||'').match(/(?:₹|rs\.?\s*)?([0-9]+(?:\.[0-9]{1,2})?)/i);return m?Number(m[1]):0;}
+async function savePatient(p){await dbRequest(patientStore('readwrite').put(p));if(navigator.onLine&&currentLab?.id){try{await syncPatient(p);}catch(e){p.syncStatus='pending';await dbRequest(patientStore('readwrite').put(p));}}}
+async function deletePatient(id){if(navigator.onLine&&currentLab?.id){const {error}=await client.from('acd_lab_patients').delete().eq('id',id).eq('lab_id',currentLab.id);if(error)throw error;}await dbRequest(patientStore('readwrite').delete(id));}
+async function getSetting(key){
+ if(key!=='permissionConfig'&&navigator.onLine&&currentLab?.id){try{const {data,error}=await client.from('acd_lab_settings').select('settings').eq('lab_id',currentLab.id).maybeSingle();if(!error&&data?.settings&&Object.prototype.hasOwnProperty.call(data.settings,key)){const value=data.settings[key];await dbRequest(db.transaction('settings','readwrite').objectStore('settings').put({key,...(value||{})}));return {key,...(value||{})};}}catch(e){console.warn('Cloud setting read fallback',e);}}
+ return await dbRequest(db.transaction('settings').objectStore('settings').get(key));
+}
+async function saveSetting(key,value){
+ const record={key,...value,syncStatus:'pending'};await dbRequest(db.transaction('settings','readwrite').objectStore('settings').put(record));
+ if(key!=='permissionConfig'&&navigator.onLine&&currentLab?.id){try{const current=await client.from('acd_lab_settings').select('settings').eq('lab_id',currentLab.id).maybeSingle();if(current.error)throw current.error;const settings={...(current.data?.settings||{}),[key]:value};const {error}=await client.from('acd_lab_settings').upsert({lab_id:currentLab.id,settings,updated_by:currentUser?.id||null,updated_at:new Date().toISOString()},{onConflict:'lab_id'});if(error)throw error;record.syncStatus='synced';await dbRequest(db.transaction('settings','readwrite').objectStore('settings').put(record));}catch(e){console.warn('Cloud setting sync pending',e);}}
+ return record;
+}
+function enrichParameterDefaults(param){
+ const aliases={'total wbc count':'Total WBC','total leukocyte count':'Total WBC','tlc':'Total WBC','wbc':'Total WBC','rbc count':'Total RBC','platelet count':'Platelet Count','platelets':'Platelet Count','pcv':'PCV / Hematocrit','hematocrit':'PCV / Hematocrit','sgot':'AST / SGOT','ast':'AST / SGOT','sgpt':'ALT / SGPT','alt':'ALT / SGPT','gamma gt':'GGT','ggt':'GGT','bun':'Blood Urea Nitrogen','blood urea':'Urea','random blood sugar':'Random Blood Glucose','fasting blood sugar':'Fasting Blood Glucose','pp blood sugar':'Post Prandial Blood Glucose','crp':'C-Reactive Protein','esr (1st hour)':'Erythrocyte Sedimentation Rate (1st hour)','aec':'Absolute Eosinophil Count','aslo':'Anti-Streptolysin O','aso':'Anti-Streptolysin O'};
+ const key=String(param.name||'').trim().toLowerCase(),canonical=aliases[key]||param.name,def=(typeof ADULT_REFERENCE_DEFAULTS!=='undefined'&&ADULT_REFERENCE_DEFAULTS[canonical])||{};
+ const out={...param};
+ if(!out.unit&&def.unit)out.unit=def.unit;
+ if(!String(out.general||'').trim()&&def.general)out.general=def.general;
+ if(!String(out.male||'').trim()&&def.male)out.male=def.male;
+ if(!String(out.female||'').trim()&&def.female)out.female=def.female;
+ if(!out.resultType&&def.resultType)out.resultType=def.resultType;
+ if(!out.options&&def.options)out.options=def.options;
+ return out;
+}
+async function loadLabTests(){if(!currentLab?.id)return (store.tests||[]).map(t=>({...t,parameters:(t.parameters||[]).map(enrichParameterDefaults)}));if(navigator.onLine){const {data,error}=await client.from('acd_lab_tests').select('id,name,detail,parameters,price,sample_type').eq('lab_id',currentLab.id).eq('is_active',true).order('name');if(error)throw error;store.tests=(data||[]).map(x=>({id:x.id,name:x.name,detail:x.detail||'',price:Number(x.price||parseTestRate(x.detail)),sampleType:x.sample_type||'',parameters:(Array.isArray(x.parameters)?x.parameters:[]).map(enrichParameterDefaults)}));saveData();return store.tests;}return (store.tests||[]).map(t=>({...t,parameters:(t.parameters||[]).map(enrichParameterDefaults)}));}
+async function saveLabTest(t){if(!currentLab?.id)throw new Error('Lab workspace missing');const row={id:t.id,lab_id:currentLab.id,name:t.name,detail:t.detail||'',price:Number(t.price||0),sample_type:t.sampleType||'',parameters:Array.isArray(t.parameters)?t.parameters:[],is_active:true,updated_at:new Date().toISOString()};const {error}=await client.from('acd_lab_tests').upsert(row,{onConflict:'id'});if(error)throw error;}
+async function removeLabTest(t){if(!currentLab?.id)throw new Error('Lab workspace missing');const {error}=await client.from('acd_lab_tests').update({is_active:false,updated_at:new Date().toISOString()}).eq('id',t.id).eq('lab_id',currentLab.id);if(error)throw error;}
+async function fileToDataURL(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=()=>reject(r.error);r.readAsDataURL(file);});}
+function makePatientId(){const d=new Date(),date=[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('');const token=(crypto.randomUUID?crypto.randomUUID().replace(/-/g,'').slice(0,8):Math.random().toString(36).slice(2,10)).toUpperCase();return 'ACD-'+date+'-'+token;}
+async function updatePatientCount(){try{$('patientCount').textContent=(await getPatients()).length;}catch{$('patientCount').textContent='!';}}
+async function loadPlatformRole(user){
+ currentUser=user; currentPlatformRole='';
+ try{
+  const {data,error}=await client.from('profiles').select('platform_role').eq('id',user.id).maybeSingle();
+  if(!error && data) currentPlatformRole=data.platform_role||'';
+ }catch(e){console.warn('Could not load platform role',e);}
+}
+async function showApp(user){
+ $('quickBookingPulse').style.display='inline-flex';
+ await loadPlatformRole(user);currentLab=null;currentMembership=null;
+ $('loginView').classList.add('hidden');$('appView').classList.remove('hidden');$('signedInEmail').textContent=user.email||'Signed-in user';$('topStatus').textContent=currentPlatformRole==='super_admin'?'SUPER ADMIN':'AUTHENTICATED';
+ let memberships=[];
+ try{const {data,error}=await client.from('cloud_memberships').select('id,lab_id,role,is_active').eq('user_id',user.id).eq('is_active',true);if(error)throw error;memberships=data||[];}catch(e){console.warn('Membership lookup failed',e);}
+ if(memberships.length){currentMembership=memberships[0];try{const {data,error}=await client.from('cloud_labs').select('id,name,slug,address,phone,is_active').eq('id',currentMembership.lab_id).maybeSingle();if(error)throw error;currentLab=data||null;}catch(e){console.warn('Lab workspace lookup failed',e);}}
+ if(!memberships.length&&currentPlatformRole!=='super_admin'){renderWorkspaceOnboarding();}
+ else if(currentPlatformRole==='super_admin'){render('Overview');}
+ else if(!currentLab){$('content').innerHTML='<div class="notice">Your lab membership was found, but its workspace details could not be loaded. Check the cloud_labs SELECT policy.</div>';}
+ else{setPage('Test Orders');}
+ updatePatientCount();updateOrderCount();
+}
+async function renderOwnerOverview(c){
+ c.innerHTML='<div class="panel-head"><h3>Super Admin · Platform Overview</h3><button class="btn secondary" id="refreshLabs">Refresh</button></div><div class="notice">You control the platform. Each lab owner registers their own lab name and contact details. This panel lists workspaces; it does not expose patient records.</div><div class="stats"><div class="card"><div class="stat-label">Registered labs</div><div class="stat-value" id="ownerLabCount">…</div></div><div class="card"><div class="stat-label">Platform role</div><div class="stat-value" style="font-size:18px">Super Admin</div></div></div><div id="ownerLabList" class="list" style="margin-top:14px"><div class="empty">Loading lab workspaces…</div></div>';
+ async function load(){const box=$('ownerLabList');box.innerHTML='<div class="empty">Loading…</div>';try{const {data,error}=await client.from('cloud_labs').select('id,name,slug,address,phone,is_active,created_at').order('created_at',{ascending:false});if(error)throw error;const rows=data||[];$('ownerLabCount').textContent=rows.length;box.innerHTML=rows.length?rows.map(l=>`<div class="item"><span><b>${esc(l.name)}</b><br><small>${esc(l.address||'Address not added')} · ${esc(l.phone||'Phone not added')}</small><br><small class="muted">${esc(l.slug)} · ${l.is_active?'Active':'Inactive'}</small></span><span class="muted">${esc(String(l.id).slice(0,8))}</span></div>`).join(''):'<div class="empty"><strong>No labs registered yet</strong>New lab owners can register from the public sign-in page.</div>';}catch(e){$('ownerLabCount').textContent='—';box.innerHTML=`<div class="notice">Could not load labs: ${esc(e.message||'Check cloud_labs SELECT policy.')}</div>`;}}
+ $('refreshLabs').onclick=load;await load();
+}
+function renderWorkspaceOnboarding(){const c=$('content');c.innerHTML=`<div class="panel-head"><h3>Create your laboratory workspace</h3></div><div class="notice">You are signed in but do not belong to a lab yet. Enter the details of the laboratory you manage. Each lab gets its own isolated workspace.</div><form id="workspaceForm"><div class="field"><label>Laboratory name</label><input class="input" name="name" required maxlength="120"></div><div class="field"><label>Address</label><input class="input" name="address" maxlength="300"></div><div class="field"><label>Phone</label><input class="input" name="phone" maxlength="25"></div><button class="btn" id="createWorkspaceButton">Create Workspace</button><span id="workspaceMessage" class="message"></span></form>`;$('workspaceForm').addEventListener('submit',async e=>{e.preventDefault();const f=e.currentTarget,fd=new FormData(f),b=$('createWorkspaceButton'),m=$('workspaceMessage');b.disabled=true;m.textContent='Creating secure workspace…';try{const {data,error}=await client.rpc('register_lab_workspace',{p_lab_name:String(fd.get('name')).trim(),p_address:String(fd.get('address')||''),p_phone:String(fd.get('phone')||'')});if(error)throw error;m.textContent='Workspace created successfully.';m.className='message success';setTimeout(()=>showApp(currentUser),500);}catch(err){m.textContent=err.message||'Could not create workspace. Apply the supplied database migration first.';m.className='message error';}finally{b.disabled=false;}});}
+function showLogin(){$('appView').classList.add('hidden');$('loginView').classList.remove('hidden');$('topStatus').textContent='SECURE LOGIN';$('quickBookingPulse').style.display='none';}
+$('showRegister').addEventListener('click',()=>{$('registerPanel').classList.toggle('hidden');});
+$('registerForm').addEventListener('submit',async e=>{e.preventDefault();const f=e.currentTarget,fd=new FormData(f),b=$('registerButton'),m=$('registerMessage');b.disabled=true;b.textContent='Creating account…';m.textContent='';try{const email=String(fd.get('regEmail')).trim(),password=String(fd.get('regPassword')),ownerName=String(fd.get('ownerName')).trim(),labName=String(fd.get('labName')).trim();const {data,error}=await client.auth.signUp({email,password,options:{data:{full_name:ownerName}}});if(error)throw error;if(!data.session){m.textContent='Account created. Verify your email, then sign in and complete lab setup from the onboarding link.';m.className='message success';return;}const {data:labId,error:rpcError}=await client.rpc('register_lab_workspace',{p_lab_name:labName,p_address:String(fd.get('labAddress')||''),p_phone:String(fd.get('labPhone')||'')});if(rpcError)throw rpcError;m.textContent='Lab workspace created. Please sign in to continue.';m.className='message success';$('email').value=email;$('registerPanel').classList.add('hidden');}catch(err){m.textContent=err.message||'Registration failed.';m.className='message error';}finally{b.disabled=false;b.textContent='Create Lab Account';}});
+$('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginButton').disabled=true;$('loginButton').textContent='Signing in…';msg('');try{const {data,error}=await client.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error;showApp(data.user);}catch(err){msg(err.message||'Sign-in failed.');}finally{$('loginButton').disabled=false;$('loginButton').textContent='Sign in';}});
+$('resetButton').addEventListener('click',async()=>{const email=$('email').value.trim();if(!email){msg('Enter your email address first.');return;}try{const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});if(error)throw error;msg('If this email has an account, a password reset link will be sent.','success');}catch(err){msg(err.message||'Could not request password reset.');}});
+$('logoutButton').addEventListener('click',async()=>{await client.auth.signOut();showLogin();});
+let openTestSearchOnRender=false;
+function setPage(p){document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===p));render(p);if(p==='Test Orders'&&openTestSearchOnRender){openTestSearchOnRender=false;setTimeout(()=>{const b=$('openTestSearch');if(b)b.click();},80);}}
+$('quickBookingPulse').addEventListener('click',()=>{openTestSearchOnRender=true;setPage('Test Orders');});
+document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>setPage(b.dataset.page)));
+function listMarkup(items,type){if(!items.length)return '<div class="empty">No items added yet.</div>';return '<div class="list">'+items.map((x,i)=>`<div class="item"><span><b>${esc(x.name)}</b>${x.detail?' · '+esc(x.detail):''}</span><button class="btn danger" data-remove="${type}" data-index="${i}">Remove</button></div>`).join('')+'</div>';}
+
+
+// Adult starter reference intervals (common published examples; editable per laboratory).
+// Verify against the laboratory analyser, reagent insert, method and local approved interval before clinical reporting.
+const ADULT_REFERENCE_DEFAULTS = {
+ 'Haemoglobin':{unit:'g/dL',male:'13.0–17.0',female:'12.0–15.0'},
+ 'Total RBC':{unit:'million/µL',male:'4.5–5.9',female:'4.0–5.2'},
+ 'Total WBC':{unit:'/µL',general:'4,000–10,000'},
+ 'Neutrophils':{unit:'%',general:'46–78'},'Lymphocytes':{unit:'%',general:'18–52'},
+ 'Monocytes':{unit:'%',general:'3–10'},'Eosinophils':{unit:'%',general:'0–6'},'Basophils':{unit:'%',general:'0–3'},
+ 'Platelet Count':{unit:'lakh/µL',general:'1.5–4.0'},'PCV / Hematocrit':{unit:'%',male:'40–52',female:'36–47'},
+ 'MCV':{unit:'fL',general:'80–100'},'MCH':{unit:'pg',general:'27–33'},'MCHC':{unit:'g/dL',general:'30–35'},'RDW-CV':{unit:'%',general:'11.5–14.5'},
+ 'Specific Gravity':{unit:'',general:'1.002–1.030'},'pH':{unit:'',general:'5.0–8.0'},
+ 'Protein':{unit:'Qualitative',general:'Negative',resultType:'qualitative',options:'Negative / Trace / 1+ / 2+ / 3+'},
+ 'Glucose':{unit:'Qualitative',general:'Negative',resultType:'qualitative',options:'Negative / Trace / 1+ / 2+ / 3+'},
+ 'Ketone':{unit:'Qualitative',general:'Negative',resultType:'qualitative',options:'Negative / Trace / 1+ / 2+ / 3+'},
+ 'Blood':{unit:'Qualitative',general:'Negative',resultType:'qualitative',options:'Negative / Trace / 1+ / 2+ / 3+'},
+ 'Bilirubin':{unit:'Qualitative',general:'Negative',resultType:'qualitative',options:'Negative / Positive'},
+ 'Nitrite':{unit:'Qualitative',general:'Negative',resultType:'qualitative',options:'Negative / Positive'},
+ 'Leukocyte esterase':{unit:'Qualitative',general:'Negative',resultType:'qualitative',options:'Negative / Trace / 1+ / 2+ / 3+'},
+ 'Pus cells':{unit:'/HPF',general:'0–5'},'RBC':{unit:'/HPF',general:'0–2'},'Epithelial cells':{unit:'/HPF',general:'0–5'},
+ 'Fasting Blood Glucose':{unit:'mg/dL',general:'70–99 (fasting)'},
+ 'Post Prandial Blood Glucose':{unit:'mg/dL',general:'Interpret with 2-hour timing; commonly <140 in non-diabetic adults'},
+ 'Random Blood Glucose':{unit:'mg/dL',general:'<140 (non-fasting; interpret clinically)'},
+ 'HbA1c':{unit:'%',general:'<5.7 (non-diabetic range)'},
+ 'Total Bilirubin':{unit:'mg/dL',general:'0.1–1.0'},'Direct Bilirubin':{unit:'mg/dL',general:'0.0–0.3'},'Indirect Bilirubin':{unit:'mg/dL',general:'Calculated: Total minus Direct'},
+ 'AST / SGOT':{unit:'U/L',general:'10–40'},'ALT / SGPT':{unit:'U/L',general:'7–56'},'ALP':{unit:'U/L',general:'40–130'},'GGT':{unit:'U/L',male:'8–61',female:'5–36'},
+ 'Total Protein':{unit:'g/dL',general:'6.0–8.0'},'Albumin':{unit:'g/dL',general:'3.5–5.0'},'Globulin':{unit:'g/dL',general:'2.0–3.5'},'A/G Ratio':{unit:'',general:'1.0–2.2'},
+ 'Urea':{unit:'mg/dL',general:'15–40'},'Blood Urea Nitrogen':{unit:'mg/dL',general:'7–20'},'Creatinine':{unit:'mg/dL',male:'0.7–1.3',female:'0.6–1.1'},
+ 'Uric Acid':{unit:'mg/dL',male:'3.4–7.0',female:'2.4–6.0'},'Sodium':{unit:'mmol/L',general:'135–145'},'Potassium':{unit:'mmol/L',general:'3.5–5.0'},
+ 'Chloride':{unit:'mmol/L',general:'98–106'},'Calcium':{unit:'mg/dL',general:'8.5–10.5'},'Phosphorus':{unit:'mg/dL',general:'2.5–4.5'},
+ 'Total Cholesterol':{unit:'mg/dL',general:'Desirable <200'},'Triglycerides':{unit:'mg/dL',general:'<150'},'HDL Cholesterol':{unit:'mg/dL',male:'≥40',female:'≥50'},
+ 'LDL Cholesterol':{unit:'mg/dL',general:'Optimal <100'},'VLDL Cholesterol':{unit:'mg/dL',general:'5–40'},'TC / HDL Ratio':{unit:'',general:'Use lab-specific interpretive target'},
+ 'T3':{unit:'ng/mL',general:'0.8–2.0'},'T4':{unit:'µg/dL',general:'5.0–12.0'},'TSH':{unit:'µIU/mL',general:'0.4–4.0'},
+ 'C-Reactive Protein':{unit:'mg/L',general:'<5'},'ESR':{unit:'mm/hr',male:'0–15',female:'0–20'},
+ 'Erythrocyte Sedimentation Rate (1st hour)':{unit:'mm/hr',male:'0–15',female:'0–20'},
+ 'PT Patient':{unit:'seconds',general:'11–15'},'INR':{unit:'ratio',general:'0.9–1.2 (not on anticoagulant)'},'APTT Patient':{unit:'seconds',general:'25–40'},
+ 'Reticulocyte Count':{unit:'%',general:'0.5–1.5'},'Absolute Eosinophil Count':{unit:'cells/µL',general:'0–500'},
+ 'Rheumatoid Factor':{unit:'IU/mL',general:'<14'},'Anti-Streptolysin O':{unit:'IU/mL',general:'<200 (adult; method-dependent)'},
+ 'D-Dimer':{unit:'ng/mL FEU',general:'<500 (assay-dependent; age-adjustment may apply)'},
+ 'Sperm Concentration':{unit:'million/mL',general:'≥16 (WHO lower reference limit; not a fertility diagnosis)'},
+ 'Motility':{unit:'%',general:'Progressive motility ≥30 (WHO lower reference limit)'},'Morphology':{unit:'%',general:'Normal forms ≥4 (WHO strict criteria)'}
+};
+const QUALITATIVE_DEFAULTS = {
+ 'HBsAg':'Non-reactive','Anti-HCV':'Non-reactive','HIV 1/2':'Non-reactive',
+ 'Malaria Pf':'Negative','Malaria Pv':'Negative','Dengue NS1 Antigen':'Negative','Dengue IgM':'Negative','Dengue IgG':'Negative',
+ 'hCG':'Negative','VDRL / RPR':'Non-reactive','Typhoid IgM':'Negative','Typhoid IgG':'Negative',
+ 'Malarial Parasite':'Not seen','ABO Group':'A / B / AB / O','Rh(D)':'Positive / Negative'
+};
+const TEST_STARTER_TEMPLATES = [
+ {name:'CBC / Hemogram',sampleType:'EDTA blood',parameters:[['Haemoglobin','g/dL'],['Total RBC','million/µL'],['Total WBC','/µL'],['Neutrophils','%'],['Lymphocytes','%'],['Monocytes','%'],['Eosinophils','%'],['Basophils','%'],['Platelet Count','lakh/µL'],['PCV / Hematocrit','%'],['MCV','fL'],['MCH','pg'],['MCHC','g/dL'],['RDW-CV','%']]},
+ {name:'Peripheral Blood Film (PBF)',sampleType:'EDTA blood',parameters:[['RBC morphology',''],['WBC morphology',''],['Platelet estimate',''],['Haemoparasite','Qualitative']]},
+ {name:'Urine Routine / Microscopy',sampleType:'Urine',parameters:[['Colour',''],['Appearance',''],['Specific Gravity',''],['pH',''],['Protein','Qualitative'],['Glucose','Qualitative'],['Ketone','Qualitative'],['Blood','Qualitative'],['Bilirubin','Qualitative'],['Urobilinogen',''],['Nitrite','Qualitative'],['Leukocyte esterase','Qualitative'],['Pus cells','/HPF'],['RBC','/HPF'],['Epithelial cells','/HPF'],['Casts','/LPF'],['Crystals','']]},
+ {name:'Blood Glucose',sampleType:'Fluoride plasma',parameters:[['Fasting Blood Glucose','mg/dL'],['Post Prandial Blood Glucose','mg/dL'],['Random Blood Glucose','mg/dL']]},
+ {name:'HbA1c',sampleType:'EDTA blood',parameters:[['HbA1c','%'],['Estimated Average Glucose','mg/dL']]},
+ {name:'Liver Function Test (LFT)',sampleType:'Serum',parameters:[['Total Bilirubin','mg/dL'],['Direct Bilirubin','mg/dL'],['Indirect Bilirubin','mg/dL'],['AST / SGOT','U/L'],['ALT / SGPT','U/L'],['ALP','U/L'],['GGT','U/L'],['Total Protein','g/dL'],['Albumin','g/dL'],['Globulin','g/dL'],['A/G Ratio','']]},
+ {name:'Kidney Function Test (KFT)',sampleType:'Serum',parameters:[['Urea','mg/dL'],['Blood Urea Nitrogen','mg/dL'],['Creatinine','mg/dL'],['Uric Acid','mg/dL'],['Sodium','mmol/L'],['Potassium','mmol/L'],['Chloride','mmol/L'],['Calcium','mg/dL'],['Phosphorus','mg/dL']]},
+ {name:'Lipid Profile',sampleType:'Serum',parameters:[['Total Cholesterol','mg/dL'],['Triglycerides','mg/dL'],['HDL Cholesterol','mg/dL'],['LDL Cholesterol','mg/dL'],['VLDL Cholesterol','mg/dL'],['TC / HDL Ratio','']]},
+ {name:'Thyroid Profile',sampleType:'Serum',parameters:[['T3','ng/mL'],['T4','µg/dL'],['TSH','µIU/mL']]},
+ {name:'HBsAg',sampleType:'Serum / Plasma',parameters:[['HBsAg','Qualitative','Reactive / Non-reactive']]},
+ {name:'HCV Antibody',sampleType:'Serum / Plasma',parameters:[['Anti-HCV','Qualitative','Reactive / Non-reactive']]},
+ {name:'HIV 1 & 2 Screening',sampleType:'Serum / Plasma',parameters:[['HIV 1/2','Qualitative','Reactive / Non-reactive']]},
+ {name:'Malaria Antigen',sampleType:'Whole blood',parameters:[['Malaria Pf','Qualitative','Positive / Negative'],['Malaria Pv','Qualitative','Positive / Negative']]},
+ {name:'Widal Test',sampleType:'Serum',parameters:[['Salmonella typhi O','Titre'],['Salmonella typhi H','Titre'],['Salmonella paratyphi AH','Titre'],['Salmonella paratyphi BH','Titre']]},
+ {name:'Dengue Profile',sampleType:'Serum',parameters:[['Dengue NS1 Antigen','Qualitative','Positive / Negative'],['Dengue IgM','Qualitative','Positive / Negative'],['Dengue IgG','Qualitative','Positive / Negative']]},
+ {name:'CRP',sampleType:'Serum',parameters:[['C-Reactive Protein','mg/L']]},
+ {name:'Pregnancy Test (Urine)',sampleType:'Urine',parameters:[['hCG','Qualitative','Positive / Negative']]},
+ {name:'Blood Group & Rh',sampleType:'EDTA blood',parameters:[['ABO Group','Qualitative','A / B / AB / O'],['Rh(D)','Qualitative','Positive / Negative']]},
+ {name:'Manual Haemoglobin (Sahli)',sampleType:'EDTA blood',parameters:[['Haemoglobin','g/dL']]},
+ {name:'BSR / Random Blood Sugar',sampleType:'Fluoride plasma',parameters:[['Random Blood Glucose','mg/dL']]},
+ {name:'FBS / Fasting Blood Sugar',sampleType:'Fluoride plasma',parameters:[['Fasting Blood Glucose','mg/dL']]},
+ {name:'PPBS / Post Prandial Blood Sugar',sampleType:'Fluoride plasma',parameters:[['Post Prandial Blood Glucose','mg/dL']]},
+ {name:'ESR',sampleType:'EDTA blood',parameters:[['Erythrocyte Sedimentation Rate (1st hour)','mm/hr']]},
+ {name:'Serum Bilirubin',sampleType:'Serum',parameters:[['Total Bilirubin','mg/dL'],['Direct Bilirubin','mg/dL'],['Indirect Bilirubin','mg/dL']]},
+ {name:'Serum Creatinine',sampleType:'Serum',parameters:[['Creatinine','mg/dL']]},
+ {name:'Blood Urea',sampleType:'Serum',parameters:[['Urea','mg/dL']]},
+ {name:'Serum Uric Acid',sampleType:'Serum',parameters:[['Uric Acid','mg/dL']]},
+ {name:'Serum Calcium',sampleType:'Serum',parameters:[['Calcium','mg/dL']]},
+ {name:'Serum Electrolytes',sampleType:'Serum',parameters:[['Sodium','mmol/L'],['Potassium','mmol/L'],['Chloride','mmol/L']]},
+ {name:'Total Protein / Albumin',sampleType:'Serum',parameters:[['Total Protein','g/dL'],['Albumin','g/dL'],['Globulin','g/dL'],['A/G Ratio','']]},
+ {name:'SGOT / AST',sampleType:'Serum',parameters:[['AST / SGOT','U/L']]},
+ {name:'SGPT / ALT',sampleType:'Serum',parameters:[['ALT / SGPT','U/L']]},
+ {name:'Alkaline Phosphatase (ALP)',sampleType:'Serum',parameters:[['ALP','U/L']]},
+ {name:'GGT',sampleType:'Serum',parameters:[['Gamma GT','U/L']]},
+ {name:'Serum Amylase',sampleType:'Serum',parameters:[['Amylase','U/L']]},
+ {name:'Serum Lipase',sampleType:'Serum',parameters:[['Lipase','U/L']]},
+ {name:'ESR & CRP Profile',sampleType:'EDTA blood / Serum',parameters:[['ESR','mm/hr'],['CRP','mg/L']]},
+ {name:'Bleeding Time (BT)',sampleType:'Capillary blood',parameters:[['Bleeding Time','min:sec']]},
+ {name:'Clotting Time (CT)',sampleType:'Capillary blood',parameters:[['Clotting Time','min:sec']]},
+ {name:'Prothrombin Time (PT) / INR',sampleType:'Citrated plasma',parameters:[['PT Patient','seconds'],['PT Control','seconds'],['INR','ratio']]},
+ {name:'APTT',sampleType:'Citrated plasma',parameters:[['APTT Patient','seconds'],['APTT Control','seconds']]},
+ {name:'Reticulocyte Count',sampleType:'EDTA blood',parameters:[['Reticulocyte Count','%']]},
+ {name:'Absolute Eosinophil Count (AEC)',sampleType:'EDTA blood',parameters:[['Absolute Eosinophil Count','cells/µL']]},
+ {name:'Peripheral Smear for Malarial Parasite',sampleType:'EDTA blood',parameters:[['Malarial Parasite','Qualitative','Positive / Negative'],['Species','']]},
+ {name:'Stool Routine Examination',sampleType:'Stool',parameters:[['Colour',''],['Consistency',''],['Mucus','Qualitative'],['Blood','Qualitative'],['Ova','Qualitative'],['Cyst','Qualitative'],['RBC','/HPF'],['Pus Cells','/HPF'],['Undigested Food','']]},
+ {name:'Semen Analysis',sampleType:'Semen',parameters:[['Volume','mL'],['Colour',''],['Liquefaction Time','min'],['pH',''],['Sperm Concentration','million/mL'],['Motility','%'],['Morphology','%']]},
+ {name:'Urine Pregnancy Test (UPT)',sampleType:'Urine',parameters:[['hCG','Qualitative','Positive / Negative']]},
+ {name:'Microalbumin / Urine ACR',sampleType:'Urine',parameters:[['Urine Albumin','mg/L'],['Urine Creatinine','mg/dL'],['Albumin Creatinine Ratio','mg/g']]},
+ {name:'Rheumatoid Factor (RA / RF)',sampleType:'Serum',parameters:[['Rheumatoid Factor','IU/mL']]},
+ {name:'ASO Titre',sampleType:'Serum',parameters:[['Anti-Streptolysin O','IU/mL']]},
+ {name:'VDRL / RPR',sampleType:'Serum',parameters:[['VDRL / RPR','Qualitative','Reactive / Non-reactive']]},
+ {name:'Typhidot',sampleType:'Serum',parameters:[['Typhoid IgM','Qualitative','Positive / Negative'],['Typhoid IgG','Qualitative','Positive / Negative']]},
+ {name:'D-Dimer',sampleType:'Citrated plasma',parameters:[['D-Dimer','ng/mL FEU']]},
+ {name:'Blood Grouping (ABO)',sampleType:'EDTA blood',parameters:[['ABO Group','Qualitative','A / B / AB / O']]},
+ {name:'Rh Typing',sampleType:'EDTA blood',parameters:[['Rh(D)','Qualitative','Positive / Negative']]}
+];
+const QUALITATIVE_RESULT_OPTIONS = ['Positive','Negative','Reactive','Non-reactive','Detected','Not detected','Present','Absent','Trace','Nil'];
+
+async function renderTestCatalogue(c){
+ let items=[];try{items=await loadLabTests();}catch(err){c.innerHTML=`<div class="notice">Cloud Test Catalogue could not load: ${esc(err.message)}</div>`;return;}
+ c.innerHTML=`<div class="panel-head"><h3>Test Catalogue & Reference Ranges</h3><span class="muted">${items.length} tests</span></div>
+ <div class="notice">Add each investigation with its price, sample type and parameters. Enter one parameter per line using: Parameter | Unit | General range | Male range | Female range. Reference intervals vary by laboratory, method, age and population; have a qualified pathologist/lab director validate them before clinical use.</div>
+ <div class="card" style="margin:12px 0"><b>Expanded pathology test catalogue</b><p class="muted">Add common test structures in one click. Prices default to ₹0 and adult starter intervals are prefilled as editable reference defaults; verify each against your analyser, reagent insert, method and approved laboratory interval before clinical reporting.</p><button class="btn secondary" type="button" id="addStarterTests">Add all common test templates</button><span id="starterMessage" class="message"></span></div><form id="testForm"><div class="row"><div class="field"><label>Test name *</label><input class="input" name="name" required placeholder="e.g. CBC"></div><div class="field"><label>Price (₹) *</label><input class="input" name="price" type="number" min="0" step="0.01" required placeholder="300"></div></div>
+ <div class="row"><div class="field"><label>Sample type</label><input class="input" name="sampleType" placeholder="EDTA / Serum / Urine"></div><div class="field"><label>Details (optional)</label><input class="input" name="detail" placeholder="CBC · 300 · EDTA"></div></div>
+ <div class="field"><label>Parameters and reference ranges</label><textarea class="input" name="parameters" rows="7" placeholder="Haemoglobin | g/dL | enter lab-validated range | male range | female range&#10;Total WBC | /µL | enter lab-validated range&#10;Platelets | lakh/µL | enter lab-validated range"></textarea><small class="muted">Format: Parameter | Unit | General range | Male range | Female range. Leave ranges blank until validated; don't use illustrative ranges for patient decisions.</small></div>
+ <button class="btn">Save Test to Cloud Catalogue</button><div id="testSaveMessage" class="message"></div></form>
+ <h4 style="margin-top:20px">Saved tests and parameters</h4><div class="list">${items.map((t,i)=>`<div class="item" style="display:block"><div class="row"><span><b>${esc(t.name)}</b><br><small>${esc(t.sampleType||'Sample type not set')} · ${money(t.price||parseTestRate(t.detail||t.price))}</small></span><button class="btn danger" type="button" data-test-remove="${i}">Remove</button></div><div class="muted" style="margin-top:8px">${(t.parameters||[]).map(p=>`${esc(p.name)} — ${esc(p.unit)} — ${esc(p.general||'Range not set')}`).join('<br>')||'No parameters or reference ranges added yet.'}</div></div>`).join('')||'<div class="empty">No tests added yet. Add your first test above.</div>'}</div>`;
+ $('testForm').addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData(e.currentTarget),msg=$('testSaveMessage');const parameters=String(fd.get('parameters')||'').split('\n').map(line=>line.trim()).filter(Boolean).map(line=>{const a=line.split('|').map(x=>x.trim());return{name:a[0]||'',unit:a[1]||'',general:a[2]||'',male:a[3]||'',female:a[4]||''};}).filter(x=>x.name);const t={id:localId('TST'),name:String(fd.get('name')).trim(),price:Number(fd.get('price')),sampleType:String(fd.get('sampleType')||'').trim(),detail:String(fd.get('detail')||'').trim(),parameters};try{await saveLabTest(t);store.tests.push(t);saveData();renderTestCatalogue(c);}catch(err){msg.textContent='Save failed: '+err.message;msg.className='message error';}});
+ const starterBtn=$('addStarterTests'); if(starterBtn) starterBtn.onclick=async()=>{starterBtn.disabled=true;const m=$('starterMessage');let added=0,updated=0,skipped=0;try{for(const tpl of TEST_STARTER_TEMPLATES){const existing=items.find(x=>x.name.toLowerCase()===tpl.name.toLowerCase());const mapped=tpl.parameters.map(a=>{const d=ADULT_REFERENCE_DEFAULTS[a[0]]||{};const qualitative=a[1]==='Qualitative'||d.resultType==='qualitative';return{name:a[0],unit:a[1]||d.unit||'',general:d.general||QUALITATIVE_DEFAULTS[a[0]]||'',male:d.male||'',female:d.female||'',resultType:qualitative?'qualitative':'numeric',options:a[2]||d.options||(qualitative?'Positive / Negative / Reactive / Non-reactive':'')};});if(existing){let changed=false;const prior=existing.parameters||[];const merged=mapped.map(def=>{const oldp=prior.find(q=>q.name.toLowerCase()===def.name.toLowerCase());if(!oldp)return def;const out={...def,...oldp};for(const k of ['general','male','female','unit','options'])if(!out[k]&&def[k]){out[k]=def[k];changed=true;}return out;});for(const oldp of prior)if(!merged.some(q=>q.name.toLowerCase()===oldp.name.toLowerCase()))merged.push(oldp);if(changed||merged.length!==prior.length){existing.parameters=merged;await saveLabTest(existing);updated++;}else skipped++;continue;}const t={id:localId('TST'),name:tpl.name,price:0,sampleType:tpl.sampleType,detail:'Starter template — set lab price before use',parameters:mapped};await saveLabTest(t);store.tests.push(t);added++;}saveData();m.textContent=`Added ${added}; updated ${updated} existing templates with missing adult defaults; unchanged ${skipped}. Enter lab prices and verify/edit adult reference defaults against your analyser and method before clinical use.`;m.className='message success';await renderTestCatalogue(c);}catch(err){m.textContent=`Added ${added}; stopped due to: ${err.message}`;m.className='message error';}finally{starterBtn.disabled=false;}};
+ c.querySelectorAll('[data-test-remove]').forEach(b=>b.onclick=async()=>{const t=items[Number(b.dataset.testRemove)];if(confirm(`Remove ${t.name} from this lab catalogue?`))try{await removeLabTest(t);store.tests=store.tests.filter(x=>x.id!==t.id);saveData();renderTestCatalogue(c);}catch(err){alert(err.message);}});
+}
+function bindRemove(){document.querySelectorAll('[data-remove]').forEach(b=>b.addEventListener('click',()=>{const t=b.dataset.remove,i=Number(b.dataset.index);if(confirm('Remove this item from this device?')){store[t].splice(i,1);saveData();render(t==='doctors'?'Doctors':t==='tests'?'Test Catalogue':'Custom Fields');}}));}
+async function render(page){
+ const c=$('content');
+ if(page==='Overview'){
+  if(currentPlatformRole==='super_admin'){await renderOwnerOverview(c);return;}
+  c.innerHTML=`<div class="panel-head"><h3>${esc(currentLab?.name||'Lab Workspace')}</h3><span class="badge">${esc(currentMembership?.role||'member')}</span></div><div class="card"><b>Workspace details</b><p>${esc(currentLab?.address||'Address not added')}</p><p>${esc(currentLab?.phone||'Phone not added')}</p><p class="muted">Workspace ID: ${esc(currentLab?.id||'—')}</p></div><div class="notice" style="margin-top:12px"><b>Development / test mode:</b> Local IndexedDB data stays on this device. Cloud patient sync and report generation are not enabled yet. Use demo data only.</div><p class="muted" style="margin-top:14px">Local setup on this device: ${store.doctors.length} doctors · ${store.tests.length} tests · ${store.fields.length} custom fields.</p>`;return;
+ }
+ if(page==='Lab Setup'){
+  const cloudProfile=await getSetting('labProfile')||{};const profile={name:cloudProfile.name||currentLab?.name||'',address:cloudProfile.address||currentLab?.address||'',phone:cloudProfile.phone||currentLab?.phone||'',email:cloudProfile.email||currentUser?.email||''};
+  c.innerHTML=`<div class="panel-head"><h3>Lab Workspace Settings</h3></div><div class="notice">Lab profile settings are saved to this lab's cloud workspace when online and cached locally for offline use.</div><form id="labForm"><div class="field"><label>Lab / workspace name</label><input class="input" name="name" required maxlength="120" value="${esc(profile.name)}"></div><div class="field"><label>Address</label><input class="input" name="address" maxlength="300" value="${esc(profile.address)}"></div><div class="row"><div class="field"><label>Phone</label><input class="input" name="phone" maxlength="30" value="${esc(profile.phone)}"></div><div class="field"><label>Email</label><input class="input" name="email" type="email" maxlength="160" value="${esc(profile.email)}"></div></div><button class="btn">Save Lab Profile</button><span id="labProfileMessage" class="message"></span></form>`;
+  $('labForm').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.target),value={name:String(f.get('name')).trim(),address:String(f.get('address')||'').trim(),phone:String(f.get('phone')||'').trim(),email:String(f.get('email')||'').trim(),updatedAt:new Date().toISOString()};store.lab=value;saveData();try{await saveSetting('labProfile',value);$('labProfileMessage').textContent=navigator.onLine?'Lab profile saved to cloud and local cache.':'Saved locally; cloud sync pending.';$('labProfileMessage').className='message success';}catch(err){$('labProfileMessage').textContent='Saved locally; cloud sync pending: '+err.message;$('labProfileMessage').className='message error';}});return;
+ }
+ const cfg={Doctors:{key:'doctors',title:'Doctors',placeholder:'Doctor name',detail:'Qualification / registration (optional)'},'Test Catalogue':{key:'tests',title:'Test Catalogue',placeholder:'Test name',detail:'Rate / sample type (optional)'},'Custom Fields':{key:'fields',title:'Custom Fields / Columns',placeholder:'Column or field name',detail:'Where it is used (optional)'}};
+ if(cfg[page]){const q=cfg[page];if(page==='Test Catalogue'){await renderTestCatalogue(c);return;}const items=store[q.key];c.innerHTML=`<div class="panel-head"><h3>${q.title}</h3></div><form id="addForm"><div class="field"><label>${q.placeholder}</label><input class="input" name="name" required maxlength="80" placeholder="${q.placeholder}"></div><div class="field"><label>${q.detail}</label><input class="input" name="detail" maxlength="100" placeholder="${q.detail}"></div><button class="btn">Add ${q.title==='Custom Fields'?'field':q.title.slice(0,-1)}</button></form>${listMarkup(items,q.key)}<p class="muted">Saved locally in this browser.</p>`;$('addForm').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.target),item={id:localId('TST'),name:f.get('name').trim(),detail:f.get('detail').trim()};try{store[q.key].push(item);saveData();render(page);}catch(err){alert('Could not save: '+err.message);}});bindRemove();return;}
+ if(page==='Staff & Roles'){await renderStaffRoles(c);return;}
+ if(page==='Patients'){await renderPatients(c);return;}
+ if(page==='Test Orders'){await renderTestOrders(c);return;}
+ if(page==='Sample Tracking'){await renderSampleTracking(c);return;}
+ if(['Results Entry','Accounts','Inventory','Staff Directory'].includes(page)){await renderLocalModule(page,c);return;}
+ if(page==='Results & Reports'){await renderResultsReports(c);return;}
+ if(page==='Backup & Restore'){await renderBackupRestore(c);return;}
+ if(page==='Cloud Setup'){await renderCloudSetup(c);return;}
+ if(page==='Report Signatures'){await renderReportSignatures(c);return;}
+ if(page==='Report Designer'){await renderReportDesigner(c);return;}
+ if(page==='Permission Manager'){await renderPermissionManager(c);return;}
+ const descriptions={'Test Orders':'Offline test booking and billing module.','Results & Reports':'Result entry, verification and PDF report generation will be developed after test orders.','Staff & Roles':'Staff invitations and secure role permissions require server-side functions.','Retention & Backup':'Encrypted cloud backup, restore tests and retention controls are not implemented yet.',
+ 'Permission Manager':'Owner-only permission settings are being prepared.'};
+ c.innerHTML=`<div class="panel-head"><h3>${esc(page)}</h3></div><div class="empty"><strong>Not enabled yet</strong>${esc(descriptions[page]||'This module is planned for a later development step.')}</div>`;
+}
+
+async function renderReportDesigner(c){
+ const defaults={headerTitle:'',headerLine1:'',headerLine2:'',footerText:'',font:'Arial',fontSize:12,fontColor:'#172536',accentColor:'#123c63',pageSize:'A4',orientation:'portrait',topSpace:28,bottomSpace:24,showPatient:true,showTable:true,showSignatures:true,showQr:true,sections:['Patient Details','Test Details','Result Table','Interpretation','Signatures','QR Code']};
+ const saved=(await getSetting('reportDesign'))||{};const d={...defaults,...saved};
+ const preview=()=>{const paper=$('reportPaper');if(!paper)return;paper.style.fontFamily=d.font;paper.style.fontSize=d.fontSize+'px';paper.style.color=d.fontColor;paper.style.width=d.orientation==='landscape'?'100%':'100%';paper.style.maxWidth=d.orientation==='landscape'?'850px':'650px';paper.innerHTML=`<div style="height:${d.topSpace}px"></div><div class="paper-head" style="color:${d.accentColor}"><h2 style="margin:0 0 5px">${esc(d.headerTitle||store.lab.name||'YOUR LAB NAME')}</h2><div>${esc(d.headerLine1||store.lab.address||'Lab address')}</div><div>${esc(d.headerLine2||store.lab.phone||'Phone / Email')}</div></div>${d.showPatient?'<h3>Patient Details</h3><p>Patient Name: ____________________ &nbsp; Age: ______ &nbsp; Gender: ______</p><p>Mobile: ____________________ &nbsp; Ref. Doctor: ____________________</p>':''}${d.sections.map(x=>x==='Patient Details'?'':x==='Test Details'?'<h3>Test Details</h3><p>Test Name: CBC &nbsp; Report No: ACD-DEMO-001</p>':x==='Result Table'&&d.showTable?'<table style="min-width:0;width:100%;font-size:inherit"><tr style="background:#eef2f7"><th>Investigation</th><th>Result</th><th>Unit</th><th>Reference Range</th></tr><tr><td>Haemoglobin</td><td>—</td><td>g/dL</td><td>—</td></tr><tr><td>WBC</td><td>—</td><td>/cumm</td><td>—</td></tr></table>':x==='Interpretation'?'<h3>Interpretation</h3><p>________________________________________</p>':x==='Signatures'&&d.showSignatures?'<div style="display:flex;justify-content:space-between;margin-top:35px"><span>Technician / DMLT</span><span>Authorized Doctor</span></div>':x==='QR Code'&&d.showQr?'<p style="text-align:right;margin-top:16px">[ QR CODE AREA ]</p>':'').join('')}<div class="paper-foot">${esc(d.footerText||'Report footer text')}</div><div style="height:${d.bottomSpace}px"></div>`;};
+ const sections=d.sections;
+ c.innerHTML=`<div class="panel-head"><h3>Report Designer — Full Customization</h3><button class="btn secondary" id="resetDesign">Reset</button></div>
+ <div class="notice">यह पहला Designer चरण है। बदलाव इस डिवाइस में IndexedDB पर सेव होंगे। नीचे Live Preview है। अभी यह सेटिंग PDF/WhatsApp रिपोर्ट से जुड़ी नहीं है, क्योंकि Report Generation module अगला चरण है।</div>
+ <form id="designForm">
+ <h4>Header & Footer</h4><div class="designer-grid">
+ <div class="field"><label>Header / Lab Title</label><input class="input" name="headerTitle" value="${esc(d.headerTitle)}" placeholder="Lab name"></div>
+ <div class="field"><label>Header Line 1</label><input class="input" name="headerLine1" value="${esc(d.headerLine1)}" placeholder="Address / tagline"></div>
+ <div class="field"><label>Header Line 2</label><input class="input" name="headerLine2" value="${esc(d.headerLine2)}" placeholder="Phone / email"></div>
+ <div class="field"><label>Footer text</label><input class="input" name="footerText" value="${esc(d.footerText)}" placeholder="Footer / disclaimer"></div></div>
+ <h4>Font & Colors</h4><div class="designer-grid">
+ <div class="field"><label>Font family</label><select class="input" name="font">${['Arial','Georgia','Times New Roman','Verdana','Tahoma','Courier New'].map(x=>`<option ${d.font===x?'selected':''}>${x}</option>`).join('')}</select></div>
+ <div class="field"><label>Font size (px)</label><input class="input" name="fontSize" type="number" min="8" max="24" value="${d.fontSize}"></div>
+ <div class="field"><label>Text color</label><input class="input" name="fontColor" type="color" value="${esc(d.fontColor)}"></div>
+ <div class="field"><label>Header / accent color</label><input class="input" name="accentColor" type="color" value="${esc(d.accentColor)}"></div></div>
+ <h4>Page & Spacing</h4><div class="designer-grid">
+ <div class="field"><label>Page size</label><select class="input" name="pageSize"><option ${d.pageSize==='A4'?'selected':''}>A4</option><option ${d.pageSize==='A5'?'selected':''}>A5</option><option ${d.pageSize==='Letter'?'selected':''}>Letter</option></select></div>
+ <div class="field"><label>Orientation</label><select class="input" name="orientation"><option value="portrait" ${d.orientation==='portrait'?'selected':''}>Portrait</option><option value="landscape" ${d.orientation==='landscape'?'selected':''}>Landscape</option></select></div>
+ <div class="field"><label>Blank top space (mm)</label><input class="input" name="topSpace" type="number" min="0" max="100" value="${d.topSpace}"></div>
+ <div class="field"><label>Blank bottom space (mm)</label><input class="input" name="bottomSpace" type="number" min="0" max="100" value="${d.bottomSpace}"></div></div>
+ <h4>Show / Hide Sections</h4><div class="designer-grid"><label><input type="checkbox" name="showPatient" ${d.showPatient?'checked':''}> Patient details</label><label><input type="checkbox" name="showTable" ${d.showTable?'checked':''}> Result table</label><label><input type="checkbox" name="showSignatures" ${d.showSignatures?'checked':''}> Signatures</label><label><input type="checkbox" name="showQr" ${d.showQr?'checked':''}> QR code area</label></div>
+ <h4>Report Section Order</h4><p class="muted">ऊपर/नीचे बटन से सेक्शन का क्रम बदलें। अगली अपडेट में drag-and-drop भी जोड़ा जाएगा।</p><div class="move-list" id="sectionList">${sections.map((x,i)=>`<div class="move-item"><span>${esc(x)}</span><button type="button" class="btn secondary" data-up="${i}" ${i===0?'disabled':''}>↑</button><button type="button" class="btn secondary" data-down="${i}" ${i===sections.length-1?'disabled':''}>↓</button></div>`).join('')}</div>
+ <p><button class="btn" type="submit">Save Design</button> <span class="message" id="designMessage"></span></p></form>
+ <h4>Live Report Preview</h4><div class="report-preview"><div class="paper" id="reportPaper"></div></div>`;
+ const form=$('designForm');form.addEventListener('input',()=>{const fd=new FormData(form);for(const k of ['headerTitle','headerLine1','headerLine2','footerText','font','fontSize','fontColor','accentColor','pageSize','orientation','topSpace','bottomSpace'])if(fd.has(k))d[k]=['fontSize','topSpace','bottomSpace'].includes(k)?Number(fd.get(k)):fd.get(k);for(const k of ['showPatient','showTable','showSignatures','showQr'])d[k]=form.elements[k].checked;preview();});
+ form.addEventListener('submit',async e=>{e.preventDefault();await saveSetting('reportDesign',d);$('designMessage').textContent='Design saved on this device.';$('designMessage').className='message success';});
+ $('sectionList').querySelectorAll('[data-up],[data-down]').forEach(b=>b.addEventListener('click',()=>{const i=Number(b.dataset.up??b.dataset.down),j=b.hasAttribute('data-up')?i-1:i+1;[d.sections[i],d.sections[j]]=[d.sections[j],d.sections[i]];renderReportDesigner(c);}));
+ $('resetDesign').addEventListener('click',async()=>{if(confirm('Reset report design to default?')){await saveSetting('reportDesign',defaults);renderReportDesigner(c);}});preview();
+}
+
+async function renderReportSignatures(c){
+ const saved=(await getSetting('reportSignatures'))||{};
+ const tech=saved.technician||{}, doctor=saved.doctor||{};
+ c.innerHTML=`<div class="panel-head"><h3>Report Signatures & Footer</h3></div>
+ <div class="notice">यह सेटिंग इस डिवाइस के IndexedDB में सेव होगी। अभी PDF रिपोर्ट में हस्ताक्षर जोड़ना और क्लाउड पर साझा करना लागू नहीं है। केवल वास्तविक अधिकृत व्यक्ति के नाम/हस्ताक्षर दर्ज करें।</div>
+ <form id="signatureForm">
+  <h4>Technician / DMLT Details</h4>
+  <div class="field"><label>Name</label><input class="input" name="techName" maxlength="120" value="${esc(tech.name||'')}" placeholder="Technician name"></div>
+  <div class="field"><label>Qualification / Designation</label><input class="input" name="techQualification" maxlength="120" value="${esc(tech.qualification||'')}" placeholder="e.g. DMLT"></div>
+  <div class="field"><label>Technician signature image</label><input class="input" name="techSignature" type="file" accept="image/png,image/jpeg,image/webp"></div>
+  <label><input type="checkbox" name="showTech" ${tech.show!==false?'checked':''}> Show technician details on report</label>
+  <div class="field">${tech.signature?`<img src="${tech.signature}" alt="Saved technician signature" style="max-width:220px;max-height:90px;border:1px solid #ddd;padding:6px;border-radius:8px">`:'<span class="muted">No technician signature uploaded</span>'}</div>
+  <hr style="border:0;border-top:1px solid var(--line);margin:20px 0">
+  <h4>Authorized Doctor Details</h4>
+  <div class="field"><label>Doctor Name</label><input class="input" name="doctorName" maxlength="120" value="${esc(doctor.name||'')}" placeholder="Doctor name"></div>
+  <div class="field"><label>Qualification</label><input class="input" name="doctorQualification" maxlength="120" value="${esc(doctor.qualification||'')}" placeholder="e.g. MBBS, MD"></div>
+  <div class="field"><label>Medical Registration Number</label><input class="input" name="doctorReg" maxlength="80" value="${esc(doctor.registration||'')}" placeholder="Registration number"></div>
+  <div class="field"><label>Doctor signature image</label><input class="input" name="doctorSignature" type="file" accept="image/png,image/jpeg,image/webp"></div>
+  <label><input type="checkbox" name="showDoctor" ${doctor.show!==false?'checked':''}> Show doctor details on report</label>
+  <div class="field">${doctor.signature?`<img src="${doctor.signature}" alt="Saved doctor signature" style="max-width:220px;max-height:90px;border:1px solid #ddd;padding:6px;border-radius:8px">`:'<span class="muted">No doctor signature uploaded</span>'}</div>
+  <div class="field"><label>Additional report footer text</label><textarea class="input" name="footer" rows="2" maxlength="300" placeholder="Optional footer text">${esc(saved.footer||'')}</textarea></div>
+  <button class="btn" type="submit">Save Report Settings on This Device</button>
+  <span id="signatureMessage" class="message" role="status"></span>
+ </form>
+ <p class="muted">Image files are stored locally in this browser's IndexedDB. Keep a separate secure backup. This is a setup screen only; it does not yet create or approve diagnostic reports.</p>`;
+ $('signatureForm').addEventListener('submit',async e=>{
+  e.preventDefault();const f=e.currentTarget,fd=new FormData(f);
+  try{
+   const old=(await getSetting('reportSignatures'))||{};
+   const techFile=f.elements.techSignature.files[0],docFile=f.elements.doctorSignature.files[0];
+   if(techFile&&techFile.size>2*1024*1024)throw new Error('Technician signature image must be 2 MB or smaller.');
+   if(docFile&&docFile.size>2*1024*1024)throw new Error('Doctor signature image must be 2 MB or smaller.');
+   const value={
+    technician:{name:fd.get('techName').trim(),qualification:fd.get('techQualification').trim(),show:f.elements.showTech.checked,signature:techFile?await fileToDataURL(techFile):(old.technician?.signature||'')},
+    doctor:{name:fd.get('doctorName').trim(),qualification:fd.get('doctorQualification').trim(),registration:fd.get('doctorReg').trim(),show:f.elements.showDoctor.checked,signature:docFile?await fileToDataURL(docFile):(old.doctor?.signature||'')},
+    footer:fd.get('footer').trim(),updatedAt:new Date().toISOString()
+   };
+   await saveSetting('reportSignatures',value);
+   $('signatureMessage').textContent='Report signature settings saved locally.';
+   $('signatureMessage').className='message success';
+   await renderReportSignatures(c);
+  }catch(err){$('signatureMessage').textContent=err.message||'Could not save settings.';$('signatureMessage').className='message error';}
+ });
+}
+
+
+async function renderPermissionManager(c){
+ if(currentPlatformRole!=='super_admin'){
+  c.innerHTML=`<div class="panel-head"><h3>Permission Manager</h3></div><div class="notice"><b>Access restricted.</b> This section is available only to the authenticated platform owner account.</div><p class="muted">Your current platform role could not be verified as super_admin.</p>`;
+  return;
+ }
+ const defs=[
+  ['report_structure','Report Designer master structure','owner'],
+  ['header_footer','Header & Footer permissions','lab_admin'],
+  ['fonts_colors','Fonts & Colors','lab_admin'],
+  ['test_catalogue','Test Catalogue','lab_admin'],
+  ['patient_form','Patient Form & Custom Fields','lab_admin'],
+  ['staff_permissions','Staff Permissions','owner'],
+  ['lab_management','Create / Disable Labs','owner'],
+  ['security_backup','Security, Backup & Retention','owner'],
+  ['modules','Enable / Disable Modules','owner'],
+  ['report_signatures','Report Signatures','lab_admin']
+ ];
+ const saved=(await getSetting('permissionConfig'))||{};
+ const labels={owner:'Owner Only',lab_admin:'Owner + Lab Admin'};
+ c.innerHTML=`<div class="panel-head"><h3>Permission Manager</h3><span class="muted">Platform role: ${esc(currentPlatformRole)}</span></div>
+ <div class="notice"><b>Owner control.</b> Choose which settings Lab Admins may manage. Owner can change these defaults at any time.</div>
+ <form id="permissionForm"><div class="tablewrap"><table><thead><tr><th>Setting / Feature</th><th>Who can manage it?</th></tr></thead><tbody>
+ ${defs.map(([key,label,def])=>`<tr><td>${esc(label)}</td><td><select class="input" name="${key}"><option value="owner" ${(saved[key]||def)==='owner'?'selected':''}>Owner Only</option><option value="lab_admin" ${(saved[key]||def)==='lab_admin'?'selected':''}>Owner + Lab Admin</option></select></td></tr>`).join('')}
+ </tbody></table></div><p><button class="btn" type="submit">Save Permission Preferences</button></p></form>
+ <div class="notice"><b>Important implementation status:</b> These preferences are currently saved only in this browser's IndexedDB. They are not yet enforced by Supabase Row Level Security or server-side authorization, and therefore are not a security boundary. Do not invite other users or store real patient data based on these settings until server-side enforcement is implemented and tested.</div>`;
+ $('permissionForm').addEventListener('submit',async e=>{
+  e.preventDefault();const f=new FormData(e.target),obj={};
+  for(const [k,v] of f.entries())obj[k]=v;
+  await saveSetting('permissionConfig',obj);
+  alert('Permission preferences saved on this device. Server-side enforcement is still pending.');
+ });
+}
+
+
+function buildBookingPrint(order,patient,design={},signatures={}){
+ const e=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const lab=store.lab||{},m=n=>'₹'+(Number(n)||0).toFixed(2),top=Math.max(5,Number(design.topSpace??12)),bottom=Math.max(5,Number(design.bottomSpace??12));
+ const tests=(order.items||[]).map((x,i)=>{const params=(x.parameters||[]).map(p=>`<tr><td>${e(p.name)}</td><td>${e(p.result||'—')}</td><td>${e(p.unit||'')}</td><td>${e(p.referenceRange||'Range not configured')}</td></tr>`).join('');return `<section class="test-block"><h3>${i+1}. ${e(x.name)}</h3><table class="results"><thead><tr><th>Parameter</th><th>Result</th><th>Unit</th><th>Reference Range</th></tr></thead><tbody>${params||`<tr><td colspan="4">${e(x.detail||'No parameter details configured')}</td></tr>`}</tbody></table><div class="test-rate">Test charge: ${m(x.rate)}</div></section>`}).join('');
+ const tech=signatures.technician||{},doc=signatures.doctor||{};
+ return `<!doctype html><html><head><meta charset="utf-8"><title>${e(order.id)}</title><style>
+ @page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}html,body{margin:0;padding:0}body{font-family:${JSON.stringify(design.font||'Arial')};font-size:${Math.min(13,Math.max(9,Number(design.fontSize)||10.5))}pt;line-height:1.3;color:${design.fontColor||'#172536'};-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ .sheet{width:100%;margin:0 auto}.head{text-align:center;border-bottom:1px solid #aaa;padding-bottom:6px;color:${design.accentColor||'#123c63'};break-inside:avoid}.head h2{font-size:16pt;margin:0 0 3px}.report-title{text-align:center;font-size:12pt;margin:9px 0}
+ .grid{display:grid;grid-template-columns:1fr 1fr;gap:5px 12px;padding:8px;border:1px solid #ddd;margin:8px 0 10px;break-inside:avoid}.test-block{margin:0 0 10px;break-inside:avoid-page;page-break-inside:avoid}.test-block h3{font-size:11pt;margin:8px 0 4px;break-after:avoid-page;page-break-after:avoid}.results{width:100%;border-collapse:collapse;table-layout:fixed;margin:0}.results th,.results td{border:1px solid #aaa;padding:4px 5px;text-align:left;vertical-align:top;overflow-wrap:anywhere}.results th{background:#f2f5f8}.results th:nth-child(1){width:31%}.results th:nth-child(2){width:19%}.results th:nth-child(3){width:15%}.results th:nth-child(4){width:35%}.results tr{break-inside:avoid;page-break-inside:avoid}.test-rate{text-align:right;font-size:9pt;margin-top:3px}.totals{margin:8px 0 0 auto;width:220px;break-inside:avoid}.totals div{display:flex;justify-content:space-between;padding:2px}.sign{display:flex;justify-content:space-between;gap:20px;margin-top:28px;break-inside:avoid}.sign>div{width:45%;text-align:center;border-top:1px solid #555;padding-top:5px}.sign img{max-height:45px;max-width:120px;object-fit:contain}.foot{text-align:center;border-top:1px solid #ddd;margin-top:14px;padding-top:6px;break-inside:avoid}
+ @media screen{body{background:#e9edf2;padding:12px}.sheet{background:#fff;max-width:190mm;padding:10mm;box-shadow:0 2px 12px #0002}}
+ </style></head><body><main class="sheet"><div class="head"><h2>${e(design.headerTitle||lab.name||'')}</h2><div>${e(design.headerLine1||lab.address||'')}</div><div>${e(design.headerLine2||lab.phone||'')}</div></div>
+ <h3 class="report-title">LAB TEST BOOKING / RECEIPT</h3>
+ <div class="grid"><div><b>Patient:</b> ${e(patient.name)}</div><div><b>Patient ID:</b> ${e(patient.id)}</div><div><b>Age / Gender:</b> ${e(patient.age)} / ${e(patient.gender)}</div><div><b>Mobile:</b> ${e(patient.mobile)}</div><div><b>Ref. Doctor:</b> ${e(patient.referrer)}</div><div><b>Address:</b> ${e(patient.address)}</div><div><b>Booking ID:</b> ${e(order.id)}</div><div><b>Date:</b> ${e(new Date(order.createdAt).toLocaleString())}</div></div>
+ ${tests}<div class="totals"><div><span>Subtotal</span><b>${m(order.subtotal)}</b></div><div><span>Discount</span><b>${m(order.discount)}</b></div><div><span>Net Total</span><b>${m(order.total)}</b></div><div><span>Paid</span><b>${m(order.paid)}</b></div><div><span>Due</span><b>${m(order.due)}</b></div></div>
+ <div class="sign"><div>${doc.signature?`<img src="${doc.signature}">`:''}<br><b>${e(doc.name||'Authorized Signatory')}</b><br>${e(doc.qualification||'')}<br>${e(doc.registration||'')}</div><div>${tech.signature?`<img src="${tech.signature}">`:''}<br><b>${e(tech.name||'Lab Technician')}</b><br>${e(tech.qualification||'')}</div></div><div class="foot">${e(design.footerText||signatures.footer||'')}</div></main><script>window.onload=()=>setTimeout(()=>window.print(),350);<\/script></body></html>`;
+}
+async function printOrder(orderId){
+ const o=(await getOrders()).find(x=>x.id===orderId);if(!o)return alert('Booking not found.');
+ const p=(await getPatients()).find(x=>x.id===o.patientId)||{id:o.patientId,name:o.patientName};
+ const w=window.open('','_blank');if(!w)return alert('Allow pop-ups to print.');
+ w.document.write(buildBookingPrint(o,p,(await getSetting('reportDesign'))||{},(await getSetting('reportSignatures'))||{}));w.document.close();
+}
+async function sendOrderWhatsApp(orderId){
+ const o=(await getOrders()).find(x=>x.id===orderId);if(!o)return;
+ const p=(await getPatients()).find(x=>x.id===o.patientId)||{name:o.patientName,mobile:''};
+ const phone=String(p.mobile||'').replace(/\D/g,'');
+ const text=`ACD BITTU LAB CLOUD\nPatient: ${p.name}\nBooking ID: ${o.id}\nTests: ${o.items.map(x=>x.name).join(', ')}\nTotal: ${money(o.total)} | Paid: ${money(o.paid)} | Due: ${money(o.due)}\nBooking summary only — not a diagnostic report.`;
+ window.open(phone?`https://wa.me/${phone}?text=${encodeURIComponent(text)}`:`https://wa.me/?text=${encodeURIComponent(text)}`,'_blank','noopener');
+}
+async function renderTestOrders(c){
+ let tests=store.tests||[];try{tests=await loadLabTests();}catch(err){c.innerHTML=`<div class="notice">Could not load the lab Test Catalogue: ${esc(err.message)}.</div>`;return;}const orders=(await getOrders()).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+ const testRows=tests.map((t,i)=>{const ready=Array.isArray(t.parameters)&&t.parameters.length>0;return `<div class="item test-pick" data-test-search="${esc(t.name.toLowerCase())}"><span><b>${esc(t.name)}</b><br><small class="muted">${esc(t.sampleType||'Sample not set')} · ${money(t.price||0)}${ready?'':' · Parameters not configured'}</small></span><button class="btn secondary" type="button" data-add-test="${i}" ${ready?'':'disabled title="Add parameters in Test Catalogue first"'}>${ready?'Add':'Configure first'}</button></div>`}).join('');
+ c.innerHTML=`<div class="panel-head"><h3>Patient Booking · Add Multiple Tests</h3><span class="muted">${orders.length} bookings</span></div>
+ <div class="notice">Patient ID is generated automatically and locked. Select age and gender before adding tests so age/gender-specific reference intervals can be selected when configured. Unvalidated ranges are not invented.</div>
+ <form id="orderForm"><div class="designer-grid">
+ <div class="field"><label>Patient Name *</label><input class="input" name="patientName" required maxlength="120"></div>
+ <div class="field"><label>Patient ID (Automatic · Locked)</label><input class="input" name="patientCode" readonly value="Generated on save"></div>
+ <div class="field"><label>Age *</label><input class="input" name="ageValue" type="number" min="0" step="any" required placeholder="e.g. 5"></div>
+ <div class="field"><label>Age Unit</label><select class="input" name="ageUnit"><option value="days">Days</option><option value="months">Months</option><option value="years" selected>Years</option></select></div>
+ <div class="field"><label>Gender *</label><select class="input" name="gender" required><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div>
+ <div class="field"><label>Date of Birth (optional)</label><input class="input" name="dateOfBirth" type="date"></div>
+ <div class="field"><label>Doctor / Referrer</label><input class="input" name="referrer" maxlength="120"></div>
+ <div class="field"><label>Mobile Number</label><input class="input" name="mobile" inputmode="tel" maxlength="20"></div>
+ <div class="field"><label>Address</label><input class="input" name="address" maxlength="300"></div></div>
+ <div class="row" style="justify-content:flex-start;margin-top:14px"><button class="btn secondary" type="button" id="openTestSearch" aria-label="Add test"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px"><path d="M2 12h4l3-8 5 16 3-8h5"/></svg>ADD TEST</button><span class="muted">Tap to search and add multiple tests</span></div><div id="testSearchPanel" class="hidden"><div class="field"><label>Search test name</label><input class="input" id="testSearchBox" placeholder="Search CBC, KFT, LFT..." autocomplete="off"></div>
+ <div id="testSearchResults" class="list hidden">${testRows||'<div class="empty">No tests in catalogue. Add tests first.</div>'}</div></div>
+ <div class="panel-head" style="margin-top:16px"><h4>Selected Tests</h4><span id="selectedTestCount" class="muted">0 selected</span></div><div id="selectedTests" class="list"><div class="empty">Search CBC, add it; then search KFT, LFT and add more.</div></div><p><button class="btn secondary" type="button" id="confirmTests">OK · Open Result Entry</button></p><section id="inlineResultEntry" class="card hidden" style="margin:14px 0"><div class="panel-head"><h3>Enter Results</h3><span class="muted">Fill only the result values</span></div><div id="inlineResultTables"></div></section>
+ <div class="row"><div class="field"><label>Discount (₹)</label><input class="input" name="discount" type="number" min="0" step=".01" value="0"></div><div class="field"><label>Amount Paid (₹)</label><input class="input" name="paid" type="number" min="0" step=".01" value="0"></div></div>
+ <div class="row"><div class="field"><label>Payment Method</label><select class="input" name="paymentMethod"><option>Cash</option><option>UPI</option><option>Card</option><option>Bank Transfer</option><option>Credit / Due</option></select></div><div class="field"><label>Notes</label><input class="input" name="notes" maxlength="300"></div></div>
+ <div class="card" style="background:#f7f9fc;margin:12px 0"><div class="row"><span>Subtotal</span><b id="orderSubtotal">₹0.00</b></div><div class="row"><span>Net Total</span><b id="orderNet">₹0.00</b></div><div class="row"><span>Due</span><b id="orderDue">₹0.00</b></div></div>
+ <div class="row"><button class="btn" type="submit" value="save">Save Booking</button><button class="btn secondary" type="submit" value="print">Save & Print</button></div><span id="orderMessage" class="message"></span></form>
+ <h3 style="margin-top:26px">Recent Bookings</h3><div class="tablewrap"><table><thead><tr><th>Booking</th><th>Patient</th><th>Tests</th><th>Total</th><th>Paid</th><th>Due</th><th>Actions</th></tr></thead><tbody>${orders.map(o=>`<tr><td>${esc(o.id)}</td><td>${esc(o.patientName)}</td><td>${o.items.map(x=>esc(x.name)).join(', ')}</td><td>${money(o.total)}</td><td>${money(o.paid)}</td><td>${money(o.due)}</td><td><button class="btn secondary" data-print="${esc(o.id)}">Print</button></td></tr>`).join('')||'<tr><td colspan="7">No bookings yet.</td></tr>'}</tbody></table></div>`;
+ const f=$('orderForm'),selected=new Set();
+ function ageInYears(){const v=Number(f.elements.ageValue.value||0),u=f.elements.ageUnit.value;return u==='days'?v/365.2425:u==='months'?v/12:v;}
+ function selectRange(param){const y=ageInYears(),g=f.elements.gender.value;let r='';const bands=Array.isArray(param.ageRanges)?param.ageRanges:[];if(y<18){const hit=bands.find(x=>y>=Number(x.minYears??0)&&y<Number(x.maxYears??200));if(hit)r=hit.range||'';else r=param.child||param.pediatric||'';}else if(g==='Male')r=param.male||param.general||'';else if(g==='Female')r=param.female||param.general||'';else r=param.general||'';return String(r||'Reference range not configured for this age/sex').trim();}
+ function calc(){const chosen=[...selected].map(i=>tests[i]),sub=chosen.reduce((n,t)=>n+Number(t.price||0),0),discount=Math.max(0,+f.elements.discount.value||0),net=Math.max(0,sub-discount),paid=Math.max(0,+f.elements.paid.value||0);$('orderSubtotal').textContent=money(sub);$('orderNet').textContent=money(net);$('orderDue').textContent=money(Math.max(0,net-paid));$('selectedTestCount').textContent=chosen.length+' selected';$('selectedTests').innerHTML=chosen.length?chosen.map((t)=>`<div class="item"><span><b>${esc(t.name)}</b><br><small>${money(t.price||0)} · ${esc(t.sampleType||'Sample not set')}</small><br><small class="muted">${(t.parameters||[]).map(p=>`${esc(p.name)}: ${esc(selectRange(p))}`).join(' | ')}</small></span><button class="btn danger" type="button" data-remove-test="${tests.indexOf(t)}">Remove</button></div>`).join(''):'<div class="empty">No tests selected.</div>';c.querySelectorAll('[data-remove-test]').forEach(b=>b.onclick=()=>{selected.delete(Number(b.dataset.removeTest));calc();});return{chosen,sub,discount,net,paid};}
+ $('openTestSearch').onclick=()=>{$('testSearchPanel').classList.toggle('hidden');if(!$('testSearchPanel').classList.contains('hidden'))$('testSearchBox').focus();};
+ $('testSearchBox').addEventListener('input',()=>{const q=$('testSearchBox').value.trim().toLowerCase();$('testSearchResults').classList.toggle('hidden',!q);c.querySelectorAll('.test-pick').forEach(el=>el.style.display=(q&&el.dataset.testSearch.includes(q))?'flex':'none');});
+ c.querySelectorAll('[data-add-test]').forEach(b=>b.onclick=()=>{selected.add(Number(b.dataset.addTest));calc();});
+ $('confirmTests').onclick=()=>{const chosen=[...selected].map(i=>tests[i]);if(!chosen.length)return alert('पहले कम से कम एक टेस्ट Add करें।');const box=$('inlineResultEntry'),host=$('inlineResultTables');host.innerHTML=chosen.map((t,ti)=>`<div class="card" style="margin:12px 0"><h3>${esc(t.name)}</h3><div class="tablewrap"><table><thead><tr><th>Parameter</th><th>Result</th><th>Unit</th><th>Reference Range</th></tr></thead><tbody>${(t.parameters||[]).map((p,pi)=>{const rg=selectRange(p);const opts=String(p.options||'').split(/[|,;]/).map(x=>x.trim()).filter(Boolean);const input=p.resultType==='qualitative'||opts.length?`<select class="input result-value" data-ti="${ti}" data-pi="${pi}"><option value="">Select</option>${(opts.length?opts:['Positive','Negative','Reactive','Non-reactive','Detected','Not detected']).map(x=>`<option>${esc(x)}</option>`).join('')}</select>`:`<input class="input result-value" data-ti="${ti}" data-pi="${pi}" inputmode="decimal" placeholder="Enter result">`;return `<tr><td>${esc(p.name)}</td><td>${input}</td><td>${esc(p.unit||'')}</td><td>${esc(rg)}</td></tr>`}).join('')||'<tr><td colspan="4">No parameters configured for this test. Add parameters in Test Catalogue.</td></tr>'}</tbody></table></div></div>`).join('');box.classList.remove('hidden');box.scrollIntoView({behavior:'smooth',block:'start'});};
+ f.addEventListener('input',calc);f.elements.ageUnit.addEventListener('change',calc);f.elements.gender.addEventListener('change',calc);
+ f.addEventListener('submit',async ev=>{ev.preventDefault();const action=ev.submitter?.value||'save',v=calc(),fd=new FormData(f);if(!v.chosen.length)return alert('Select at least one test.');if(!fd.get('patientName').trim()||!fd.get('ageValue')||!fd.get('gender'))return alert('Enter patient name, age and gender.');if(v.discount>v.sub||v.paid>v.net)return alert('Please check discount and paid amount.');
+ const now=new Date().toISOString(),patientCode=makePatientId(),ageValue=Number(fd.get('ageValue')),ageUnit=String(fd.get('ageUnit')),ageText=`${ageValue} ${ageUnit}`,p={id:patientCode,patientCode,labId:currentLab.id,name:String(fd.get('patientName')).trim(),age:ageText,ageValue,ageUnit,dateOfBirth:String(fd.get('dateOfBirth')||'')||null,gender:fd.get('gender'),mobile:String(fd.get('mobile')||''),address:String(fd.get('address')||''),referrer:String(fd.get('referrer')||''),createdAt:now,updatedAt:now,syncStatus:'local_only'};await savePatient(p);
+ const items=v.chosen.map(t=>({testId:t.id,name:t.name,detail:t.detail||'',rate:Number(t.price||0),sampleType:t.sampleType||'',parameters:(t.parameters||[]).map((param,pi)=>({name:param.name,unit:param.unit||'',resultType:param.resultType||'numeric',options:param.options||'',referenceRange:selectRange(param),result:$(`inlineResultTables`)?.querySelector(`[data-ti=\"${v.chosen.indexOf(t)}\"][data-pi=\"${pi}\"]`)?.value||''}))}));const o={id:makeOrderId(),labId:currentLab.id,patientId:p.id,patientName:p.name,patientAge:p.age,patientGender:p.gender,patientMobile:p.mobile,patientAddress:p.address,referrer:p.referrer,items,subtotal:v.sub,discount:v.discount,total:v.net,paid:v.paid,due:v.net-v.paid,paymentMethod:fd.get('paymentMethod'),paymentStatus:v.paid===0?'Unpaid':v.paid<v.net?'Partial':'Paid',notes:String(fd.get('notes')||''),status:'Booked',createdAt:now,updatedAt:now,syncStatus:'local_only'};await saveOrder(o);$('orderMessage').textContent=o.syncStatus==='synced'?'Booking saved to cloud.':'Booking saved on this device; cloud sync is pending.';$('orderMessage').className='message '+(o.syncStatus==='synced'?'success':'error');if(action==='print')await printOrder(o.id);renderTestOrders(c);updateOrderCount();});
+ c.querySelectorAll('[data-print]').forEach(b=>b.onclick=()=>printOrder(b.dataset.print));calc();
+}
+async function updateOrderCount(){
+ try{const today=new Date().toISOString().slice(0,10),orders=await getOrders();const el=$('todayOrderCount');if(el)el.textContent=orders.filter(o=>String(o.createdAt||'').startsWith(today)).length;const ready=$('reportsReadyCount');if(ready){const rs=await loadCloudResults();const verified=rs.filter(r=>String(r.status||'').toLowerCase()==='verified');const byOrder=new Map();for(const r of verified){if(!byOrder.has(r.orderId))byOrder.set(r.orderId,new Set());byOrder.get(r.orderId).add(r.testName+'|'+r.parameter);}ready.textContent=byOrder.size;}}catch(e){console.warn('Dashboard counts unavailable',e);}
+}
+
+
+function localStore(name,mode='readonly'){return db.transaction(name,mode).objectStore(name);}
+async function localAll(name){return dbRequest(localStore(name).getAll());}
+async function localPut(name,obj){return dbRequest(localStore(name,'readwrite').put(obj));}
+async function localDelete(name,id){return dbRequest(localStore(name,'readwrite').delete(id));}
+function localId(prefix){return prefix+'-'+Date.now().toString(36).toUpperCase()+'-'+Math.random().toString(36).slice(2,6).toUpperCase();}
+
+async function renderStaffRoles(c){
+ if(!currentLab?.id && currentPlatformRole!=='super_admin'){c.innerHTML='<div class="notice">No active lab workspace found.</div>';return;}
+ const roles=['receptionist','lab_technician','pathologist','accountant'];
+ c.innerHTML=`<div class="panel-head"><h3>Staff & Roles</h3><span class="badge">Invitation workflow</span></div>
+ <div class="notice"><b>Secure invitation workflow:</b> Lab Admin creates an invite. Share the generated one-time code privately with the staff member. The staff member must sign in with the invited email and accept the code. Email delivery is not automatic yet. Staff permissions are stored server-side, but access to patient/order tables must still be connected to these permissions before staff use production data.</div>
+ <form id="staffInviteForm"><div class="row"><div class="field"><label>Staff email</label><input class="input" name="email" type="email" required maxlength="160" placeholder="staff@example.com"></div><div class="field"><label>Role</label><select class="input" name="role">${roles.map(r=>`<option value="${r}">${r.replace('_',' ')}</option>`).join('')}</select></div></div><button class="btn" id="createStaffInvite">Create staff invitation</button><div class="message" id="staffInviteMessage"></div></form>
+ <div id="staffInviteCode" class="card hidden" style="margin-top:12px"></div>
+ <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
+ <h4>Accept an invitation</h4><form id="acceptStaffInviteForm"><div class="field"><label>Invitation code</label><input class="input" name="token" required autocomplete="off" placeholder="Paste the code shared by your Lab Admin"></div><button class="btn secondary">Accept invitation</button><div class="message" id="acceptStaffMessage"></div></form>
+ <h4 style="margin-top:20px">Current staff</h4><div id="staffList" class="list"><div class="empty">Loading staff…</div></div>`;
+ const inviteForm=$('staffInviteForm');inviteForm.addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData(inviteForm),btn=$('createStaffInvite'),m=$('staffInviteMessage');btn.disabled=true;m.textContent='Creating invitation…';try{const {data,error}=await client.rpc('acd_create_staff_invite',{p_lab_id:currentLab.id,p_email:String(fd.get('email')).trim().toLowerCase(),p_role:String(fd.get('role'))});if(error)throw error;const token=typeof data==='string'?data:data?.token||data?.invite_token||'';if(!token)throw new Error('Invitation created but no code was returned. Check the SQL function result.');$('staffInviteCode').classList.remove('hidden');$('staffInviteCode').innerHTML=`<b>One-time invitation code</b><p style="word-break:break-all">${esc(token)}</p><button class="btn secondary" id="copyStaffToken" type="button">Copy invitation code</button><p class="muted">Share privately with ${esc(String(fd.get('email')))}. It expires after 7 days.</p>`;$('copyStaffToken').onclick=()=>navigator.clipboard?.writeText(token);m.textContent='Invitation created.';m.className='message success';inviteForm.reset();await loadStaff();}catch(err){m.textContent=err.message||'Could not create invitation. Apply the Staff V13 SQL migration.';m.className='message error';}finally{btn.disabled=false;}});
+ $('acceptStaffInviteForm').addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData(e.currentTarget),m=$('acceptStaffMessage');try{const {data,error}=await client.rpc('acd_accept_staff_invite',{p_invite_token:String(fd.get('token')).trim()});if(error)throw error;m.textContent='Invitation accepted. Your staff role is now registered.';m.className='message success';await loadStaff();}catch(err){m.textContent=err.message||'Could not accept invitation.';m.className='message error';}});
+ async function loadStaff(){const box=$('staffList');try{const {data,error}=await client.from('acd_lab_staff').select('id,email,role,is_active,created_at').eq('lab_id',currentLab.id).order('created_at',{ascending:false});if(error)throw error;box.innerHTML=(data||[]).map(x=>`<div class="item"><span><b>${esc(x.email)}</b><br><small>${esc(x.role.replace('_',' '))} · ${x.is_active?'Active':'Inactive'}</small></span><span class="muted">${esc(String(x.created_at||'').slice(0,10))}</span></div>`).join('')||'<div class="empty">No staff have accepted invitations yet.</div>';}catch(err){box.innerHTML=`<div class="notice">Staff list unavailable: ${esc(err.message)}. Run the V13 Staff SQL migration first.</div>`;}}
+ await loadStaff();
+}
+
+async function renderLocalModule(page,c){
+ const config={
+ 'Sample Tracking':{store:'samples',title:'Sample Collection & Tracking',fields:[['orderId','Order ID'],['sampleType','Sample Type'],['collectedBy','Collected By'],['status','Status']],opts:['Collected','Received','Rejected','Processing']},
+ 'Results Entry':{store:'results',title:'Results Entry (Draft)',fields:[['orderId','Order ID'],['testName','Test Name'],['parameter','Parameter'],['value','Result Value'],['unit','Unit'],['referenceRange','Reference Range'],['enteredBy','Entered By']],opts:['Draft','Verified']},
+ 'Accounts':{store:'expenses',title:'Accounts & Expenses',fields:[['description','Description'],['amount','Amount (₹)'],['category','Category']],opts:['Expense','Income']},
+ 'Inventory':{store:'inventory',title:'Inventory & Stock',fields:[['item','Item / Reagent'],['quantity','Quantity'],['unit','Unit'],['expiry','Expiry Date']],opts:['In Stock','Low Stock','Expired']},
+ 'Staff Directory':{store:'staff',title:'Staff Directory (local register)',fields:[['name','Staff Name'],['role','Role'],['phone','Phone']],opts:['Active','Inactive']}
+ }[page];
+ const rows=(await localAll(config.store)).sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+ c.innerHTML=`<div class="panel-head"><h3>${config.title}</h3><span class="muted">${rows.length} saved locally</span></div>
+ <div class="notice"><b>Local development module.</b> Entries are stored only on this device. No cloud sync, barcode printing, verified clinical workflow, accounting ledger, stock valuation, or server-side staff permissions are active. Use demo data only.</div>
+ <form id="localModuleForm"><div class="row">${config.fields.map(([k,l])=>`<div class="field"><label>${l}</label><input class="input" name="${k}" ${k==='expiry'?'type="date"':k==='amount'||k==='quantity'?'type="number" step="0.01"':'type="text"'} required></div>`).join('')}</div>
+ <div class="field"><label>Status / Type</label><select class="input" name="status">${config.opts.map(x=>`<option>${x}</option>`).join('')}</select></div><button class="btn" type="submit">Save ${page} Entry Offline</button></form>
+ <div class="tablewrap" style="margin-top:18px"><table><thead><tr>${config.fields.map(x=>`<th>${x[1]}</th>`).join('')}<th>Status</th><th>Created</th><th></th></tr></thead><tbody>${rows.map(r=>`<tr>${config.fields.map(([k])=>`<td>${esc(r[k]||'')}</td>`).join('')}<td>${esc(r.status||'')}</td><td>${esc((r.createdAt||'').slice(0,10))}</td><td><button class="btn danger" data-local-delete="${esc(r.id)}" type="button">Delete</button></td></tr>`).join('')||`<tr><td colspan="${config.fields.length+3}">No entries yet.</td></tr>`}</tbody></table></div>`;
+ $('localModuleForm').addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData(e.target),o={id:localId(page.slice(0,3).toUpperCase()),createdAt:new Date().toISOString(),status:fd.get('status')};for(const [k] of config.fields)o[k]=String(fd.get(k)||'').trim();await localPut(config.store,o);renderLocalModule(page,c);});
+ c.querySelectorAll('[data-local-delete]').forEach(b=>b.addEventListener('click',async()=>{if(confirm('Delete this local demo entry?')){await localDelete(config.store,b.dataset.localDelete);renderLocalModule(page,c);}}));
+}
+
+
+async function renderBackupRestore(c){
+ const stores=['patients','orders','settings','samples','results','expenses','inventory','staff'];
+ c.innerHTML=`<div class="panel-head"><h3>Backup & Restore</h3></div>
+ <div class="notice"><b>Important:</b> This creates a backup of data stored in this browser only. It is not an encrypted cloud backup. Keep the downloaded file private and store it safely.</div>
+ <div class="card"><h4>Export local backup</h4><p class="muted">Download your local patient, booking, report-setting and operational records as one JSON file.</p><button class="btn" id="exportBackup">Download Backup</button></div>
+ <div class="card" style="margin-top:12px"><h4>Restore local backup</h4><p class="muted">Restoring replaces matching local records in this browser. Export a backup first.</p><input id="backupFile" class="input" type="file" accept=".json,application/json"><button class="btn danger" id="restoreBackup" style="margin-top:10px">Restore Selected Backup</button><div id="backupMessage" class="message"></div></div>`;
+ $('exportBackup').onclick=async()=>{
+  const payload={product:'ACD BITTU LAB CLOUD',formatVersion:1,createdAt:new Date().toISOString(),localSetup:store,data:{}};
+  for(const n of stores){try{payload.data[n]=await dbRequest(db.transaction(n).objectStore(n).getAll())}catch{payload.data[n]=[]}}
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download='acd-bittu-lab-cloud-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(url);
+  $('backupMessage').textContent='Backup downloaded. Store it securely.';$('backupMessage').className='message success';
+ };
+ $('restoreBackup').onclick=async()=>{
+  const file=$('backupFile').files[0];if(!file){$('backupMessage').textContent='Select a backup JSON file first.';return}
+  try{
+   const payload=JSON.parse(await file.text());if(payload.product!=='ACD BITTU LAB CLOUD'||!payload.data)throw new Error('This is not a valid ACD BITTU LAB CLOUD backup.');
+   if(!confirm('Restore this backup? Existing local records with the same IDs will be replaced.'))return;
+   if(payload.localSetup){store={...defaults,...payload.localSetup};saveData()}
+   for(const n of stores){const rows=payload.data[n];if(!Array.isArray(rows))continue;const tx=db.transaction(n,'readwrite'),os=tx.objectStore(n);for(const row of rows)os.put(row);await new Promise((res,rej)=>{tx.oncomplete=res;tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error)})}
+   $('backupMessage').textContent='Backup restored to this device. Cloud sync is not performed.';$('backupMessage').className='message success';
+  }catch(e){$('backupMessage').textContent='Restore failed: '+e.message}
+ };
+}
+async function renderCloudSetup(c){
+ const role=currentPlatformRole;
+ c.innerHTML=`<div class="panel-head"><h3>Cloud Setup & System Readiness</h3></div>
+ <div class="notice"><b>Cloud connection:</b> Authentication, lab workspaces, Test Catalogue, Patients and Bookings use Supabase when online. Patients and Bookings have a local offline cache with retry-on-reconnect. Other operational modules remain local-only until their cloud tables and role controls are deployed.</div>
+ <div class="card"><h4>Current readiness</h4><ul><li>Authentication: Connected</li><li>Lab registration and workspace: Enabled</li><li>Test Catalogue: Cloud enabled</li><li>Patients and Bookings: Cloud enabled with offline retry</li><li>Results, samples, staff invitations: Not yet production-enabled</li><li>Encrypted cloud backup, restore testing and QR verification: Not implemented</li><li>Production tenant security review: Still required</li></ul><button class="btn" id="runCloudSync">Sync pending records now</button><div id="cloudSyncMessage" class="message"></div></div>
+ <div class="notice"><b>Security warning:</b> Do not enter real patient data or invite lab users until tenant-level Row Level Security, server-side roles, audit enforcement and tested backups are completed. This page deliberately does not run unreviewed SQL against your live database.</div>
+ <p class="muted">Signed-in platform role: ${esc(role||'Not verified')}</p>`;
+ const b=$('runCloudSync');if(b)b.onclick=async()=>{b.disabled=true;try{const r=await syncPendingData();$('cloudSyncMessage').textContent=`Synced ${r.patients} patients, ${r.orders} bookings, ${r.samples||0} samples and ${r.results||0} results. ${r.errors.length} errors.`;$('cloudSyncMessage').className='message '+(r.errors.length?'error':'success');}catch(e){$('cloudSyncMessage').textContent=e.message;$('cloudSyncMessage').className='message error';}finally{b.disabled=false;}};
+}
+
+async function renderSampleTracking(c){
+ if(!currentLab?.id){c.innerHTML='<div class="notice">Samples are managed within each lab workspace.</div>';return;}
+ let rows=[],orders=[];try{orders=await getOrders();rows=await localAll('samples');rows=rows.filter(x=>x.labId===currentLab.id);if(navigator.onLine){const {data,error}=await client.from('acd_lab_samples').select('*').eq('lab_id',currentLab.id).order('collected_at',{ascending:false});if(error)throw error;const cloud=(data||[]).map(x=>({id:x.id,labId:x.lab_id,orderId:x.order_id,patientId:x.patient_id,sampleType:x.sample_type,collectedBy:x.collected_by,status:x.status,rejectionReason:x.rejection_reason,collectedAt:x.collected_at,createdAt:x.collected_at,updatedAt:x.updated_at,syncStatus:'synced'}));const ids=new Set(cloud.map(x=>x.id));rows=[...cloud,...rows.filter(x=>!ids.has(x.id))];}}catch(e){c.innerHTML=`<div class="notice">Sample cloud data could not load: ${esc(e.message)}. Run the V11 migration first.</div>`;return;}
+ c.innerHTML=`<div class="panel-head"><h3>Sample Collection & Tracking</h3><span class="muted">${rows.length} samples</span></div><div class="notice">Sample collection status is stored per lab. Offline entries remain on this device and retry cloud sync when reconnected.</div>
+ <form id="sampleForm"><div class="field"><label>Booking / Order *</label><select class="input" name="orderId" required><option value="">Select booking</option>${orders.map(o=>`<option value="${esc(o.id)}">${esc(o.id)} — ${esc(o.patientName)}</option>`).join('')}</select></div><div class="row"><div class="field"><label>Sample Type</label><input class="input" name="sampleType" required placeholder="Blood / Urine / Serum"></div><div class="field"><label>Collected By</label><input class="input" name="collectedBy"></div></div><div class="field"><label>Status</label><select class="input" name="status"><option>Collected</option><option>Received</option><option>Rejected</option><option>Processing</option><option>Completed</option></select></div><div class="field"><label>Rejection reason (if rejected)</label><input class="input" name="rejectionReason"></div><button class="btn">Save Sample Record</button><span id="sampleMessage" class="message"></span></form>
+ <div class="tablewrap" style="margin-top:20px"><table><thead><tr><th>Order</th><th>Sample</th><th>Collected By</th><th>Status</th><th>Storage</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${esc(x.orderId)}</td><td>${esc(x.sampleType)}</td><td>${esc(x.collectedBy)}</td><td>${esc(x.status)}</td><td>${x.syncStatus==='synced'?'Cloud':'Pending / local'}</td></tr>`).join('')||'<tr><td colspan="5">No sample records yet.</td></tr>'}</tbody></table></div>`;
+ $('sampleForm').addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData(e.target),now=new Date().toISOString(),order=orders.find(x=>x.id===fd.get('orderId'));const x={id:localId('SMP'),labId:currentLab.id,orderId:String(fd.get('orderId')),patientId:order?.patientId||'',sampleType:String(fd.get('sampleType')).trim(),collectedBy:String(fd.get('collectedBy')||'').trim(),status:String(fd.get('status')),rejectionReason:String(fd.get('rejectionReason')||'').trim(),collectedAt:now,createdAt:now,updatedAt:now,syncStatus:'pending'};await localPut('samples',x);if(navigator.onLine){const result=await syncPendingData();if(result.errors.length)$('sampleMessage').textContent='Saved locally; cloud sync pending: '+result.errors.join('; ');else $('sampleMessage').textContent='Sample record saved to cloud.';}else $('sampleMessage').textContent='Saved on this device; cloud sync pending.';$('sampleMessage').className='message success';renderSampleTracking(c);});
+}
+
+async function loadCloudResults(){
+ if(!currentLab?.id)return [];
+ const local=await localAll('results');
+ if(!navigator.onLine)return local.filter(x=>x.labId===currentLab.id);
+ const {data,error}=await client.from('acd_lab_results').select('*').eq('lab_id',currentLab.id).order('created_at',{ascending:false});
+ if(error)throw error;
+ const remote=(data||[]).map(r=>({id:r.id,labId:r.lab_id,orderId:r.order_id,patientId:r.patient_id,testName:r.test_name,parameter:r.parameter,resultValue:r.result_value,unit:r.unit,referenceRange:r.reference_range,status:r.status,enteredBy:r.entered_by,verifiedBy:r.verified_by,verifiedAt:r.verified_at,createdAt:r.created_at,updatedAt:r.updated_at,syncStatus:'synced'}));
+ const ids=new Set(remote.map(x=>x.id));return [...remote,...local.filter(x=>x.labId===currentLab.id&&!ids.has(x.id))];
+}
+async function saveCloudResult(r){
+ await localPut('results',r);
+ if(navigator.onLine){const row={id:r.id,lab_id:currentLab.id,order_id:r.orderId||'',patient_id:r.patientId||'',test_name:r.testName,parameter:r.parameter,result_value:r.resultValue,unit:r.unit||'',reference_range:r.referenceRange||'',status:r.status||'Draft',entered_by:r.enteredBy||currentUser?.email||'',verified_by:r.verifiedBy||null,verified_at:r.verifiedAt||null,created_at:r.createdAt,updated_at:r.updatedAt};const {error}=await client.from('acd_lab_results').upsert(row,{onConflict:'id'});if(error)throw error;r.syncStatus='synced';await localPut('results',r);}
+}
+async function printCombinedBookingDraft(orderId){
+ const allOrders=await getOrders(),o=allOrders.find(x=>x.id===orderId);if(!o)return alert('Booking not found.');
+ const rows=(await loadCloudResults()).filter(x=>x.orderId===orderId);if(!rows.length)return alert('Save draft results first.');
+ const p={name:o.patientName||'',id:o.patientId||'',age:o.patientAge||'—',gender:o.patientGender||'—',mobile:o.patientMobile||'',address:o.patientAddress||'',referrer:o.referrer||''};
+ const design=await getReportDesign(),lab=currentLab||{},sign=await getReportSignatures();
+ const groups=(o.items||[]).map(t=>{const rr=rows.filter(r=>r.testName===t.name);return `<section class="test"><h3>${safe(t.name)}</h3><table><thead><tr><th>Parameter</th><th>Result</th><th>Unit</th><th>Reference Range</th></tr></thead><tbody>${rr.map(r=>`<tr><td>${safe(r.parameter)}</td><td>${safe(r.resultValue)}</td><td>${safe(r.unit)}</td><td>${safe(r.referenceRange)}</td></tr>`).join('')||`<tr><td colspan="4">No results entered</td></tr>`}</tbody></table></section>`}).join('');
+ const win=window.open('','_blank');if(!win)return alert('Allow pop-ups to print the booking draft.');
+ win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Draft ${safe(o.id)}</title><style>@page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}html,body{margin:0;padding:0}body{font-family:${JSON.stringify(design.font||'Arial')};font-size:${Math.min(13,Math.max(9,Number(design.fontSize)||10.5))}pt;line-height:1.3;color:#172536}.sheet{width:100%}.head{text-align:center;border-bottom:1px solid #aaa;padding-bottom:6px;break-inside:avoid}.meta{display:grid;grid-template-columns:1fr 1fr;gap:6px;border:1px solid #ddd;padding:8px;margin:9px 0;break-inside:avoid}.draft{text-align:center;color:#a00;border:2px solid #a00;padding:6px;font-weight:bold;break-inside:avoid}.test{break-inside:avoid-page;page-break-inside:avoid;margin:0 0 10px;orphans:3;widows:3}.test h3{break-after:avoid-page;page-break-after:avoid;margin:8px 0 4px}table{width:100%;border-collapse:collapse;table-layout:fixed}thead{display:table-header-group}tbody{break-inside:auto}tr{break-inside:avoid;page-break-inside:avoid}th,td{vertical-align:top}td,th{border:1px solid #aaa;padding:4px 5px;text-align:left;overflow-wrap:anywhere}.sign{display:flex;justify-content:space-between;gap:16px;margin-top:28px;break-inside:avoid}.sign div{border-top:1px solid #555;padding-top:6px;width:42%;text-align:center}.foot{text-align:center;border-top:1px solid #ddd;margin-top:14px;padding-top:6px;break-inside:avoid}@media screen{body{padding:12px;background:#eee}.sheet{background:white;max-width:190mm;margin:auto;padding:10mm}}</style></head><body><main class="sheet"><header class="head"><h2>${safe(design.headerTitle||lab.name||'')}</h2><div>${safe(design.headerLine1||lab.address||'')}</div><div>${safe(design.headerLine2||lab.phone||'')}</div></header><div class="draft">DRAFT — NOT VERIFIED — NOT FOR CLINICAL USE</div><h2 style="text-align:center">LABORATORY REPORT</h2><div class="meta"><div><b>Patient:</b> ${safe(p.name)}</div><div><b>Patient ID:</b> ${safe(p.id)}</div><div><b>Age / Gender:</b> ${safe(p.age)} / ${safe(p.gender)}</div><div><b>Mobile:</b> ${safe(p.mobile)}</div><div><b>Referring Doctor:</b> ${safe(p.referrer)}</div><div><b>Booking:</b> ${safe(o.id)}</div><div><b>Date:</b> ${safe(new Date(o.createdAt).toLocaleString())}</div></div>${groups}<div class="sign"><div>${safe(sign.technician?.name||'Technician')}<br>${safe(sign.technician?.qualification||'')}</div><div>${safe(sign.doctor?.name||'Authorized Reviewer')}<br>${safe(sign.doctor?.qualification||'')}</div></div><div class="foot">${safe(design.footerText||sign.footer||'Draft report. Review and verification required.')}</div></main><script>window.onload=()=>window.print()<\/script></body></html>`);win.document.close();
+}
+async function printDraftResult(resultId){
+ const rows=await loadCloudResults(),r=rows.find(x=>x.id===resultId);if(!r)return alert('Result record not found.');
+ const patients=await getPatients(),p=patients.find(x=>x.id===r.patientId)||{name:'',id:r.patientId||'',age:'',gender:'',mobile:'',referrer:'',address:''};
+ const design=(await getSetting('reportDesign'))||{},sign=(await getSetting('reportSignatures'))||{},lab=(await getSetting('labProfile'))||currentLab||{};
+ const safe=x=>esc(x);const win=window.open('','_blank');if(!win)return alert('Allow pop-ups to print the report.');
+ win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Draft Result ${safe(r.id)}</title><style>@page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}body{font-family:${JSON.stringify(design.font||'Arial')};font-size:${Math.min(13,Math.max(9,Number(design.fontSize)||10.5))}pt;line-height:1.3;color:${safe(design.fontColor||'#172536')};margin:0}.sheet{width:100%}.head{text-align:center;border-bottom:1px solid #aaa;padding-bottom:8px;color:${safe(design.accentColor||'#123c63')}}.meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;border:1px solid #ddd;padding:12px;margin:14px 0}table{width:100%;border-collapse:collapse;table-layout:fixed}thead{display:table-header-group}tr{break-inside:avoid;page-break-inside:avoid}td,th{border:1px solid #aaa;padding:5px;text-align:left;overflow-wrap:anywhere}.meta,.draft,h3,.sign,.foot{break-inside:avoid}.draft{font-size:20px;font-weight:bold;color:#a00;text-align:center;border:2px solid #a00;padding:8px;margin:12px 0}.sign{display:flex;justify-content:space-between;margin-top:55px}.sign div{border-top:1px solid #555;padding-top:6px;width:42%;text-align:center}.foot{text-align:center;border-top:1px solid #ddd;margin-top:24px;padding-top:8px}</style></head><body><main class="sheet"><header class="head"><h2>${safe(design.headerTitle||lab.name||'')}</h2><div>${safe(design.headerLine1||lab.address||'')}</div><div>${safe(design.headerLine2||lab.phone||'')}</div></header><div class="draft">DRAFT — NOT VERIFIED — NOT FOR CLINICAL USE</div><h3 style="text-align:center">LABORATORY RESULT</h3><div class="meta"><div><b>Patient:</b> ${safe(p.name)}</div><div><b>Patient ID:</b> ${safe(p.id)}</div><div><b>Age / Gender:</b> ${safe(p.age)} / ${safe(p.gender)}</div><div><b>Mobile:</b> ${safe(p.mobile)}</div><div><b>Referring Doctor:</b> ${safe(p.referrer)}</div><div><b>Order ID:</b> ${safe(r.orderId)}</div><div><b>Report Date:</b> ${safe(new Date(r.createdAt).toLocaleString())}</div></div><h3>${safe(r.testName)}</h3><table><thead><tr><th>Parameter</th><th>Result</th><th>Unit</th><th>Reference Range</th></tr></thead><tbody><tr><td>${safe(r.parameter)}</td><td>${safe(r.resultValue)}</td><td>${safe(r.unit)}</td><td>${safe(r.referenceRange)}</td></tr></tbody></table><div class="sign"><div>${safe(sign.technician?.name||'Technician')}<br>${safe(sign.technician?.qualification||'')}</div><div>${safe(sign.doctor?.name||'Authorized Reviewer')}<br>${safe(sign.doctor?.qualification||'')}</div></div><div class="foot">${safe(design.footerText||sign.footer||'Draft report. Must be reviewed and verified by an authorized professional.')}</div></main><script>window.onload=()=>window.print()<\/script></body></html>`);win.document.close();
+}
+
+async function renderResultsReports(c){
+ if(!currentLab?.id){c.innerHTML='<div class="notice">Results are managed inside each laboratory workspace.</div>';return;}
+ let orders=[],results=[];try{orders=await getOrders();results=await loadCloudResults();}catch(e){c.innerHTML=`<div class="notice">Cloud data could not load: ${esc(e.message)}. Check the required V11–V21 migrations.</div>`;return;}
+ const orderOptions=orders.map(o=>`<option value="${esc(o.id)}">${esc(o.id)} — ${esc(o.patientName)} (${(o.items||[]).length} tests)</option>`).join('');
+ c.innerHTML=`<div class="panel-head"><h3>Results Entry & Reports</h3><span class="muted">${results.length} parameter results</span></div>
+ <div class="notice">Select a saved booking. Its selected tests and parameters will load automatically. Enter only result values; units and the booking's saved reference intervals are prefilled. Missing intervals remain clearly marked as not configured. Draft reports are not final clinical reports.</div>
+ <div class="field"><label>Booking / Order *</label><select class="input" id="resultOrderSelect"><option value="">Select booking</option>${orderOptions}</select></div>
+ <div id="resultPatientSummary" class="card hidden" style="margin:10px 0"></div>
+ <form id="multiResultForm"><div id="multiResultFields"><div class="empty">Choose a booking to load its tests and parameters.</div></div><div class="row" style="margin-top:12px"><button class="btn" type="submit" id="saveAllResults" disabled>Save All Results as Draft</button><button class="btn secondary" type="button" id="printBookingDraft" disabled>Print Booking Draft</button></div><div id="multiResultMessage" class="message"></div></form>
+ <h3 style="margin-top:24px">Saved Results</h3><div class="tablewrap"><table><thead><tr><th>Order</th><th>Test / Parameter</th><th>Result</th><th>Unit</th><th>Reference</th><th>Status</th><th>Storage</th><th>Print</th></tr></thead><tbody>${results.map(r=>`<tr><td>${esc(r.orderId||'—')}</td><td>${esc(r.testName)} / ${esc(r.parameter)}</td><td>${esc(r.resultValue)}</td><td>${esc(r.unit)}</td><td>${esc(r.referenceRange)}</td><td>${esc(r.status)}</td><td>${r.syncStatus==='synced'?'Cloud':'Pending / local'}</td><td><button type="button" class="btn secondary" data-draft-print="${esc(r.id)}">${r.status==='Verified'?'Print Report':'Print Draft'}</button></td></tr>`).join('')||'<tr><td colspan="8">No results entered yet.</td></tr>'}</tbody></table></div>`;
+ const orderSel=$('resultOrderSelect'),fields=$('multiResultFields'),saveBtn=$('saveAllResults'),printBtn=$('printBookingDraft');let activeOrder=null;
+ function patientAgeText(o){const a=String(o.patientAge||o.age||'');return a||'—';}
+ function renderOrderForm(){activeOrder=orders.find(o=>o.id===orderSel.value)||null;if(!activeOrder){fields.innerHTML='<div class="empty">Choose a booking to load its tests and parameters.</div>';$('resultPatientSummary').classList.add('hidden');saveBtn.disabled=printBtn.disabled=true;return;}
+ const p=(activeOrder.items||[]).flatMap((t,ti)=>(t.parameters||[]).map((x,pi)=>({test:t,testIndex:ti,param:x,paramIndex:pi})));const patient=(activeOrder.patientName||'')+' · Patient ID '+(activeOrder.patientId||'—');$('resultPatientSummary').classList.remove('hidden');$('resultPatientSummary').innerHTML=`<b>${esc(patient)}</b><div class="muted">Booking ${esc(activeOrder.id)} · Age ${esc(patientAgeText(activeOrder))} · ${esc(activeOrder.patientGender||'Gender not recorded')} · ${(activeOrder.items||[]).length} tests · ${esc(activeOrder.status||'Booked')}</div>`;
+ if(!p.length){fields.innerHTML='<div class="notice">The selected booking has no parameter definitions. Update the Test Catalogue and create a new booking, or add parameters to this test.</div>';saveBtn.disabled=printBtn.disabled=true;return;}
+ fields.innerHTML=(activeOrder.items||[]).map((t,ti)=>`<section class="card" style="margin:12px 0"><h3>${esc(t.name)}</h3><div class="muted">Sample: ${esc(t.sampleType||'Not specified')}</div><div class="tablewrap"><table><thead><tr><th>Parameter</th><th>Result *</th><th>Unit</th><th>Reference Range</th></tr></thead><tbody>${(t.parameters||[]).map((x,pi)=>{const typ=x.resultType||'numeric',opts=String(x.options||'Positive / Negative / Reactive / Non-reactive').split('/').map(z=>z.trim()).filter(Boolean);const input=typ==='qualitative'?`<select class="input result-value" required data-ti="${ti}" data-pi="${pi}"><option value="">Select result</option>${[...new Set(opts)].map(v=>`<option>${esc(v)}</option>`).join('')}</select>`:`<input class="input result-value" required data-ti="${ti}" data-pi="${pi}" inputmode="decimal" placeholder="Enter result">`;return `<tr><td><b>${esc(x.name)}</b></td><td>${input}</td><td>${esc(x.unit||'')}</td><td>${esc(x.referenceRange||'Not configured')}</td></tr>`;}).join('')}</tbody></table></div></section>`).join('');saveBtn.disabled=false;printBtn.disabled=false;
+ }
+ orderSel.addEventListener('change',renderOrderForm);
+ $('multiResultForm').addEventListener('submit',async e=>{e.preventDefault();if(!activeOrder)return;const inputs=[...fields.querySelectorAll('.result-value')];if(inputs.some(x=>!x.value.trim())){alert('Please enter or select a result for every parameter.');return;}const now=new Date().toISOString();saveBtn.disabled=true;let saved=0;try{for(const input of inputs){const ti=Number(input.dataset.ti),pi=Number(input.dataset.pi),test=activeOrder.items[ti],param=test.parameters[pi];const r={id:localId('RES'),labId:currentLab.id,orderId:activeOrder.id,patientId:activeOrder.patientId||'',testName:test.name,parameter:param.name,resultValue:input.value.trim(),unit:param.unit||'',referenceRange:param.referenceRange||'Not configured',status:'Draft',enteredBy:currentUser?.email||'',createdAt:now,updatedAt:now,syncStatus:'pending'};await saveCloudResult(r);saved++;}const msg=$('multiResultMessage');msg.textContent=`${saved} parameter results saved as Draft. ${navigator.onLine?'Cloud save attempted.':'Offline: sync pending.'}`;msg.className='message success';await renderResultsReports(c);}catch(err){$('multiResultMessage').textContent=`Saved ${saved} results; remaining entries not saved: ${err.message}`;$('multiResultMessage').className='message error';saveBtn.disabled=false;}});
+ printBtn.addEventListener('click',()=>{if(!activeOrder)return;printCombinedBookingDraft(activeOrder.id);});
+ c.querySelectorAll('[data-draft-print]').forEach(b=>b.addEventListener('click',()=>printDraftResult(b.dataset.draftPrint)));
+ c.querySelectorAll('[data-verify-result]').forEach(b=>b.addEventListener('click',async()=>{const r=results.find(x=>x.id===b.dataset.verifyResult);if(!r)return;if(!confirm('Verify this result? Only an authorized qualified reviewer should do this.'))return;try{if(!navigator.onLine)throw new Error('Verification requires an online server connection.');const {error}=await client.rpc('acd_verify_lab_result',{p_result_id:r.id});if(error)throw error;alert('Result verified by the server.');await renderResultsReports(c);}catch(e){alert('Could not verify: '+e.message);}}));
+}
+
+async function renderPatients(c){
+ if(!currentLab?.id){c.innerHTML='<div class="notice">Patient records are available inside an individual lab workspace. Super Admin manages platform-level settings and should not enter patient data here.</div>';return;}
+ const patients=(await getPatients()).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+ c.innerHTML=`<div class="panel-head"><h3>Patient Registration</h3><span class="muted">${patients.length} available to this lab</span></div>
+ <div class="notice">Patient records load from this lab's cloud workspace when online and use this device's IndexedDB cache when offline. Use test data until full security and backup validation is complete.</div>
+ <form id="patientForm">
+  <div class="field"><label>Patient Name *</label><input class="input" name="name" required maxlength="120" placeholder="Enter patient full name"></div>
+  <div class="row"><div class="field"><label>Age *</label><div class="row"><input class="input" name="ageValue" type="number" min="0" step="any" required placeholder="Age"><select class="input" name="ageUnit"><option value="days">Days</option><option value="months">Months</option><option value="years" selected>Years</option></select></div></div><div class="field"><label>Gender *</label><select class="input" name="gender" required><option value="">Select gender</option><option>Male</option><option>Female</option><option>Other</option></select></div></div>
+  <div class="field"><label>Mobile Number</label><input class="input" name="mobile" inputmode="tel" maxlength="20" placeholder="Patient mobile number"></div>
+  <div class="field"><label>Address</label><textarea class="input" name="address" rows="2" maxlength="300" placeholder="Patient address"></textarea></div>
+  <div class="field"><label>Referring Doctor</label><input class="input" name="referrer" maxlength="120" placeholder="Doctor / hospital name"></div>
+  <button class="btn" type="submit">Save Patient</button><span id="patientSaveMessage" class="message" role="status"></span>
+ </form>
+ <div class="panel-head" style="margin-top:24px"><h3>Saved Patients</h3></div>
+ <div class="field"><label>Search by name, Patient ID or mobile</label><input class="input" id="patientSearch" placeholder="Search patients..."></div>
+ <div id="patientList">${patientTable(patients)}</div>`;
+ $('patientForm').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.target);const now=new Date().toISOString();const patientCode=makePatientId();const p={id:patientCode,patientCode,labId:currentLab?.id||null,name:f.get('name').trim(),age:`${f.get('ageValue')} ${f.get('ageUnit')}`,ageValue:Number(f.get('ageValue')),ageUnit:f.get('ageUnit'),gender:f.get('gender'),mobile:f.get('mobile').trim(),address:f.get('address').trim(),referrer:f.get('referrer').trim(),createdAt:now,updatedAt:now,syncStatus:'local_only'};try{await savePatient(p);$('patientSaveMessage').textContent=p.syncStatus==='synced'?"Saved to this lab's cloud database and local cache.":'Saved on this device; cloud sync is pending.';$('patientSaveMessage').className='message '+(p.syncStatus==='synced'?'success':'error');e.target.reset();await refreshPatientList();await updatePatientCount();}catch(err){$('patientSaveMessage').textContent='Could not save: '+err.message;$('patientSaveMessage').className='message error';}});
+ $('patientSearch').addEventListener('input',refreshPatientList);
+}
+function patientTable(items){if(!items.length)return '<div class="empty"><strong>No patients saved yet</strong>Register a demo patient using the form above.</div>';return '<div class="tablewrap"><table><thead><tr><th>Patient ID</th><th>Name</th><th>Age / Gender</th><th>Mobile</th><th>Referring Doctor</th><th>Storage</th><th></th></tr></thead><tbody>'+items.map(p=>`<tr><td>${esc(p.id)}</td><td>${esc(p.name)}</td><td>${esc(p.age)} / ${esc(p.gender)}</td><td>${esc(p.mobile)}</td><td>${esc(p.referrer)}</td><td>${p.syncStatus==='synced'?'Cloud synced':'Pending sync / device only'}</td><td><button class="btn danger" data-patient-delete="${esc(p.id)}">Delete</button></td></tr>`).join('')+'</tbody></table></div>';}
+async function refreshPatientList(){const q=$('patientSearch').value.trim().toLowerCase();let ps=(await getPatients()).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));if(q)ps=ps.filter(p=>[p.id,p.name,p.mobile,p.referrer].some(v=>String(v||'').toLowerCase().includes(q)));$('patientList').innerHTML=patientTable(ps);document.querySelectorAll('[data-patient-delete]').forEach(b=>b.addEventListener('click',async()=>{if(confirm('Permanently delete this local demo record?')){await deletePatient(b.dataset.patientDelete);await refreshPatientList();await updatePatientCount();}}));}
+function network(){$('networkState').textContent=navigator.onLine?'Online':'Offline';}
+window.addEventListener('online',async()=>{network();try{const r=await syncPendingData();if(r.errors.length)console.warn('Cloud sync pending',r.errors);await updatePatientCount();await updateOrderCount();}catch(e){console.warn('Sync retry failed',e);}});window.addEventListener('offline',network);network();
+(async()=>{try{db=await openLocalDB();}catch(e){console.error(e);alert('This browser could not open local database storage. Patient saving is unavailable.');return;}try{const {data}=await client.auth.getSession();if(data.session)showApp(data.session.user);}catch(e){console.warn('Session check unavailable offline',e);}})();
+</script>
+</body>
+</html>
