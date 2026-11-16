@@ -622,33 +622,78 @@ async function renderLocalModule(page,c){
 
 async function renderBackupRestore(c){
  const stores=['patients','orders','settings','samples','results','expenses','inventory','staff'];
- c.innerHTML=`<div class="panel-head"><h3>Backup & Restore</h3></div>
- <div class="notice"><b>Important:</b> This creates a backup of data stored in this browser only. It is not an encrypted cloud backup. Keep the downloaded file private and store it safely.</div>
- <div class="card"><h4>Export local backup</h4><p class="muted">Download your local patient, booking, report-setting and operational records as one JSON file.</p><button class="btn" id="exportBackup">Download Backup</button></div>
- <div class="card" style="margin-top:12px"><h4>Restore local backup</h4><p class="muted">Restoring replaces matching local records in this browser. Export a backup first.</p><input id="backupFile" class="input" type="file" accept=".json,application/json"><button class="btn danger" id="restoreBackup" style="margin-top:10px">Restore Selected Backup</button><div id="backupMessage" class="message"></div></div>`;
- $('exportBackup').onclick=async()=>{
-  const payload={product:'ACD BITTU LAB CLOUD',formatVersion:1,createdAt:new Date().toISOString(),localSetup:store,data:{}};
-  for(const n of stores){try{payload.data[n]=await dbRequest(db.transaction(n).objectStore(n).getAll())}catch{payload.data[n]=[]}}
-  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');
-  a.href=url;a.download='acd-bittu-lab-cloud-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(url);
-  $('backupMessage').textContent='Backup downloaded. Store it securely.';$('backupMessage').className='message success';
+ const labId=currentLab?.id;
+ c.innerHTML=`<div class="panel-head"><h3>Backup, Restore & Cloud Sync</h3></div>
+ <div class="notice"><b>Encrypted cloud backup:</b> Backup JSON is encrypted in this browser with your passphrase before upload to the private Supabase Storage bucket. Keep the passphrase safe; it cannot be recovered.</div>
+ <div class="card"><h4>Cloud backup</h4><div class="field"><label>Backup passphrase (minimum 12 characters)</label><input id="backupPass" class="input" type="password" minlength="12" autocomplete="new-password"></div><button class="btn" id="cloudBackup">Create encrypted cloud backup</button><div id="cloudBackupMessage" class="message"></div></div>
+ <div class="card" style="margin-top:12px"><h4>Restore cloud backup</h4><div class="field"><label>Select backup</label><select id="cloudBackupList" class="input"><option value="">Load backups first</option></select></div><button class="btn secondary" id="loadCloudBackups">Load backup list</button><div class="field" style="margin-top:10px"><label>Backup passphrase</label><input id="restorePass" class="input" type="password" autocomplete="current-password"></div><button class="btn danger" id="restoreCloudBackup">Decrypt & restore to this device</button><div id="cloudRestoreMessage" class="message"></div></div>
+ <div class="card" style="margin-top:12px"><h4>Sync status</h4><p class="muted">Pending patient, booking, sample and result records retry when the browser reconnects. You can also start a manual sync.</p><button class="btn secondary" id="manualCloudSync">Sync pending records now</button><div id="manualSyncMessage" class="message"></div></div>
+ <div class="notice">Restore writes records into this browser's local database only. It does not overwrite cloud patient/order records. Export a fresh backup before restoring. Use a separate passphrase for each lab and do not share backup files.</div>`;
+ const enc=async(pass,plain)=>{
+  const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
+  const material=await crypto.subtle.importKey('raw',new TextEncoder().encode(pass),'PBKDF2',false,['deriveKey']);
+  const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:250000,hash:'SHA-256'},material,{name:'AES-GCM',length:256},false,['encrypt']);
+  const cipher=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(plain));
+  const b=x=>btoa(String.fromCharCode(...new Uint8Array(x)));
+  return JSON.stringify({product:'ACD BITTU LAB CLOUD',formatVersion:2,algorithm:'PBKDF2-SHA256/AES-256-GCM',salt:b(salt),iv:b(iv),ciphertext:b(cipher)});
  };
- $('restoreBackup').onclick=async()=>{
-  const file=$('backupFile').files[0];if(!file){$('backupMessage').textContent='Select a backup JSON file first.';return}
+ const dec=async(pass,blob)=>{
+  const p=JSON.parse(blob);if(p.product!=='ACD BITTU LAB CLOUD'||p.formatVersion!==2||p.algorithm!=='PBKDF2-SHA256/AES-256-GCM')throw new Error('Unsupported or invalid encrypted backup.');
+  const u=x=>Uint8Array.from(atob(x),c=>c.charCodeAt(0));
+  const material=await crypto.subtle.importKey('raw',new TextEncoder().encode(pass),'PBKDF2',false,['deriveKey']);
+  const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:u(p.salt),iterations:250000,hash:'SHA-256'},material,{name:'AES-GCM',length:256},false,['decrypt']);
+  return new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:u(p.iv)},key,u(p.ciphertext)));
+ };
+ const msg=(id,t,ok=false)=>{$(id).textContent=t;$(id).className='message '+(ok?'success':'error');};
+ $('cloudBackup').onclick=async()=>{
+  const pass=$('backupPass').value;
+  if(!labId){msg('cloudBackupMessage','No active lab workspace.');return}
+  if(pass.length<12){msg('cloudBackupMessage','Use at least 12 characters for the passphrase.');return}
+  const b=$('cloudBackup');b.disabled=true;
   try{
-   const payload=JSON.parse(await file.text());if(payload.product!=='ACD BITTU LAB CLOUD'||!payload.data)throw new Error('This is not a valid ACD BITTU LAB CLOUD backup.');
-   if(!confirm('Restore this backup? Existing local records with the same IDs will be replaced.'))return;
-   if(payload.localSetup){store={...defaults,...payload.localSetup};saveData()}
-   for(const n of stores){const rows=payload.data[n];if(!Array.isArray(rows))continue;const tx=db.transaction(n,'readwrite'),os=tx.objectStore(n);for(const row of rows)os.put(row);await new Promise((res,rej)=>{tx.oncomplete=res;tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error)})}
-   $('backupMessage').textContent='Backup restored to this device. Cloud sync is not performed.';$('backupMessage').className='message success';
-  }catch(e){$('backupMessage').textContent='Restore failed: '+e.message}
+   if(!navigator.onLine)throw new Error('Connect to the internet before creating a cloud backup.');
+   const payload={product:'ACD BITTU LAB CLOUD',formatVersion:2,labId,createdAt:new Date().toISOString(),localSetup:store,data:{}};
+   for(const n of stores){try{payload.data[n]=await dbRequest(db.transaction(n).objectStore(n).getAll())}catch{payload.data[n]=[]}}
+   const encrypted=await enc(pass,JSON.stringify(payload));
+   const path=`${labId}/${currentUser.id}/backup-${Date.now()}.json`;
+   const {error}=await client.storage.from('acd-lab-backups').upload(path,new Blob([encrypted],{type:'application/json'}),{contentType:'application/json',upsert:false});
+   if(error)throw error;
+   msg('cloudBackupMessage','Encrypted backup uploaded successfully: '+path,true);
+  }catch(e){msg('cloudBackupMessage','Backup failed: '+(e.message||e))}
+  finally{b.disabled=false}
  };
+ $('loadCloudBackups').onclick=async()=>{
+  try{
+   if(!labId)throw new Error('No active lab workspace.');
+   const {data,error}=await client.storage.from('acd-lab-backups').list(labId,{limit:100,sortBy:{column:'created_at',order:'desc'}});
+   if(error)throw error;
+   const sel=$('cloudBackupList');sel.innerHTML='<option value="">Choose a backup</option>';
+   for(const f of (data||[]).filter(x=>x.name.endsWith('.json'))){const o=document.createElement('option');o.value=labId+'/'+f.name;o.textContent=f.name;sel.appendChild(o)}
+   msg('cloudRestoreMessage',`${sel.options.length-1} backup(s) found.`,true);
+  }catch(e){msg('cloudRestoreMessage','Could not load backups: '+(e.message||e))}
+ };
+ $('restoreCloudBackup').onclick=async()=>{
+  const path=$('cloudBackupList').value,pass=$('restorePass').value;
+  if(!path){msg('cloudRestoreMessage','Select a backup first.');return}
+  if(!pass){msg('cloudRestoreMessage','Enter the backup passphrase.');return}
+  if(!confirm('Restore selected backup to this device? Existing local rows with matching IDs will be replaced. Cloud records will not be overwritten.'))return;
+  try{
+   const {data,error}=await client.storage.from('acd-lab-backups').download(path);if(error)throw error;
+   const plain=await dec(pass,await data.text()),payload=JSON.parse(plain);
+   if(payload.labId!==labId)throw new Error('This backup belongs to a different lab workspace.');
+   for(const n of stores){const rows=payload.data?.[n];if(!Array.isArray(rows))continue;const tx=db.transaction(n,'readwrite'),os=tx.objectStore(n);for(const row of rows)os.put(row);await new Promise((res,rej)=>{tx.oncomplete=res;tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error)})}
+   if(payload.localSetup){store={...defaults,...payload.localSetup};saveData()}
+   msg('cloudRestoreMessage','Backup decrypted and restored to this device. Cloud records were not changed.',true);
+  }catch(e){msg('cloudRestoreMessage','Restore failed: '+(e.message||e))}
+ };
+ $('manualCloudSync').onclick=async()=>{const b=$('manualCloudSync');b.disabled=true;try{const r=await syncPendingData();msg('manualSyncMessage',`Synced: ${r.patients} patients, ${r.orders} bookings, ${r.samples||0} samples, ${r.results||0} results. Errors: ${r.errors.length}. ${r.errors.slice(0,3).join(' | ')}`,!r.errors.length)}catch(e){msg('manualSyncMessage','Sync failed: '+e.message)}finally{b.disabled=false}};
 }
+
 async function renderCloudSetup(c){
  const role=currentPlatformRole;
  c.innerHTML=`<div class="panel-head"><h3>Cloud Setup & System Readiness</h3></div>
  <div class="notice"><b>Cloud connection:</b> Authentication, lab workspaces, Test Catalogue, Patients and Bookings use Supabase when online. Patients and Bookings have a local offline cache with retry-on-reconnect. Other operational modules remain local-only until their cloud tables and role controls are deployed.</div>
- <div class="card"><h4>Current readiness</h4><ul><li>Authentication: Connected</li><li>Lab registration and workspace: Enabled</li><li>Test Catalogue: Cloud enabled</li><li>Patients and Bookings: Cloud enabled with offline retry</li><li>Results, samples, staff invitations: Not yet production-enabled</li><li>Encrypted cloud backup, restore testing and QR verification: Not implemented</li><li>Production tenant security review: Still required</li></ul><button class="btn" id="runCloudSync">Sync pending records now</button><div id="cloudSyncMessage" class="message"></div></div>
+ <div class="card"><h4>Current readiness</h4><ul><li>Authentication: Connected</li><li>Lab registration and workspace: Enabled</li><li>Test Catalogue: Cloud enabled</li><li>Patients and Bookings: Cloud enabled with offline retry</li><li>Results, samples, staff invitations: Not yet production-enabled</li><li>Encrypted cloud backup: Available when the private storage bucket migration is applied; restore is local-device only. QR verification: Not implemented</li><li>Production tenant security review: Still required</li></ul><button class="btn" id="runCloudSync">Sync pending records now</button><div id="cloudSyncMessage" class="message"></div></div>
  <div class="notice"><b>Security warning:</b> Do not enter real patient data or invite lab users until tenant-level Row Level Security, server-side roles, audit enforcement and tested backups are completed. This page deliberately does not run unreviewed SQL against your live database.</div>
  <p class="muted">Signed-in platform role: ${esc(role||'Not verified')}</p>`;
  const b=$('runCloudSync');if(b)b.onclick=async()=>{b.disabled=true;try{const r=await syncPendingData();$('cloudSyncMessage').textContent=`Synced ${r.patients} patients, ${r.orders} bookings, ${r.samples||0} samples and ${r.results||0} results. ${r.errors.length} errors.`;$('cloudSyncMessage').className='message '+(r.errors.length?'error':'success');}catch(e){$('cloudSyncMessage').textContent=e.message;$('cloudSyncMessage').className='message error';}finally{b.disabled=false;}};
