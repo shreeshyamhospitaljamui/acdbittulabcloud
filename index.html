@@ -369,14 +369,15 @@ async function render(page){
  if(page==='Patients'){await renderPatients(c);return;}
  if(page==='Test Orders'){await renderTestOrders(c);return;}
  if(page==='Sample Tracking'){await renderSampleTracking(c);return;}
- if(['Results Entry','Accounts','Inventory','Staff Directory'].includes(page)){await renderLocalModule(page,c);return;}
+ if(page==='Staff Directory'){await renderStaffRoles(c);return;}
+ if(['Results Entry','Accounts','Inventory'].includes(page)){await renderLocalModule(page,c);return;}
  if(page==='Results & Reports'){await renderResultsReports(c);return;}
  if(page==='Backup & Restore'){await renderBackupRestore(c);return;}
  if(page==='Cloud Setup'){await renderCloudSetup(c);return;}
  if(page==='Report Signatures'){await renderReportSignatures(c);return;}
  if(page==='Report Designer'){await renderReportDesigner(c);return;}
  if(page==='Permission Manager'){await renderPermissionManager(c);return;}
- const descriptions={'Test Orders':'Offline test booking and billing module.','Results & Reports':'Result entry, verification and PDF report generation will be developed after test orders.','Staff & Roles':'Staff invitations and secure role permissions require server-side functions.','Retention & Backup':'Encrypted cloud backup, restore tests and retention controls are not implemented yet.',
+ const descriptions={'Test Orders':'Offline test booking and billing module.','Results & Reports':'Result entry, verification and PDF report generation will be developed after test orders.','Staff & Roles':'Invite staff by email and assign a role. Access enforcement on every patient/order/result table still requires security validation.','Retention & Backup':'Encrypted cloud backup, restore tests and retention controls are not implemented yet.',
  'Permission Manager':'Owner-only permission settings are being prepared.'};
  c.innerHTML=`<div class="panel-head"><h3>${esc(page)}</h3></div><div class="empty"><strong>Not enabled yet</strong>${esc(descriptions[page]||'This module is planned for a later development step.')}</div>`;
 }
