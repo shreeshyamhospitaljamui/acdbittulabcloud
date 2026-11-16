@@ -458,8 +458,8 @@ async function render(page){
 }
 
 async function renderReportDesigner(c){
- const defaults={headerTitle:'',headerLine1:'',headerLine2:'',footerText:'',font:'Arial',fontSize:10.5,fontColor:'#172536',accentColor:'#123c63',pageSize:'A4',orientation:'portrait',topMargin:10,bottomMargin:18,leftMargin:10,rightMargin:10,headerGap:4,patientGap:4,testGap:5,rowPadding:2.2,sectionGap:4,signatureBottomGap:3,signatureHeight:16,signatureWidth:42,signatureAlign:'right',showPatient:true,showTable:true,showSignatures:true,showQr:false,headerLogo:'',footerGap:3,sections:['Patient Details','Test Details','Result Table','Interpretation','Signatures','QR Code']};
- const saved=(await getSetting('reportDesign'))||{};const d={...defaults,...saved};
+ const defaults={headerTitle:'',headerLine1:'',headerLine2:'',footerText:'',font:'Arial',fontSize:10.5,fontColor:'#172536',accentColor:'#123c63',pageSize:'A4',orientation:'portrait',topMargin:10,bottomMargin:18,leftMargin:10,rightMargin:10,headerGap:4,patientGap:4,testGap:5,rowPadding:2.2,sectionGap:4,signatureBottomGap:3,signatureHeight:16,signatureWidth:42,signatureAlign:'right',showPatient:true,showTable:true,showSignatures:true,showQr:true,headerLogo:'',footerGap:3,sections:['Patient Details','Test Details','Result Table','Interpretation','Signatures','QR Code']};
+ const saved=(await getSetting('reportDesign'))||{};const d={...defaults,...saved};if(saved.qrConfigured!==true){d.showQr=true;d.qrConfigured=true;}
  const signatures=(await getSetting('reportSignatures'))||{};const doc=signatures.doctor||{},tech=signatures.technician||{};
  const n=(v,min=0,max=100)=>Math.min(max,Math.max(min,Number(v)||0));
  const preview=()=>{const paper=$('reportPaper');if(!paper)return;paper.style.fontFamily=d.font;paper.style.fontSize=d.fontSize+'pt';paper.style.color=d.fontColor;paper.style.padding=`${d.topMargin}mm ${d.rightMargin}mm ${Math.max(d.bottomMargin,d.signatureHeight+8)}mm ${d.leftMargin}mm`;paper.style.minHeight='275mm';paper.innerHTML=`<div style="text-align:center;color:${d.accentColor};border-bottom:1px solid #aaa;padding-bottom:${d.headerGap}mm"><h2 style="margin:0">${esc(d.headerTitle||store.lab.name||'YOUR LAB NAME')}</h2><div>${esc(d.headerLine1||store.lab.address||'Lab address')}</div><div>${esc(d.headerLine2||store.lab.phone||'Phone / Email')}</div></div>${d.showPatient?`<div style="margin-top:${d.patientGap}mm"><b>Patient Details</b><p>Patient Name: ____________________　Age: ______　Gender: ______</p><p>Patient ID: ____________________　Ref. Doctor: ____________________</p></div>`:''}<section style="margin-top:${d.testGap}mm"><h3 style="margin:0 0 2mm">CBC / HAEMOGRAM</h3><table style="min-width:0;width:100%;border-collapse:collapse"><tr><th style="padding:${d.rowPadding}mm;border:1px solid #aaa">Parameter</th><th style="padding:${d.rowPadding}mm;border:1px solid #aaa">Result</th><th style="padding:${d.rowPadding}mm;border:1px solid #aaa">Unit</th><th style="padding:${d.rowPadding}mm;border:1px solid #aaa">Reference Range</th></tr>${['Haemoglobin','Total WBC','Platelet Count'].map(x=>`<tr><td style="padding:${d.rowPadding}mm;border:1px solid #aaa">${x}</td><td style="border:1px solid #aaa"></td><td style="border:1px solid #aaa"></td><td style="border:1px solid #aaa"></td></tr>`).join('')}</table></section><div style="margin-top:${d.sectionGap}mm">${esc(d.footerText||'Report footer / disclaimer')}</div><div style="margin-top:${d.signatureBottomGap}mm;border-top:1px solid #777;text-align:${d.signatureAlign};padding-top:2mm"><b>Authorized Signatory</b><br><small>Signature anchored to bottom of each printed page</small></div>`;};
@@ -472,7 +472,11 @@ async function renderReportDesigner(c){
  <section class="mod-section"><h4>Font & Colors</h4><div class="mod-grid"><div class="field"><label>Font Family</label><select class="input" name="font">${['Arial','Georgia','Times New Roman','Verdana','Tahoma','Courier New'].map(x=>`<option ${d.font===x?'selected':''}>${x}</option>`).join('')}</select></div><div class="field"><label>Font Size (pt)</label><input class="input" name="fontSize" type="number" min="7" max="18" step="0.5" value="${d.fontSize}"></div><div class="field"><label>Text Color</label><input class="input" name="fontColor" type="color" value="${esc(d.fontColor)}"></div><div class="field"><label>Header / Accent Color</label><input class="input" name="accentColor" type="color" value="${esc(d.accentColor)}"></div></div></section>
  <section class="mod-section"><h4>Spacing & Table Layout</h4><div class="mod-grid">${field('Patient section gap','patientGap',d.patientGap,'0.5','0','40')}${field('Test section gap','testGap',d.testGap,'0.5','0','40')}${field('Between report sections','sectionGap',d.sectionGap,'0.5','0','40')}${field('Table row padding','rowPadding',d.rowPadding,'0.1','0','10')}${field('Signature bottom gap','signatureBottomGap',d.signatureBottomGap,'0.5','0','30')}</div></section>
  <section class="mod-section"><h4>Signature Placement & Visibility</h4><div class="mod-grid">${field('Signature image height','signatureHeight',d.signatureHeight,'0.5','5','35')}${field('Signature width','signatureWidth',d.signatureWidth,'0.5','10','90')}<div class="field"><label>Signature Alignment</label><select class="input" name="signatureAlign"><option value="left" ${d.signatureAlign==='left'?'selected':''}>Left</option><option value="center" ${d.signatureAlign==='center'?'selected':''}>Center</option><option value="right" ${d.signatureAlign==='right'?'selected':''}>Right</option></select></div></div><label><input type="checkbox" name="showPatient" ${d.showPatient?'checked':''}> Show patient details</label>　<label><input type="checkbox" name="showTable" ${d.showTable?'checked':''}> Show result table</label>　<label><input type="checkbox" name="showSignatures" ${d.showSignatures?'checked':''}> Show signatures</label></section>
- <section class="mod-section"><h4>Report Content, QR & Table Controls</h4>
+ <section class="mod-section"><h4>Test Catalogue & Reference Range Manager</h4>
+ <div class="notice">Add a new investigation, edit or remove an existing test, add/remove parameters, and edit General/Male/Female/Age-specific reference ranges in the lab Test Catalogue. Changes are saved to the existing lab catalogue.</div>
+ <button type="button" class="btn secondary" id="openCatalogueFromDesigner">Open Test & Range Manager</button>
+</section>
+<section class="mod-section"><h4>Report Content, QR & Table Controls</h4>
 <div class="mod-grid">
 <div class="field"><label>Logo width (mm)</label><input class="input" name="logoWidth" type="number" min="5" max="80" step="0.5" value="${d.logoWidth??28}"></div>
 <div class="field"><label>QR size (mm)</label><input class="input" name="qrSize" type="number" min="12" max="50" step="0.5" value="${d.qrSize??24}"></div>
@@ -484,9 +488,27 @@ async function renderReportDesigner(c){
 <div class="field"><label>Result column (%)</label><input class="input" name="columnResult" type="number" min="8" max="40" value="${d.columnResult??18}"></div>
 <div class="field"><label>Unit column (%)</label><input class="input" name="columnUnit" type="number" min="8" max="35" value="${d.columnUnit??15}"></div>
 <div class="field"><label>Reference column (%)</label><input class="input" name="columnRange" type="number" min="10" max="70" value="${d.columnRange??33}"></div>
+
+<div class="mod-section" style="margin-top:12px">
+ <h4>Report Table Columns — Show / Hide / Rename</h4>
+ <div class="notice">Columns can be hidden or renamed. The underlying result data is not deleted when a column is hidden.</div>
+ <div class="mod-grid">
+ <div class="field"><label>Parameter column title</label><input class="input" name="colParameterLabel" value="${esc((d.reportColumns||[]).find(x=>x.key==='parameter')?.label||'Parameter')}"></div>
+ <div class="field"><label>Result column title</label><input class="input" name="colResultLabel" value="${esc((d.reportColumns||[]).find(x=>x.key==='result')?.label||'Result')}"></div>
+ <div class="field"><label>Unit column title</label><input class="input" name="colUnitLabel" value="${esc((d.reportColumns||[]).find(x=>x.key==='unit')?.label||'Unit')}"></div>
+ <div class="field"><label>Reference column title</label><input class="input" name="colRangeLabel" value="${esc((d.reportColumns||[]).find(x=>x.key==='range')?.label||'Reference Range')}"></div>
+ </div>
+ <div class="mod-grid" style="margin-top:8px">
+ <label><input type="checkbox" name="colParameterShow" ${((d.reportColumns||[]).find(x=>x.key==='parameter')?.show)!==false?'checked':''}> Show Parameter</label>
+ <label><input type="checkbox" name="colResultShow" ${((d.reportColumns||[]).find(x=>x.key==='result')?.show)!==false?'checked':''}> Show Result</label>
+ <label><input type="checkbox" name="colUnitShow" ${((d.reportColumns||[]).find(x=>x.key==='unit')?.show)!==false?'checked':''}> Show Unit</label>
+ <label><input type="checkbox" name="colRangeShow" ${((d.reportColumns||[]).find(x=>x.key==='range')?.show)!==false?'checked':''}> Show Reference Range</label>
+ </div>
+</div>
 </div>
 <div class="mod-grid" style="margin-top:10px">
 <label><input type="checkbox" name="showLogo" ${d.showLogo!==false?'checked':''}> Show lab logo</label>
+<label><input type="checkbox" name="showQr" ${d.showQr!==false?'checked':''}> Show QR code on report</label>
 <label><input type="checkbox" name="showReportTitle" ${d.showReportTitle!==false?'checked':''}> Show report title</label>
 <label><input type="checkbox" name="showMobile" ${d.showMobile!==false?'checked':''}> Show mobile</label>
 <label><input type="checkbox" name="showAddress" ${d.showAddress!==false?'checked':''}> Show address</label>
@@ -503,13 +525,21 @@ async function renderReportDesigner(c){
  <p><button class="btn" type="submit">Save All Modification Settings</button> <span id="designMessage" class="message"></span></p></form>
  <h4>Live A4 Preview</h4><div class="report-preview"><div class="paper" id="reportPaper"></div></div>`;
  const form=$('designForm');
- const update=()=>{const fd=new FormData(form);for(const [k,v] of fd.entries()){if(k==='pageSize'||k==='orientation'||k==='signatureAlign'||k==='qrPosition'||['headerTitle','headerLine1','headerLine2','footerText','font','fontColor','accentColor','qrCaption','tableHeaderColor'].includes(k))d[k]=v;else if(k!=='designLogo')d[k]=Number(v);}for(const k of ['showPatient','showTable','showSignatures','showLogo','showReportTitle','showMobile','showAddress','showReferrer','showUnits','showReferenceRange','showTestHeadings','showSignatureNames','showSignatureQualifications','showQr','showQrCaption'])d[k]=form.elements[k].checked;preview();};
+ const update=()=>{const fd=new FormData(form);for(const [k,v] of fd.entries()){if(k==='pageSize'||k==='orientation'||k==='signatureAlign'||k==='qrPosition'||['headerTitle','headerLine1','headerLine2','footerText','font','fontColor','accentColor','qrCaption','tableHeaderColor'].includes(k))d[k]=v;else if(k!=='designLogo')d[k]=Number(v);}for(const k of ['showPatient','showTable','showSignatures','showLogo','showReportTitle','showMobile','showAddress','showReferrer','showUnits','showReferenceRange','showTestHeadings','showSignatureNames','showSignatureQualifications','showQr','showQrCaption'])if(form.elements[k])d[k]=form.elements[k].checked;
+ d.reportColumns=[
+ {key:'parameter',label:form.elements.colParameterLabel?.value||'Parameter',show:!!form.elements.colParameterShow?.checked},
+ {key:'result',label:form.elements.colResultLabel?.value||'Result',show:!!form.elements.colResultShow?.checked},
+ {key:'unit',label:form.elements.colUnitLabel?.value||'Unit',show:!!form.elements.colUnitShow?.checked},
+ {key:'range',label:form.elements.colRangeLabel?.value||'Reference Range',show:!!form.elements.colRangeShow?.checked}
+ ];preview();};
  form.addEventListener('input',update);form.addEventListener('change',update);
  $('designLogo')?.addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;if(f.size>700000) return alert('Logo image must be 700 KB or smaller.');d.headerLogo=await fileToDataUrl(f);preview();});
  $('removeLogo')?.addEventListener('click',()=>{d.headerLogo='';renderReportDesigner(c);});
  c.querySelectorAll('[data-goto-signatures]').forEach(b=>b.onclick=()=>setPage('Report Signatures'));
  form.addEventListener('submit',async e=>{e.preventDefault();update();await saveSetting('reportDesign',d);$('designMessage').textContent='Settings saved for this laboratory.';$('designMessage').className='message success';});
- $('resetDesign').onclick=async()=>{if(confirm('Reset all report modification settings?')){await saveSetting('reportDesign',defaults);renderReportDesigner(c);}};preview();
+ $('resetDesign').onclick=async()=>{if(confirm('Reset all report modification settings?')){await saveSetting('reportDesign',defaults);renderReportDesigner(c);}};
+ $('openCatalogueFromDesigner')?.addEventListener('click',()=>setPage('Test Catalogue'));
+ preview();
 }
 function fileToDataUrl(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result));r.onerror=reject;r.readAsDataURL(file);});}
 
@@ -885,8 +915,9 @@ async function sendReportWhatsApp(orderId){
  const rs=(await loadCloudResults()).filter(r=>r.orderId===orderId);
  const verified=rs.length>0&&rs.every(r=>r.status==='Verified');
  const msg=`${currentLab?.name||'Laboratory'}\nPatient: ${o.patientName||''}\nPatient ID: ${o.patientId||''}\nTests: ${(o.items||[]).map(x=>x.name).join(', ')}\nReport reference: ${o.id}\nStatus: ${verified?'Verified':'Draft — not verified'}\nPlease contact the laboratory to receive the report.`;
- window.open(phone?`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`:`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank','noopener');
- alert('WhatsApp message opened. It shares the report reference and status only. Download the PDF and attach it manually in WhatsApp; wa.me cannot silently attach the generated print/PDF file.');
+ const waUrl=phone?`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`:`https://wa.me/?text=${encodeURIComponent(msg)}`;
+ const opened=window.open(waUrl,'_blank','noopener');
+ if(!opened)alert('WhatsApp open nahi hua. Browser pop-ups allow karein. Message me report reference aur status jayega; PDF ko print dialog se Save as PDF karke WhatsApp me attach karna hoga.');
 }
 async function printCombinedBookingDraft(orderId,finalOnly=false){
  const allOrders=await getOrders(),o=allOrders.find(x=>x.id===orderId);if(!o)return alert('Report record not found.');
@@ -899,9 +930,13 @@ async function printCombinedBookingDraft(orderId,finalOnly=false){
  const p={name:o.patientName||'',id:o.patientId||'',age:o.patientAge||'Not provided',gender:o.patientGender||'Not provided',mobile:o.patientMobile||'',address:o.patientAddress||'',referrer:o.referrer||''};
  const design=await getReportDesign(),lab=currentLab||{},sign=await getReportSignatures();
  const doctor=sign.doctor||{},technician=sign.technician||{};
+ const colDefaults=[{key:'parameter',label:'Parameter',show:true},{key:'result',label:'Result',show:true},{key:'unit',label:'Unit',show:true},{key:'range',label:'Reference Range',show:true}];
+ const reportCols=Array.isArray(design.reportColumns)?design.reportColumns:colDefaults;
+ const activeCols=colDefaults.map(x=>({...x,...(reportCols.find(y=>y.key===x.key)||{})})).filter(x=>x.show!==false);
+ const cellFor=(r,k)=>k==='parameter'?safe(r.parameter):k==='result'?safe(r.resultValue):k==='unit'?safe(r.unit):safe(r.referenceRange);
  const groups=(o.items||[]).map(t=>{
    const rr=rows.filter(r=>r.testName===t.name);
-   return `<section class="test"><h3>${safe(t.name)}</h3><table><thead><tr><th>Parameter</th><th>Result</th><th>Unit</th><th>Reference Range</th></tr></thead><tbody>${rr.map(r=>`<tr><td>${safe(r.parameter)}</td><td>${safe(r.resultValue)}</td><td>${safe(r.unit)}</td><td>${safe(r.referenceRange)}</td></tr>`).join('')||'<tr><td colspan="4">No results entered</td></tr>'}</tbody></table></section>`;
+   return `<section class="test"><h3>${safe(t.name)}</h3><table><thead><tr>${activeCols.map(x=>`<th>${safe(x.label||x.key)}</th>`).join('')}</tr></thead><tbody>${rr.map(r=>`<tr>${activeCols.map(x=>`<td>${cellFor(r,x.key)}</td>`).join('')}</tr>`).join('')||`<tr><td colspan="${Math.max(1,activeCols.length)}">No results entered</td></tr>`}</tbody></table></section>`;
  }).join('');
  const top=Number(design.topMargin??10),left=Number(design.leftMargin??10),right=Number(design.rightMargin??10);
  const signatureBlock=design.showSignatures!==false?Math.max(24,Number(design.signatureHeight??16)+12):0;const bottom=Math.max(32,Number(design.bottomMargin??18),signatureBlock,design.showQr?Number(design.qrSize??24)+12:0);
