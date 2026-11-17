@@ -70,6 +70,18 @@ body{background:var(--bg);font-family:Inter,ui-sans-serif,system-ui,-apple-syste
 
 /* Direct multi-test result entry + report modification controls */
 .direct-tests{display:grid;gap:14px}.direct-test{border:1px solid var(--line);border-radius:12px;padding:14px;background:#fff;break-inside:avoid}.direct-test h4{margin:0 0 8px;color:#173b5d}.direct-test table{min-width:640px}.direct-test .input{min-width:100px}.test-search-results{max-height:310px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:8px}.test-result-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px;border-bottom:1px solid #edf1f5}.test-result-row:last-child{border-bottom:0}.mod-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.mod-grid .field{margin:6px 0}.mod-section{border:1px solid var(--line);border-radius:12px;padding:14px;margin:12px 0}.mod-section h4{margin:0 0 10px}.sig-preview{max-width:210px;max-height:70px;object-fit:contain;border:1px solid var(--line);border-radius:8px;padding:5px;background:#fff}@media(max-width:720px){.mod-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.direct-test table{min-width:560px}}@media(max-width:430px){.mod-grid{grid-template-columns:1fr}}
+
+/* FINAL UX FIX: permanent desktop sidebar; compact horizontal module rail on phones */
+.layout{display:grid!important;grid-template-columns:248px minmax(0,1fr)!important;gap:16px!important;align-items:start!important;margin-top:0!important}
+.layout>aside.card{position:sticky!important;top:82px!important;align-self:start!important;max-height:calc(100vh - 98px)!important;overflow:auto!important;padding:9px!important;margin:0!important;border:1px solid #dce5ef!important;border-radius:13px!important;background:#102b4e!important;box-shadow:0 4px 16px #15375b22!important;z-index:4!important}
+.layout>aside .nav{display:flex!important;flex-direction:column!important;gap:4px!important;position:static!important;top:auto!important;max-height:calc(100vh - 120px)!important;overflow-y:auto!important;overflow-x:hidden!important;white-space:normal!important;padding:0!important}
+.layout>aside .nav button{width:100%!important;flex:0 0 auto!important;text-align:left!important;white-space:normal!important;padding:11px 12px!important;border:1px solid transparent!important;border-radius:9px!important;font-size:12px!important;color:#d4e2f1!important}
+.layout>aside .nav button.active{background:#1b4772!important;border-color:#2d5d89!important;color:#fff!important;box-shadow:inset 3px 0 #55b4ff!important;font-weight:750!important}
+.layout>aside .nav button:focus-visible,.home-action:focus-visible,.btn:focus-visible{outline:3px solid #80b9e8!important;outline-offset:2px!important}
+#content.card{min-width:0!important;scroll-margin-top:82px!important}
+@media(max-width:760px){.layout{display:block!important}.layout>aside.card{position:sticky!important;top:60px!important;max-height:none!important;margin:0 0 12px!important;padding:5px!important;z-index:6!important}.layout>aside .nav{display:flex!important;flex-direction:row!important;max-height:none!important;overflow-x:auto!important;overflow-y:hidden!important;white-space:nowrap!important;scroll-snap-type:x proximity!important}.layout>aside .nav button{width:auto!important;flex:0 0 auto!important;white-space:nowrap!important;scroll-snap-align:start!important;padding:9px 11px!important}.layout>aside .nav button.active{box-shadow:inset 0 -2px #1677c8!important}#content.card{scroll-margin-top:125px!important}}
+@media(max-width:420px){.layout>aside.card{top:60px!important}.layout>aside .nav button{font-size:11px!important;padding:8px 9px!important}}
+
 </style>
 </head>
 <body>
