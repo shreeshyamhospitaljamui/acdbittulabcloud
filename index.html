@@ -208,10 +208,15 @@ async function syncPendingData(){
  for(const x of samples){try{const row={id:x.id,lab_id:currentLab.id,order_id:x.orderId,patient_id:x.patientId||'',sample_type:x.sampleType||'',collected_by:x.collectedBy||'',status:x.status||'Collected',rejection_reason:x.rejectionReason||'',collected_at:x.collectedAt||x.createdAt,updated_at:x.updatedAt||x.createdAt};const {error}=await client.from('acd_lab_samples').upsert(row,{onConflict:'id'});if(error)throw error;x.syncStatus='synced';await localPut('samples',x);samplesSynced++;}catch(e){errors.push('Sample '+x.id+': '+e.message);}}
  const rs=(await localAll('results')).filter(x=>x.labId===currentLab.id&&x.syncStatus!=='synced');let resultsSynced=0;
  for(const r of rs){try{const row={id:r.id,lab_id:currentLab.id,order_id:r.orderId||'',patient_id:r.patientId||'',test_name:r.testName,parameter:r.parameter,result_value:r.resultValue,unit:r.unit||'',reference_range:r.referenceRange||'',status:r.status||'Draft',entered_by:r.enteredBy||'',verified_by:r.verifiedBy||null,verified_at:r.verifiedAt||null,created_at:r.createdAt,updated_at:r.updatedAt};const {error}=await client.from('acd_lab_results').upsert(row,{onConflict:'id'});if(error)throw error;r.syncStatus='synced';await localPut('results',r);resultsSynced++;}catch(e){errors.push('Result '+r.id+': '+e.message);}}
+ let financeSynced=0,inventorySynced=0;
+ const financeRows=(await localAll('expenses')).filter(x=>x.labId===currentLab.id&&x.syncStatus!=='synced');
+ for(const x of financeRows){try{const row={id:x.id,lab_id:currentLab.id,description:x.description||'',amount:Number(x.amount||0),category:x.category||'',entry_type:x.status||'Expense',created_at:x.createdAt||new Date().toISOString(),updated_at:x.updatedAt||x.createdAt||new Date().toISOString()};const {error}=await client.from('acd_lab_finance_entries').upsert(row,{onConflict:'id'});if(error)throw error;x.syncStatus='synced';await localPut('expenses',x);financeSynced++;}catch(e){errors.push('Finance '+x.id+': '+e.message);}}
+ const inventoryRows=(await localAll('inventory')).filter(x=>x.labId===currentLab.id&&x.syncStatus!=='synced');
+ for(const x of inventoryRows){try{const row={id:x.id,lab_id:currentLab.id,item:x.item||'',quantity:Number(x.quantity||0),unit:x.unit||'',expiry_date:x.expiry||null,status:x.status||'In Stock',created_at:x.createdAt||new Date().toISOString(),updated_at:x.updatedAt||x.createdAt||new Date().toISOString()};const {error}=await client.from('acd_lab_inventory_items').upsert(row,{onConflict:'id'});if(error)throw error;x.syncStatus='synced';await localPut('inventory',x);inventorySynced++;}catch(e){errors.push('Inventory '+x.id+': '+e.message);}}
  const settingsRows=await dbRequest(db.transaction('settings').objectStore('settings').getAll());
  const pendingSettings=settingsRows.filter(x=>x.key!=='permissionConfig'&&x.syncStatus==='pending');
  if(pendingSettings.length){try{const current=await client.from('acd_lab_settings').select('settings').eq('lab_id',currentLab.id).maybeSingle();if(current.error)throw current.error;const settings={...(current.data?.settings||{})};for(const x of pendingSettings){const {key,syncStatus,...value}=x;settings[key]=value;}const {error}=await client.from('acd_lab_settings').upsert({lab_id:currentLab.id,settings,updated_by:currentUser?.id||null,updated_at:new Date().toISOString()},{onConflict:'lab_id'});if(error)throw error;for(const x of pendingSettings){x.syncStatus='synced';await dbRequest(db.transaction('settings','readwrite').objectStore('settings').put(x));}}catch(e){errors.push('Lab settings: '+e.message);}}
- return {patients,orders,samples:samplesSynced,results:resultsSynced,errors};
+ return {patients,orders,samples:samplesSynced,results:resultsSynced,finance:financeSynced,inventory:inventorySynced,errors};
 }
 async function saveOrder(o){
  await dbRequest(orderStore('readwrite').put(o));
@@ -891,7 +896,7 @@ async function renderBackupRestore(c){
   const material=await crypto.subtle.importKey('raw',new TextEncoder().encode(pass),'PBKDF2',false,['deriveKey']);
   const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:310000,hash:'SHA-256'},material,{name:'AES-GCM',length:256},false,['encrypt']);
   const cipher=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(plain));
-  const b=x=>{const a=new Uint8Array(x);let binary='';for(let i=0;i<a.length;i+=0x8000)binary+=String.fromCharCode(...a.subarray(i,i+0x8000));return btoa(binary);};
+  const b=x=>btoa(String.fromCharCode(...new Uint8Array(x)));
   return JSON.stringify({product:'ACD BITTU LAB CLOUD',formatVersion:3,algorithm:'PBKDF2-SHA256/AES-256-GCM',iterations:310000,salt:b(salt),iv:b(iv),ciphertext:b(cipher)});
  };
  const dec=async(pass,blob)=>{
@@ -987,7 +992,7 @@ async function renderBackupRestore(c){
    }
    if(Array.isArray(snap.acd_lab_tests)){store.tests=snap.acd_lab_tests.map(r=>({id:r.id,name:r.name,detail:r.detail||'',price:Number(r.price||0),sampleType:r.sample_type||'',parameters:Array.isArray(r.parameters)?r.parameters:[]}));saveData();}
    if(snap.acd_lab_settings?.[0]?.settings){const settings=snap.acd_lab_settings[0].settings,tx=db.transaction('settings','readwrite'),os=tx.objectStore('settings');for(const [key,value] of Object.entries(settings))os.put({key,...value,syncStatus:'synced'});await new Promise((res,rej)=>{tx.oncomplete=res;tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error);});}
-   if(payload.localSetup){store={...defaults,...store,...payload.localSetup};saveData();}
+   if(payload.localSetup){store={...defaults,...payload.localSetup,...store};saveData();}
    message('cloudRestoreMessage','Backup decrypted. Cloud snapshot and device cache merged into this browser only; Supabase cloud records were not changed.',true);
   }catch(e){message('cloudRestoreMessage','Restore failed: '+(e.message||e));}
   finally{b.disabled=false;}
@@ -1005,11 +1010,11 @@ async function renderBackupRestore(c){
 async function renderCloudSetup(c){
  const role=currentPlatformRole;
  c.innerHTML=`<div class="panel-head"><h3>Cloud Setup & System Readiness</h3></div>
- <div class="notice"><b>Cloud connection:</b> Authentication, lab workspaces, Test Catalogue, Patients and Reports use Supabase when online. Patients and Reports have a local offline cache with retry-on-reconnect. Other operational modules remain local-only until their cloud tables and role controls are deployed.</div>
- <div class="card"><h4>Current readiness</h4><ul><li>Authentication: Connected</li><li>Lab registration and workspace: Enabled</li><li>Test Catalogue: Cloud enabled</li><li>Patients and Reports: Cloud enabled with offline retry</li><li>Results, samples, staff invitations: Not yet production-enabled</li><li>Encrypted cloud backup: Available when the private storage bucket migration is applied; restore is local-device only. QR report reference: enabled in print layout</li><li>Production tenant security review: Still required</li></ul><button class="btn" id="runCloudSync">Sync pending records now</button><div id="cloudSyncMessage" class="message"></div></div>
+ <div class="notice"><b>Cloud connection:</b> Authentication, lab workspaces, Test Catalogue, Patients and Reports use Supabase when online. Patients and Reports have a local offline cache with retry-on-reconnect. Finance and Inventory support cloud writes with offline retry. Doctor directory and some staff administration remain separate workflows; verify role policies before production use.</div>
+ <div class="card"><h4>Current readiness</h4><ul><li>Authentication: Connected</li><li>Lab registration and workspace: Enabled</li><li>Test Catalogue: Cloud enabled</li><li>Patients and Reports: Cloud enabled with offline retry</li><li>Results and samples: Cloud tables with offline retry; verify tenant role policies before production use</li><li>Finance and inventory: Cloud tables with offline retry</li><li>Staff invitations: Server-side invitation workflow; email delivery is manual</li><li>Encrypted cloud backup: Available when the private storage bucket migration is applied; restore is local-device only. QR report reference: enabled in print layout</li><li>Doctor directory and some local-only settings: Local device until dedicated cloud schema is verified</li><li>Production tenant security review: Still required</li></ul><button class="btn" id="runCloudSync">Sync pending records now</button><div id="cloudSyncMessage" class="message"></div></div>
  <div class="notice"><b>Security warning:</b> Do not enter real patient data or invite lab users until tenant-level Row Level Security, server-side roles, audit enforcement and tested backups are completed. This page deliberately does not run unreviewed SQL against your live database.</div>
  <p class="muted">Signed-in platform role: ${esc(role||'Not verified')}</p>`;
- const b=$('runCloudSync');if(b)b.onclick=async()=>{b.disabled=true;try{const r=await syncPendingData();$('cloudSyncMessage').textContent=`Synced ${r.patients} patients, ${r.orders} reports, ${r.samples||0} samples and ${r.results||0} results. ${r.errors.length} errors.`;$('cloudSyncMessage').className='message '+(r.errors.length?'error':'success');}catch(e){$('cloudSyncMessage').textContent=e.message;$('cloudSyncMessage').className='message error';}finally{b.disabled=false;}};
+ const b=$('runCloudSync');if(b)b.onclick=async()=>{b.disabled=true;try{const r=await syncPendingData();$('cloudSyncMessage').textContent=`Synced ${r.patients} patients, ${r.orders} reports, ${r.samples||0} samples, ${r.results||0} results, ${r.finance||0} finance entries and ${r.inventory||0} stock items. ${r.errors.length} errors.`;$('cloudSyncMessage').className='message '+(r.errors.length?'error':'success');}catch(e){$('cloudSyncMessage').textContent=e.message;$('cloudSyncMessage').className='message error';}finally{b.disabled=false;}};
 }
 
 async function renderSampleTracking(c){
