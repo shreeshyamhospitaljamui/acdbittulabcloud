@@ -120,6 +120,7 @@ body{background:var(--bg);font-family:Inter,ui-sans-serif,system-ui,-apple-syste
    <button data-page="Sample Tracking">🧪 Sample Tracking</button>
    <button data-page="Results & Reports">✓ Results & Reports</button>
    <button data-page="Accounts">₹ Accounts & Expenses</button>
+   <button data-page="Owner Subscription">💳 Subscription & Payment</button>
    <button data-page="Inventory">📦 Inventory & Stock</button>
    <button data-page="Staff & Roles">♙ Staff & Roles</button>
    <button data-page="Retention & Backup">▣ Backup & Restore</button>
@@ -131,7 +132,7 @@ body{background:var(--bg);font-family:Inter,ui-sans-serif,system-ui,-apple-syste
   <section class="card" id="content" aria-live="polite"></section>
  </section>
 </section>
-<div class="footer">© ACD BITTU LAB CLOUD · Single-page dashboard · Print opens the browser print dialog</div>
+<div class="footer">© ACD BITTU LAB CLOUD · Owner subscription and payment menu added · Print opens the browser print dialog</div>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -631,6 +632,7 @@ async function renderTestCatalogue(c){
 function bindRemove(){document.querySelectorAll('[data-remove]').forEach(b=>b.addEventListener('click',()=>{const t=b.dataset.remove,i=Number(b.dataset.index);if(confirm('Remove this item from this device?')){store[t].splice(i,1);saveData();render(t==='doctors'?'Doctors':t==='tests'?'Test Catalogue':'Custom Fields');}}));}
 async function render(page){
  const c=$('content');
+ if(page==='Owner Subscription'){if(currentPlatformRole==='super_admin'){c.innerHTML='<div class="notice">Open a lab owner account to manage subscription payments.</div>';return;}renderOwnerSubscriptionPage(c);return;}
  if(currentPlatformRole!=='super_admin'&&['Doctors','Test Catalogue','Custom Fields','Patients'].includes(page)){c.innerHTML='<div class="notice">यह विकल्प अलग मेन्यू में उपलब्ध नहीं है। Direct Test Entry से मरीज, डॉक्टर और टेस्ट चुनें।</div>';return;}
  if(page==='Overview'){
   if(currentPlatformRole==='super_admin'){await renderOwnerOverview(c);return;}
