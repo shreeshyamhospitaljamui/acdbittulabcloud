@@ -881,71 +881,127 @@ async function renderBackupRestore(c){
  const stores=['patients','orders','settings','samples','results','expenses','inventory','staff'];
  const labId=currentLab?.id;
  c.innerHTML=`<div class="panel-head"><h3>Backup, Restore & Cloud Sync</h3></div>
- <div class="notice"><b>Encrypted cloud backup:</b> Backup JSON is encrypted in this browser with your passphrase before upload to the private Supabase Storage bucket. Keep the passphrase safe; it cannot be recovered.</div>
+ <div class="notice"><b>Encrypted cloud backup:</b> Creates an encrypted snapshot of this lab's cloud records plus this device's offline cache. It never includes other labs. Restore merges the snapshot into this device only; it does not overwrite cloud records.</div>
  <div class="card"><h4>Cloud backup</h4><div class="field"><label>Backup passphrase (minimum 12 characters)</label><input id="backupPass" class="input" type="password" minlength="12" autocomplete="new-password"></div><button class="btn" id="cloudBackup">Create encrypted cloud backup</button><div id="cloudBackupMessage" class="message"></div></div>
  <div class="card" style="margin-top:12px"><h4>Restore cloud backup</h4><div class="field"><label>Select backup</label><select id="cloudBackupList" class="input"><option value="">Load backups first</option></select></div><button class="btn secondary" id="loadCloudBackups">Load backup list</button><div class="field" style="margin-top:10px"><label>Backup passphrase</label><input id="restorePass" class="input" type="password" autocomplete="current-password"></div><button class="btn danger" id="restoreCloudBackup">Decrypt & restore to this device</button><div id="cloudRestoreMessage" class="message"></div></div>
- <div class="card" style="margin-top:12px"><h4>Sync status</h4><p class="muted">Pending patient, report, sample and result records retry when the browser reconnects. You can also start a manual sync.</p><button class="btn secondary" id="manualCloudSync">Sync pending records now</button><div id="manualSyncMessage" class="message"></div></div>
- <div class="notice">Restore writes records into this browser's local database only. It does not overwrite cloud patient/order records. Export a fresh backup before restoring. Use a separate passphrase for each lab and do not share backup files.</div>`;
+ <div class="card" style="margin-top:12px"><h4>Sync status</h4><p class="muted">Pending patient, order, sample, result and settings records retry when the browser reconnects. Manual sync reports each category and any permission/schema errors.</p><button class="btn secondary" id="manualCloudSync">Sync pending records now</button><div id="manualSyncMessage" class="message"></div></div>
+ <div class="notice">Before restoring, export a fresh backup. Restore merges records into this browser's local database and does not delete existing local rows or modify cloud records. Use a separate passphrase for each lab and keep it private.</div>`;
  const enc=async(pass,plain)=>{
   const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
   const material=await crypto.subtle.importKey('raw',new TextEncoder().encode(pass),'PBKDF2',false,['deriveKey']);
-  const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:250000,hash:'SHA-256'},material,{name:'AES-GCM',length:256},false,['encrypt']);
+  const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:310000,hash:'SHA-256'},material,{name:'AES-GCM',length:256},false,['encrypt']);
   const cipher=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(plain));
-  const b=x=>btoa(String.fromCharCode(...new Uint8Array(x)));
-  return JSON.stringify({product:'ACD BITTU LAB CLOUD',formatVersion:2,algorithm:'PBKDF2-SHA256/AES-256-GCM',salt:b(salt),iv:b(iv),ciphertext:b(cipher)});
+  const b=x=>{const a=new Uint8Array(x);let binary='';for(let i=0;i<a.length;i+=0x8000)binary+=String.fromCharCode(...a.subarray(i,i+0x8000));return btoa(binary);};
+  return JSON.stringify({product:'ACD BITTU LAB CLOUD',formatVersion:3,algorithm:'PBKDF2-SHA256/AES-256-GCM',iterations:310000,salt:b(salt),iv:b(iv),ciphertext:b(cipher)});
  };
  const dec=async(pass,blob)=>{
-  const p=JSON.parse(blob);if(p.product!=='ACD BITTU LAB CLOUD'||p.formatVersion!==2||p.algorithm!=='PBKDF2-SHA256/AES-256-GCM')throw new Error('Unsupported or invalid encrypted backup.');
-  const u=x=>Uint8Array.from(atob(x),c=>c.charCodeAt(0));
+  const p=JSON.parse(blob);
+  if(p.product!=='ACD BITTU LAB CLOUD'||![2,3].includes(p.formatVersion)||p.algorithm!=='PBKDF2-SHA256/AES-256-GCM')throw new Error('Unsupported or invalid encrypted backup.');
+  const u=x=>Uint8Array.from(atob(x),ch=>ch.charCodeAt(0));
   const material=await crypto.subtle.importKey('raw',new TextEncoder().encode(pass),'PBKDF2',false,['deriveKey']);
-  const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:u(p.salt),iterations:250000,hash:'SHA-256'},material,{name:'AES-GCM',length:256},false,['decrypt']);
+  const iterations=p.formatVersion===3?Number(p.iterations||310000):250000;
+  const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:u(p.salt),iterations,hash:'SHA-256'},material,{name:'AES-GCM',length:256},false,['decrypt']);
   return new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:u(p.iv)},key,u(p.ciphertext)));
  };
- const msg=(id,t,ok=false)=>{$(id).textContent=t;$(id).className='message '+(ok?'success':'error');};
+ const message=(id,t,ok=false)=>{$(id).textContent=t;$(id).className='message '+(ok?'success':'error');};
+ async function fetchLabTable(table){
+  const {data,error}=await client.from(table).select('*').eq('lab_id',labId);
+  if(error)throw new Error(table+': '+error.message);
+  return data||[];
+ }
  $('cloudBackup').onclick=async()=>{
-  const pass=$('backupPass').value;
-  if(!labId){msg('cloudBackupMessage','No active lab workspace.');return}
-  if(pass.length<12){msg('cloudBackupMessage','Use at least 12 characters for the passphrase.');return}
-  const b=$('cloudBackup');b.disabled=true;
+  const pass=$('backupPass').value,b=$('cloudBackup');
+  if(!labId){message('cloudBackupMessage','No active lab workspace.');return;}
+  if(pass.length<12){message('cloudBackupMessage','Use at least 12 characters for the passphrase.');return;}
+  b.disabled=true;
   try{
    if(!navigator.onLine)throw new Error('Connect to the internet before creating a cloud backup.');
-   const payload={product:'ACD BITTU LAB CLOUD',formatVersion:2,labId,createdAt:new Date().toISOString(),localSetup:store,data:{}};
-   for(const n of stores){try{payload.data[n]=await dbRequest(db.transaction(n).objectStore(n).getAll())}catch{payload.data[n]=[]}}
+   message('cloudBackupMessage','Reading cloud records and local offline cache…',true);
+   // Fetch all operational cloud tables used by this source. A failed table aborts the
+   // backup so the UI never labels an incomplete cloud snapshot as complete.
+   const tableNames=['acd_lab_patients','acd_lab_orders','acd_lab_samples','acd_lab_results','acd_lab_tests','acd_lab_finance_entries','acd_lab_inventory_items','acd_lab_staff'];
+   const cloudSnapshot={};
+   for(const table of tableNames)cloudSnapshot[table]=await fetchLabTable(table);
+   const {data:settingsRow,error:settingsError}=await client.from('acd_lab_settings').select('*').eq('lab_id',labId).maybeSingle();
+   if(settingsError)throw new Error('acd_lab_settings: '+settingsError.message);
+   cloudSnapshot.acd_lab_settings=settingsRow?[settingsRow]:[];
+   const {data:labRow,error:labError}=await client.from('cloud_labs').select('id,name,slug,address,phone,is_active,created_at').eq('id',labId).maybeSingle();
+   if(labError)throw new Error('cloud_labs: '+labError.message);
+   cloudSnapshot.cloud_labs=labRow?[labRow]:[];
+   const payload={product:'ACD BITTU LAB CLOUD',formatVersion:3,labId,createdAt:new Date().toISOString(),createdBy:currentUser?.id||null,localSetup:store,localData:{},cloudSnapshot,scope:'single-lab-cloud-and-device-cache'};
+   for(const n of stores)payload.localData[n]=await dbRequest(db.transaction(n).objectStore(n).getAll());
    const encrypted=await enc(pass,JSON.stringify(payload));
    const path=`${labId}/${currentUser.id}/backup-${Date.now()}.json`;
    const {error}=await client.storage.from('acd-lab-backups').upload(path,new Blob([encrypted],{type:'application/json'}),{contentType:'application/json',upsert:false});
    if(error)throw error;
-   msg('cloudBackupMessage','Encrypted backup uploaded successfully: '+path,true);
-  }catch(e){msg('cloudBackupMessage','Backup failed: '+(e.message||e))}
-  finally{b.disabled=false}
+   message('cloudBackupMessage',`Encrypted backup uploaded. Cloud rows: ${Object.values(cloudSnapshot).reduce((n,x)=>n+(Array.isArray(x)?x.length:0),0)} across ${Object.keys(cloudSnapshot).length} tables; local cache included.`,true);
+  }catch(e){message('cloudBackupMessage','Backup stopped; no backup was reported as complete. '+(e.message||e));}
+  finally{b.disabled=false;}
  };
  $('loadCloudBackups').onclick=async()=>{
   try{
-   if(!labId)throw new Error('No active lab workspace.');
-   const {data,error}=await client.storage.from('acd-lab-backups').list(labId,{limit:100,sortBy:{column:'created_at',order:'desc'}});
+   if(!labId||!currentUser?.id)throw new Error('No active lab workspace or signed-in user.');
+   // Files are stored under labId/userId/file. List the user's own folder, not only labId.
+   const folder=`${labId}/${currentUser.id}`;
+   const {data,error}=await client.storage.from('acd-lab-backups').list(folder,{limit:100,sortBy:{column:'created_at',order:'desc'}});
    if(error)throw error;
    const sel=$('cloudBackupList');sel.innerHTML='<option value="">Choose a backup</option>';
-   for(const f of (data||[]).filter(x=>x.name.endsWith('.json'))){const o=document.createElement('option');o.value=labId+'/'+f.name;o.textContent=f.name;sel.appendChild(o)}
-   msg('cloudRestoreMessage',`${sel.options.length-1} backup(s) found.`,true);
-  }catch(e){msg('cloudRestoreMessage','Could not load backups: '+(e.message||e))}
+   for(const f of (data||[]).filter(x=>x.name?.endsWith('.json'))){const o=document.createElement('option');o.value=folder+'/'+f.name;o.textContent=f.name;sel.appendChild(o);}
+   message('cloudRestoreMessage',`${sel.options.length-1} backup(s) found in your account folder.`,true);
+  }catch(e){message('cloudRestoreMessage','Could not load backups: '+(e.message||e));}
  };
  $('restoreCloudBackup').onclick=async()=>{
-  const path=$('cloudBackupList').value,pass=$('restorePass').value;
-  if(!path){msg('cloudRestoreMessage','Select a backup first.');return}
-  if(!pass){msg('cloudRestoreMessage','Enter the backup passphrase.');return}
-  if(!confirm('Restore selected backup to this device? Existing local rows with matching IDs will be replaced. Cloud records will not be overwritten.'))return;
+  const path=$('cloudBackupList').value,pass=$('restorePass').value,b=$('restoreCloudBackup');
+  if(!path){message('cloudRestoreMessage','Select a backup first.');return;}
+  if(pass.length<12){message('cloudRestoreMessage','Enter the backup passphrase (minimum 12 characters).');return;}
+  if(!confirm('Restore this backup into this browser? Existing local records with matching IDs will be updated. Other local rows and all cloud records will remain unchanged.'))return;
+  b.disabled=true;
   try{
    const {data,error}=await client.storage.from('acd-lab-backups').download(path);if(error)throw error;
    const plain=await dec(pass,await data.text()),payload=JSON.parse(plain);
    if(payload.labId!==labId)throw new Error('This backup belongs to a different lab workspace.');
-   for(const n of stores){const rows=payload.data?.[n];if(!Array.isArray(rows))continue;const tx=db.transaction(n,'readwrite'),os=tx.objectStore(n);for(const row of rows)os.put(row);await new Promise((res,rej)=>{tx.oncomplete=res;tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error)})}
-   if(payload.localSetup){store={...defaults,...payload.localSetup};saveData()}
-   msg('cloudRestoreMessage','Backup decrypted and restored to this device. Cloud records were not changed.',true);
-  }catch(e){msg('cloudRestoreMessage','Restore failed: '+(e.message||e))}
+   const localData=payload.localData||payload.data||{};
+   for(const n of stores){
+    const rows=localData[n];if(!Array.isArray(rows))continue;
+    const tx=db.transaction(n,'readwrite'),os=tx.objectStore(n);
+    for(const row of rows)os.put(row);
+    await new Promise((res,rej)=>{tx.oncomplete=res;tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error);});
+   }
+   // Add cloud snapshot records to this device's cache using the app's local data shape.
+   const snap=payload.cloudSnapshot||{};
+   const mappings={
+    acd_lab_patients:(r)=>({id:r.id,patientCode:r.patient_code||r.id,labId:r.lab_id,name:r.name,age:r.age,ageValue:r.age_value,ageUnit:r.age_unit||'years',dateOfBirth:r.date_of_birth,gender:r.gender,mobile:r.mobile,address:r.address,referrer:r.referrer,createdAt:r.created_at,updatedAt:r.updated_at,syncStatus:'synced'}),
+    acd_lab_orders:(r)=>({id:r.id,labId:r.lab_id,patientId:r.patient_id,patientName:r.patient_name,patientAge:r.patient_age||'',patientGender:r.patient_gender||'',patientMobile:r.patient_mobile||'',patientAddress:r.patient_address||'',referrer:r.referrer||'',items:r.items||[],subtotal:Number(r.subtotal||0),discount:Number(r.discount||0),total:Number(r.total||0),paid:Number(r.paid||0),due:Number(r.due||0),paymentMethod:r.payment_method,paymentStatus:r.payment_status,notes:r.notes,status:r.status,createdAt:r.created_at,updatedAt:r.updated_at,syncStatus:'synced'}),
+    acd_lab_samples:(r)=>({id:r.id,labId:r.lab_id,orderId:r.order_id,patientId:r.patient_id,sampleType:r.sample_type,collectedBy:r.collected_by,status:r.status,rejectionReason:r.rejection_reason,collectedAt:r.collected_at,createdAt:r.collected_at,updatedAt:r.updated_at,syncStatus:'synced'}),
+    acd_lab_results:(r)=>({id:r.id,labId:r.lab_id,orderId:r.order_id,patientId:r.patient_id,testName:r.test_name,parameter:r.parameter,resultValue:r.result_value,unit:r.unit,referenceRange:r.reference_range,status:r.status,enteredBy:r.entered_by,verifiedBy:r.verified_by,verifiedAt:r.verified_at,createdAt:r.created_at,updatedAt:r.updated_at,syncStatus:'synced'}),
+    acd_lab_finance_entries:(r)=>({id:r.id,labId:r.lab_id,description:r.description,amount:String(r.amount),category:r.category,status:r.entry_type,createdAt:r.created_at,syncStatus:'synced'}),
+    acd_lab_inventory_items:(r)=>({id:r.id,labId:r.lab_id,item:r.item,quantity:String(r.quantity),unit:r.unit,expiry:r.expiry_date||'',status:r.status,createdAt:r.created_at,syncStatus:'synced'}),
+    acd_lab_staff:(r)=>({id:r.id,labId:r.lab_id,email:r.email,role:r.role,isActive:r.is_active,createdAt:r.created_at,syncStatus:'synced'})
+   };
+   const storeMap={acd_lab_patients:'patients',acd_lab_orders:'orders',acd_lab_samples:'samples',acd_lab_results:'results',acd_lab_finance_entries:'expenses',acd_lab_inventory_items:'inventory',acd_lab_staff:'staff'};
+   for(const [table,mapper] of Object.entries(mappings)){
+    const target=storeMap[table],rows=snap[table];if(!target||!Array.isArray(rows))continue;
+    const tx=db.transaction(target,'readwrite'),os=tx.objectStore(target);
+    for(const row of rows)os.put(mapper(row));
+    await new Promise((res,rej)=>{tx.oncomplete=res;tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error);});
+   }
+   if(Array.isArray(snap.acd_lab_tests)){store.tests=snap.acd_lab_tests.map(r=>({id:r.id,name:r.name,detail:r.detail||'',price:Number(r.price||0),sampleType:r.sample_type||'',parameters:Array.isArray(r.parameters)?r.parameters:[]}));saveData();}
+   if(snap.acd_lab_settings?.[0]?.settings){const settings=snap.acd_lab_settings[0].settings,tx=db.transaction('settings','readwrite'),os=tx.objectStore('settings');for(const [key,value] of Object.entries(settings))os.put({key,...value,syncStatus:'synced'});await new Promise((res,rej)=>{tx.oncomplete=res;tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error);});}
+   if(payload.localSetup){store={...defaults,...store,...payload.localSetup};saveData();}
+   message('cloudRestoreMessage','Backup decrypted. Cloud snapshot and device cache merged into this browser only; Supabase cloud records were not changed.',true);
+  }catch(e){message('cloudRestoreMessage','Restore failed: '+(e.message||e));}
+  finally{b.disabled=false;}
  };
- $('manualCloudSync').onclick=async()=>{const b=$('manualCloudSync');b.disabled=true;try{const r=await syncPendingData();msg('manualSyncMessage',`Synced: ${r.patients} patients, ${r.orders} reports, ${r.samples||0} samples, ${r.results||0} results. Errors: ${r.errors.length}. ${r.errors.slice(0,3).join(' | ')}`,!r.errors.length)}catch(e){msg('manualSyncMessage','Sync failed: '+e.message)}finally{b.disabled=false}};
+ $('manualCloudSync').onclick=async()=>{
+  const b=$('manualCloudSync');b.disabled=true;
+  try{
+   const r=await syncPendingData();
+   const summary=`Synced ${r.patients} patients, ${r.orders} orders, ${r.samples||0} samples, ${r.results||0} results.`;
+   message('manualSyncMessage',summary+` Errors: ${r.errors.length}. ${r.errors.slice(0,4).join(' | ')}`,!r.errors.length);
+  }catch(e){message('manualSyncMessage','Sync failed: '+e.message);}
+  finally{b.disabled=false;}
+ };
 }
-
 async function renderCloudSetup(c){
  const role=currentPlatformRole;
  c.innerHTML=`<div class="panel-head"><h3>Cloud Setup & System Readiness</h3></div>
