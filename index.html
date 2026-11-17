@@ -630,6 +630,54 @@ async function renderTestCatalogue(c){
  c.querySelectorAll('[data-test-remove]').forEach(b=>b.onclick=async()=>{const t=items[Number(b.dataset.testRemove)];if(confirm(`Remove ${t.name} from this lab catalogue?`))try{await removeLabTest(t);store.tests=store.tests.filter(x=>x.id!==t.id);saveData();renderTestCatalogue(c);}catch(err){alert(err.message);}});
 }
 function bindRemove(){document.querySelectorAll('[data-remove]').forEach(b=>b.addEventListener('click',()=>{const t=b.dataset.remove,i=Number(b.dataset.index);if(confirm('Remove this item from this device?')){store[t].splice(i,1);saveData();render(t==='doctors'?'Doctors':t==='tests'?'Test Catalogue':'Custom Fields');}}));}
+
+async function renderOwnerSubscriptionPage(c){
+ c.innerHTML='<div class="notice">Loading subscription and payment details…</div>';
+ try{
+  const [centersRes,quoteRes]=await Promise.all([
+   client.rpc('acd_owner_list_centers'),
+   client.rpc('acd_owner_subscription_quote')
+  ]);
+  if(centersRes.error)throw centersRes.error;
+  if(quoteRes.error)throw quoteRes.error;
+  const centers=centersRes.data||[];
+  const quote=Array.isArray(quoteRes.data)?quoteRes.data[0]:quoteRes.data;
+  if(!quote)throw new Error('Owner subscription quote is empty.');
+  const count=Number(quote.center_count||centers.length||0);
+  const amount=Number(quote.amount_paise||0)/100;
+  c.innerHTML=`<div class="panel-head"><div><h3>Owner Subscription</h3><div class="muted">Combined monthly billing for all active centers</div></div><span class="status">Owner account</span></div>
+  <div class="stats"><div class="stat"><div class="muted">Active Centers</div><b>${count}</b></div><div class="stat"><div class="muted">Monthly Bundle Price</div><b>${money(amount)}</b></div></div>
+  <div class="notice" style="margin:12px 0">You can pay during your free trial or after it ends. Subscription activates only after Razorpay confirms a captured payment.</div>
+  <h3>Centers in this account</h3>
+  <div class="tablewrap"><table><thead><tr><th>Center</th><th>Status</th></tr></thead><tbody>${centers.map(x=>`<tr><td>${esc((x.center_number?x.center_number+'. ':'')+(x.name||x.lab_name||'Center'))}</td><td>${x.is_active===false?'Inactive':'Active'}</td></tr>`).join('')||'<tr><td colspan="2">No centers returned</td></tr>'}</tbody></table></div>
+  <div style="margin-top:18px"><button class="btn" id="ownerPayNow">Pay Now with Razorpay</button><p class="muted" id="ownerPayMessage">Secure payment checkout</p></div>`;
+  $('ownerPayNow').onclick=async()=>{
+   const btn=$('ownerPayNow'),message=$('ownerPayMessage');btn.disabled=true;message.textContent='Creating secure payment order…';
+   try{
+    await loadRazorpaySdk();
+    const {data:order,error}=await client.functions.invoke('razorpay-create-order',{body:{}});
+    if(error)throw error;
+    if(!order||!order.order_id||!order.key_id)throw new Error(order?.error||'Order creation failed. Check Razorpay secrets and Edge Function logs.');
+    const checkout=new window.Razorpay({key:order.key_id,order_id:order.order_id,amount:order.amount,currency:order.currency||'INR',name:'ACD BITTU LAB CLOUD',description:`${order.center_count||count} center monthly bundle`,handler:async response=>{
+     message.textContent='Verifying captured payment…';
+     try{
+      const {data:verified,error:vErr}=await client.functions.invoke('razorpay-verify-payment',{body:response});
+      if(vErr)throw vErr;
+      if(!verified?.ok)throw new Error(verified?.error||'Payment verification failed.');
+      message.textContent='Payment verified. Subscription activated.';
+      alert('Payment verified and subscription activated.');
+      await renderOwnerSubscriptionPage(c);
+     }catch(e){message.textContent='Payment received but verification/activation needs attention: '+(e.message||String(e));}
+    },modal:{ondismiss:()=>{message.textContent='Checkout closed. No payment was confirmed.';}}});
+    checkout.open();message.textContent='Complete payment in Razorpay Checkout.';
+   }catch(e){message.textContent=e.message||String(e);}
+   finally{btn.disabled=false;}
+  };
+ }catch(e){
+  c.innerHTML='<div class="notice"><b>Subscription details could not load.</b><br>'+esc(e.message||String(e))+'<br><br>Do not pay yet. The owner account, center mapping, and pricing setup must be checked.</div>';
+ }
+}
+
 async function render(page){
  const c=$('content');
  if(page==='Owner Subscription'){if(currentPlatformRole==='super_admin'){c.innerHTML='<div class="notice">Open a lab owner account to manage subscription payments.</div>';return;}renderOwnerSubscriptionPage(c);return;}
