@@ -204,7 +204,7 @@ async function syncPendingData(){
  const samples=(await localAll('samples')).filter(x=>x.labId===currentLab.id&&x.syncStatus!=='synced');let samplesSynced=0;
  for(const x of samples){try{const row={id:x.id,lab_id:currentLab.id,order_id:x.orderId,patient_id:x.patientId||'',sample_type:x.sampleType||'',collected_by:x.collectedBy||'',status:x.status||'Collected',rejection_reason:x.rejectionReason||'',collected_at:x.collectedAt||x.createdAt,updated_at:x.updatedAt||x.createdAt};const {error}=await client.from('acd_lab_samples').upsert(row,{onConflict:'id'});if(error)throw error;x.syncStatus='synced';await localPut('samples',x);samplesSynced++;}catch(e){errors.push('Sample '+x.id+': '+e.message);}}
  const rs=(await localAll('results')).filter(x=>x.labId===currentLab.id&&x.syncStatus!=='synced');let resultsSynced=0;
- for(const r of rs){try{const row={id:r.id,lab_id:currentLab.id,order_id:r.orderId||'',patient_id:r.patientId||'',test_name:r.testName,parameter:r.parameter,result_value:r.resultValue,unit:r.unit||'',reference_range:r.referenceRange||'',status:r.status||'Draft',entered_by:r.enteredBy||'',verified_by:r.verifiedBy||null,verified_at:r.verifiedAt||null,created_at:r.createdAt,updated_at:r.updatedAt};const {error}=await client.from('acd_lab_results').upsert(row,{onConflict:'id'});if(error)throw error;r.syncStatus='synced';await localPut('results',r);resultsSynced++;}catch(e){errors.push('Result '+r.id+': '+e.message);}}
+ for(const r of rs){try{const row={id:r.id,lab_id:currentLab.id,order_id:r.orderId||'',patient_id:r.patientId||'',test_name:r.testName,parameter:r.parameter,result_value:r.resultValue,unit:r.unit||'',reference_range:r.referenceRange||'',status:'Saved',entered_by:r.enteredBy||'',created_at:r.createdAt,updated_at:r.updatedAt};const {error}=await client.from('acd_lab_results').upsert(row,{onConflict:'id'});if(error)throw error;r.syncStatus='synced';await localPut('results',r);resultsSynced++;}catch(e){errors.push('Result '+r.id+': '+e.message);}}
  let financeSynced=0,inventorySynced=0;
  const financeRows=(await localAll('expenses')).filter(x=>x.labId===currentLab.id&&x.syncStatus!=='synced');
  for(const x of financeRows){try{const row={id:x.id,lab_id:currentLab.id,description:x.description||'',amount:Number(x.amount||0),category:x.category||'',entry_type:x.status||'Expense',created_at:x.createdAt||new Date().toISOString(),updated_at:x.updatedAt||x.createdAt||new Date().toISOString()};const {error}=await client.from('acd_lab_finance_entries').upsert(row,{onConflict:'id'});if(error)throw error;x.syncStatus='synced';await localPut('expenses',x);financeSynced++;}catch(e){errors.push('Finance '+x.id+': '+e.message);}}
@@ -925,34 +925,66 @@ async function renderCloudOpsModule(page,c){
  const opts=isAccounts?['Expense','Income']:['In Stock','Low Stock','Expired'];
  let rows=(await localAll(store)).filter(x=>x.labId===currentLab.id);let cloudError='';
  if(navigator.onLine){try{const {data,error}=await client.from(table).select('*').eq('lab_id',currentLab.id).order('created_at',{ascending:false});if(error)throw error;const remote=(data||[]).map(r=>isAccounts?({id:r.id,labId:r.lab_id,description:r.description,amount:String(r.amount),category:r.category,status:r.entry_type,createdAt:r.created_at,syncStatus:'synced'}):({id:r.id,labId:r.lab_id,item:r.item,quantity:String(r.quantity),unit:r.unit,expiry:r.expiry_date||'',status:r.status,createdAt:r.created_at,syncStatus:'synced'}));const ids=new Set(remote.map(x=>x.id));rows=[...remote,...rows.filter(x=>!ids.has(x.id))];}catch(e){cloudError=e.message;}}
- rows.sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));const balance=isAccounts?rows.reduce((a,r)=>a+(r.status==='Income'?Number(r.amount||0):-Number(r.amount||0)),0):0;
- c.innerHTML=`<div class="panel-head"><h3>${title}</h3><span class="muted">${rows.length} records · ${rows.filter(x=>x.syncStatus==='synced').length} cloud</span></div><div class="notice">${cloudError?`Cloud read failed: ${esc(cloudError)}. New entries will remain local until sync succeeds.`:'Cloud-backed module with offline queue. Entries are isolated by lab workspace.'}${isAccounts?`<br><b>Net recorded balance: ₹${balance.toFixed(2)}</b>`:''}</div><form id="cloudOpsForm"><div class="row">${fields.map(([k,l])=>`<div class="field"><label>${l}</label><input class="input" name="${k}" ${k==='expiry'?'type="date"':k==='amount'||k==='quantity'?'type="number" step="0.01" min="0"':'type="text"'} required></div>`).join('')}</div><div class="field"><label>${isAccounts?'Entry Type':'Stock Status'}</label><select class="input" name="status">${opts.map(x=>`<option>${x}</option>`).join('')}</select></div><button class="btn" type="submit">Save ${isAccounts?'Account Entry':'Stock Item'}</button><span id="cloudOpsMessage" class="message"></span></form><div class="tablewrap" style="margin-top:18px"><table><thead><tr>${fields.map(x=>`<th>${x[1]}</th>`).join('')}<th>${isAccounts?'Type':'Status'}</th><th>Sync</th><th>Date</th></tr></thead><tbody>${rows.map(r=>`<tr>${fields.map(([k])=>`<td>${esc(r[k]||'')}</td>`).join('')}<td>${esc(r.status||'')}</td><td>${r.syncStatus==='synced'?'Cloud':'Pending'}</td><td>${esc((r.createdAt||'').slice(0,10))}</td></tr>`).join('')||`<tr><td colspan="${fields.length+3}">No entries yet.</td></tr>`}</tbody></table></div>`;
+ rows.sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+ const now=new Date(),monthKey=now.toISOString().slice(0,7);
+ const monthRows=rows.filter(r=>String(r.createdAt||'').slice(0,7)===monthKey);
+ const income=monthRows.filter(r=>r.status==='Income').reduce((a,r)=>a+Number(r.amount||0),0);
+ const expense=monthRows.filter(r=>r.status==='Expense').reduce((a,r)=>a+Number(r.amount||0),0);
+ const balance=isAccounts?rows.reduce((a,r)=>a+(r.status==='Income'?Number(r.amount||0):-Number(r.amount||0)),0):0;
+ const today=new Date();today.setHours(0,0,0,0);const soon=new Date(today);soon.setDate(soon.getDate()+30);
+ const lowRows=rows.filter(r=>!isAccounts&&String(r.status).toLowerCase()==='low stock');
+ const expiredRows=rows.filter(r=>!isAccounts&&r.expiry&&new Date(r.expiry+'T00:00:00')<today);
+ const expiringRows=rows.filter(r=>!isAccounts&&r.expiry&&new Date(r.expiry+'T00:00:00')>=today&&new Date(r.expiry+'T00:00:00')<=soon);
+ const summary=isAccounts
+  ?`<div class="stats" style="margin:12px 0"><div class="card"><div class="stat-label">This month · Income</div><div class="stat-value">₹${income.toFixed(2)}</div></div><div class="card"><div class="stat-label">This month · Expense</div><div class="stat-value">₹${expense.toFixed(2)}</div></div><div class="card"><div class="stat-label">This month · Net</div><div class="stat-value">₹${(income-expense).toFixed(2)}</div></div><div class="card"><div class="stat-label">All-time net</div><div class="stat-value">₹${balance.toFixed(2)}</div></div></div>`
+  :`<div class="stats" style="margin:12px 0"><div class="card"><div class="stat-label">Total stock items</div><div class="stat-value">${rows.length}</div></div><div class="card"><div class="stat-label">Marked Low Stock</div><div class="stat-value">${lowRows.length}</div></div><div class="card"><div class="stat-label">Expired</div><div class="stat-value">${expiredRows.length}</div></div><div class="card"><div class="stat-label">Expiry in 30 days</div><div class="stat-value">${expiringRows.length}</div></div></div>`;
+ const alerts=!isAccounts&&(lowRows.length||expiredRows.length||expiringRows.length)?`<div class="notice"><b>Stock alerts:</b> ${lowRows.length} low stock · ${expiredRows.length} expired · ${expiringRows.length} expiring within 30 days. Please verify physical stock and expiry before use.</div>`:'';
+ c.innerHTML=`<div class="panel-head"><h3>${title}</h3><span class="muted">${rows.length} records · ${rows.filter(x=>x.syncStatus==='synced').length} cloud</span></div><div class="notice">${cloudError?`Cloud read failed: ${esc(cloudError)}. New entries will remain local until sync succeeds.`:'Cloud-backed module with offline queue. Entries are isolated by lab workspace.'}${isAccounts?`<br><b>Net recorded balance: ₹${balance.toFixed(2)}</b>`:''}</div>${summary}${alerts}<form id="cloudOpsForm"><div class="row">${fields.map(([k,l])=>`<div class="field"><label>${l}</label><input class="input" name="${k}" ${k==='expiry'?'type="date"':k==='amount'||k==='quantity'?'type="number" step="0.01" min="0"':'type="text"'} required></div>`).join('')}</div><div class="field"><label>${isAccounts?'Entry Type':'Stock Status'}</label><select class="input" name="status">${opts.map(x=>`<option>${x}</option>`).join('')}</select></div><button class="btn" type="submit">Save ${isAccounts?'Account Entry':'Stock Item'}</button><span id="cloudOpsMessage" class="message"></span></form><div class="row" style="margin-top:18px"><div class="field"><label>Search records</label><input class="input" id="cloudOpsSearch" placeholder="${isAccounts?'Description or category':'Item, unit or status'}"></div><button class="btn secondary" id="cloudOpsExport" type="button">Export CSV</button></div><div class="tablewrap"><table><thead><tr>${fields.map(x=>`<th>${x[1]}</th>`).join('')}<th>${isAccounts?'Type':'Status'}</th><th>Sync</th><th>Date</th></tr></thead><tbody id="cloudOpsRows">${rows.map(r=>`<tr>${fields.map(([k])=>`<td>${esc(r[k]||'')}</td>`).join('')}<td>${esc(r.status||'')}</td><td>${r.syncStatus==='synced'?'Cloud':'Pending'}</td><td>${esc((r.createdAt||'').slice(0,10))}</td></tr>`).join('')||`<tr><td colspan="${fields.length+3}">No entries yet.</td></tr>`}</tbody></table></div>`;
+ const search=$('cloudOpsSearch'),tbody=$('cloudOpsRows');
+ const visibleRows=()=>rows.filter(r=>fields.some(([k])=>String(r[k]??'').toLowerCase().includes(search.value.toLowerCase()))||String(r.status||'').toLowerCase().includes(search.value.toLowerCase()));
+ const paintRows=()=>{const list=visibleRows();tbody.innerHTML=list.map(r=>`<tr>${fields.map(([k])=>`<td>${esc(r[k]||'')}</td>`).join('')}<td>${esc(r.status||'')}</td><td>${r.syncStatus==='synced'?'Cloud':'Pending'}</td><td>${esc((r.createdAt||'').slice(0,10))}</td></tr>`).join('')||`<tr><td colspan="${fields.length+3}">No matching entries.</td></tr>`;};
+ search.addEventListener('input',paintRows);
+ $('cloudOpsExport').onclick=()=>{const list=visibleRows(),headers=[...fields.map(x=>x[1]),isAccounts?'Type':'Status','Created'];const cell=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const csv=[headers,...list.map(r=>[...fields.map(([k])=>r[k]??''),r.status||'',(r.createdAt||'').slice(0,10)])].map(row=>row.map(cell).join(',')).join('\r\n');const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=(isAccounts?'lab-accounts':'lab-inventory')+'-'+new Date().toISOString().slice(0,10)+'.csv';a.click();URL.revokeObjectURL(url);};
  $('cloudOpsForm').addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData(e.currentTarget),now=new Date().toISOString(),o={id:localId(isAccounts?'FIN':'INV'),labId:currentLab.id,createdAt:now,status:String(fd.get('status')),syncStatus:'pending'};for(const [k] of fields)o[k]=String(fd.get(k)||'').trim();if(isAccounts)o.amount=Number(o.amount);else o.quantity=Number(o.quantity);await localPut(store,o);const m=$('cloudOpsMessage');if(navigator.onLine){try{const row=isAccounts?{id:o.id,lab_id:currentLab.id,description:o.description,amount:o.amount,category:o.category,entry_type:o.status,created_at:now,updated_at:now}:{id:o.id,lab_id:currentLab.id,item:o.item,quantity:o.quantity,unit:o.unit,expiry_date:o.expiry||null,status:o.status,created_at:now,updated_at:now};const {error}=await client.from(table).upsert(row,{onConflict:'id'});if(error)throw error;o.syncStatus='synced';await localPut(store,o);m.textContent='Saved to lab cloud.';m.className='message success';}catch(err){m.textContent='Saved locally; cloud sync pending: '+err.message;m.className='message error';}}else{m.textContent='Saved locally; will sync when online.';m.className='message success';}await renderCloudOpsModule(page,c);});
 }
+
 async function renderCloudResultsEntry(c){
  if(!currentLab?.id){c.innerHTML='<div class="notice">Open a lab workspace before entering results.</div>';return;}
  let orders=[];try{orders=await getOrders();}catch(e){c.innerHTML=`<div class="notice">Could not load saved report references: ${esc(e.message)}</div>`;return;}
  let rows=[];try{rows=await loadCloudResults();}catch(e){c.innerHTML=`<div class="notice">Could not load cloud results: ${esc(e.message)}</div>`;return;}
- const pending=rows.filter(r=>r.labId===currentLab.id&&r.status!=='Verified');
- c.innerHTML=`<div class="panel-head"><h3>Results Entry — Saved Results</h3><span class="muted">${pending.length} saved results</span></div>
- <div class="notice">Results are stored against this laboratory report. You can edit, save and print reports whenever needed.</div>
+ rows=rows.filter(r=>r.labId===currentLab.id);
+ let editingId='';
+ c.innerHTML=`<div class="panel-head"><h3>Results Entry — Saved Results</h3><span class="muted">${rows.length} saved results</span></div>
+ <div class="notice">Enter, edit, save and print results. Saved reports can be reviewed directly by your doctor. There is no Verify / Approve step in this workflow.</div>
  <form id="cloudResultForm"><div class="field"><label>Report Reference *</label><select class="input" name="orderId" required><option value="">Select report</option>${orders.map(o=>`<option value="${esc(o.id)}">${esc(o.id)} — ${esc(o.patientName)}</option>`).join('')}</select></div>
  <div class="row"><div class="field"><label>Test Name *</label><input class="input" name="testName" required></div><div class="field"><label>Parameter *</label><input class="input" name="parameter" required></div></div>
  <div class="row"><div class="field"><label>Result *</label><input class="input" name="resultValue" required></div><div class="field"><label>Unit</label><input class="input" name="unit"></div></div>
- <div class="field"><label>Reference Range</label><input class="input" name="referenceRange" placeholder="Use the validated range from your lab method"></div>
- <button class="btn" id="saveCloudResult">Save Result</button><div id="cloudResultMessage" class="message"></div></form>
- <h4 style="margin-top:20px">Recent results</h4><div class="tablewrap"><table><thead><tr><th>Report Reference</th><th>Test</th><th>Parameter</th><th>Result</th><th>Unit</th><th>Status</th></tr></thead><tbody>${rows.filter(r=>r.labId===currentLab.id).slice(0,100).map(r=>`<tr><td>${esc(r.orderId)}</td><td>${esc(r.testName)}</td><td>${esc(r.parameter)}</td><td>${esc(r.resultValue)}</td><td>${esc(r.unit)}</td><td>${esc(r.status)}</td></tr>`).join('')||'<tr><td colspan="6">No results found.</td></tr>'}</tbody></table></div>`;
- $('cloudResultForm').addEventListener('submit',async e=>{
-  e.preventDefault();const btn=$('saveCloudResult'),msg=$('cloudResultMessage'),fd=new FormData(e.currentTarget);btn.disabled=true;
+ <div class="field"><label>Reference Range</label><input class="input" name="referenceRange" placeholder="Use the range configured for your lab method"></div>
+ <button class="btn" id="saveCloudResult">Save Result</button> <button class="btn secondary" id="cancelCloudResultEdit" type="button" hidden>Cancel Edit</button><div id="cloudResultMessage" class="message"></div></form>
+ <h4 style="margin-top:20px">Recent results</h4><div class="tablewrap"><table><thead><tr><th>Report Reference</th><th>Test</th><th>Parameter</th><th>Result</th><th>Unit</th><th>Status</th><th>Action</th></tr></thead><tbody>${rows.slice(0,150).map(r=>`<tr><td>${esc(r.orderId)}</td><td>${esc(r.testName)}</td><td>${esc(r.parameter)}</td><td>${esc(r.resultValue)}</td><td>${esc(r.unit)}</td><td>Saved</td><td><button class="btn secondary" type="button" data-edit-cloud-result="${esc(r.id)}">Edit</button></td></tr>`).join('')||'<tr><td colspan="7">No results found.</td></tr>'}</tbody></table></div>`;
+ const form=$('cloudResultForm'),msg=$('cloudResultMessage'),saveBtn=$('saveCloudResult'),cancelBtn=$('cancelCloudResultEdit');
+ const resetEditor=()=>{editingId='';form.reset();saveBtn.textContent='Save Result';cancelBtn.hidden=true;};
+ cancelBtn.onclick=resetEditor;
+ c.querySelectorAll('[data-edit-cloud-result]').forEach(btn=>btn.addEventListener('click',()=>{
+  const r=rows.find(x=>x.id===btn.dataset.editCloudResult);if(!r)return;
+  editingId=r.id;form.elements.orderId.value=r.orderId||'';form.elements.testName.value=r.testName||'';form.elements.parameter.value=r.parameter||'';form.elements.resultValue.value=r.resultValue||'';form.elements.unit.value=r.unit||'';form.elements.referenceRange.value=r.referenceRange||'';
+  saveBtn.textContent='Update Result';cancelBtn.hidden=false;msg.textContent='Editing saved result. Update and save when ready.';msg.className='message';form.scrollIntoView({behavior:'smooth',block:'center'});
+ }));
+ form.addEventListener('submit',async e=>{
+  e.preventDefault();const fd=new FormData(form);saveBtn.disabled=true;
   try{
    const order=orders.find(o=>o.id===String(fd.get('orderId')));
    if(!order)throw new Error('Select a valid report reference.');
-   const r={id:localId('RES'),labId:currentLab.id,orderId:order.id,patientId:order.patientId||'',testName:String(fd.get('testName')).trim(),parameter:String(fd.get('parameter')).trim(),resultValue:String(fd.get('resultValue')).trim(),unit:String(fd.get('unit')||'').trim(),referenceRange:String(fd.get('referenceRange')||'').trim(),status:'Draft',enteredBy:currentUser?.email||'',verifiedBy:null,verifiedAt:null,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),syncStatus:'pending'};
+   const prior=editingId?rows.find(x=>x.id===editingId):null;
+   if(editingId&&!prior)throw new Error('The result being edited is no longer available. Refresh and try again.');
+   const now=new Date().toISOString();
+   const r={...(prior||{}),id:prior?.id||localId('RES'),labId:currentLab.id,orderId:order.id,patientId:order.patientId||'',testName:String(fd.get('testName')).trim(),parameter:String(fd.get('parameter')).trim(),resultValue:String(fd.get('resultValue')).trim(),unit:String(fd.get('unit')||'').trim(),referenceRange:String(fd.get('referenceRange')||'').trim(),status:'Saved',enteredBy:prior?.enteredBy||currentUser?.email||'',createdAt:prior?.createdAt||now,updatedAt:now,syncStatus:'pending'};
+   delete r.verifiedBy;delete r.verifiedAt;
    await saveCloudResult(r);
-   msg.textContent=r.syncStatus==='synced'?'Result saved to cloud.':'Saved locally; cloud sync is pending.';msg.className='message success';
+   msg.textContent=r.syncStatus==='synced'?(prior?'Result updated in cloud.':'Result saved to cloud.'):(prior?'Updated locally; cloud sync is pending.':'Saved locally; cloud sync is pending.');msg.className='message success';
    await renderCloudResultsEntry(c);
   }catch(err){msg.textContent='Save failed: '+err.message;msg.className='message error';}
-  finally{btn.disabled=false;}
+  finally{saveBtn.disabled=false;}
  });
 }
 
@@ -1111,7 +1143,7 @@ async function renderBackupRestore(c){
     acd_lab_patients:(r)=>({id:r.id,patientCode:r.patient_code||r.id,labId:r.lab_id,name:r.name,age:r.age,ageValue:r.age_value,ageUnit:r.age_unit||'years',dateOfBirth:r.date_of_birth,gender:r.gender,mobile:r.mobile,address:r.address,referrer:r.referrer,createdAt:r.created_at,updatedAt:r.updated_at,syncStatus:'synced'}),
     acd_lab_orders:(r)=>({id:r.id,labId:r.lab_id,patientId:r.patient_id,patientName:r.patient_name,patientAge:r.patient_age||'',patientGender:r.patient_gender||'',patientMobile:r.patient_mobile||'',patientAddress:r.patient_address||'',referrer:r.referrer||'',items:r.items||[],subtotal:Number(r.subtotal||0),discount:Number(r.discount||0),total:Number(r.total||0),paid:Number(r.paid||0),due:Number(r.due||0),paymentMethod:r.payment_method,paymentStatus:r.payment_status,notes:r.notes,status:r.status,createdAt:r.created_at,updatedAt:r.updated_at,syncStatus:'synced'}),
     acd_lab_samples:(r)=>({id:r.id,labId:r.lab_id,orderId:r.order_id,patientId:r.patient_id,sampleType:r.sample_type,collectedBy:r.collected_by,status:r.status,rejectionReason:r.rejection_reason,collectedAt:r.collected_at,createdAt:r.collected_at,updatedAt:r.updated_at,syncStatus:'synced'}),
-    acd_lab_results:(r)=>({id:r.id,labId:r.lab_id,orderId:r.order_id,patientId:r.patient_id,testName:r.test_name,parameter:r.parameter,resultValue:r.result_value,unit:r.unit,referenceRange:r.reference_range,status:r.status,enteredBy:r.entered_by,verifiedBy:r.verified_by,verifiedAt:r.verified_at,createdAt:r.created_at,updatedAt:r.updated_at,syncStatus:'synced'}),
+    acd_lab_results:(r)=>({id:r.id,labId:r.lab_id,orderId:r.order_id,patientId:r.patient_id,testName:r.test_name,parameter:r.parameter,resultValue:r.result_value,unit:r.unit,referenceRange:r.reference_range,status:r.status,enteredBy:r.entered_by,createdAt:r.created_at,updatedAt:r.updated_at,syncStatus:'synced'}),
     acd_lab_finance_entries:(r)=>({id:r.id,labId:r.lab_id,description:r.description,amount:String(r.amount),category:r.category,status:r.entry_type,createdAt:r.created_at,syncStatus:'synced'}),
     acd_lab_inventory_items:(r)=>({id:r.id,labId:r.lab_id,item:r.item,quantity:String(r.quantity),unit:r.unit,expiry:r.expiry_date||'',status:r.status,createdAt:r.created_at,syncStatus:'synced'}),
     acd_lab_staff:(r)=>({id:r.id,labId:r.lab_id,email:r.email,role:r.role,isActive:r.is_active,createdAt:r.created_at,syncStatus:'synced'})
@@ -1165,12 +1197,12 @@ async function loadCloudResults(){
  if(!navigator.onLine)return local.filter(x=>x.labId===currentLab.id);
  const {data,error}=await client.from('acd_lab_results').select('*').eq('lab_id',currentLab.id).order('created_at',{ascending:false});
  if(error)throw error;
- const remote=(data||[]).map(r=>({id:r.id,labId:r.lab_id,orderId:r.order_id,patientId:r.patient_id,testName:r.test_name,parameter:r.parameter,resultValue:r.result_value,unit:r.unit,referenceRange:r.reference_range,status:r.status,enteredBy:r.entered_by,verifiedBy:r.verified_by,verifiedAt:r.verified_at,createdAt:r.created_at,updatedAt:r.updated_at,syncStatus:'synced'}));
+ const remote=(data||[]).map(r=>({id:r.id,labId:r.lab_id,orderId:r.order_id,patientId:r.patient_id,testName:r.test_name,parameter:r.parameter,resultValue:r.result_value,unit:r.unit,referenceRange:r.reference_range,status:r.status,enteredBy:r.entered_by,createdAt:r.created_at,updatedAt:r.updated_at,syncStatus:'synced'}));
  const ids=new Set(remote.map(x=>x.id));return [...remote,...local.filter(x=>x.labId===currentLab.id&&!ids.has(x.id))];
 }
 async function saveCloudResult(r){
  await localPut('results',r);
- if(navigator.onLine){const row={id:r.id,lab_id:currentLab.id,order_id:r.orderId||'',patient_id:r.patientId||'',test_name:r.testName,parameter:r.parameter,result_value:r.resultValue,unit:r.unit||'',reference_range:r.referenceRange||'',status:r.status||'Draft',entered_by:r.enteredBy||currentUser?.email||'',verified_by:r.verifiedBy||null,verified_at:r.verifiedAt||null,created_at:r.createdAt,updated_at:r.updatedAt};const {error}=await client.from('acd_lab_results').upsert(row,{onConflict:'id'});if(error)throw error;r.syncStatus='synced';await localPut('results',r);}
+ if(navigator.onLine){const row={id:r.id,lab_id:currentLab.id,order_id:r.orderId||'',patient_id:r.patientId||'',test_name:r.testName,parameter:r.parameter,result_value:r.resultValue,unit:r.unit||'',reference_range:r.referenceRange||'',status:'Saved',entered_by:r.enteredBy||currentUser?.email||'',created_at:r.createdAt,updated_at:r.updatedAt};const {error}=await client.from('acd_lab_results').upsert(row,{onConflict:'id'});if(error)throw error;r.syncStatus='synced';await localPut('results',r);}
 }
 async function sendReportWhatsApp(orderId){
  const o=(await getOrders()).find(x=>x.id===orderId);if(!o)return alert('Report record not found.');
@@ -1184,11 +1216,11 @@ async function sendReportWhatsApp(orderId){
 }
 async function printCombinedReport(orderId,finalOnly=false){
  const allOrders=await getOrders(),o=allOrders.find(x=>x.id===orderId);if(!o)return alert('Report record not found.');
- const allRows=(await loadCloudResults()).filter(x=>x.orderId===orderId);if(!allRows.length)return alert('Save draft results first.');
+ const allRows=(await loadCloudResults()).filter(x=>x.orderId===orderId);if(!allRows.length)return alert('Save results first.');
  const latestMap=new Map();for(const r of allRows){const k=`${r.testName}\u0000${r.parameter}`,prior=latestMap.get(k);if(!prior||String(r.updatedAt||r.createdAt)>String(prior.updatedAt||prior.createdAt))latestMap.set(k,r);}const rows=[...latestMap.values()];
  const expected=(o.items||[]).reduce((n,t)=>n+(t.parameters||[]).length,0);
  const complete=rows.length>=expected&&(o.items||[]).every(t=>(t.parameters||[]).every(p=>rows.some(r=>r.testName===t.name&&r.parameter===p.name)));
- const allVerified=false; // Verification workflow disabled: printing is allowed for saved reports.
+ 
  const safe=x=>esc(x??'');
  const p={name:o.patientName||'',id:o.patientId||'',age:o.patientAge||'Not provided',gender:o.patientGender||'Not provided',mobile:o.patientMobile||'',address:o.patientAddress||'',referrer:o.referrer||''};
  const design=await getReportDesign(),lab=currentLab||{},sign=await getReportSignatures();
