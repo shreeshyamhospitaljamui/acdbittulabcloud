@@ -779,35 +779,32 @@ async function renderReportSignatures(c){
 
 async function renderPermissionManager(c){
  if(currentPlatformRole!=='super_admin'){
-  c.innerHTML=`<div class="panel-head"><h3>Permission Manager</h3></div><div class="notice"><b>Access restricted.</b> This section is available only to the authenticated platform owner account.</div><p class="muted">Your current platform role could not be verified as super_admin.</p>`;
+  c.innerHTML=`<div class="panel-head"><h3>Permission Manager</h3></div><div class="notice"><b>Access restricted.</b> This section is available only to the authenticated platform owner account.</div>`;
   return;
  }
- const defs=[
-  ['report_structure','Report Designer master structure','owner'],
-  ['header_footer','Header & Footer permissions','lab_admin'],
-  ['fonts_colors','Fonts & Colors','lab_admin'],
-  ['test_catalogue','Test Catalogue','lab_admin'],
-  ['patient_form','Patient Form & Custom Fields','lab_admin'],
-  ['staff_permissions','Staff Permissions','owner'],
-  ['lab_management','Create / Disable Labs','owner'],
-  ['security_backup','Security, Backup & Retention','owner'],
-  ['modules','Enable / Disable Modules','owner'],
-  ['report_signatures','Report Signatures','lab_admin']
+ const rows=[
+  ['Patients','View','Lab Admin, Receptionist, Technician, Pathologist, Accountant'],
+  ['Patients','Add / Edit','Lab Admin, Receptionist'],
+  ['Patients','Delete','Lab Admin only'],
+  ['Test Catalogue','View','All active lab staff'],
+  ['Test Catalogue','Add / Edit / Disable','Lab Admin only'],
+  ['Test Orders & Billing','View','All active lab staff'],
+  ['Test Orders & Billing','Create / Edit','Lab Admin, Receptionist'],
+  ['Samples','View','Lab Admin, Receptionist, Technician, Pathologist'],
+  ['Samples','Add / Edit','Lab Admin, Technician'],
+  ['Results','View / Add / Edit','Lab Admin, Technician, Pathologist'],
+  ['Results','Delete','Lab Admin only'],
+  ['Accounts & Expenses','View / Add / Edit','Lab Admin, Accountant'],
+  ['Accounts & Expenses','Delete','Lab Admin only'],
+  ['Inventory & Stock','View / Add / Edit','Lab Admin, Technician'],
+  ['Inventory & Stock','Delete','Lab Admin only'],
+  ['Lab Settings','Manage','Lab Admin only'],
+  ['Staff & Invitations','Manage','Lab Admin via secure invitation workflow']
  ];
- const saved=(await getSetting('permissionConfig'))||{};
- const labels={owner:'Owner Only',lab_admin:'Owner + Lab Admin'};
- c.innerHTML=`<div class="panel-head"><h3>Permission Manager</h3><span class="muted">Platform role: ${esc(currentPlatformRole)}</span></div>
- <div class="notice"><b>Owner control.</b> Choose which settings Lab Admins may manage. Owner can change these defaults at any time.</div>
- <form id="permissionForm"><div class="tablewrap"><table><thead><tr><th>Setting / Feature</th><th>Who can manage it?</th></tr></thead><tbody>
- ${defs.map(([key,label,def])=>`<tr><td>${esc(label)}</td><td><select class="input" name="${key}"><option value="owner" ${(saved[key]||def)==='owner'?'selected':''}>Owner Only</option><option value="lab_admin" ${(saved[key]||def)==='lab_admin'?'selected':''}>Owner + Lab Admin</option></select></td></tr>`).join('')}
- </tbody></table></div><p><button class="btn" type="submit">Save Permission Preferences</button></p></form>
- <div class="notice"><b>Important implementation status:</b> These preferences are currently saved only in this browser's IndexedDB. They are not yet enforced by Supabase Row Level Security or server-side authorization, and therefore are not a security boundary. Do not invite other users or store real patient data based on these settings until server-side enforcement is implemented and tested.</div>`;
- $('permissionForm').addEventListener('submit',async e=>{
-  e.preventDefault();const f=new FormData(e.target),obj={};
-  for(const [k,v] of f.entries())obj[k]=v;
-  await saveSetting('permissionConfig',obj);
-  alert('Permission preferences saved on this device. Server-side enforcement is still pending.');
- });
+ c.innerHTML=`<div class="panel-head"><h3>Permission Manager</h3><span class="muted">Server-side role matrix</span></div>
+ <div class="notice"><b>यह permission matrix Supabase RLS से लागू होती है।</b> Super Admin का platform account दूसरे लैब का patient/report data स्वतः नहीं खोल सकता। हर staff account को active lab membership और उसका role चाहिए।</div>
+ <div class="tablewrap"><table><thead><tr><th>Module</th><th>Permission</th><th>Allowed Role</th></tr></thead><tbody>${rows.map(r=>`<tr>${r.map(x=>`<td>${esc(x)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+ <div class="notice">यह fixed secure role matrix है, local-device checkbox नहीं। इस पैनल से अभी किसी एक कर्मचारी के लिए अलग custom permission toggle नहीं है। Role बदलने के लिए Staff & Roles / Super Admin Membership Control का उपयोग करें।</div>`;
 }
 
 
@@ -1124,7 +1121,7 @@ async function renderBackupRestore(c){
   const path=$('cloudBackupList').value,pass=$('restorePass').value,b=$('restoreCloudBackup');
   if(!path){message('cloudRestoreMessage','Select a backup first.');return;}
   if(pass.length<12){message('cloudRestoreMessage','Enter the backup passphrase (minimum 12 characters).');return;}
-  if(!confirm('Restore this backup into this browser? Existing local records with matching IDs will be updated. Other local rows and all cloud records will remain unchanged.'))return;
+  if(!confirm('Restore this backup to the CURRENT LAB CLOUD and this device? Matching IDs in this lab may be updated by backup values. Other labs and unrelated records will not be changed. Continue only if this is the correct lab and backup.'))return;
   b.disabled=true;
   try{
    const {data,error}=await client.storage.from('acd-lab-backups').download(path);if(error)throw error;
@@ -1158,7 +1155,37 @@ async function renderBackupRestore(c){
    if(Array.isArray(snap.acd_lab_tests)){store.tests=snap.acd_lab_tests.map(r=>({id:r.id,name:r.name,detail:r.detail||'',price:Number(r.price||0),sampleType:r.sample_type||'',parameters:Array.isArray(r.parameters)?r.parameters:[]}));saveData();}
    if(snap.acd_lab_settings?.[0]?.settings){const settings=snap.acd_lab_settings[0].settings,tx=db.transaction('settings','readwrite'),os=tx.objectStore('settings');for(const [key,value] of Object.entries(settings))os.put({key,...value,syncStatus:'synced'});await new Promise((res,rej)=>{tx.oncomplete=res;tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error);});}
    if(payload.localSetup){store={...defaults,...payload.localSetup,...store};saveData();}
-   message('cloudRestoreMessage','Backup decrypted. Cloud snapshot and device cache merged into this browser only; Supabase cloud records were not changed.',true);
+   // Restore cloud rows only after checking every row belongs to the currently open lab.
+   // Each table is upserted separately; a failure is reported and never called a full success.
+   if(!navigator.onLine)throw new Error('Internet connection is required to restore records to Supabase. Local cache was merged; cloud restore has not run.');
+   const cloudUpserts={
+    acd_lab_patients:(r)=>({id:r.id,lab_id:labId,patient_code:r.patient_code||r.id,name:r.name,age:r.age,age_value:r.age_value,age_unit:r.age_unit||'years',date_of_birth:r.date_of_birth,gender:r.gender,mobile:r.mobile,address:r.address,referrer:r.referrer,created_at:r.created_at,updated_at:r.updated_at}),
+    acd_lab_orders:(r)=>({id:r.id,lab_id:labId,patient_id:r.patient_id,patient_name:r.patient_name,patient_age:r.patient_age||'',patient_gender:r.patient_gender||'',patient_mobile:r.patient_mobile||'',patient_address:r.patient_address||'',referrer:r.referrer||'',items:r.items||[],subtotal:Number(r.subtotal||0),discount:Number(r.discount||0),total:Number(r.total||0),paid:Number(r.paid||0),due:Number(r.due||0),payment_method:r.payment_method,payment_status:r.payment_status,notes:r.notes,status:r.status,created_at:r.created_at,updated_at:r.updated_at}),
+    acd_lab_samples:(r)=>({id:r.id,lab_id:labId,order_id:r.order_id,patient_id:r.patient_id,sample_type:r.sample_type,collected_by:r.collected_by,status:r.status,rejection_reason:r.rejection_reason,collected_at:r.collected_at,updated_at:r.updated_at}),
+    acd_lab_results:(r)=>({id:r.id,lab_id:labId,order_id:r.order_id,patient_id:r.patient_id,test_name:r.test_name,parameter:r.parameter,result_value:r.result_value,unit:r.unit||'',reference_range:r.reference_range||'',status:'Saved',entered_by:r.entered_by||'',created_at:r.created_at,updated_at:r.updated_at}),
+    acd_lab_tests:(r)=>({id:r.id,lab_id:labId,name:r.name,detail:r.detail||'',price:Number(r.price||0),sample_type:r.sample_type||'',parameters:Array.isArray(r.parameters)?r.parameters:[],is_active:r.is_active!==false,updated_at:r.updated_at||new Date().toISOString()}),
+    acd_lab_finance_entries:(r)=>({id:r.id,lab_id:labId,description:r.description||'',amount:Number(r.amount||0),category:r.category||'',entry_type:r.entry_type||'Expense',created_at:r.created_at,updated_at:r.updated_at||r.created_at}),
+    acd_lab_inventory_items:(r)=>({id:r.id,lab_id:labId,item:r.item||'',quantity:Number(r.quantity||0),unit:r.unit||'',expiry_date:r.expiry_date||null,status:r.status||'In Stock',created_at:r.created_at,updated_at:r.updated_at||r.created_at})
+   };
+   const cloudTables=['acd_lab_patients','acd_lab_orders','acd_lab_samples','acd_lab_results','acd_lab_tests','acd_lab_finance_entries','acd_lab_inventory_items'];
+   const restoredCounts={};
+   for(const table of cloudTables){
+    const sourceRows=snap[table];
+    if(!Array.isArray(sourceRows))continue;
+    if(sourceRows.some(r=>r.lab_id!==labId))throw new Error('Backup contains a different lab_id in '+table+'. No cross-lab restore was attempted.');
+    if(sourceRows.length){
+     const {error:upsertError}=await client.from(table).upsert(sourceRows.map(cloudUpserts[table]),{onConflict:'id'});
+     if(upsertError)throw new Error('Cloud restore stopped at '+table+': '+upsertError.message);
+    }
+    restoredCounts[table]=sourceRows.length;
+   }
+   const settingsSnap=snap.acd_lab_settings?.[0];
+   if(settingsSnap){
+    if(settingsSnap.lab_id!==labId)throw new Error('Settings backup belongs to a different lab.');
+    const {error:settingsUpsertError}=await client.from('acd_lab_settings').upsert({lab_id:labId,settings:settingsSnap.settings||{},updated_by:currentUser?.id||null,updated_at:new Date().toISOString()},{onConflict:'lab_id'});
+    if(settingsUpsertError)throw new Error('Cloud settings restore failed: '+settingsUpsertError.message);
+   }
+   message('cloudRestoreMessage','Cloud restore completed for this lab. Restored rows: '+Object.entries(restoredCounts).map(([k,v])=>k.replace('acd_lab_','')+' '+v).join(', ')+'. Device cache was also merged. Staff membership and lab identity are intentionally not overwritten.',true);
   }catch(e){message('cloudRestoreMessage','Restore failed: '+(e.message||e));}
   finally{b.disabled=false;}
  };
