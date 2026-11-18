@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ACD BITTU LAB CLOUD — Desktop & Cloud LIMS</title>
+<title>ACD BITTU LAB CLOUD — Desktop LIMS</title>
 <style>
 :root{--navy:#0f3460;--blue:#1769aa;--panel:#eaf0f6;--border:#bfd0e2;--ink:#132338;--green:#0e7a3a;--red:#b42318;--bg:#dfe6ef}
 *{box-sizing:border-box}
@@ -19,41 +19,33 @@ body{margin:0;font-family:Tahoma,Segoe UI,Arial,sans-serif;font-size:12px;backgr
 .tbtn.success{background:var(--green);color:#fff;border-color:#0a5729}
 .tbtn.danger{background:#fff0ef;color:var(--red);border-color:#e4a5a0}
 .pill{margin-left:auto;padding:3px 9px;border-radius:12px;background:#fff;border:1px solid var(--border);font-weight:700;font-size:11px}
-
 .shell{display:grid;grid-template-columns:210px minmax(0,1fr);min-height:calc(100vh - 68px)}
 .sidebar{background:#123966;color:#e3eefb;padding:8px;display:flex;flex-direction:column;gap:3px;border-right:1px solid #0b2647}
 .sidebar button{background:transparent;border:1px solid transparent;color:#dce9f8;text-align:left;padding:7px 9px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600}
 .sidebar button:hover,.sidebar button.active{background:#1e528d;border-color:#4b82bf;color:#fff}
 .main{padding:10px;overflow-x:auto}
-
 .login-card{max-width:410px;margin:45px auto;background:#fff;border:1px solid var(--border);border-radius:6px;padding:20px;box-shadow:0 4px 16px #00000018}
 .field{margin-bottom:9px}
 .field label{display:block;font-weight:700;font-size:11px;margin-bottom:3px;color:#273b52}
 .inp{width:100%;padding:6px 8px;border:1px solid #9ab0c7;border-radius:3px;font:inherit;background:#fff}
 .inp:focus{outline:2px solid var(--blue);background:#fffef0}
-
 .erp-box{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:8px;margin-bottom:8px}
-.erp-grid{display:grid;grid-template-columns:1.35fr 1.35fr 1fr;gap:8px}
+.erp-grid{display:grid;grid-template-columns:1.35fr 1.25fr 1fr;gap:8px}
 .sub-card{background:#f8fbff;border:1px solid #c3d3e4;padding:7px;border-radius:3px;position:relative}
 .sub-card h4{margin:0 0 6px;font-size:11px;color:var(--navy);border-bottom:1px solid #d5e1ee;padding-bottom:3px;text-transform:uppercase}
-.frow{display:grid;grid-template-columns:90px 1fr;gap:5px;align-items:center;margin-bottom:5px}
+.frow{display:grid;grid-template-columns:92px 1fr;gap:5px;align-items:center;margin-bottom:5px}
 .frow label{font-weight:700;font-size:11px}
 .finline{display:flex;gap:4px}
-
-.search-drop{position:absolute;left:7px;right:7px;top:92px;background:#fff;border:1px solid #7f9bb8;border-radius:4px;max-height:190px;overflow-y:auto;z-index:25;box-shadow:0 6px 16px #00000028}
+.search-drop{position:absolute;left:7px;right:7px;top:100%;background:#fff;border:1px solid #7f9bb8;border-radius:4px;max-height:190px;overflow-y:auto;z-index:20;box-shadow:0 6px 16px #00000025}
 .search-item{padding:6px 9px;border-bottom:1px solid #eef2f7;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
 .search-item:hover,.search-item.hi{background:#e6f2fc;font-weight:700}
-.chip-box{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;min-height:24px}
-.t-chip{background:#dcebf9;border:1px solid #8ebce6;padding:2px 6px;border-radius:3px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:4px}
-
-.grid-box{background:#fff;border:1px solid #8ea4be;height:calc(100vh - 365px);min-height:240px;overflow:auto}
+.grid-box{background:#fff;border:1px solid #8ea4be;height:calc(100vh - 345px);min-height:250px;overflow:auto}
 table.grid{width:100%;border-collapse:collapse;font-size:12px}
 table.grid th{position:sticky;top:0;background:linear-gradient(#245388,#15375f);color:#fff;padding:6px 7px;text-align:left;border:1px solid #3c6ca3;font-size:11px;z-index:2}
 table.grid td{border:1px solid #cfd9e6;padding:4px 6px}
 table.grid tr:nth-child(even){background:#f7faff}
 table.grid input,table.grid select{width:100%;padding:4px 6px;border:1px solid #9bb0c8;border-radius:2px;font-weight:700}
 table.grid input:focus{background:#fff9c4;outline:2px solid var(--blue)}
-
 .panel{background:#fff;border:1px solid var(--border);border-radius:4px;padding:12px;margin-bottom:10px}
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
 .stat-card{background:#fff;border:1px solid var(--border);border-radius:4px;padding:10px}
@@ -67,7 +59,7 @@ table.grid input:focus{background:#fff9c4;outline:2px solid var(--blue)}
 <div id="loginView" class="login-card">
   <h2 style="margin:0 0 3px;color:var(--navy)">ACD BITTU LAB CLOUD</h2>
   <div style="color:#555;margin-bottom:12px">Desktop & Cloud Pathology LIMS</div>
-  <div class="notice"><b>Single-Device Rule:</b> Pehla device online hone par doosre device par login hote hi pehla automatic logout ho jayega. Offline hone par lock surakshit rahega.</div>
+  <div class="notice">Single-Device Security: Online hone par naye device par login karte hi purana device automatic logout ho jayega.</div>
   <form id="loginForm">
     <div class="field"><label>Email Address</label><input class="inp" id="email" type="email" required></div>
     <div class="field"><label>Password</label><input class="inp" id="password" type="password" required></div>
@@ -75,7 +67,6 @@ table.grid input:focus{background:#fff9c4;outline:2px solid var(--blue)}
   </form>
   <div style="margin-top:10px;display:flex;gap:6px">
     <button class="tbtn" type="button" id="toggleReg">Register New Lab</button>
-    <button class="tbtn" type="button" id="forgotBtn">Forgot Password</button>
   </div>
   <form id="regForm" class="hidden" style="margin-top:10px;border-top:1px solid #ddd;padding-top:10px">
     <div class="field"><label>Owner Name</label><input class="inp" name="ownerName" required></div>
@@ -125,19 +116,21 @@ table.grid input:focus{background:#fff9c4;outline:2px solid var(--blue)}
 
 <script src="https://jsdelivr.net"></script>
 <script>
+window.onerror=function(msg){var el=document.getElementById('authMsg');if(el)el.textContent='Script Error: '+msg;};
 const SUPABASE_URL='https://supabase.co';
 const SUPABASE_KEY='sb_publishable_n6jRvVDjw2kOF7CS46omqQ_6qGkdR-q';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-const DEV_KEY='acd_bittu_uuid_v7', LOCK_KEY='acd_bittu_lock_v7', STORE_KEY='acd_bittu_lims_v7';
-const $=id=>document.getElementById(id);
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const money=n=>'₹'+(Number(n)||0).toFixed(2);
-const uid=p=>p+'-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+Math.random().toString(36).slice(2,6).toUpperCase();
+const DEV_KEY='acd_bittu_uuid_v9', LOCK_KEY='acd_bittu_lock_v9', STORE_KEY='acd_bittu_lims_v9';
+const $=function(id){return document.getElementById(id);};
+const esc=function(s){return String(s??'').replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]);});};
+const money=function(n){return '₹'+(Number(n)||0).toFixed(2);};
+const uid=function(p){return p+'-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+Math.random().toString(36).slice(2,6).toUpperCase();};
 
-let db, currentUser=null, platformRole='', activeLab=null, hbTimer=null;
-let queuedTests=[], loadedTests=[], activeOrderId=null, matchedSearchTest=null;
+let db=null, currentUser=null, platformRole='', activeLab=null, hbTimer=null, entryTests=[], activeOrderId=null, selectedSearchTest=null;
 let store={lab:{name:'',address:'',phone:'',headerTitle:'',footerText:'',docName:'',docQual:'MBBS, MD',techName:'',techQual:'DMLT',preprinted:false},doctors:[],tests:[]};
-try{store={...store,...JSON.parse(localStorage.getItem(STORE_KEY)||'{}')};}catch{}
-const saveStore=()=>localStorage.setItem(STORE_KEY,JSON.stringify(store));
+try{store={...store,...JSON.parse(localStorage.getItem(STORE_KEY)||'{}')};}catch(e){}
+function saveStore(){localStorage.setItem(STORE_KEY,JSON.stringify(store));}
 
+const MASTER_CATALOGUE=[
+  {name:'Complete Blood Count (CBC)',price:300,sampleType:'EDTA Blood',parameters:[
 
