@@ -166,18 +166,73 @@ function stopBrowserDeviceHeartbeat(){if(deviceSessionTimer){clearInterval(devic
 function startBrowserDeviceHeartbeat(){if(deviceSessionTimer)clearInterval(deviceSessionTimer);deviceSessionTimer=setInterval(async()=>{if(deviceSessionBusy||!deviceSessionUserId)return;deviceSessionBusy=true;try{const {data,error}=await client.rpc('acd_heartbeat_single_device_session',{p_device_id:getBrowserDeviceId()});if(!error&&!(data===true||data?.allowed===true)){stopBrowserDeviceHeartbeat();await client.auth.signOut();showLogin();msg('This device no longer holds the active login lock. Please sign in again.');}}catch(e){console.warn('Device session heartbeat temporarily unavailable',e);}finally{deviceSessionBusy=false;}},45000);}
 async function releaseBrowserDevice(){try{if(deviceSessionUserId)await client.rpc('acd_release_single_device_session',{p_device_id:getBrowserDeviceId()});}catch(e){console.warn('Could not release device session cleanly',e);}stopBrowserDeviceHeartbeat();}
 const $=id=>document.getElementById(id);
-// Desktop keyboard workflow: Enter advances to the next result field instead of submitting the form.
+// Consistent desktop Enter workflow for patient registration, direct test entry and result grids.
+// Native text editing remains available with Shift+Enter in textareas; dropdowns keep arrow-key selection.
+function focusNextWorkflowField(form, current){
+ const fields=[...form.querySelectorAll('input,select,textarea')].filter(x=>{
+  if(x.disabled||x.readOnly||x.type==='hidden'||x.type==='button'||x.type==='submit')return false;
+  if(x.closest('.hidden,[hidden]'))return false;
+  if(x.getClientRects().length===0)return false;
+  return true;
+ });
+ const i=fields.indexOf(current),next=fields[i+1];
+ if(next){next.focus();if(next instanceof HTMLInputElement&&['text','search','tel','number'].includes(next.type))next.select?.();return true;}
+ return false;
+}
 document.addEventListener('keydown',ev=>{
- if(ev.key!=='Enter')return;
- const el=ev.target;
- if(!(el instanceof HTMLElement)||!el.matches('.direct-result,.result-value'))return;
- const scope=el.closest('#directParameterTables,#multiResultFields');if(!scope)return;
+ if(ev.key!=='Enter'||ev.altKey||ev.ctrlKey||ev.metaKey)return;
+ const el=ev.target;if(!(el instanceof HTMLElement))return;
+ // Native dropdown selection gets the first Enter; the next Enter advances focus.
+ // Arrow-key changes reset this small two-step interaction.
+ if(el instanceof HTMLSelectElement&&el.dataset.enterAdvanceReady!=='1'){
+  el.dataset.enterAdvanceReady='1';
+  return;
+ }
+ if(el instanceof HTMLSelectElement)el.dataset.enterAdvanceReady='0';
+ // Result grids: one Enter advances exactly one result cell, then to Save.
+ if(el.matches('.direct-result,.result-value')){
+  const scope=el.closest('#directParameterTables,#multiResultFields');if(!scope)return;
+  ev.preventDefault();
+  if(!el.checkValidity()) { el.reportValidity?.(); el.focus(); return; }
+  const fields=[...scope.querySelectorAll('.direct-result,.result-value')].filter(x=>!x.disabled&&x.getClientRects().length);
+  const i=fields.indexOf(el),next=fields[i+1];
+  if(next){next.focus();if(next instanceof HTMLInputElement)next.select();}
+  else{const btn=scope.id==='directParameterTables'?$('saveDirectDraft'):$('saveAllResults');if(btn&&!btn.disabled)btn.focus();}
+  return;
+ }
+ const form=el.closest('form');if(!form||!['directReportForm','patientForm'].includes(form.id))return;
+ if(el.matches('button,input[type=button],input[type=submit]'))return;
+ if(el instanceof HTMLTextAreaElement&&ev.shiftKey)return;
+ // Test search behaves like an autocomplete: Enter adds one enabled match, but never
+ // silently adds the first catalogue item when the search box is empty.
+ if(form.id==='directReportForm'&&el.id==='directTestSearch'){
+  ev.preventDefault();
+  if(!el.value.trim())return;
+  const options=[...form.querySelectorAll('#directSearchResults [data-pick-direct]:not(:disabled)')];
+  const best=options[0],rank=best?Number(best.dataset.matchRank||'9'):9;
+  const tied=options.filter(x=>Number(x.dataset.matchRank||'9')===rank);
+  if(best&&(rank===0||tied.length===1)){
+   best.click();const load=form.querySelector('#loadAllParameters');if(load&&!load.disabled)load.focus();
+  }else if(options.length){
+   const hint=form.querySelector('#directSearchResults');if(hint)hint.insertAdjacentHTML('afterbegin','<div class="notice">कई मिलते-जुलते टेस्ट हैं। सही टेस्ट के सामने <b>+ Add</b> दबाकर चुनें।</div>');
+  }
+  return;
+ }
+ // Required/invalid fields must be corrected before Enter can move focus onward.
+ if(!el.checkValidity()){
+  ev.preventDefault();
+  el.reportValidity?.();
+  el.focus();
+  return;
+ }
  ev.preventDefault();
- const fields=[...scope.querySelectorAll('.direct-result,.result-value')].filter(x=>!x.disabled);
- const i=fields.indexOf(el);
- if(i>=0&&i<fields.length-1){fields[i+1].focus();if(fields[i+1] instanceof HTMLInputElement)fields[i+1].select();}
- else{const btn=scope.id==='directParameterTables'?$('saveDirectDraft'):$('saveAllResults');if(btn&&!btn.disabled)btn.focus();}
+ if(focusNextWorkflowField(form,el))return;
+ if(form.id==='patientForm'){
+  if(form.checkValidity())form.requestSubmit();
+  else form.reportValidity();
+ }
 });
+document.addEventListener('change',ev=>{if(ev.target instanceof HTMLSelectElement)ev.target.dataset.enterAdvanceReady='0';});
 const KEY='acd_bittu_lab_cloud_setup_v1';
 const DB_NAME='acd_bittu_lab_cloud_local';
 const DB_VERSION=4;
@@ -966,8 +1021,8 @@ async function renderTestOrders(c){
  <form id="directReportForm"><div class="designer-grid">
  <div class="field"><label>Patient Name</label><input class="input" name="patientName" maxlength="120"></div><div class="field"><label>Patient ID (Automatic · Locked)</label><input class="input" readonly value="Generated when saved"></div>
  <div class="field"><label>Age (Optional)</label><input class="input" name="ageValue" type="number" min="0" step="any" placeholder="e.g. 5"></div><div class="field"><label>Age Unit</label><select class="input" name="ageUnit"><option value="days">Days</option><option value="months">Months</option><option value="years" selected>Years</option></select></div>
- <div class="field"><label>Gender (Optional)</label><select class="input" name="gender"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div>
- <div class="field"><label>Doctor / Referrer</label><input class="input" name="referrer" maxlength="120" list="directDoctorOptions" placeholder="Doctor name लिखें या चुनें"><datalist id="directDoctorOptions">${(store.doctors||[]).map(d=>`<option value="${esc(d.name)}">`).join('')}</datalist><button type="button" class="btn secondary" id="saveDirectDoctor" style="margin-top:6px;padding:7px 10px">＋ Add Doctor Name</button><small class="muted" id="directDoctorMessage">नाम यहीं से सेव कर सकते हैं।</small></div><div class="field"><label>Mobile Number</label><input class="input" name="mobile" inputmode="tel" maxlength="20"></div><div class="field"><label>Address</label><input class="input" name="address" maxlength="300"></div></div>
+ <div class="field"><label>Doctor / Referrer</label><input class="input" name="referrer" maxlength="120" list="directDoctorOptions" placeholder="Doctor name लिखें या चुनें"><datalist id="directDoctorOptions">${(store.doctors||[]).map(d=>`<option value="${esc(d.name)}">`).join('')}</datalist><button type="button" class="btn secondary" id="saveDirectDoctor" style="margin-top:6px;padding:7px 10px">＋ Add Doctor Name</button><small class="muted" id="directDoctorMessage">नाम यहीं से सेव कर सकते हैं।</small></div>
+ <div class="field"><label>Gender (Optional)</label><select class="input" name="gender"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div><div class="field"><label>Mobile Number</label><input class="input" name="mobile" inputmode="tel" maxlength="20"></div><div class="field"><label>Address</label><input class="input" name="address" maxlength="300"></div></div>
  <div class="mod-section"><div class="panel-head"><h4>＋ Add Test</h4><span class="muted" id="selectedTestCount">0 tests selected</span></div><div class="field"><label>Search available tests in this lab</label><input class="input" id="directTestSearch" placeholder="Search CBC, Blood Sugar, LFT, KFT, Widal..." autocomplete="off"></div><div id="directSearchResults" class="test-search-results"><div class="empty">Type a test name to search your complete catalogue.</div></div><div style="margin-top:12px"><b>Selected Tests — in the order you added them</b><div id="directSelectedTests" class="list"><div class="empty">No tests added yet.</div></div></div><button type="button" class="btn" id="loadAllParameters" style="margin-top:12px">Enter — Load All Test Parameters</button></div>
  <section id="directParameterArea" class="hidden"><div class="panel-head"><h3>Enter All Results</h3><span class="muted">One continuous screen</span></div><div id="directParameterTables" class="direct-tests"></div><div class="row" style="margin-top:16px"><button type="button" class="btn" id="saveDirectDraft">Save Results</button><button type="button" class="btn secondary" id="printDirectDraft">Save & Print A4</button><button type="button" class="btn secondary" id="sendDirectWhatsApp">Send on WhatsApp</button></div><div id="directResultMessage" class="message"></div></section></form>`;
  const f=$('directReportForm'),selected=[];let loaded=false,lastSavedDirectOrder=null,activeDirectPatientId=null;
@@ -976,12 +1031,12 @@ async function renderTestOrders(c){
  const ageYears=()=>{const v=Number(f.elements.ageValue.value||0),u=f.elements.ageUnit.value;return u==='days'?v/365.2425:u==='months'?v/12:v;};
  const rangeFor=p=>{const ageRaw=String(f.elements.ageValue.value||'').trim(),g=f.elements.gender.value;if(!ageRaw||!g)return 'Reference range not configured: age/gender not supplied';const y=ageYears(),b=Array.isArray(p.ageRanges)?p.ageRanges:[];let r='';if(y<18){const hit=b.find(x=>y>=Number(x.minYears??0)&&y<Number(x.maxYears??200));r=hit?.range||p.child||p.pediatric||'';}else if(g==='Male')r=p.male||p.general||'';else if(g==='Female')r=p.female||p.general||'';else r=p.general||'';return String(r||'Reference range not configured for this age/sex').trim();};
  const paintSelected=()=>{$('selectedTestCount').textContent=`${selected.length} tests selected`;$('directSelectedTests').innerHTML=selected.length?selected.map((t,i)=>`<div class="item"><span><b>${i+1}. ${esc(t.name)}</b><br><small class="muted">${esc(t.sampleType||'Sample not specified')} · ${t.parameters?.length||0} parameters</small></span><button type="button" class="btn danger" data-remove-direct="${i}">Remove</button></div>`).join(''):'<div class="empty">No tests added yet.</div>';c.querySelectorAll('[data-remove-direct]').forEach(b=>b.onclick=()=>{selected.splice(Number(b.dataset.removeDirect),1);loaded=false;$('directParameterArea').classList.add('hidden');paintSelected();});};
- const search=()=>{const q=$('directTestSearch').value.trim().toLowerCase();const matches=tests.filter(t=>!q||String(t.name).toLowerCase().includes(q)||String(t.detail||'').toLowerCase().includes(q)).slice(0,80);$('directSearchResults').innerHTML=matches.length?matches.map(t=>{const idx=tests.indexOf(t),already=selected.some(x=>x.id===t.id);return `<div class="test-result-row"><span><b>${esc(t.name)}</b><br><small class="muted">${esc(t.sampleType||'Sample not specified')} · ${t.parameters?.length||0} parameters</small></span><button type="button" class="btn ${already?'secondary':'primary'}" data-pick-direct="${idx}" ${already||!(t.parameters||[]).length?'disabled':''}>${already?'Added':(t.parameters||[]).length?'+ Add':'No Parameters'}</button></div>`;}).join(''):'<div class="empty">No matching tests found in this lab catalogue.</div>';c.querySelectorAll('[data-pick-direct]').forEach(b=>b.onclick=()=>{const t=tests[Number(b.dataset.pickDirect)];if(t&&!selected.some(x=>x.id===t.id)){selected.push(t);loaded=false;$('directParameterArea').classList.add('hidden');paintSelected();search();}});};
+ const search=()=>{const q=$('directTestSearch').value.trim().toLowerCase();const matches=tests.map((t,i)=>({t,i,n:String(t.name||'').toLowerCase(),d:String(t.detail||'').toLowerCase()})).filter(x=>!q||x.n.includes(q)||x.d.includes(q)).sort((a,b)=>{if(!q)return a.i-b.i;const rank=x=>x.n===q?0:x.n.startsWith(q)?1:x.n.includes(q)?2:3;return rank(a)-rank(b)||a.i-b.i;}).slice(0,80);$('directSearchResults').innerHTML=matches.length?matches.map(({t,i})=>{const already=selected.some(x=>x.id===t.id);return `<div class="test-result-row"><span><b>${esc(t.name)}</b><br><small class="muted">${esc(t.sampleType||'Sample not specified')} · ${t.parameters?.length||0} parameters</small></span><button type="button" class="btn ${already?'secondary':'primary'}" data-pick-direct="${i}" data-match-rank="${!q?9:(String(t.name||'').toLowerCase()===q?0:(String(t.name||'').toLowerCase().startsWith(q)?1:2))}" ${already||!(t.parameters||[]).length?'disabled':''}>${already?'Added':(t.parameters||[]).length?'+ Add':'No Parameters'}</button></div>`;}).join(''):'<div class="empty">No matching tests found in this lab catalogue.</div>';c.querySelectorAll('[data-pick-direct]').forEach(b=>b.onclick=()=>{const t=tests[Number(b.dataset.pickDirect)];if(t&&!selected.some(x=>x.id===t.id)){selected.push(t);loaded=false;$('directParameterArea').classList.add('hidden');paintSelected();search();}});};
  $('directTestSearch').addEventListener('input',search);f.elements.ageValue.addEventListener('input',()=>{loaded=false;});f.elements.ageUnit.addEventListener('change',()=>{loaded=false;});f.elements.gender.addEventListener('change',()=>{loaded=false;});
 
  // Enter navigation is centralized in the document-level handler above to avoid double-advancing.
 
- $('loadAllParameters').onclick=()=>{if(!selected.length)return alert('पहले + Add Test से एक या अधिक Tests चुनें।');$('directParameterTables').innerHTML=selected.map((t,ti)=>`<section class="direct-test"><h4>${ti+1}. ${esc(t.name)}</h4><div class="muted">Sample: ${esc(t.sampleType||'Not specified')} · ${t.parameters.length} parameters</div><div class="tablewrap"><table class="result-entry-table"><thead><tr><th>Parameter</th><th>Result *</th><th>Unit</th><th>Reference Range</th></tr></thead><tbody>${t.parameters.map((p,pi)=>{const opts=String(p.options||'').split(/[|,;/]/).map(x=>x.trim()).filter(Boolean);const qualitative=p.resultType==='qualitative'||opts.length>0;const control=qualitative?`<select class="input direct-result" required data-ti="${ti}" data-pi="${pi}"><option value="">Select result</option>${(opts.length?opts:['Positive','Negative','Reactive','Non-reactive','Detected','Not Detected','Present','Absent']).map(x=>`<option>${esc(x)}</option>`).join('')}</select>`:`<input class="input direct-result" required data-ti="${ti}" data-pi="${pi}" inputmode="decimal" placeholder="Enter result">`;return `<tr><td><b>${esc(p.name)}</b></td><td>${control}</td><td>${esc(p.unit||'')}</td><td>${esc(rangeFor(p))}</td></tr>`;}).join('')}</tbody></table></div></section>`).join('');$('directParameterArea').classList.remove('hidden');loaded=true;$('directParameterArea').scrollIntoView({behavior:'smooth',block:'start'});};
+ $('loadAllParameters').onclick=()=>{if(!selected.length)return alert('पहले + Add Test से एक या अधिक Tests चुनें।');$('directParameterTables').innerHTML=selected.map((t,ti)=>`<section class="direct-test"><h4>${ti+1}. ${esc(t.name)}</h4><div class="muted">Sample: ${esc(t.sampleType||'Not specified')} · ${t.parameters.length} parameters</div><div class="tablewrap"><table class="result-entry-table"><thead><tr><th>Parameter</th><th>Result *</th><th>Unit</th><th>Reference Range</th></tr></thead><tbody>${t.parameters.map((p,pi)=>{const opts=String(p.options||'').split(/[|,;/]/).map(x=>x.trim()).filter(Boolean);const qualitative=p.resultType==='qualitative'||opts.length>0;const control=qualitative?`<select class="input direct-result" required data-ti="${ti}" data-pi="${pi}"><option value="">Select result</option>${(opts.length?opts:['Positive','Negative','Reactive','Non-reactive','Detected','Not Detected','Present','Absent']).map(x=>`<option>${esc(x)}</option>`).join('')}</select>`:`<input class="input direct-result" required data-ti="${ti}" data-pi="${pi}" inputmode="decimal" placeholder="Enter result">`;return `<tr><td><b>${esc(p.name)}</b></td><td>${control}</td><td>${esc(p.unit||'')}</td><td>${esc(rangeFor(p))}</td></tr>`;}).join('')}</tbody></table></div></section>`).join('');$('directParameterArea').classList.remove('hidden');loaded=true;$('directParameterArea').scrollIntoView({behavior:'smooth',block:'start'});const firstResult=$('directParameterTables').querySelector('.direct-result');if(firstResult)firstResult.focus();};
  async function saveDirect(printAfter,printWindow=null){
   if(!loaded)return alert('Press Enter to load all test parameters first.');
   const inputs=[...c.querySelectorAll('.direct-result')];
@@ -1183,11 +1238,12 @@ async function renderBackupRestore(c){
  const stores=['patients','orders','settings','samples','results','expenses','inventory','staff'];
  const labId=currentLab?.id;
  c.innerHTML=`<div class="panel-head"><h3>Backup, Restore & Cloud Sync</h3></div>
- <div class="notice"><b>Encrypted cloud backup:</b> Creates an encrypted snapshot of this lab's cloud records plus this device's offline cache. It never includes other labs. Restore merges this lab snapshot into the current lab Cloud tables and this device. Matching IDs may be updated.</div>
+ <div class="card" style="margin-bottom:12px"><h4>Report retention policy — PDF Archive UI added</h4><p class="muted">The Results & Reports page now supports uploading a PDF saved from the print dialog, viewing active PDFs, and restoring recycled PDFs. Each uploaded PDF is tracked separately by lab and report date. Automatic 6-month recycling and 1-year deletion require the V20.7 migration, Edge Function deployment, secret configuration and a trusted daily scheduler; until those server steps are completed, no automatic deletion runs.</p><div class="notice">Do not upload real patient reports until the V20.7 migration and two-lab RLS isolation have been verified in the live Supabase project. Existing printed PDFs are not automatically imported.</div></div>
+ <div class="notice"><b>Encrypted cloud backup:</b> Creates an encrypted snapshot of this lab's cloud records plus this device's offline cache. It never includes other labs. Restore merges this lab snapshot into the current lab Cloud tables and this device. Matching IDs may be updated. Cloud tables are read in 500-row pages (up to 250,000 rows per table) to avoid silent truncation at the database response limit. All backup sections are pre-validated first; cloud tables are still written one-by-one, so a network/server failure during restore can leave earlier cloud tables updated.</div>
  <div class="card"><h4>Cloud backup</h4><div class="field"><label>Backup passphrase (minimum 12 characters)</label><input id="backupPass" class="input" type="password" minlength="12" autocomplete="new-password"></div><button class="btn" id="cloudBackup">Create encrypted cloud backup</button><div id="cloudBackupMessage" class="message"></div></div>
  <div class="card" style="margin-top:12px"><h4>Restore cloud backup</h4><div class="field"><label>Select backup</label><select id="cloudBackupList" class="input"><option value="">Load backups first</option></select></div><button class="btn secondary" id="loadCloudBackups">Load backup list</button><div class="field" style="margin-top:10px"><label>Backup passphrase</label><input id="restorePass" class="input" type="password" autocomplete="current-password"></div><button class="btn danger" id="restoreCloudBackup">Decrypt & restore to this device</button><div id="cloudRestoreMessage" class="message"></div></div>
- <div class="card" style="margin-top:12px"><h4>Sync status</h4><p class="muted">Pending patient, order, sample, result and settings records retry when the browser reconnects. Manual sync reports each category and any permission/schema errors.</p><button class="btn secondary" id="manualCloudSync">Sync pending records now</button><div id="manualSyncMessage" class="message"></div></div>
- <div class="notice">Before restoring, export a fresh backup. Restore upserts matching IDs into this lab's Cloud tables and this device; it does not delete unrelated rows. A restore can update matching records. Use a separate passphrase for each lab and keep it private.</div>`;
+ <div class="card" style="margin-top:12px"><h4>Sync status</h4><p class="muted">Pending patient, order, sample, result, finance, inventory and settings records retry when the browser reconnects. Manual sync reports each category and any permission/schema errors.</p><button class="btn secondary" id="manualCloudSync">Sync pending records now</button><div id="manualSyncMessage" class="message"></div></div>
+ <div class="notice">Before restoring, export a fresh backup. Restore upserts matching IDs into this lab's Cloud tables and this device; it does not delete unrelated rows. A restore can update matching records. If a cloud table fails midway, stop and inspect the restore error before retrying; this operation is not a cross-table database transaction. Use a separate passphrase for each lab and keep it private.</div>`;
  const enc=async(pass,plain)=>{
   const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
   const material=await crypto.subtle.importKey('raw',new TextEncoder().encode(pass),'PBKDF2',false,['deriveKey']);
@@ -1207,9 +1263,17 @@ async function renderBackupRestore(c){
  };
  const message=(id,t,ok=false)=>{$(id).textContent=t;$(id).className='message '+(ok?'success':'error');};
  async function fetchLabTable(table){
-  const {data,error}=await client.from(table).select('*').eq('lab_id',labId);
-  if(error)throw new Error(table+': '+error.message);
-  return data||[];
+  // Supabase applies a project-level max_rows limit (commonly 1,000) to a
+  // single SELECT. Fetch in deterministic pages so a large lab backup is not
+  // silently truncated while still being reported as complete.
+  const pageSize=500,maxRows=250000,all=[];
+  for(let offset=0;offset<maxRows;offset+=pageSize){
+   const {data,error}=await client.from(table).select('*').eq('lab_id',labId).order('id',{ascending:true}).range(offset,offset+pageSize-1);
+   if(error)throw new Error(table+' (page '+(Math.floor(offset/pageSize)+1)+'): '+error.message);
+   const page=data||[];all.push(...page);
+   if(page.length<pageSize)return all;
+  }
+  throw new Error(table+': backup stopped because the safety limit of '+maxRows+' rows was reached. Increase the reviewed limit before retrying.');
  }
  $('cloudBackup').onclick=async()=>{
   const pass=$('backupPass').value,b=$('cloudBackup');
@@ -1249,11 +1313,20 @@ async function renderBackupRestore(c){
    if(!labId||!currentUser?.id)throw new Error('No active lab workspace or signed-in user.');
    // Files are stored under labId/userId/file. List the user's own folder, not only labId.
    const folder=`${labId}/${currentUser.id}`;
-   const {data,error}=await client.storage.from('acd-lab-backups').list(folder,{limit:100,sortBy:{column:'created_at',order:'desc'}});
-   if(error)throw error;
+   // Supabase Storage list is paginated too. Fetch every page so older backups
+   // remain selectable; never present a partial list as the complete history.
+   const pageSize=100,maxFiles=5000,allFiles=[];
+   for(let offset=0;offset<maxFiles;offset+=pageSize){
+    const {data,error}=await client.storage.from('acd-lab-backups').list(folder,{limit:pageSize,offset,sortBy:{column:'created_at',order:'desc'}});
+    if(error)throw new Error('Backup list page '+(Math.floor(offset/pageSize)+1)+': '+error.message);
+    const page=data||[];allFiles.push(...page);
+    if(page.length<pageSize)break;
+    if(offset+pageSize>=maxFiles)throw new Error('Backup list exceeded the safety limit of '+maxFiles+' files. Narrow or archive the backup folder before loading the list.');
+   }
+   const seen=new Set(),files=allFiles.filter(x=>x.name?.endsWith('.json')&&!seen.has(x.name)&&seen.add(x.name));
    const sel=$('cloudBackupList');sel.innerHTML='<option value="">Choose a backup</option>';
-   for(const f of (data||[]).filter(x=>x.name?.endsWith('.json'))){const o=document.createElement('option');o.value=folder+'/'+f.name;o.textContent=f.name;sel.appendChild(o);}
-   message('cloudRestoreMessage',`${sel.options.length-1} backup(s) found in your account folder.`,true);
+   for(const f of files){const o=document.createElement('option');o.value=folder+'/'+f.name;o.textContent=f.name;sel.appendChild(o);}
+   message('cloudRestoreMessage',`${files.length} backup(s) found across ${Math.ceil(allFiles.length/pageSize)||1} page(s) in your account folder.`,true);
   }catch(e){message('cloudRestoreMessage','Could not load backups: '+(e.message||e));}
  };
  $('restoreCloudBackup').onclick=async()=>{
@@ -1269,45 +1342,30 @@ async function renderBackupRestore(c){
    if(payload.labId!==labId)throw new Error('This backup belongs to a different lab workspace.');
    if(!navigator.onLine)throw new Error('Internet connection is required before restore. No local or cloud records were changed.');
    const localData=payload.localData||payload.data||{};
-   // Validate every local and cloud row before writing anything to IndexedDB.
+   // Preflight the COMPLETE backup before the first cloud or local write.
+   // This prevents malformed/foreign-lab rows and unsupported table names from
+   // causing a predictable mid-restore failure after earlier tables were changed.
    for(const n of stores){
     const rows=localData[n];
     if(rows!==undefined&&!Array.isArray(rows))throw new Error('Invalid local backup section: '+n+'.');
-    if(Array.isArray(rows)&&rows.some(row=>row&&row.labId&&row.labId!==labId))throw new Error('Local backup contains records from another lab in '+n+'. Restore stopped before making changes.');
+    if(Array.isArray(rows)&&rows.some(row=>!row||!row.id||row.labId!==labId))throw new Error('Local backup has a missing ID or a record outside this lab in '+n+'. Restore stopped before making changes.');
    }
    const snap=payload.cloudSnapshot||{};
+   const allowedSnapshotTables=new Set(['acd_lab_patients','acd_lab_orders','acd_lab_samples','acd_lab_results','acd_lab_tests','acd_lab_finance_entries','acd_lab_inventory_items','acd_lab_staff','acd_lab_settings','cloud_labs']);
    for(const [table,rows] of Object.entries(snap)){
+    if(!allowedSnapshotTables.has(table))throw new Error('Unsupported table in backup: '+table+'. Restore stopped before making changes.');
     if(!Array.isArray(rows))throw new Error('Invalid cloud backup section: '+table+'.');
-    if(rows.some(row=>row&&row.lab_id&&row.lab_id!==labId))throw new Error('Backup contains another lab_id in '+table+'. Restore stopped before making changes.');
+    if(rows.some(row=>!row))throw new Error('Backup contains an empty row in '+table+'.');
+    if(table==='acd_lab_settings'){
+     if(rows.some(row=>row.lab_id!==labId))throw new Error('Settings backup belongs to another lab.');
+    }else if(table==='cloud_labs'){
+     if(rows.some(row=>row.id!==labId))throw new Error('Lab identity backup does not match this workspace.');
+    }else if(rows.some(row=>!row.id||row.lab_id!==labId)){
+     throw new Error('Backup has a missing ID or a record outside this lab in '+table+'. Restore stopped before making changes.');
+    }
    }
-   for(const n of stores){
-    const rows=localData[n];if(!Array.isArray(rows))continue;
-    if(n==='settings')continue; // Settings are restored from the lab-scoped cloud settings row below.
-    const safeRows=rows.filter(row=>row&&row.labId===labId);
-    const tx=db.transaction(n,'readwrite'),os=tx.objectStore(n);
-    for(const row of safeRows)os.put(row);
-    await new Promise((res,rej)=>{tx.oncomplete=res;tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error);});
-   }
-   // Add cloud snapshot records to this device's cache using the app's local data shape.
-   const mappings={
-    acd_lab_patients:(r)=>({id:r.id,patientCode:r.patient_code||r.id,labId:r.lab_id,name:r.name,age:r.age,ageValue:r.age_value,ageUnit:r.age_unit||'years',dateOfBirth:r.date_of_birth,gender:r.gender,mobile:r.mobile,address:r.address,referrer:r.referrer,createdAt:r.created_at,updatedAt:r.updated_at,syncStatus:'synced'}),
-    acd_lab_orders:(r)=>({id:r.id,labId:r.lab_id,patientId:r.patient_id,patientName:r.patient_name,patientAge:r.patient_age||'',patientGender:r.patient_gender||'',patientMobile:r.patient_mobile||'',patientAddress:r.patient_address||'',referrer:r.referrer||'',items:r.items||[],subtotal:Number(r.subtotal||0),discount:Number(r.discount||0),total:Number(r.total||0),paid:Number(r.paid||0),due:Number(r.due||0),paymentMethod:r.payment_method,paymentStatus:r.payment_status,notes:r.notes,status:r.status,createdAt:r.created_at,updatedAt:r.updated_at,syncStatus:'synced'}),
-    acd_lab_samples:(r)=>({id:r.id,labId:r.lab_id,orderId:r.order_id,patientId:r.patient_id,sampleType:r.sample_type,collectedBy:r.collected_by,status:r.status,rejectionReason:r.rejection_reason,collectedAt:r.collected_at,createdAt:r.collected_at,updatedAt:r.updated_at,syncStatus:'synced'}),
-    acd_lab_results:(r)=>({id:r.id,labId:r.lab_id,orderId:r.order_id,patientId:r.patient_id,testName:r.test_name,parameter:r.parameter,resultValue:r.result_value,unit:r.unit,referenceRange:r.reference_range,status:r.status,enteredBy:r.entered_by,createdAt:r.created_at,updatedAt:r.updated_at,syncStatus:'synced'}),
-    acd_lab_finance_entries:(r)=>({id:r.id,labId:r.lab_id,description:r.description,amount:String(r.amount),category:r.category,status:r.entry_type,createdAt:r.created_at,syncStatus:'synced'}),
-    acd_lab_inventory_items:(r)=>({id:r.id,labId:r.lab_id,item:r.item,quantity:String(r.quantity),unit:r.unit,expiry:r.expiry_date||'',status:r.status,createdAt:r.created_at,syncStatus:'synced'}),
-    acd_lab_staff:(r)=>({id:r.id,labId:r.lab_id,email:r.email,role:r.role,isActive:r.is_active,createdAt:r.created_at,syncStatus:'synced'})
-   };
-   const storeMap={acd_lab_patients:'patients',acd_lab_orders:'orders',acd_lab_samples:'samples',acd_lab_results:'results',acd_lab_finance_entries:'expenses',acd_lab_inventory_items:'inventory',acd_lab_staff:'staff'};
-   for(const [table,mapper] of Object.entries(mappings)){
-    const target=storeMap[table],rows=snap[table];if(!target||!Array.isArray(rows))continue;
-    const tx=db.transaction(target,'readwrite'),os=tx.objectStore(target);
-    for(const row of rows)os.put(mapper(row));
-    await new Promise((res,rej)=>{tx.oncomplete=res;tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error);});
-   }
-   if(Array.isArray(snap.acd_lab_tests)){store.tests=snap.acd_lab_tests.map(r=>({id:r.id,name:r.name,detail:r.detail||'',price:Number(r.price||0),sampleType:r.sample_type||'',parameters:Array.isArray(r.parameters)?r.parameters:[]}));saveData();}
-   if(snap.acd_lab_settings?.[0]?.settings){const settings=snap.acd_lab_settings[0].settings,tx=db.transaction('settings','readwrite'),os=tx.objectStore('settings');for(const [key,value] of Object.entries(settings))os.put({key,...value,syncStatus:'synced'});await new Promise((res,rej)=>{tx.oncomplete=res;tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error);});}
-   if(payload.localSetup){store={...defaults,...payload.localSetup,...store};saveData();}
+   const requiredCloudTables=['acd_lab_patients','acd_lab_orders','acd_lab_samples','acd_lab_results','acd_lab_tests','acd_lab_finance_entries','acd_lab_inventory_items'];
+   for(const table of requiredCloudTables){if(snap[table]!==undefined&&!Array.isArray(snap[table]))throw new Error('Invalid cloud backup section: '+table+'.');}
    // Restore cloud rows only after checking every row belongs to the currently open lab.
    // Each table is upserted separately; a failure is reported and never called a full success.
    const cloudUpserts={
@@ -1336,7 +1394,37 @@ async function renderBackupRestore(c){
     const {error:settingsUpsertError}=await client.from('acd_lab_settings').upsert({lab_id:labId,settings:settingsSnap.settings||{},updated_by:currentUser?.id||null,updated_at:new Date().toISOString()},{onConflict:'lab_id'});
     if(settingsUpsertError)throw new Error('Cloud settings restore failed: '+settingsUpsertError.message);
    }
-   message('cloudRestoreMessage','Cloud restore completed for this lab. Restored rows: '+Object.entries(restoredCounts).map(([k,v])=>k.replace('acd_lab_','')+' '+v).join(', ')+'. Device cache was also merged. Staff membership and lab identity are intentionally not overwritten.',true);
+   // Only update IndexedDB after all cloud upserts have succeeded. If a cloud table fails,
+   // the local cache is left untouched rather than appearing restored ahead of the cloud.
+   for(const n of stores){
+    const rows=localData[n];if(!Array.isArray(rows))continue;
+    if(n==='settings')continue; // Settings are restored from the lab-scoped cloud settings row below.
+    const safeRows=rows.filter(row=>row&&row.labId===labId);
+    const tx=db.transaction(n,'readwrite'),os=tx.objectStore(n);
+    for(const row of safeRows)os.put(row);
+    await new Promise((res,rej)=>{tx.oncomplete=res;tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error);});
+   }
+   // Add cloud snapshot records to this device's cache using the app's local data shape.
+   const mappings={
+    acd_lab_patients:(r)=>({id:r.id,patientCode:r.patient_code||r.id,labId:r.lab_id,name:r.name,age:r.age,ageValue:r.age_value,ageUnit:r.age_unit||'years',dateOfBirth:r.date_of_birth,gender:r.gender,mobile:r.mobile,address:r.address,referrer:r.referrer,createdAt:r.created_at,updatedAt:r.updated_at,syncStatus:'synced'}),
+    acd_lab_orders:(r)=>({id:r.id,labId:r.lab_id,patientId:r.patient_id,patientName:r.patient_name,patientAge:r.patient_age||'',patientGender:r.patient_gender||'',patientMobile:r.patient_mobile||'',patientAddress:r.patient_address||'',referrer:r.referrer||'',items:r.items||[],subtotal:Number(r.subtotal||0),discount:Number(r.discount||0),total:Number(r.total||0),paid:Number(r.paid||0),due:Number(r.due||0),paymentMethod:r.payment_method,paymentStatus:r.payment_status,notes:r.notes,status:r.status,createdAt:r.created_at,updatedAt:r.updated_at,syncStatus:'synced'}),
+    acd_lab_samples:(r)=>({id:r.id,labId:r.lab_id,orderId:r.order_id,patientId:r.patient_id,sampleType:r.sample_type,collectedBy:r.collected_by,status:r.status,rejectionReason:r.rejection_reason,collectedAt:r.collected_at,createdAt:r.collected_at,updatedAt:r.updated_at,syncStatus:'synced'}),
+    acd_lab_results:(r)=>({id:r.id,labId:r.lab_id,orderId:r.order_id,patientId:r.patient_id,testName:r.test_name,parameter:r.parameter,resultValue:r.result_value,unit:r.unit,referenceRange:r.reference_range,status:r.status,enteredBy:r.entered_by,createdAt:r.created_at,updatedAt:r.updated_at,syncStatus:'synced'}),
+    acd_lab_finance_entries:(r)=>({id:r.id,labId:r.lab_id,description:r.description,amount:String(r.amount),category:r.category,status:r.entry_type,createdAt:r.created_at,syncStatus:'synced'}),
+    acd_lab_inventory_items:(r)=>({id:r.id,labId:r.lab_id,item:r.item,quantity:String(r.quantity),unit:r.unit,expiry:r.expiry_date||'',status:r.status,createdAt:r.created_at,syncStatus:'synced'}),
+    acd_lab_staff:(r)=>({id:r.id,labId:r.lab_id,email:r.email,role:r.role,isActive:r.is_active,createdAt:r.created_at,syncStatus:'synced'})
+   };
+   const storeMap={acd_lab_patients:'patients',acd_lab_orders:'orders',acd_lab_samples:'samples',acd_lab_results:'results',acd_lab_finance_entries:'expenses',acd_lab_inventory_items:'inventory',acd_lab_staff:'staff'};
+   for(const [table,mapper] of Object.entries(mappings)){
+    const target=storeMap[table],rows=snap[table];if(!target||!Array.isArray(rows))continue;
+    const tx=db.transaction(target,'readwrite'),os=tx.objectStore(target);
+    for(const row of rows)os.put(mapper(row));
+    await new Promise((res,rej)=>{tx.oncomplete=res;tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error);});
+   }
+   if(Array.isArray(snap.acd_lab_tests)){store.tests=snap.acd_lab_tests.map(r=>({id:r.id,name:r.name,detail:r.detail||'',price:Number(r.price||0),sampleType:r.sample_type||'',parameters:Array.isArray(r.parameters)?r.parameters:[]}));saveData();}
+   if(snap.acd_lab_settings?.[0]?.settings){const settings=snap.acd_lab_settings[0].settings,tx=db.transaction('settings','readwrite'),os=tx.objectStore('settings');for(const [key,value] of Object.entries(settings))os.put({key,...value,syncStatus:'synced'});await new Promise((res,rej)=>{tx.oncomplete=res;tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error);});}
+   if(payload.localSetup){store={...defaults,...payload.localSetup,...store};saveData();}
+   message('cloudRestoreMessage','Cloud restore completed for this lab. Restored rows: '+Object.entries(restoredCounts).map(([k,v])=>k.replace('acd_lab_','')+' '+v).join(', ')+'. Device cache was also merged. Staff membership and lab identity are intentionally not overwritten. Cloud table writes are not atomic across tables; if an error occurs midway, some earlier tables may already have been restored.',true);
   }catch(e){message('cloudRestoreMessage','Restore failed: '+(e.message||e));}
   finally{b.disabled=false;}
  };
@@ -1344,7 +1432,7 @@ async function renderBackupRestore(c){
   const b=$('manualCloudSync');b.disabled=true;
   try{
    const r=await syncPendingData();
-   const summary=`Synced ${r.patients} patients, ${r.orders} orders, ${r.samples||0} samples, ${r.results||0} results.`;
+   const summary=`Synced ${r.patients} patients, ${r.orders} orders, ${r.samples||0} samples, ${r.results||0} results, ${r.finance||0} finance entries, ${r.inventory||0} inventory items.`;
    message('manualSyncMessage',summary+` Errors: ${r.errors.length}. ${r.errors.slice(0,4).join(' | ')}`,!r.errors.length);
   }catch(e){message('manualSyncMessage','Sync failed: '+e.message);}
   finally{b.disabled=false;}
@@ -1488,12 +1576,48 @@ async function renderResultsReports(c){
  const savedReports=orders.filter(o=>byOrder.has(o.id)).map(o=>{const rr=byOrder.get(o.id),expected=(o.items||[]).reduce((n,t)=>n+(t.parameters||[]).length,0),latest=new Map();for(const r of rr){const k=r.testName+'\u0000'+r.parameter,old=latest.get(k);if(!old||String(r.updatedAt||r.createdAt)>String(old.updatedAt||old.createdAt))latest.set(k,r);}return {o,rr};});
  c.innerHTML=`<div class="panel-head"><h3>Saved Reports & Results</h3><span class="muted">${savedReports.length} saved reports · ${results.length} parameter results</span></div>
  <div class="notice">Saved reports stay available in this laboratory. Open any report to review its saved values, or print the complete report again. Internal record IDs are used only to link report data.</div>
+ <section class="card" style="margin:12px 0;border:1px solid #cfe0ef"><h4>Cloud PDF Archive & Recycle Bin</h4><p class="muted">Print the report and choose “Save as PDF”, then upload that PDF here. Files are private to this lab. Each uploaded PDF follows its report date: Recycle Bin at 6 calendar months; permanent deletion at 1 year by the scheduled server worker.</p><div class="field"><label>Report Reference</label><select class="input" id="pdfArchiveOrder"><option value="">Select report</option>${orders.map(o=>`<option value="${esc(o.id)}">${esc(o.patientName||'Patient')} — ${esc(o.id)}</option>`).join('')}</select></div><div class="field"><label>Saved report PDF (max 20 MB)</label><input class="input" id="reportPdfFile" type="file" accept="application/pdf,.pdf"></div><button class="btn" id="uploadReportPdf" type="button">Upload PDF to Private Cloud</button><button class="btn secondary" id="refreshReportPdfList" type="button">Refresh PDF List</button><div id="reportPdfMessage" class="message"></div><h4 style="margin-top:18px">Archived PDFs</h4><div class="tablewrap"><table><thead><tr><th>Report Date</th><th>Reference</th><th>File</th><th>Status</th><th>Action</th></tr></thead><tbody id="reportPdfRows"><tr><td colspan="5">Loading private report files…</td></tr></tbody></table></div><h4 style="margin-top:18px">Recycle Bin</h4><div class="tablewrap"><table><thead><tr><th>Report Date</th><th>Reference</th><th>File</th><th>Action</th></tr></thead><tbody id="reportPdfRecycleRows"><tr><td colspan="4">Loading…</td></tr></tbody></table></div></section>
  <div class="panel-head"><h4>Open a saved report</h4></div><div class="field"><label>Saved report</label><select class="input" id="resultOrderSelect"><option value="">Select saved report</option>${orderOptions}</select></div>
  <div id="resultPatientSummary" class="card hidden" style="margin:10px 0"></div>
  <form id="multiResultForm"><div id="multiResultFields"><div class="empty">Choose a saved report to reopen its tests and results.</div></div><div class="row" style="margin-top:12px"><button class="btn" type="submit" id="saveAllResults" disabled>Update Saved Results</button><button class="btn secondary" type="button" id="printReportDraft" disabled>Print Report</button></div><div id="multiResultMessage" class="message"></div></form>
  <h3 style="margin-top:24px">Report History</h3><div class="tablewrap"><table><thead><tr><th>Date</th><th>Patient</th><th>Report Reference</th><th>Tests</th><th>Status</th><th>Storage</th><th>Actions</th></tr></thead><tbody>${savedReports.map(({o,rr})=>`<tr><td>${esc(new Date(o.createdAt).toLocaleDateString())}</td><td>${esc(o.patientName||'Name not provided')}<br><small>${esc(o.patientId||'')}</small></td><td>${esc(o.id)}</td><td>${(o.items||[]).map(t=>esc(t.name)).join(', ')}</td><td>Saved</td><td>${o.syncStatus==='synced'?'Cloud':'Device / Sync pending'}</td><td><button type="button" class="btn secondary" data-reopen-report="${esc(o.id)}">Open</button> <button type="button" class="btn" data-print-report="${esc(o.id)}">Print</button></td></tr>`).join('')||'<tr><td colspan="7">No saved reports yet.</td></tr>'}</tbody></table></div>
  <h3 style="margin-top:24px">All Saved Result Parameters</h3><div class="tablewrap"><table><thead><tr><th>Report Reference</th><th>Test / Parameter</th><th>Result</th><th>Unit</th><th>Reference</th><th>Record</th></tr></thead><tbody>${results.map(r=>`<tr><td>${esc(r.orderId||'—')}</td><td>${esc(r.testName)} / ${esc(r.parameter)}</td><td>${esc(r.resultValue)}</td><td>${esc(r.unit)}</td><td>${esc(r.referenceRange)}</td><td>Saved</td></tr>`).join('')||'<tr><td colspan="7">No results entered yet.</td></tr>'}</tbody></table></div>`;
  const orderSel=$('resultOrderSelect'),fields=$('multiResultFields'),saveBtn=$('saveAllResults'),printBtn=$('printReportDraft');let activeOrder=null;
+ // Private PDF archive. The browser print dialog cannot expose its Save-as-PDF output as a Blob,
+ // so staff explicitly select the PDF they saved from the existing print workflow.
+ const pdfBucket='acd-lab-report-pdfs';
+ const pdfMsg=(t,ok=false)=>{const el=$('reportPdfMessage');el.textContent=t;el.className='message '+(ok?'success':'error');};
+ const safePathPart=x=>String(x||'').replace(/[^a-zA-Z0-9_-]/g,'_').slice(0,100)||'report';
+ async function refreshReportPdfRows(){
+  const active=$('reportPdfRows'),recycled=$('reportPdfRecycleRows');
+  active.innerHTML='<tr><td colspan="5">Loading…</td></tr>';recycled.innerHTML='<tr><td colspan="4">Loading…</td></tr>';
+  try{
+   const {data,error}=await client.from('acd_lab_report_files').select('id,order_id,report_date,storage_path,file_name,file_size,status,recycled_at,purged_at').eq('lab_id',currentLab.id).order('report_date',{ascending:false}).limit(500);
+   if(error)throw error;const rows=data||[],live=rows.filter(x=>x.status==='active'),bin=rows.filter(x=>x.status==='recycled');
+   active.innerHTML=live.map(x=>`<tr><td>${esc(String(x.report_date||'').slice(0,10))}</td><td>${esc(x.order_id)}</td><td>${esc(x.file_name)}<br><small>${x.file_size?Math.round(x.file_size/1024)+' KB':''}</small></td><td>Active</td><td><button class="btn secondary" type="button" data-pdf-open="${esc(x.id)}">View / Download</button></td></tr>`).join('')||'<tr><td colspan="5">No active PDF files. Upload a PDF after printing a report.</td></tr>';
+   recycled.innerHTML=bin.map(x=>`<tr><td>${esc(String(x.report_date||'').slice(0,10))}</td><td>${esc(x.order_id)}</td><td>${esc(x.file_name)}</td><td><button class="btn secondary" type="button" data-pdf-restore="${esc(x.id)}">Restore</button> <button class="btn" type="button" data-pdf-open="${esc(x.id)}">Download</button></td></tr>`).join('')||'<tr><td colspan="4">Recycle Bin is empty.</td></tr>';
+   [...active.querySelectorAll('[data-pdf-open]'),...recycled.querySelectorAll('[data-pdf-open]')].forEach(b=>b.addEventListener('click',async()=>{try{const row=rows.find(x=>x.id===b.dataset.pdfOpen);if(!row)throw new Error('PDF record not found');if(row.status==='purged')throw new Error('This PDF has been permanently deleted');const {data,error}=await client.storage.from(pdfBucket).createSignedUrl(row.storage_path,60);if(error)throw error;window.open(data.signedUrl,'_blank','noopener');}catch(e){pdfMsg('Could not open PDF: '+e.message);}}));
+   recycled.querySelectorAll('[data-pdf-restore]').forEach(b=>b.addEventListener('click',async()=>{try{const row=rows.find(x=>x.id===b.dataset.pdfRestore);if(!row)throw new Error('PDF record not found');const {data,error}=await client.rpc('acd_restore_report_pdf',{p_report_id:row.id});if(error)throw error;if(!data)throw new Error('Restore denied: report may have reached its one-year retention date.');pdfMsg('PDF restored to Active Reports.',true);await refreshReportPdfRows();}catch(e){pdfMsg('Restore failed: '+e.message);}}));
+  }catch(e){active.innerHTML=`<tr><td colspan="5">Could not load PDF archive: ${esc(e.message)}. Apply the Final retention migration and verify lab membership policies.</td></tr>`;recycled.innerHTML='<tr><td colspan="4">Unavailable</td></tr>';}
+ }
+ $('refreshReportPdfList').addEventListener('click',refreshReportPdfRows);
+ $('uploadReportPdf').addEventListener('click',async()=>{
+  const orderId=$('pdfArchiveOrder').value,file=$('reportPdfFile').files?.[0];
+  try{
+   if(!orderId)throw new Error('Select a report reference first.');if(!file)throw new Error('Choose the PDF file you saved from Print.');
+   if(file.type!=='application/pdf'&&!file.name.toLowerCase().endsWith('.pdf'))throw new Error('Only PDF files are allowed.');if(file.size>20*1024*1024)throw new Error('PDF exceeds the 20 MB limit.');if(file.size===0)throw new Error('Selected PDF is empty.');
+   const order=orders.find(o=>String(o.id)===String(orderId));if(!order)throw new Error('Report reference is not available in this lab.');
+   const reportDate=new Date(order.createdAt||order.created_at||Date.now());if(Number.isNaN(reportDate.getTime()))throw new Error('Report date is invalid.');
+   const expiry=new Date(reportDate);expiry.setUTCFullYear(expiry.getUTCFullYear()+1);if(Date.now()>=expiry.getTime())throw new Error('This report has already reached the one-year retention limit.');
+   const btn=$('uploadReportPdf');btn.disabled=true;pdfMsg('Uploading PDF securely…');
+   const path=`${currentLab.id}/${safePathPart(order.id)}/report.pdf`;
+   const {error:upErr}=await client.storage.from(pdfBucket).upload(path,file,{contentType:'application/pdf',upsert:true,cacheControl:'3600'});if(upErr)throw upErr;
+   const row={lab_id:currentLab.id,order_id:String(order.id),patient_id:String(order.patientId||''),report_date:reportDate.toISOString(),storage_path:path,file_name:file.name,mime_type:'application/pdf',file_size:file.size,status:'active',recycled_at:null,purged_at:null,created_by:currentUser?.id||null,updated_at:new Date().toISOString()};
+   const {error:metaErr}=await client.from('acd_lab_report_files').upsert(row,{onConflict:'lab_id,order_id'});if(metaErr)throw new Error('PDF uploaded but metadata save failed. Keep this file and contact admin: '+metaErr.message);
+   $('reportPdfFile').value='';pdfMsg('PDF uploaded to this lab’s private cloud archive.',true);await refreshReportPdfRows();
+  }catch(e){pdfMsg('Upload failed: '+e.message);}finally{$('uploadReportPdf').disabled=false;}
+ });
+ refreshReportPdfRows();
  function patientAgeText(o){const a=String(o.patientAge||o.age||'');return a||'—';}
  function renderOrderForm(){activeOrder=orders.find(o=>o.id===orderSel.value)||null;if(!activeOrder){fields.innerHTML='<div class="empty">Choose a saved report to load its tests and parameters.</div>';$('resultPatientSummary').classList.add('hidden');saveBtn.disabled=printBtn.disabled=true;return;}
  const p=(activeOrder.items||[]).flatMap((t,ti)=>(t.parameters||[]).map((x,pi)=>({test:t,testIndex:ti,param:x,paramIndex:pi})));const patient=(activeOrder.patientName||'Name not provided')+' · Patient ID '+(activeOrder.patientId||'—');$('resultPatientSummary').classList.remove('hidden');$('resultPatientSummary').innerHTML=`<b>${esc(patient)}</b><div class="muted">Report ${esc(activeOrder.id)} · Age ${esc(patientAgeText(activeOrder))} · ${esc(activeOrder.patientGender||'Gender not recorded')} · ${(activeOrder.items||[]).length} tests · ${esc(activeOrder.status||'Draft')}</div>`;
@@ -1515,10 +1639,11 @@ async function renderPatients(c){
  <div class="notice">Patient records load from this lab's cloud workspace when online and use this device's IndexedDB cache when offline. Use test data until full security and backup validation is complete.</div>
  <form id="patientForm">
   <div class="field"><label>Patient Name *</label><input class="input" name="name" required maxlength="120" placeholder="Enter patient full name"></div>
-  <div class="row"><div class="field"><label>Age *</label><div class="row"><input class="input" name="ageValue" type="number" min="0" step="any" required placeholder="Age"><select class="input" name="ageUnit"><option value="days">Days</option><option value="months">Months</option><option value="years" selected>Years</option></select></div></div><div class="field"><label>Gender *</label><select class="input" name="gender" required><option value="">Select gender</option><option>Male</option><option>Female</option><option>Other</option></select></div></div>
+  <div class="field"><label>Age *</label><div class="row"><input class="input" name="ageValue" type="number" min="0" step="any" required placeholder="Age"><select class="input" name="ageUnit"><option value="days">Days</option><option value="months">Months</option><option value="years" selected>Years</option></select></div></div>
+  <div class="field"><label>Referring Doctor</label><input class="input" name="referrer" maxlength="120" placeholder="Doctor / hospital name"></div>
+  <div class="field"><label>Gender *</label><select class="input" name="gender" required><option value="">Select gender</option><option>Male</option><option>Female</option><option>Other</option></select></div>
   <div class="field"><label>Mobile Number</label><input class="input" name="mobile" inputmode="tel" maxlength="20" placeholder="Patient mobile number"></div>
   <div class="field"><label>Address</label><textarea class="input" name="address" rows="2" maxlength="300" placeholder="Patient address"></textarea></div>
-  <div class="field"><label>Referring Doctor</label><input class="input" name="referrer" maxlength="120" placeholder="Doctor / hospital name"></div>
   <button class="btn" type="submit">Save Patient</button><span id="patientSaveMessage" class="message" role="status"></span>
  </form>
  <div class="panel-head" style="margin-top:24px"><h3>Saved Patients</h3></div>
