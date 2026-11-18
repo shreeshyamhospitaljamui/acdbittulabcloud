@@ -1,1031 +1,143 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ACD BITTU LAB CLOUD - Desktop LIMS</title>
-    <style>
-        :root {
-            --primary: #0f4c81;
-            --primary-dark: #093154;
-            --accent: #008080;
-            --bg-light: #f0f4f8;
-            --border: #cbd5e1;
-            --text-dark: #1e293b;
-            --danger: #dc2626;
-            --success: #16a34a;
-        }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ACD BITTU LAB CLOUD — Desktop & Cloud LIMS</title>
+<style>
+:root{--navy:#0f3460;--blue:#1769aa;--panel:#eaf0f6;--border:#bfd0e2;--ink:#132338;--green:#0e7a3a;--red:#b42318;--bg:#dfe6ef}
+*{box-sizing:border-box}
+body{margin:0;font-family:Tahoma,Segoe UI,Arial,sans-serif;font-size:12px;background:var(--bg);color:var(--ink)}
+.hidden{display:none!important}
+.topbar{background:var(--navy);color:#fff;padding:6px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #092240}
+.topbar h1{margin:0;font-size:14px;letter-spacing:.4px}
+.topbar small{color:#bfd6f2;font-size:11px}
+.toolbar{background:linear-gradient(#f9fbfd,#dce5f0);border-bottom:1px solid var(--border);padding:5px 12px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.tbtn{background:#fff;border:1px solid #96acc4;border-radius:4px;padding:5px 10px;cursor:pointer;font-weight:700;font-size:11px;color:#12355c;display:inline-flex;align-items:center;gap:4px}
+.tbtn:hover{background:#e7f2fc;border-color:var(--blue)}
+.tbtn.primary{background:var(--blue);color:#fff;border-color:#0f4c7d}
+.tbtn.success{background:var(--green);color:#fff;border-color:#0a5729}
+.tbtn.danger{background:#fff0ef;color:var(--red);border-color:#e4a5a0}
+.pill{margin-left:auto;padding:3px 9px;border-radius:12px;background:#fff;border:1px solid var(--border);font-weight:700;font-size:11px}
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+.shell{display:grid;grid-template-columns:210px minmax(0,1fr);min-height:calc(100vh - 68px)}
+.sidebar{background:#123966;color:#e3eefb;padding:8px;display:flex;flex-direction:column;gap:3px;border-right:1px solid #0b2647}
+.sidebar button{background:transparent;border:1px solid transparent;color:#dce9f8;text-align:left;padding:7px 9px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600}
+.sidebar button:hover,.sidebar button.active{background:#1e528d;border-color:#4b82bf;color:#fff}
+.main{padding:10px;overflow-x:auto}
 
-        body {
-            background-color: var(--bg-light);
-            color: var(--text-dark);
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
+.login-card{max-width:410px;margin:45px auto;background:#fff;border:1px solid var(--border);border-radius:6px;padding:20px;box-shadow:0 4px 16px #00000018}
+.field{margin-bottom:9px}
+.field label{display:block;font-weight:700;font-size:11px;margin-bottom:3px;color:#273b52}
+.inp{width:100%;padding:6px 8px;border:1px solid #9ab0c7;border-radius:3px;font:inherit;background:#fff}
+.inp:focus{outline:2px solid var(--blue);background:#fffef0}
 
-        /* Sidebar Navigation (Danta Lab Manager Style) */
-        .sidebar {
-            width: 240px;
-            background: var(--primary-dark);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            border-right: 2px solid #062138;
-        }
+.erp-box{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:8px;margin-bottom:8px}
+.erp-grid{display:grid;grid-template-columns:1.35fr 1.35fr 1fr;gap:8px}
+.sub-card{background:#f8fbff;border:1px solid #c3d3e4;padding:7px;border-radius:3px;position:relative}
+.sub-card h4{margin:0 0 6px;font-size:11px;color:var(--navy);border-bottom:1px solid #d5e1ee;padding-bottom:3px;text-transform:uppercase}
+.frow{display:grid;grid-template-columns:90px 1fr;gap:5px;align-items:center;margin-bottom:5px}
+.frow label{font-weight:700;font-size:11px}
+.finline{display:flex;gap:4px}
 
-        .brand-box {
-            padding: 18px 15px;
-            background: var(--primary);
-            border-bottom: 1px solid rgba(255,255,255,0.15);
-            text-align: center;
-        }
+.search-drop{position:absolute;left:7px;right:7px;top:92px;background:#fff;border:1px solid #7f9bb8;border-radius:4px;max-height:190px;overflow-y:auto;z-index:25;box-shadow:0 6px 16px #00000028}
+.search-item{padding:6px 9px;border-bottom:1px solid #eef2f7;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.search-item:hover,.search-item.hi{background:#e6f2fc;font-weight:700}
+.chip-box{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;min-height:24px}
+.t-chip{background:#dcebf9;border:1px solid #8ebce6;padding:2px 6px;border-radius:3px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:4px}
 
-        .brand-box h2 {
-            font-size: 16px;
-            letter-spacing: 0.5px;
-            color: #fff;
-        }
+.grid-box{background:#fff;border:1px solid #8ea4be;height:calc(100vh - 365px);min-height:240px;overflow:auto}
+table.grid{width:100%;border-collapse:collapse;font-size:12px}
+table.grid th{position:sticky;top:0;background:linear-gradient(#245388,#15375f);color:#fff;padding:6px 7px;text-align:left;border:1px solid #3c6ca3;font-size:11px;z-index:2}
+table.grid td{border:1px solid #cfd9e6;padding:4px 6px}
+table.grid tr:nth-child(even){background:#f7faff}
+table.grid input,table.grid select{width:100%;padding:4px 6px;border:1px solid #9bb0c8;border-radius:2px;font-weight:700}
+table.grid input:focus{background:#fff9c4;outline:2px solid var(--blue)}
 
-        .brand-box span {
-            font-size: 11px;
-            color: #93c5fd;
-            display: block;
-            margin-top: 4px;
-        }
-
-        .nav-menu {
-            list-style: none;
-            padding: 10px 0;
-            flex: 1;
-        }
-
-        .nav-item {
-            padding: 12px 20px;
-            cursor: pointer;
-            font-size: 14px;
-            border-left: 4px solid transparent;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .nav-item:hover, .nav-item.active {
-            background: rgba(255,255,255,0.1);
-            border-left-color: #38bdf8;
-            font-weight: 600;
-        }
-
-        .device-status {
-            padding: 12px;
-            background: rgba(0,0,0,0.25);
-            font-size: 11px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .device-status .badge {
-            display: inline-block;
-            background: var(--success);
-            color: white;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-weight: bold;
-            margin-bottom: 4px;
-        }
-
-        /* Main Desktop Workspace */
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .topbar {
-            background: white;
-            padding: 12px 24px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .topbar h1 {
-            font-size: 18px;
-            color: var(--primary);
-        }
-
-        .workspace {
-            padding: 20px;
-            overflow-y: auto;
-            flex: 1;
-        }
-
-        .panel {
-            display: none;
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-        }
-
-        .panel.active {
-            display: block;
-        }
-
-        /* Desktop Grid Forms & Tables */
-        .grid-form {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-            margin-bottom: 18px;
-            background: #f8fafc;
-            padding: 15px;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group label {
-            font-size: 12px;
-            font-weight: 600;
-            margin-bottom: 4px;
-            color: #475569;
-        }
-
-        .form-group input, .form-group select {
-            padding: 7px 10px;
-            border: 1px solid #94a3b8;
-            border-radius: 4px;
-            font-size: 13px;
-        }
-
-        .form-group input:focus, .form-group select:focus {
-            outline: none;
-            border-color: var(--primary);
-            background: #fffbeb;
-        }
-
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            transition: 0.2s;
-        }
-
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: var(--primary-dark); }
-        .btn-success { background: var(--success); color: white; }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-accent { background: var(--accent); color: white; }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            font-size: 13px;
-        }
-
-        th, td {
-            border: 1px solid var(--border);
-            padding: 8px 10px;
-            text-align: left;
-        }
-
-        th {
-            background: #e2e8f0;
-            font-weight: 600;
-            color: #1e293b;
-        }
-
-        tr:nth-child(even) {
-            background: #f8fafc;
-        }
-
-        .result-input {
-            width: 100%;
-            padding: 5px;
-            border: 1px solid #cbd5e1;
-            border-radius: 3px;
-            font-weight: bold;
-        }
-
-        .flag-high { color: var(--danger); font-weight: bold; }
-        .flag-low { color: #2563eb; font-weight: bold; }
-        .flag-normal { color: var(--success); }
-
-        /* Super Admin Lock Screen */
-        .admin-auth-box {
-            max-width: 400px;
-            margin: 40px auto;
-            padding: 25px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            text-align: center;
-            background: #f8fafc;
-        }
-
-        /* =========================================================
-           A4 DIRECT PRINT ENGINE (NO POPUPS / NO VIOLATION ERRORS)
-           ========================================================= */
-        #print-area {
-            display: none;
-        }
-
-        @media print {
-            @page {
-                size: A4 portrait;
-                margin: 12mm;
-            }
-
-            body {
-                background: white;
-                height: auto;
-                overflow: visible;
-                display: block;
-            }
-
-            .sidebar, .main-content {
-                display: none !important;
-            }
-
-            #print-area {
-                display: block !important;
-                width: 100%;
-                color: #000;
-                font-family: 'Times New Roman', Times, serif;
-            }
-
-            .print-header {
-                border-bottom: 2px solid #000;
-                padding-bottom: 10px;
-                margin-bottom: 12px;
-                display: flex;
-                justify-content: space-between;
-                align-items: flex-end;
-            }
-
-            .print-lab-title h1 {
-                font-size: 22px;
-                text-transform: uppercase;
-                margin-bottom: 2px;
-            }
-
-            .print-lab-title p {
-                font-size: 12px;
-            }
-
-            .print-patient-box {
-                width: 100%;
-                border: 1px solid #000;
-                margin-bottom: 15px;
-                font-size: 12px;
-            }
-
-            .print-patient-box td {
-                border: 1px solid #000;
-                padding: 5px 8px;
-            }
-
-            .print-test-table {
-                width: 100%;
-                border-collapse: collapse;
-                font-size: 12px;
-            }
-
-            .print-test-table th {
-                background: #eee !important;
-                border-top: 1.5px solid #000;
-                border-bottom: 1.5px solid #000;
-                border-left: none;
-                border-right: none;
-                padding: 6px;
-                -webkit-print-color-adjust: exact;
-            }
-
-            .print-test-table td {
-                border: none;
-                border-bottom: 1px solid #ddd;
-                padding: 5px 6px;
-            }
-
-            .print-footer {
-                margin-top: 40px;
-                display: flex;
-                justify-content: space-between;
-                font-size: 12px;
-                page-break-inside: avoid;
-            }
-        }
-    </style>
+.panel{background:#fff;border:1px solid var(--border);border-radius:4px;padding:12px;margin-bottom:10px}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+.stat-card{background:#fff;border:1px solid var(--border);border-radius:4px;padding:10px}
+.stat-card b{font-size:18px;color:var(--navy);display:block;margin-top:3px}
+.notice{background:#fff6db;border:1px solid #ebd082;color:#6e4f09;padding:8px 10px;border-radius:4px;margin-bottom:10px;font-size:11px}
+@media(max-width:850px){.shell{grid-template-columns:1fr}.sidebar{flex-direction:row;overflow-x:auto}.erp-grid,.stats-row{grid-template-columns:1fr}.grid-box{height:auto;min-height:230px}}
+</style>
 </head>
 <body>
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <div class="brand-box">
-            <h2 id="sidebarLabName">ACD BITTU LAB CLOUD</h2>
-            <span>Desktop LIMS v4.2 Pro</span>
-        </div>
-        <ul class="nav-menu">
-            <li class="nav-item active" onclick="switchTab('entry')">📋 New Patient & Entry</li>
-            <li class="nav-item" onclick="switchTab('reports')">🗂️ Saved Reports</li>
-            <li class="nav-item" onclick="switchTab('catalog')">🧪 Test Catalog (24-CBC)</li>
-            <li class="nav-item" onclick="switchTab('admin')">⚙️ Super Admin Control</li>
-        </ul>
-        <div class="device-status">
-            <span class="badge">✔ UUID DEVICE LOCKED</span>
-            <div id="uuidDisplay" style="word-break: break-all; opacity: 0.85;">Initializing UUID...</div>
-        </div>
-    </aside>
+<div id="loginView" class="login-card">
+  <h2 style="margin:0 0 3px;color:var(--navy)">ACD BITTU LAB CLOUD</h2>
+  <div style="color:#555;margin-bottom:12px">Desktop & Cloud Pathology LIMS</div>
+  <div class="notice"><b>Single-Device Rule:</b> Pehla device online hone par doosre device par login hote hi pehla automatic logout ho jayega. Offline hone par lock surakshit rahega.</div>
+  <form id="loginForm">
+    <div class="field"><label>Email Address</label><input class="inp" id="email" type="email" required></div>
+    <div class="field"><label>Password</label><input class="inp" id="password" type="password" required></div>
+    <button class="tbtn primary" style="width:100%;justify-content:center;padding:8px" id="loginBtn" type="submit">SIGN IN TO WORKSPACE</button>
+  </form>
+  <div style="margin-top:10px;display:flex;gap:6px">
+    <button class="tbtn" type="button" id="toggleReg">Register New Lab</button>
+    <button class="tbtn" type="button" id="forgotBtn">Forgot Password</button>
+  </div>
+  <form id="regForm" class="hidden" style="margin-top:10px;border-top:1px solid #ddd;padding-top:10px">
+    <div class="field"><label>Owner Name</label><input class="inp" name="ownerName" required></div>
+    <div class="field"><label>Lab Name</label><input class="inp" name="labName" required></div>
+    <div class="field"><label>Address</label><input class="inp" name="labAddress"></div>
+    <div class="field"><label>Mobile</label><input class="inp" name="labPhone"></div>
+    <div class="field"><label>Email</label><input class="inp" name="regEmail" type="email" required></div>
+    <div class="field"><label>Password (Min 8 chars)</label><input class="inp" name="regPassword" type="password" minlength="8" required></div>
+    <button class="tbtn success" type="submit">Create Lab Workspace</button>
+  </form>
+  <div id="authMsg" style="margin-top:8px;color:var(--red);font-weight:700"></div>
+</div>
 
-    <!-- MAIN CONTENT -->
-    <main class="main-content">
-        <header class="topbar">
-            <h1 id="pageTitle">Patient Registration & Result Entry</h1>
-            <div>
-                <span style="font-size: 13px; color: #64748b; margin-right: 15px;" id="currentDateDisplay"></span>
-                <button class="btn btn-accent" onclick="triggerDirectA4Print()">🖨️ Direct A4 Print</button>
-            </div>
-        </header>
-
-        <div class="workspace">
-
-            <!-- TAB 1: PATIENT ENTRY & WORKBENCH -->
-            <section id="tab-entry" class="panel active">
-                <div class="grid-form">
-                    <div class="form-group">
-                        <label>Lab ID / Reg No.</label>
-                        <input type="text" id="pId" readonly style="background:#e2e8f0; font-weight:bold;">
-                    </div>
-                    <div class="form-group">
-                        <label>Patient Full Name *</label>
-                        <input type="text" id="pName" placeholder="e.g. Rajesh Kumar">
-                    </div>
-                    <div class="form-group">
-                        <label>Age / Gender *</label>
-                        <div style="display:flex; gap:5px;">
-                            <input type="number" id="pAge" placeholder="Age" style="width:50%;">
-                            <select id="pGender" style="width:50%;">
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                                <option value="Child">Child</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Referred By (Doctor)</label>
-                        <input type="text" id="pDoctor" value="Dr. Self">
-                    </div>
-                    <div class="form-group" style="grid-column: span 2;">
-                        <label>Select Test / Profile to Add</label>
-                        <div style="display:flex; gap:8px;">
-                            <select id="testSelector" style="flex:1;"></select>
-                            <button class="btn btn-primary" onclick="addTestToWorkbench()">+ Add Test</button>
-                            <button class="btn btn-accent" onclick="loadSingle24CBC()">⚡ Quick 24-Param CBC</button>
-                        </div>
-                    </div>
-                    <div class="form-group" style="grid-column: span 2; justify-content: flex-end; flex-direction: row; align-items: flex-end; gap: 10px;">
-                        <button class="btn btn-danger" onclick="clearWorkbench()">Clear Form</button>
-                        <button class="btn btn-success" onclick="saveReport()">💾 Save & Finalize Report</button>
-                    </div>
-                </div>
-
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width: 30%;">Parameter Name</th>
-                            <th style="width: 20%;">Observed Value</th>
-                            <th style="width: 12%;">Unit</th>
-                            <th style="width: 23%;">Reference Range</th>
-                            <th style="width: 10%;">Status</th>
-                            <th style="width: 5%;">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="workbenchBody">
-                        <tr>
-                            <td colspan="6" style="text-align:center; color:#64748b; padding:20px;">
-                                Select a test above or click <b>"⚡ Quick 24-Param CBC"</b> to start entering values.
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>
-
-            <!-- TAB 2: SAVED REPORTS -->
-            <section id="tab-reports" class="panel">
-                <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
-                    <h3>Saved Patient Reports</h3>
-                    <input type="text" id="searchReport" onkeyup="renderSavedReports()" placeholder="Search by Name or ID..." style="padding:6px 10px; border:1px solid #94a3b8; border-radius:4px; width:250px;">
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Lab ID</th>
-                            <th>Date</th>
-                            <th>Patient Name</th>
-                            <th>Age/Sex</th>
-                            <th>Doctor</th>
-                            <th>Tests Count</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="savedReportsBody"></tbody>
-                </table>
-            </section>
-
-            <!-- TAB 3: CLEAN TEST CATALOG -->
-            <section id="tab-catalog" class="panel">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                    <h3>Standardized Test Catalog (Includes Full 24-Parameter CBC)</h3>
-                    <span style="font-size:12px; color:#0f4c81; font-weight:bold;">Clean Master Database</span>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Profile / Category</th>
-                            <th>Parameter Name</th>
-                            <th>Unit</th>
-                            <th>Min Ref</th>
-                            <th>Max Ref</th>
-                        </tr>
-                    </thead>
-                    <tbody id="catalogBody"></tbody>
-                </table>
-            </section>
-
-            <!-- TAB 4: SUPER ADMIN A-TO-Z CONTROL -->
-            <section id="tab-admin" class="panel">
-                <div id="adminLockScreen" class="admin-auth-box">
-                    <h3 style="margin-bottom:10px; color:var(--primary);">🔒 Super Admin Authentication</h3>
-                    <p style="font-size:12px; color:#64748b; margin-bottom:15px;">Default PIN: <b>admin123</b></p>
-                    <input type="password" id="adminPinInput" placeholder="Enter Super Admin PIN" style="width:100%; padding:8px; margin-bottom:12px; border:1px solid #94a3b8; border-radius:4px;">
-                    <button class="btn btn-primary" style="width:100%;" onclick="unlockAdmin()">Unlock A-to-Z Control</button>
-                </div>
-
-                <div id="adminControlPanel" style="display:none;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:15px;">
-                        <h3>Super Admin A-to-Z Lab & Device Control</h3>
-                        <button class="btn btn-danger" onclick="lockAdmin()">Lock Panel</button>
-                    </div>
-
-                    <!-- Lab Branding Config -->
-                    <div class="grid-form">
-                        <div class="form-group">
-                            <label>Lab Header Name</label>
-                            <input type="text" id="cfgLabName">
-                        </div>
-                        <div class="form-group">
-                            <label>Lab Tagline / Reg Info</label>
-                            <input type="text" id="cfgLabTagline">
-                        </div>
-                        <div class="form-group">
-                            <label>Lab Address & Contact</label>
-                            <input type="text" id="cfgLabAddress">
-                        </div>
-                        <div class="form-group">
-                            <label>Pathologist / Signatory</label>
-                            <input type="text" id="cfgSignatory">
-                        </div>
-                        <div class="form-group" style="grid-column: span 4;">
-                            <button class="btn btn-success" onclick="saveLabConfig()">Save Lab Branding & Print Header</button>
-                        </div>
-                    </div>
-
-                    <!-- Add New Custom Test Parameter -->
-                    <h4 style="margin: 15px 0 8px 0;">Add Custom Test Parameter to Catalog</h4>
-                    <div class="grid-form">
-                        <div class="form-group">
-                            <label>Profile Name (e.g. LFT, KFT)</label>
-                            <input type="text" id="newTestProfile" placeholder="e.g. THYROID">
-                        </div>
-                        <div class="form-group">
-                            <label>Parameter Name</label>
-                            <input type="text" id="newTestParam" placeholder="e.g. TSH">
-                        </div>
-                        <div class="form-group">
-                            <label>Unit</label>
-                            <input type="text" id="newTestUnit" placeholder="e.g. uIU/mL">
-                        </div>
-                        <div class="form-group">
-                            <label>Normal Range (Min - Max)</label>
-                            <div style="display:flex; gap:5px;">
-                                <input type="number" step="any" id="newTestMin" placeholder="Min">
-                                <input type="number" step="any" id="newTestMax" placeholder="Max">
-                            </div>
-                        </div>
-                        <div class="form-group" style="grid-column: span 4;">
-                            <button class="btn btn-primary" onclick="addCustomTest()">+ Add Parameter to Master Catalog</button>
-                        </div>
-                    </div>
-
-                    <!-- Force Device Reset Zone -->
-                    <div style="margin-top:20px; padding:15px; border:1px solid var(--danger); background:#fef2f2; border-radius:4px;">
-                        <h4 style="color:var(--danger); margin-bottom:6px;">⚠️ Hardware & UUID Device Lock Management</h4>
-                        <p style="font-size:12px; margin-bottom:10px;">
-                            Current Bound Device UUID: <strong id="adminUuidText"></strong><br>
-                            Use Force Device Reset if migrating this terminal or clearing local hardware locks.
-                        </p>
-                        <button class="btn btn-danger" onclick="forceDeviceReset()">🔄 Force Device Reset & Regenerate UUID</button>
-                    </div>
-                </div>
-            </section>
-
-        </div>
-    </main>
-
-    <!-- HIDDEN A4 PRINT LAYOUT (Renders cleanly via @media print without popups) -->
-    <div id="print-area">
-        <div class="print-header">
-            <div class="print-lab-title">
-                <h1 id="prLabName">ACD BITTU LAB CLOUD</h1>
-                <p id="prLabTagline">Automated Computerized Pathology & Diagnostic Center</p>
-                <p id="prLabAddress">Main Road, Diagnostic Complex | Ph: +91-9800000000</p>
-            </div>
-            <div style="text-align:right; font-size:11px;">
-                <strong>ISO 9001:2015 CERTIFIED</strong><br>
-                Device ID: <span id="prDeviceId"></span>
-            </div>
-        </div>
-
-        <table class="print-patient-box">
-            <tr>
-                <td><strong>Patient Name:</strong> <span id="prPName"></span></td>
-                <td><strong>Lab ID:</strong> <span id="prPId"></span></td>
-            </tr>
-            <tr>
-                <td><strong>Age / Gender:</strong> <span id="prPAgeGender"></span></td>
-                <td><strong>Report Date:</strong> <span id="prDate"></span></td>
-            </tr>
-            <tr>
-                <td colspan="2"><strong>Referred By:</strong> <span id="prDoctor"></span></td>
-            </tr>
-        </table>
-
-        <h3 style="text-align:center; text-decoration:underline; margin-bottom:10px; font-size:15px;">LABORATORY INVESTIGATION REPORT</h3>
-
-        <table class="print-test-table">
-            <thead>
-                <tr>
-                    <th style="width:40%;">TEST PARAMETER</th>
-                    <th style="width:20%;">RESULT</th>
-                    <th style="width:15%;">UNIT</th>
-                    <th style="width:25%;">BIOLOGICAL REF. INTERVAL</th>
-                </tr>
-            </thead>
-            <tbody id="prTestBody"></tbody>
-        </table>
-
-        <div style="margin-top:20px; font-size:11px; text-align:center; border-top:1px dashed #666; padding-top:6px;">
-            *** End of Report ***
-        </div>
-
-        <div class="print-footer">
-            <div>
-                <p>Lab Technician</p>
-                <p style="font-size:10px; color:#555;">Checked & Verified</p>
-            </div>
-            <div style="text-align:right;">
-                <p><strong id="prSignatory">Dr. Bittu Kumar (MD Pathologist)</strong></p>
-                <p style="font-size:10px; color:#555;">Authorized Signatory</p>
-            </div>
-        </div>
+<div id="appView" class="hidden">
+  <div class="topbar">
+    <div><h1>ACD BITTU LAB CLOUD</h1><small id="labHeaderMeta">Desktop LIMS Workspace</small></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span id="userBadge" style="font-size:11px;color:#cfe2f7"></span>
+      <button class="tbtn danger" id="btnLogout">Exit / Logout</button>
     </div>
+  </div>
+  <div class="toolbar">
+    <button class="tbtn" id="tbNew">＋ New Entry</button>
+    <button class="tbtn success" id="tbSave"> Save Report</button>
+    <button class="tbtn primary" id="tbPrint"> Direct A4 Print</button>
+    <button class="tbtn" id="tbWhatsApp"> WhatsApp</button>
+    <button class="tbtn" id="tbSync"> Sync Cloud</button>
+    <span class="pill" id="netStatus">Checking...</span>
+  </div>
+  <div class="shell">
+    <aside class="sidebar" id="sideNav">
+      <button data-page="Entry" class="active">＋ New Patient & Entry</button>
+      <button data-page="Reports">✓ Saved Reports</button>
+      <button data-page="Catalogue">🧪 Test Catalogue</button>
+      <button data-page="Samples">🧬 Sample Tracking</button>
+      <button data-page="Accounts">₹ Accounts & Expenses</button>
+      <button data-page="Inventory"> Inventory & Stock</button>
+      <button data-page="Staff">♙ Staff & Roles</button>
+      <button data-page="Setup">⚙ Lab & Print Setup</button>
+      <button data-page="Subscription"> Subscription & Razorpay</button>
+      <button data-page="Backup">▣ Backup & Cloud Sync</button>
+      <button data-page="SuperAdmin" id="navSuperAdmin" class="hidden"> Super Admin Control</button>
+    </aside>
+    <main class="main" id="mainArea"></main>
+  </div>
+</div>
 
-    <script>
-        /* =====================================================================
-           1. UUID DEVICE LOCK ENGINE (Prevents 'Invalid device identifier' Error)
-           ===================================================================== */
-        function generateUUID() {
-            if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-                return 'ACD-' + crypto.randomUUID().toUpperCase();
-            }
-            return 'ACD-' + 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
-            }).toUpperCase();
-        }
+<script src="https://jsdelivr.net"></script>
+<script>
+const SUPABASE_URL='https://supabase.co';
+const SUPABASE_KEY='sb_publishable_n6jRvVDjw2kOF7CS46omqQ_6qGkdR-q';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const DEV_KEY='acd_bittu_uuid_v7', LOCK_KEY='acd_bittu_lock_v7', STORE_KEY='acd_bittu_lims_v7';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money=n=>'₹'+(Number(n)||0).toFixed(2);
+const uid=p=>p+'-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+Math.random().toString(36).slice(2,6).toUpperCase();
 
-        function ensureDeviceLock() {
-            let uuid = localStorage.getItem('acd_device_uuid');
-            if (!uuid || !uuid.startsWith('ACD-')) {
-                uuid = generateUUID();
-                localStorage.setItem('acd_device_uuid', uuid);
-            }
-            document.getElementById('uuidDisplay').innerText = uuid;
-            document.getElementById('adminUuidText').innerText = uuid;
-            document.getElementById('prDeviceId').innerText = uuid.slice(0, 16);
-            return uuid;
-        }
+let db, currentUser=null, platformRole='', activeLab=null, hbTimer=null;
+let queuedTests=[], loadedTests=[], activeOrderId=null, matchedSearchTest=null;
+let store={lab:{name:'',address:'',phone:'',headerTitle:'',footerText:'',docName:'',docQual:'MBBS, MD',techName:'',techQual:'DMLT',preprinted:false},doctors:[],tests:[]};
+try{store={...store,...JSON.parse(localStorage.getItem(STORE_KEY)||'{}')};}catch{}
+const saveStore=()=>localStorage.setItem(STORE_KEY,JSON.stringify(store));
 
-        function forceDeviceReset() {
-            if (confirm("Are you sure you want to Force Reset the Device UUID Lock? A new hardware token will be bound immediately.")) {
-                localStorage.removeItem('acd_device_uuid');
-                const newId = ensureDeviceLock();
-                alert("Device Reset Successful! New Bound UUID: " + newId);
-            }
-        }
 
-        /* =====================================================================
-           2. SINGLE 24-PARAMETER CBC & CLEAN TEST CATALOG
-           ===================================================================== */
-        const DEFAULT_CATALOG = [
-            // 24-Parameter Complete Blood Count (CBC)
-            { profile: "COMPLETE BLOOD COUNT (CBC - 24 PARAM)", param: "1. Hemoglobin (Hb)", unit: "g/dL", min: 13.0, max: 17.0 },
-            { profile: "COMPLETE BLOOD COUNT (CBC - 24 PARAM)", param: "2. Total RBC Count", unit: "mill/cumm", min: 4.5, max: 5.5 },
-            { profile: "COMPLETE BLOOD COUNT (CBC - 24 PARAM)", param: "3. Packed Cell Volume (PCV / HCT)", unit: "%", min: 40.0, max: 50.0 },
-            { profile: "COMPLETE BLOOD COUNT (CBC - 24 PARAM)", param: "4. Mean Corpuscular Volume (MCV)", unit: "fL", min: 83.0, max: 101.0 },
-            { profile: "COMPLETE BLOOD COUNT (CBC - 24 PARAM)", param: "5. Mean Corpuscular Hb (MCH)", unit: "pg", min: 27.0, max: 32.0 },
-            { profile: "COMPLETE BLOOD COUNT (CBC - 24 PARAM)", param: "6. Mean Corpuscular Hb Conc (MCHC)", unit: "g/dL", min: 31.5, max: 34.5 },
-            { profile: "COMPLETE BLOOD COUNT (CBC - 24 PARAM)", param: "7. RDW - CV", unit: "%", min: 11.6, max: 14.0 },
-            { profile: "COMPLETE BLOOD COUNT (CBC - 24 PARAM)", param: "8. RDW - SD", unit: "fL", min: 39.0, max: 46.0 },
-            { profile: "COMPLETE BLOOD COUNT (CBC - 24 PARAM)", param: "9. Total WBC (TLC) Count", unit: "/cumm", min: 4000, max: 11000 },
-            { profile: "COMPLETE BLOOD COUNT (CBC - 24 PARAM)", param: "10. Neutrophils", unit: "%", min: 40, max: 80 },
-            { profile: "COMPLETE BLOOD COUNT (CBC - 24 PARAM)", param: "11. Lymphocytes", unit: "%", min: 20, max: 40 },
-            { profile: "COMPLETE BLOOD COUNT (CBC - 24 PARAM)", param: "12. Monocytes", unit: "%", min: 2, max: 10 },
-            { profile: "COMPLETE BLOOD COUNT (CBC - 24 PARAM)", param: "13. Eosinophils", unit: "%", min: 1, max: 6 },
-            { profile: "COMPLETE BLOOD COUNT (CBC - 24 PARAM)", param: "14. Basophils", unit: "%", min: 0, max: 2 },
-            { profile: "COMPLETE BLOOD COUNT (CBC - 24 PARAM)", param: "15. Absolute Neutrophil Count (ANC)", unit: "10^3/uL", min: 2.0, max: 7.0 },
-            { profile: "COMPLETE BLOOD COUNT (CBC - 24 PARAM)", param: "16. Absolute Lymphocyte Count (ALC)", unit: "10^3/uL", min: 1.0, max: 3.0 },
-            { profile: "COMPLETE BLOOD COUNT (CBC - 24 PARAM)", param: "17. Absolute Monocyte Count (AMC)", unit: "10^3/uL", min: 0.2, max: 1.0 },
-            { profile: "COMPLETE BLOOD COUNT (CBC - 24 PARAM)", param: "18. Absolute Eosinophil Count (AEC)", unit: "10^3/uL", min: 0.02, max: 0.5 },
-            { profile: "COMPLETE BLOOD COUNT (CBC - 24 PARAM)", param: "19. Absolute Basophil Count (ABC)", unit: "10^3/uL", min: 0.0, max: 0.1 },
-            { profile: "COMPLETE BLOOD COUNT (CBC - 24 PARAM)", param: "20. Platelet Count", unit: "lakhs/cumm", min: 1.5, max: 4.5 },
-            { profile: "COMPLETE BLOOD COUNT (CBC - 24 PARAM)", param: "21. Mean Platelet Volume (MPV)", unit: "fL", min: 7.5, max: 11.5 },
-            { profile: "COMPLETE BLOOD COUNT (CBC - 24 PARAM)", param: "22. Platelet Distribution Width (PDW)", unit: "fL", min: 9.0, max: 17.0 },
-            { profile: "COMPLETE BLOOD COUNT (CBC - 24 PARAM)", param: "23. Plateletcrit (PCT)", unit: "%", min: 0.15, max: 0.35 },
-            { profile: "COMPLETE BLOOD COUNT (CBC - 24 PARAM)", param: "24. Platelet Larger Cell Ratio (P-LCR)", unit: "%", min: 15.0, max: 35.0 },
-
-            // Clean Biochemistry & Routine Catalog
-            { profile: "BLOOD SUGAR", param: "Fasting Blood Sugar (FBS)", unit: "mg/dL", min: 70, max: 110 },
-            { profile: "BLOOD SUGAR", param: "Post Prandial Blood Sugar (PPBS)", unit: "mg/dL", min: 70, max: 140 },
-            { profile: "LIVER FUNCTION TEST (LFT)", param: "Bilirubin Total", unit: "mg/dL", min: 0.2, max: 1.2 },
-            { profile: "LIVER FUNCTION TEST (LFT)", param: "SGOT (AST)", unit: "U/L", min: 5, max: 40 },
-            { profile: "LIVER FUNCTION TEST (LFT)", param: "SGPT (ALT)", unit: "U/L", min: 7, max: 56 },
-            { profile: "KIDNEY FUNCTION TEST (KFT)", param: "Blood Urea", unit: "mg/dL", min: 15, max: 45 },
-            { profile: "KIDNEY FUNCTION TEST (KFT)", param: "Serum Creatinine", unit: "mg/dL", min: 0.6, max: 1.2 }
-        ];
-
-        let catalog = JSON.parse(localStorage.getItem('acd_catalog')) || DEFAULT_CATALOG;
-        let workbenchRows = [];
-        let savedReports = JSON.parse(localStorage.getItem('acd_reports')) || [];
-
-        /* =====================================================================
-           3. LAB CONFIG & SUPER ADMIN MANAGEMENT
-           ===================================================================== */
-        let labConfig = JSON.parse(localStorage.getItem('acd_lab_config')) || {
-            name: "ACD BITTU LAB CLOUD",
-            tagline: "Automated Computerized Pathology & Diagnostic Center",
-            address: "Main Diagnostic Chowk, Bihar | Email: acdbittulab@cloud.in",
-            signatory: "Dr. Bittu Kumar (Consultant Pathologist)"
-        };
-
-        function applyLabConfig() {
-            document.getElementById('sidebarLabName').innerText = labConfig.name;
-            document.getElementById('prLabName').innerText = labConfig.name;
-            document.getElementById('prLabTagline').innerText = labConfig.tagline;
-            document.getElementById('prLabAddress').innerText = labConfig.address;
-            document.getElementById('prSignatory').innerText = labConfig.signatory;
-
-            document.getElementById('cfgLabName').value = labConfig.name;
-            document.getElementById('cfgLabTagline').value = labConfig.tagline;
-            document.getElementById('cfgLabAddress').value = labConfig.address;
-            document.getElementById('cfgSignatory').value = labConfig.signatory;
-        }
-
-        function saveLabConfig() {
-            labConfig = {
-                name: document.getElementById('cfgLabName').value || "ACD BITTU LAB CLOUD",
-                tagline: document.getElementById('cfgLabTagline').value,
-                address: document.getElementById('cfgLabAddress').value,
-                signatory: document.getElementById('cfgSignatory').value
-            };
-            localStorage.setItem('acd_lab_config', JSON.stringify(labConfig));
-            applyLabConfig();
-            alert("Lab Header & Super Admin Configuration Saved!");
-        }
-
-        function unlockAdmin() {
-            const pin = document.getElementById('adminPinInput').value;
-            if (pin === "admin123") {
-                document.getElementById('adminLockScreen').style.display = 'none';
-                document.getElementById('adminControlPanel').style.display = 'block';
-                document.getElementById('adminPinInput').value = '';
-            } else {
-                alert("Invalid Super Admin PIN! (Hint: admin123)");
-            }
-        }
-
-        function lockAdmin() {
-            document.getElementById('adminLockScreen').style.display = 'block';
-            document.getElementById('adminControlPanel').style.display = 'none';
-        }
-
-        function addCustomTest() {
-            const profile = document.getElementById('newTestProfile').value.trim().toUpperCase();
-            const param = document.getElementById('newTestParam').value.trim();
-            const unit = document.getElementById('newTestUnit').value.trim();
-            const min = parseFloat(document.getElementById('newTestMin').value);
-            const max = parseFloat(document.getElementById('newTestMax').value);
-
-            if (!profile || !param || !unit || isNaN(min) || isNaN(max)) {
-                alert("Please fill all fields properly.");
-                return;
-            }
-
-            catalog.push({ profile, param, unit, min, max });
-            localStorage.setItem('acd_catalog', JSON.stringify(catalog));
-            populateCatalogUI();
-            alert(`Added "${param}" under "${profile}"!`);
-            document.getElementById('newTestParam').value = '';
-        }
-
-        /* =====================================================================
-           4. WORKBENCH & GRID ENTRY OPERATIONS
-           ===================================================================== */
-        function generateLabId() {
-            const num = 1001 + savedReports.length;
-            document.getElementById('pId').value = "ACD-" + new Date().getFullYear() + "-" + num;
-        }
-
-        function populateCatalogUI() {
-            const selector = document.getElementById('testSelector');
-            const catBody = document.getElementById('catalogBody');
-            selector.innerHTML = '';
-            catBody.innerHTML = '';
-
-            // Unique Profiles + Individual Parameters
-            const profiles = [...new Set(catalog.map(item => item.profile))];
-            profiles.forEach(prof => {
-                const opt = document.createElement('option');
-                opt.value = "PROFILE::" + prof;
-                opt.text = `[PROFILE] ${prof}`;
-                selector.appendChild(opt);
-            });
-
-            catalog.forEach((item, idx) => {
-                const opt = document.createElement('option');
-                opt.value = "ITEM::" + idx;
-                opt.text = `${item.param} (${item.profile})`;
-                selector.appendChild(opt);
-
-                catBody.innerHTML += `
-                    <tr>
-                        <td><strong>${item.profile}</strong></td>
-                        <td>${item.param}</td>
-                        <td>${item.unit}</td>
-                        <td>${item.min}</td>
-                        <td>${item.max}</td>
-                    </tr>
-                `;
-            });
-        }
-
-        function loadSingle24CBC() {
-            const cbcItems = catalog.filter(c => c.profile.includes("CBC - 24 PARAM"));
-            cbcItems.forEach(item => {
-                if (!workbenchRows.some(r => r.param === item.param)) {
-                    workbenchRows.push({ ...item, value: "" });
-                }
-            });
-            renderWorkbench();
-        }
-
-        function addTestToWorkbench() {
-            const val = document.getElementById('testSelector').value;
-            if (val.startsWith("PROFILE::")) {
-                const profName = val.replace("PROFILE::", "");
-                const items = catalog.filter(c => c.profile === profName);
-                items.forEach(item => {
-                    if (!workbenchRows.some(r => r.param === item.param)) {
-                        workbenchRows.push({ ...item, value: "" });
-                    }
-                });
-            } else if (val.startsWith("ITEM::")) {
-                const idx = parseInt(val.replace("ITEM::", ""));
-                const item = catalog[idx];
-                if (!workbenchRows.some(r => r.param === item.param)) {
-                    workbenchRows.push({ ...item, value: "" });
-                }
-            }
-            renderWorkbench();
-        }
-
-        function updateRowValue(index, val) {
-            workbenchRows[index].value = val;
-            const num = parseFloat(val);
-            const flagCell = document.getElementById(`flag-${index}`);
-            if (isNaN(num)) {
-                flagCell.innerHTML = "-";
-                flagCell.className = "";
-            } else if (num < workbenchRows[index].min) {
-                flagCell.innerHTML = "LOW";
-                flagCell.className = "flag-low";
-            } else if (num > workbenchRows[index].max) {
-                flagCell.innerHTML = "HIGH";
-                flagCell.className = "flag-high";
-            } else {
-                flagCell.innerHTML = "NORMAL";
-                flagCell.className = "flag-normal";
-            }
-        }
-
-        function removeWorkbenchRow(index) {
-            workbenchRows.splice(index, 1);
-            renderWorkbench();
-        }
-
-        function renderWorkbench() {
-            const tbody = document.getElementById('workbenchBody');
-            if (workbenchRows.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#64748b; padding:20px;">No tests added yet.</td></tr>`;
-                return;
-            }
-            tbody.innerHTML = '';
-            workbenchRows.forEach((row, i) => {
-                const num = parseFloat(row.value);
-                let flagText = "-", flagClass = "";
-                if (!isNaN(num)) {
-                    if (num < row.min) { flagText = "LOW"; flagClass = "flag-low"; }
-                    else if (num > row.max) { flagText = "HIGH"; flagClass = "flag-high"; }
-                    else { flagText = "NORMAL"; flagClass = "flag-normal"; }
-                }
-
-                tbody.innerHTML += `
-                    <tr>
-                        <td><strong>${row.param}</strong><br><small style="color:#64748b;">${row.profile}</small></td>
-                        <td><input type="text" class="result-input" value="${row.value}" oninput="updateRowValue(${i}, this.value)" placeholder="Enter value"></td>
-                        <td>${row.unit}</td>
-                        <td>${row.min} - ${row.max}</td>
-                        <td id="flag-${i}" class="${flagClass}">${flagText}</td>
-                        <td><button class="btn btn-danger" style="padding:3px 8px;" onclick="removeWorkbenchRow(${i})">X</button></td>
-                    </tr>
-                `;
-            });
-        }
-
-        function clearWorkbench() {
-            document.getElementById('pName').value = '';
-            document.getElementById('pAge').value = '';
-            workbenchRows = [];
-            generateLabId();
-            renderWorkbench();
-        }
-
-        /* =====================================================================
-           5. SAVE & DIRECT A4 PRINT (ZERO POPUPS / ZERO VIOLATIONS)
-           ===================================================================== */
-        function saveReport() {
-            const name = document.getElementById('pName').value.trim();
-            const age = document.getElementById('pAge').value.trim();
-            if (!name || !age || workbenchRows.length === 0) {
-                alert("Please enter Patient Name, Age, and at least one Test Parameter.");
-                return;
-            }
-
-            const report = {
-                id: document.getElementById('pId').value,
-                date: new Date().toLocaleDateString('en-IN'),
-                name: name,
-                age: age,
-                gender: document.getElementById('pGender').value,
-                doctor: document.getElementById('pDoctor').value,
-                rows: JSON.parse(JSON.stringify(workbenchRows))
-            };
-
-            savedReports.unshift(report);
-            localStorage.setItem('acd_reports', JSON.stringify(savedReports));
-            renderSavedReports();
-            alert("Report Saved Successfully! Click 'Direct A4 Print' anytime to print.");
-            generateLabId();
-        }
-
-        function renderSavedReports() {
-            const q = (document.getElementById('searchReport').value || "").toLowerCase();
-            const tbody = document.getElementById('savedReportsBody');
-            tbody.innerHTML = '';
-
-            savedReports
-                .filter(r => r.name.toLowerCase().includes(q) || r.id.toLowerCase().includes(q))
-                .forEach((r, idx) => {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td><strong>${r.id}</strong></td>
-                            <td>${r.date}</td>
-                            <td>${r.name}</td>
-                            <td>${r.age} Y / ${r.gender}</td>
-                            <td>${r.doctor}</td>
-                            <td>${r.rows.length} Params</td>
-                            <td>
-                                <button class="btn btn-accent" style="padding:4px 10px;" onclick="printSavedReport(${idx})">🖨️ Print A4</button>
-                            </td>
-                        </tr>
-                    `;
-                });
-        }
-
-        function preparePrintDOM(data) {
-            document.getElementById('prPName').innerText = data.name.toUpperCase();
-            document.getElementById('prPId').innerText = data.id;
-            document.getElementById('prPAgeGender').innerText = `${data.age} Years / ${data.gender}`;
-            document.getElementById('prDate').innerText = data.date;
-            document.getElementById('prDoctor').innerText = data.doctor;
-
-            const prBody = document.getElementById('prTestBody');
-            prBody.innerHTML = '';
-            let lastProfile = "";
-
-            data.rows.forEach(r => {
-                if (r.profile !== lastProfile) {
-                    prBody.innerHTML += `
-                        <tr>
-                            <td colspan="4" style="font-weight:bold; background:#f3f4f6; padding-top:8px;">${r.profile}</td>
-                        </tr>
-                    `;
-                    lastProfile = r.profile;
-                }
-                const num = parseFloat(r.value);
-                const isAbnormal = !isNaN(num) && (num < r.min || num > r.max);
-                prBody.innerHTML += `
-                    <tr>
-                        <td>${r.param}</td>
-                        <td style="font-weight:${isAbnormal ? 'bold' : 'normal'}; text-decoration:${isAbnormal ? 'underline' : 'none'};">
-                            ${r.value || '-'} ${isAbnormal ? (num > r.max ? '(H)' : '(L)') : ''}
-                        </td>
-                        <td>${r.unit}</td>
-                        <td>${r.min} - ${r.max}</td>
-                    </tr>
-                `;
-            });
-        }
-
-        function triggerDirectA4Print() {
-            const name = document.getElementById('pName').value.trim() || "WALK-IN PATIENT";
-            const age = document.getElementById('pAge').value.trim() || "--";
-            if (workbenchRows.length === 0) {
-                alert("Workbench is empty! Add test parameters first.");
-                return;
-            }
-            preparePrintDOM({
-                id: document.getElementById('pId').value,
-                date: new Date().toLocaleDateString('en-IN'),
-                name: name,
-                age: age,
-                gender: document.getElementById('pGender').value,
-                doctor: document.getElementById('pDoctor').value,
-                rows: workbenchRows
-            });
-            window.print();
-        }
-
-        function printSavedReport(idx) {
-            preparePrintDOM(savedReports[idx]);
-            window.print();
-        }
-
-        /* =====================================================================
-           6. TAB NAVIGATION & INITIALIZATION
-           ===================================================================== */
-        function switchTab(tabName) {
-            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-
-            document.getElementById('tab-' + tabName).classList.add('active');
-            event.currentTarget.classList.add('active');
-
-            const titles = {
-                entry: "Patient Registration & Result Entry",
-                reports: "Saved Pathology Reports Archive",
-                catalog: "Standardized Test Catalog (24-Parameter CBC)",
-                admin: "Super Admin A-to-Z Control & Device Lock"
-            };
-            document.getElementById('pageTitle').innerText = titles[tabName];
-        }
-
-        window.onload = function() {
-            ensureDeviceLock();
-            applyLabConfig();
-            generateLabId();
-            populateCatalogUI();
-            renderSavedReports();
-            document.getElementById('currentDateDisplay').innerText = "Date: " + new Date().toLocaleDateString('en-IN');
-        };
-    </script>
-</body>
-</html>
