@@ -82,6 +82,23 @@ body{background:var(--bg);font-family:Inter,ui-sans-serif,system-ui,-apple-syste
 @media(max-width:760px){.layout{display:block!important}.layout>aside.card{position:sticky!important;top:60px!important;max-height:none!important;margin:0 0 12px!important;padding:5px!important;z-index:6!important}.layout>aside .nav{display:flex!important;flex-direction:row!important;max-height:none!important;overflow-x:auto!important;overflow-y:hidden!important;white-space:nowrap!important;scroll-snap-type:x proximity!important}.layout>aside .nav button{width:auto!important;flex:0 0 auto!important;white-space:nowrap!important;scroll-snap-align:start!important;padding:9px 11px!important}.layout>aside .nav button.active{box-shadow:inset 0 -2px #1677c8!important}#content.card{scroll-margin-top:125px!important}}
 @media(max-width:420px){.layout>aside.card{top:60px!important}.layout>aside .nav button{font-size:11px!important;padding:8px 9px!important}}
 
+
+@media(min-width:761px){
+ .wrap{max-width:1500px;padding-left:22px;padding-right:22px}
+ .layout{grid-template-columns:245px minmax(0,1fr);gap:18px}
+ #content{min-width:0}
+ .result-entry-table{min-width:920px;table-layout:fixed}
+ .result-entry-table th:nth-child(1),.result-entry-table td:nth-child(1){width:27%}
+ .result-entry-table th:nth-child(2),.result-entry-table td:nth-child(2){width:28%}
+ .result-entry-table th:nth-child(3),.result-entry-table td:nth-child(3){width:13%}
+ .result-entry-table th:nth-child(4),.result-entry-table td:nth-child(4){width:32%}
+ .result-entry-table td{vertical-align:middle}
+ .result-entry-table .result-value,.result-entry-table .direct-result{min-width:190px;min-height:40px}
+ .direct-test,.card{min-width:0}
+ .tablewrap{max-width:100%;overscroll-behavior-x:contain}
+ .result-entry-table th{position:sticky;top:0;z-index:1}
+}
+.result-entry-table .result-value:focus,.result-entry-table .direct-result:focus{outline:2px solid #1769aa;outline-offset:1px}
 </style>
 </head>
 <body>
@@ -149,6 +166,18 @@ function stopBrowserDeviceHeartbeat(){if(deviceSessionTimer){clearInterval(devic
 function startBrowserDeviceHeartbeat(){if(deviceSessionTimer)clearInterval(deviceSessionTimer);deviceSessionTimer=setInterval(async()=>{if(deviceSessionBusy||!deviceSessionUserId)return;deviceSessionBusy=true;try{const {data,error}=await client.rpc('acd_heartbeat_single_device_session',{p_device_id:getBrowserDeviceId()});if(!error&&!(data===true||data?.allowed===true)){stopBrowserDeviceHeartbeat();await client.auth.signOut();showLogin();msg('This device no longer holds the active login lock. Please sign in again.');}}catch(e){console.warn('Device session heartbeat temporarily unavailable',e);}finally{deviceSessionBusy=false;}},45000);}
 async function releaseBrowserDevice(){try{if(deviceSessionUserId)await client.rpc('acd_release_single_device_session',{p_device_id:getBrowserDeviceId()});}catch(e){console.warn('Could not release device session cleanly',e);}stopBrowserDeviceHeartbeat();}
 const $=id=>document.getElementById(id);
+// Desktop keyboard workflow: Enter advances to the next result field instead of submitting the form.
+document.addEventListener('keydown',ev=>{
+ if(ev.key!=='Enter')return;
+ const el=ev.target;
+ if(!(el instanceof HTMLElement)||!el.matches('.direct-result,.result-value'))return;
+ const scope=el.closest('#directParameterTables,#multiResultFields');if(!scope)return;
+ ev.preventDefault();
+ const fields=[...scope.querySelectorAll('.direct-result,.result-value')].filter(x=>!x.disabled);
+ const i=fields.indexOf(el);
+ if(i>=0&&i<fields.length-1){fields[i+1].focus();if(fields[i+1] instanceof HTMLInputElement)fields[i+1].select();}
+ else{const btn=scope.id==='directParameterTables'?$('saveDirectDraft'):$('saveAllResults');if(btn&&!btn.disabled)btn.focus();}
+});
 const KEY='acd_bittu_lab_cloud_setup_v1';
 const DB_NAME='acd_bittu_lab_cloud_local';
 const DB_VERSION=4;
@@ -213,7 +242,7 @@ async function syncPendingData(){
  const samples=(await localAll('samples')).filter(x=>x.labId===currentLab.id&&x.syncStatus!=='synced');let samplesSynced=0;
  for(const x of samples){try{const row={id:x.id,lab_id:currentLab.id,order_id:x.orderId,patient_id:x.patientId||'',sample_type:x.sampleType||'',collected_by:x.collectedBy||'',status:x.status||'Collected',rejection_reason:x.rejectionReason||'',collected_at:x.collectedAt||x.createdAt,updated_at:x.updatedAt||x.createdAt};const {error}=await client.from('acd_lab_samples').upsert(row,{onConflict:'id'});if(error)throw error;x.syncStatus='synced';await localPut('samples',x);samplesSynced++;}catch(e){errors.push('Sample '+x.id+': '+e.message);}}
  const rs=(await localAll('results')).filter(x=>x.labId===currentLab.id&&x.syncStatus!=='synced');let resultsSynced=0;
- for(const r of rs){try{const row={id:r.id,lab_id:currentLab.id,order_id:r.orderId||'',patient_id:r.patientId||'',test_name:r.testName,parameter:r.parameter,result_value:r.resultValue,unit:r.unit||'',reference_range:r.referenceRange||'',status:'Saved',entered_by:r.enteredBy||'',created_at:r.createdAt,updated_at:r.updatedAt};const {error}=await client.from('acd_lab_results').upsert(row,{onConflict:'id'});if(error)throw error;r.syncStatus='synced';await localPut('results',r);resultsSynced++;}catch(e){errors.push('Result '+r.id+': '+e.message);}}
+ for(const r of rs){try{const row={id:r.id,lab_id:currentLab.id,order_id:r.orderId||'',patient_id:r.patientId||'',test_name:r.testName,parameter:r.parameter,result_value:r.resultValue,unit:r.unit||'',reference_range:r.referenceRange||'',status:'Draft',entered_by:r.enteredBy||'',created_at:r.createdAt,updated_at:r.updatedAt};const {error}=await client.from('acd_lab_results').upsert(row,{onConflict:'id'});if(error)throw error;r.syncStatus='synced';await localPut('results',r);resultsSynced++;}catch(e){errors.push('Result '+r.id+': '+e.message);}}
  let financeSynced=0,inventorySynced=0;
  const financeRows=(await localAll('expenses')).filter(x=>x.labId===currentLab.id&&x.syncStatus!=='synced');
  for(const x of financeRows){try{const row={id:x.id,lab_id:currentLab.id,description:x.description||'',amount:Number(x.amount||0),category:x.category||'',entry_type:x.status||'Expense',created_at:x.createdAt||new Date().toISOString(),updated_at:x.updatedAt||x.createdAt||new Date().toISOString()};const {error}=await client.from('acd_lab_finance_entries').upsert(row,{onConflict:'id'});if(error)throw error;x.syncStatus='synced';await localPut('expenses',x);financeSynced++;}catch(e){errors.push('Finance '+x.id+': '+e.message);}}
@@ -933,7 +962,7 @@ async function sendOrderWhatsApp(orderId){
 async function renderTestOrders(c){
  let tests=store.tests||[];try{tests=await loadLabTests();}catch(err){c.innerHTML=`<div class="notice">Could not load the lab Test Catalogue: ${esc(err.message)}.</div>`;return;}
  c.innerHTML=`<div class="panel-head"><div><h3>Direct Test Entry & Report</h3><div class="muted">No report step. Select tests one by one, then enter all results together.</div></div><span class="muted">${tests.length} catalogue tests</span></div>
- <div class="notice">Patient name, age and gender are optional. Date of Birth is not collected. Patient ID is generated automatically. Add each investigation with ＋ Add Test. Press Enter once to load every selected test and all its configured parameters below. Save and print stores a report reference internally; no report screen or report number is shown. Unconfigured reference ranges are never invented.</div>
+ <div class="notice">Patient name, age and gender are optional. Date of Birth is not collected. Patient ID is generated automatically. Add each investigation with ＋ Add Test. Press Enter once to load every selected test and all its configured parameters below. In numeric result cells, press Enter to move to the next result. Save and print stores a report reference internally; no report screen or report number is shown. Unconfigured reference ranges are never invented.</div>
  <form id="directReportForm"><div class="designer-grid">
  <div class="field"><label>Patient Name</label><input class="input" name="patientName" maxlength="120"></div><div class="field"><label>Patient ID (Automatic · Locked)</label><input class="input" readonly value="Generated when saved"></div>
  <div class="field"><label>Age (Optional)</label><input class="input" name="ageValue" type="number" min="0" step="any" placeholder="e.g. 5"></div><div class="field"><label>Age Unit</label><select class="input" name="ageUnit"><option value="days">Days</option><option value="months">Months</option><option value="years" selected>Years</option></select></div>
@@ -949,8 +978,11 @@ async function renderTestOrders(c){
  const paintSelected=()=>{$('selectedTestCount').textContent=`${selected.length} tests selected`;$('directSelectedTests').innerHTML=selected.length?selected.map((t,i)=>`<div class="item"><span><b>${i+1}. ${esc(t.name)}</b><br><small class="muted">${esc(t.sampleType||'Sample not specified')} · ${t.parameters?.length||0} parameters</small></span><button type="button" class="btn danger" data-remove-direct="${i}">Remove</button></div>`).join(''):'<div class="empty">No tests added yet.</div>';c.querySelectorAll('[data-remove-direct]').forEach(b=>b.onclick=()=>{selected.splice(Number(b.dataset.removeDirect),1);loaded=false;$('directParameterArea').classList.add('hidden');paintSelected();});};
  const search=()=>{const q=$('directTestSearch').value.trim().toLowerCase();const matches=tests.filter(t=>!q||String(t.name).toLowerCase().includes(q)||String(t.detail||'').toLowerCase().includes(q)).slice(0,80);$('directSearchResults').innerHTML=matches.length?matches.map(t=>{const idx=tests.indexOf(t),already=selected.some(x=>x.id===t.id);return `<div class="test-result-row"><span><b>${esc(t.name)}</b><br><small class="muted">${esc(t.sampleType||'Sample not specified')} · ${t.parameters?.length||0} parameters</small></span><button type="button" class="btn ${already?'secondary':'primary'}" data-pick-direct="${idx}" ${already||!(t.parameters||[]).length?'disabled':''}>${already?'Added':(t.parameters||[]).length?'+ Add':'No Parameters'}</button></div>`;}).join(''):'<div class="empty">No matching tests found in this lab catalogue.</div>';c.querySelectorAll('[data-pick-direct]').forEach(b=>b.onclick=()=>{const t=tests[Number(b.dataset.pickDirect)];if(t&&!selected.some(x=>x.id===t.id)){selected.push(t);loaded=false;$('directParameterArea').classList.add('hidden');paintSelected();search();}});};
  $('directTestSearch').addEventListener('input',search);f.elements.ageValue.addEventListener('input',()=>{loaded=false;});f.elements.ageUnit.addEventListener('change',()=>{loaded=false;});f.elements.gender.addEventListener('change',()=>{loaded=false;});
- $('loadAllParameters').onclick=()=>{if(!selected.length)return alert('पहले + Add Test से एक या अधिक Tests चुनें।');$('directParameterTables').innerHTML=selected.map((t,ti)=>`<section class="direct-test"><h4>${ti+1}. ${esc(t.name)}</h4><div class="muted">Sample: ${esc(t.sampleType||'Not specified')} · ${t.parameters.length} parameters</div><div class="tablewrap"><table><thead><tr><th>Parameter</th><th>Result *</th><th>Unit</th><th>Reference Range</th></tr></thead><tbody>${t.parameters.map((p,pi)=>{const opts=String(p.options||'').split(/[|,;/]/).map(x=>x.trim()).filter(Boolean);const qualitative=p.resultType==='qualitative'||opts.length>0;const control=qualitative?`<select class="input direct-result" required data-ti="${ti}" data-pi="${pi}"><option value="">Select result</option>${(opts.length?opts:['Positive','Negative','Reactive','Non-reactive','Detected','Not Detected','Present','Absent']).map(x=>`<option>${esc(x)}</option>`).join('')}</select>`:`<input class="input direct-result" required data-ti="${ti}" data-pi="${pi}" inputmode="decimal" placeholder="Enter result">`;return `<tr><td><b>${esc(p.name)}</b></td><td>${control}</td><td>${esc(p.unit||'')}</td><td>${esc(rangeFor(p))}</td></tr>`;}).join('')}</tbody></table></div></section>`).join('');$('directParameterArea').classList.remove('hidden');loaded=true;$('directParameterArea').scrollIntoView({behavior:'smooth',block:'start'});};
- async function saveDirect(printAfter){
+
+ // Enter navigation is centralized in the document-level handler above to avoid double-advancing.
+
+ $('loadAllParameters').onclick=()=>{if(!selected.length)return alert('पहले + Add Test से एक या अधिक Tests चुनें।');$('directParameterTables').innerHTML=selected.map((t,ti)=>`<section class="direct-test"><h4>${ti+1}. ${esc(t.name)}</h4><div class="muted">Sample: ${esc(t.sampleType||'Not specified')} · ${t.parameters.length} parameters</div><div class="tablewrap"><table class="result-entry-table"><thead><tr><th>Parameter</th><th>Result *</th><th>Unit</th><th>Reference Range</th></tr></thead><tbody>${t.parameters.map((p,pi)=>{const opts=String(p.options||'').split(/[|,;/]/).map(x=>x.trim()).filter(Boolean);const qualitative=p.resultType==='qualitative'||opts.length>0;const control=qualitative?`<select class="input direct-result" required data-ti="${ti}" data-pi="${pi}"><option value="">Select result</option>${(opts.length?opts:['Positive','Negative','Reactive','Non-reactive','Detected','Not Detected','Present','Absent']).map(x=>`<option>${esc(x)}</option>`).join('')}</select>`:`<input class="input direct-result" required data-ti="${ti}" data-pi="${pi}" inputmode="decimal" placeholder="Enter result">`;return `<tr><td><b>${esc(p.name)}</b></td><td>${control}</td><td>${esc(p.unit||'')}</td><td>${esc(rangeFor(p))}</td></tr>`;}).join('')}</tbody></table></div></section>`).join('');$('directParameterArea').classList.remove('hidden');loaded=true;$('directParameterArea').scrollIntoView({behavior:'smooth',block:'start'});};
+ async function saveDirect(printAfter,printWindow=null){
   if(!loaded)return alert('Press Enter to load all test parameters first.');
   const inputs=[...c.querySelectorAll('.direct-result')];
   if(!inputs.length||inputs.some(x=>!x.value.trim()))return alert('सभी टेस्ट के सभी Result भरें।');
@@ -967,13 +999,19 @@ async function renderTestOrders(c){
   let saved=0;
   for(const item of items)for(const param of item.parameters){
    const prior=existingRows.filter(r=>r.testName===item.name&&r.parameter===param.name).sort((a,b)=>String(b.updatedAt||b.createdAt).localeCompare(String(a.updatedAt||a.createdAt)))[0];
-   const r={id:prior?.id||localId('RES'),labId:currentLab.id,orderId:order.id,patientId:patient.id,testName:item.name,parameter:param.name,resultValue:param.result,unit:param.unit,referenceRange:param.referenceRange,status:'Saved',enteredBy:currentUser?.email||'',createdAt:prior?.createdAt||now,updatedAt:now,syncStatus:'pending'};
+   const r={id:prior?.id||localId('RES'),labId:currentLab.id,orderId:order.id,patientId:patient.id,testName:item.name,parameter:param.name,resultValue:param.result,unit:param.unit,referenceRange:param.referenceRange,status:'Draft',enteredBy:currentUser?.email||'',createdAt:prior?.createdAt||now,updatedAt:now,syncStatus:'pending'};
    await saveCloudResult(r);saved++;
   }
   $('directResultMessage').textContent=`${saved} results saved. ${navigator.onLine?'Cloud save attempted.':'Offline: sync pending.'} Saving again updates this same report instead of creating a duplicate.`;$('directResultMessage').className='message success';
-  if(printAfter)await printCombinedReport(order.id,false);return order;
+  if(printAfter)await printCombinedReport(order.id,false,printWindow);return order;
  }
- $('saveDirectDraft').onclick=()=>saveDirect(false).catch(e=>alert('Save failed: '+e.message));$('printDirectDraft').onclick=()=>saveDirect(true).catch(e=>alert('Save / Print failed: '+e.message));$('sendDirectWhatsApp').onclick=async()=>{if(!lastSavedDirectOrder){alert('पहले Save Results या Save & Print करें।');return;}await sendReportWhatsApp(lastSavedDirectOrder.id);};
+ $('saveDirectDraft').onclick=()=>saveDirect(false).catch(e=>alert('Save failed: '+e.message));
+ $('printDirectDraft').onclick=()=>{
+  const printWindow=window.open('about:blank','_blank');
+  if(!printWindow){alert('Print window blocked. Allow pop-ups for this site, then try again.');return;}
+  printWindow.document.write('<!doctype html><title>Preparing report…</title><p style="font:16px Arial;padding:24px">Saving results and preparing the A4 report…</p>');
+  saveDirect(true,printWindow).catch(e=>{try{printWindow.close();}catch(_){}alert('Save / Print failed: '+e.message);});
+ };$('sendDirectWhatsApp').onclick=async()=>{if(!lastSavedDirectOrder){alert('पहले Save Results या Save & Print करें।');return;}await sendReportWhatsApp(lastSavedDirectOrder.id);};
  paintSelected();search();
 }
 
@@ -1072,7 +1110,7 @@ async function renderCloudResultsEntry(c){
    const prior=editingId?rows.find(x=>x.id===editingId):null;
    if(editingId&&!prior)throw new Error('The result being edited is no longer available. Refresh and try again.');
    const now=new Date().toISOString();
-   const r={...(prior||{}),id:prior?.id||localId('RES'),labId:currentLab.id,orderId:order.id,patientId:order.patientId||'',testName:String(fd.get('testName')).trim(),parameter:String(fd.get('parameter')).trim(),resultValue:String(fd.get('resultValue')).trim(),unit:String(fd.get('unit')||'').trim(),referenceRange:String(fd.get('referenceRange')||'').trim(),status:'Saved',enteredBy:prior?.enteredBy||currentUser?.email||'',createdAt:prior?.createdAt||now,updatedAt:now,syncStatus:'pending'};
+   const r={...(prior||{}),id:prior?.id||localId('RES'),labId:currentLab.id,orderId:order.id,patientId:order.patientId||'',testName:String(fd.get('testName')).trim(),parameter:String(fd.get('parameter')).trim(),resultValue:String(fd.get('resultValue')).trim(),unit:String(fd.get('unit')||'').trim(),referenceRange:String(fd.get('referenceRange')||'').trim(),status:'Draft',enteredBy:prior?.enteredBy||currentUser?.email||'',createdAt:prior?.createdAt||now,updatedAt:now,syncStatus:'pending'};
    delete r.verifiedBy;delete r.verifiedAt;
    await saveCloudResult(r);
    msg.textContent=r.syncStatus==='synced'?(prior?'Result updated in cloud.':'Result saved to cloud.'):(prior?'Updated locally; cloud sync is pending.':'Saved locally; cloud sync is pending.');msg.className='message success';
@@ -1266,7 +1304,7 @@ async function renderBackupRestore(c){
     acd_lab_patients:(r)=>({id:r.id,lab_id:labId,patient_code:r.patient_code||r.id,name:r.name,age:r.age,age_value:r.age_value,age_unit:r.age_unit||'years',date_of_birth:r.date_of_birth,gender:r.gender,mobile:r.mobile,address:r.address,referrer:r.referrer,created_at:r.created_at,updated_at:r.updated_at}),
     acd_lab_orders:(r)=>({id:r.id,lab_id:labId,patient_id:r.patient_id,patient_name:r.patient_name,patient_age:r.patient_age||'',patient_gender:r.patient_gender||'',patient_mobile:r.patient_mobile||'',patient_address:r.patient_address||'',referrer:r.referrer||'',items:r.items||[],subtotal:Number(r.subtotal||0),discount:Number(r.discount||0),total:Number(r.total||0),paid:Number(r.paid||0),due:Number(r.due||0),payment_method:r.payment_method,payment_status:r.payment_status,notes:r.notes,status:r.status,created_at:r.created_at,updated_at:r.updated_at}),
     acd_lab_samples:(r)=>({id:r.id,lab_id:labId,order_id:r.order_id,patient_id:r.patient_id,sample_type:r.sample_type,collected_by:r.collected_by,status:r.status,rejection_reason:r.rejection_reason,collected_at:r.collected_at,updated_at:r.updated_at}),
-    acd_lab_results:(r)=>({id:r.id,lab_id:labId,order_id:r.order_id,patient_id:r.patient_id,test_name:r.test_name,parameter:r.parameter,result_value:r.result_value,unit:r.unit||'',reference_range:r.reference_range||'',status:'Saved',entered_by:r.entered_by||'',created_at:r.created_at,updated_at:r.updated_at}),
+    acd_lab_results:(r)=>({id:r.id,lab_id:labId,order_id:r.order_id,patient_id:r.patient_id,test_name:r.test_name,parameter:r.parameter,result_value:r.result_value,unit:r.unit||'',reference_range:r.reference_range||'',status:'Draft',entered_by:r.entered_by||'',created_at:r.created_at,updated_at:r.updated_at}),
     acd_lab_tests:(r)=>({id:r.id,lab_id:labId,name:r.name,detail:r.detail||'',price:Number(r.price||0),sample_type:r.sample_type||'',parameters:Array.isArray(r.parameters)?r.parameters:[],is_active:r.is_active!==false,updated_at:r.updated_at||new Date().toISOString()}),
     acd_lab_finance_entries:(r)=>({id:r.id,lab_id:labId,description:r.description||'',amount:Number(r.amount||0),category:r.category||'',entry_type:r.entry_type||'Expense',created_at:r.created_at,updated_at:r.updated_at||r.created_at}),
     acd_lab_inventory_items:(r)=>({id:r.id,lab_id:labId,item:r.item||'',quantity:Number(r.quantity||0),unit:r.unit||'',expiry_date:r.expiry_date||null,status:r.status||'In Stock',created_at:r.created_at,updated_at:r.updated_at||r.created_at})
@@ -1333,7 +1371,7 @@ async function loadCloudResults(){
 }
 async function saveCloudResult(r){
  await localPut('results',r);
- if(navigator.onLine){const row={id:r.id,lab_id:currentLab.id,order_id:r.orderId||'',patient_id:r.patientId||'',test_name:r.testName,parameter:r.parameter,result_value:r.resultValue,unit:r.unit||'',reference_range:r.referenceRange||'',status:'Saved',entered_by:r.enteredBy||currentUser?.email||'',created_at:r.createdAt,updated_at:r.updatedAt};const {error}=await client.from('acd_lab_results').upsert(row,{onConflict:'id'});if(error)throw error;r.syncStatus='synced';await localPut('results',r);}
+ if(navigator.onLine){const row={id:r.id,lab_id:currentLab.id,order_id:r.orderId||'',patient_id:r.patientId||'',test_name:r.testName,parameter:r.parameter,result_value:r.resultValue,unit:r.unit||'',reference_range:r.referenceRange||'',status:'Draft',entered_by:r.enteredBy||currentUser?.email||'',created_at:r.createdAt,updated_at:r.updatedAt};const {error}=await client.from('acd_lab_results').upsert(row,{onConflict:'id'});if(error)throw error;r.syncStatus='synced';await localPut('results',r);}
 }
 async function sendReportWhatsApp(orderId){
  const o=(await getOrders()).find(x=>x.id===orderId);if(!o)return alert('Report record not found.');
@@ -1345,9 +1383,13 @@ async function sendReportWhatsApp(orderId){
  const opened=window.open(waUrl,'_blank','noopener');
  if(!opened)alert('WhatsApp open nahi hua. Browser pop-ups allow karein. Message me report reference aur status jayega; PDF ko print dialog se Save as PDF karke WhatsApp me attach karna hoga.');
 }
-async function printCombinedReport(orderId,finalOnly=false){
- const allOrders=await getOrders(),o=allOrders.find(x=>x.id===orderId);if(!o)return alert('Report record not found.');
- const allRows=(await loadCloudResults()).filter(x=>x.orderId===orderId);if(!allRows.length)return alert('Save results first.');
+async function printCombinedReport(orderId,finalOnly=false,printWindow=null){
+ // Open the print tab during the original click event to avoid popup blockers after async work.
+ const win=printWindow||window.open('about:blank','_blank');
+ if(!win){alert('Print window blocked. Allow pop-ups for this site, then try again.');return;}
+ try {
+ const allOrders=await getOrders(),o=allOrders.find(x=>x.id===orderId);if(!o){win.close();return alert('Report record not found.');}
+ const allRows=(await loadCloudResults()).filter(x=>x.orderId===orderId);if(!allRows.length){win.close();return alert('Save results first.');}
  const latestMap=new Map();for(const r of allRows){const k=`${r.testName}\u0000${r.parameter}`,prior=latestMap.get(k);if(!prior||String(r.updatedAt||r.createdAt)>String(prior.updatedAt||prior.createdAt))latestMap.set(k,r);}const rows=[...latestMap.values()];
  const expected=(o.items||[]).reduce((n,t)=>n+(t.parameters||[]).length,0);
  const complete=rows.length>=expected&&(o.items||[]).every(t=>(t.parameters||[]).every(p=>rows.some(r=>r.testName===t.name&&r.parameter===p.name)));
@@ -1372,18 +1414,23 @@ async function printCombinedReport(orderId,finalOnly=false){
  const bottom=preprinted?43:Math.max(18,Number(design.bottomMargin??18),design.showQr?Number(design.qrSize??24)+12:0);
  const signWidth=Math.max(20,Number(design.signatureWidth??42));
  const signHeight=Math.max(8,Number(design.signatureHeight??16));
- let qrPayload=`ACD-LAB-REPORT|${currentLab?.name||'Lab'}|${o.id}`;
+ let qrPayload='',qrUnavailableReason='';
  if(design.showQr!==false){
   try{
+   if(!currentLab?.id)throw new Error('Active laboratory is not available.');
    const {data:qrData,error:qrError}=await client.rpc('acd_issue_report_qr_token',{p_lab_id:currentLab.id,p_order_id:String(o.id)});
    if(qrError)throw qrError;
    const qrToken=typeof qrData==='string'?qrData:(qrData?.token||qrData?.qr_token||'');
    if(!qrToken)throw new Error('No verification token returned.');
    qrPayload=location.origin+location.pathname+'?verify='+encodeURIComponent(qrToken);
-  }catch(qrErr){return alert('Secure QR verification could not be created. Apply SQL 12 first. Report was not printed, so it will not contain an unverified QR code. '+qrErr.message);}
+  }catch(qrErr){
+   // Never create an insecure/public QR. A QR failure must not block the clinical report itself.
+   qrUnavailableReason='Secure QR unavailable: '+String(qrErr?.message||qrErr);
+   console.warn(qrUnavailableReason);
+  }
  }
  const qrSize=Math.max(12,Math.min(50,Number(design.qrSize)||24));const qrAlign=design.qrPosition||'right';
- const win=window.open('','_blank');if(!win)return alert('Allow pop-ups to print the report.');
+ win.document.open();
  win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Laboratory Report ${safe(o.id)}</title>
  <style>
  @page{size:${safe(design.pageSize||'A4')} ${safe(design.orientation||'portrait')};margin:${top}mm ${right}mm ${bottom}mm ${left}mm}
@@ -1406,14 +1453,15 @@ async function printCombinedReport(orderId,finalOnly=false){
  </style></head><body><main class="sheet">
  <header class="head">${preprinted?'':`${design.showLogo&&design.headerLogo?`<img style="display:block;margin:0 auto 2mm;width:${Number(design.logoWidth)||28}mm;max-height:24mm;object-fit:contain" src="${safe(design.headerLogo)}" alt="Lab logo">`:``}<h2>${safe(design.headerTitle||lab.name||'')}</h2><div>${safe(design.headerLine1||lab.address||'')}</div><div>${safe(design.headerLine2||lab.phone||'')}</div>`}</header>
  
- ${design.showReportTitle===false?``:`<h2 style="text-align:center">LABORATORY REPORT</h2>`}
+ ${design.showReportTitle===false?``:`<h2 style="text-align:center">LABORATORY REPORT</h2>`}${qrUnavailableReason?`<p style="font-size:7pt;color:#a00;text-align:right">QR verification unavailable for this print</p>`:''}
  ${design.showPatient===false?`${design.showQr===false?``:`<div class="qrbox standalone-qr"><div id="reportQr"></div><small>${design.showQrCaption===false?``:esc(design.qrCaption||'Scan for report reference')}</small></div>`}`:`<div class="meta">${design.showQr===false?``:`<div class="qrbox"><div id="reportQr"></div>${design.showQrCaption===false?``:`<small>${esc(design.qrCaption||'Scan for report reference')}</small>`}</div>`}<div><b>Patient:</b> ${safe(p.name)}</div><div><b>Patient ID:</b> ${safe(p.id)}</div><div><b>Age / Gender:</b> ${safe(p.age)} / ${safe(p.gender)}</div>${design.showMobile===false?``:`<div><b>Mobile:</b> ${safe(p.mobile)}</div>`}${design.showReferrer===false?``:`<div><b>Referring Doctor:</b> ${safe(p.referrer)}</div>${p.referrerPhone||p.doctorPhone||p.referrerMobile?`<div><b>Doctor Mobile:</b> ${safe(p.referrerPhone||p.doctorPhone||p.referrerMobile)}</div>`:''}`}${design.showAddress===false?``:`<div><b>Address:</b> ${safe(p.address)}</div>`}<div><b>Report Ref:</b> ${safe(o.id)}</div><div><b>Date:</b> ${safe(new Date(o.createdAt).toLocaleString())}</div></div>`}
  ${(design.customBlocks||[]).filter(b=>b.show!==false).map(b=>`<section class="custom-report-block" style="margin:${Number(design.sectionGap??4)}mm 0;break-inside:avoid"><b>${safe(b.title||'')}</b><div style="white-space:pre-wrap">${safe(b.body||'')}</div></section>`).join('')}
  ${groups}
  ${preprinted?'':`<div class="foot">${safe(design.footerText||sign.footer||'')}</div>`}
 
- </main><script>function makeReportQr(){const q=document.getElementById('reportQr');if(!q)return;if(typeof QRCode==='undefined'){q.innerHTML='<span style="font-size:8pt;color:#a00">QR library unavailable — connect to internet and reprint</span>';return;}try{new QRCode(q,{text:${JSON.stringify(qrPayload)},width:${Math.round(qrSize*3.78)},height:${Math.round(qrSize*3.78)},correctLevel:QRCode.CorrectLevel.M});}catch(e){q.textContent='QR unavailable';}}window.addEventListener('load',()=>setTimeout(()=>{makeReportQr();setTimeout(()=>window.print(),250)},250));<\/script><script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js" onerror="document.getElementById('reportQr').textContent='QR library unavailable'"><\/script></body></html>`);
+ </main><script>function makeReportQr(){const q=document.getElementById('reportQr');if(!q)return;if(!${JSON.stringify(qrPayload)}){q.innerHTML='<span style="font-size:7pt;color:#a00">Secure QR unavailable</span>';return;}if(typeof QRCode==='undefined'){q.innerHTML='<span style="font-size:8pt;color:#a00">QR library unavailable — connect to internet and reprint</span>';return;}try{new QRCode(q,{text:${JSON.stringify(qrPayload)},width:${Math.round(qrSize*3.78)},height:${Math.round(qrSize*3.78)},correctLevel:QRCode.CorrectLevel.M});}catch(e){q.textContent='QR unavailable';}}window.addEventListener('load',()=>setTimeout(()=>{makeReportQr();setTimeout(()=>{try{window.focus();window.print();}catch(e){document.body.insertAdjacentHTML('afterbegin','<p style="font:14px Arial;color:#a00">Print dialog could not open automatically. Use the browser menu → Print.</p>');}},500)},300));<\/script><script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js" onerror="document.getElementById('reportQr').textContent='QR library unavailable'"><\/script></body></html>`);
  win.document.close();
+ } catch(err) { try{win.close();}catch(_){} alert('PDF/Print preparation failed: '+(err?.message||err)); }
 }
 async function printDraftResult(resultId){
  const rows=await loadCloudResults(),r=rows.find(x=>x.id===resultId);if(!r)return alert('Result record not found.');
@@ -1441,12 +1489,12 @@ async function renderResultsReports(c){
  function renderOrderForm(){activeOrder=orders.find(o=>o.id===orderSel.value)||null;if(!activeOrder){fields.innerHTML='<div class="empty">Choose a saved report to load its tests and parameters.</div>';$('resultPatientSummary').classList.add('hidden');saveBtn.disabled=printBtn.disabled=true;return;}
  const p=(activeOrder.items||[]).flatMap((t,ti)=>(t.parameters||[]).map((x,pi)=>({test:t,testIndex:ti,param:x,paramIndex:pi})));const patient=(activeOrder.patientName||'Name not provided')+' · Patient ID '+(activeOrder.patientId||'—');$('resultPatientSummary').classList.remove('hidden');$('resultPatientSummary').innerHTML=`<b>${esc(patient)}</b><div class="muted">Report ${esc(activeOrder.id)} · Age ${esc(patientAgeText(activeOrder))} · ${esc(activeOrder.patientGender||'Gender not recorded')} · ${(activeOrder.items||[]).length} tests · ${esc(activeOrder.status||'Draft')}</div>`;
  if(!p.length){fields.innerHTML='<div class="notice">This saved report has no parameter definitions. Update the Test Catalogue before creating a new report.</div>';saveBtn.disabled=printBtn.disabled=true;return;}
- const savedRows=results.filter(r=>r.orderId===activeOrder.id);const reportLocked=false;fields.innerHTML=(activeOrder.items||[]).map((t,ti)=>`<section class="card" style="margin:12px 0"><h3>${esc(t.name)}</h3><div class="muted">Sample: ${esc(t.sampleType||'Not specified')}</div><div class="tablewrap"><table><thead><tr><th>Parameter</th><th>Result *</th><th>Unit</th><th>Reference Range</th></tr></thead><tbody>${(t.parameters||[]).map((x,pi)=>{const typ=x.resultType||'numeric',opts=String(x.options||'Positive / Negative / Reactive / Non-reactive').split('/').map(z=>z.trim()).filter(Boolean),prior=savedRows.filter(r=>r.testName===t.name&&r.parameter===x.name).sort((a,b)=>String(b.updatedAt||b.createdAt).localeCompare(String(a.updatedAt||a.createdAt)))[0],val=prior?.resultValue??x.result??'';const input=(typ==='qualitative'||typ==='select'||String(x.options||'').trim())?`<select class="input result-value" required data-ti="${ti}" data-pi="${pi}" ${reportLocked?'disabled':''}><option value="">Select result</option>${[...new Set(opts)].map(v=>`<option ${String(val)===v?'selected':''}>${esc(v)}</option>`).join('')}</select>`:`<input class="input result-value" required data-ti="${ti}" data-pi="${pi}" ${reportLocked?'disabled':''} inputmode="decimal" placeholder="Enter result" value="${esc(val)}">`;return `<tr><td><b>${esc(x.name)}</b></td><td>${input}</td><td>${esc(x.unit||'')}</td><td>${esc(x.referenceRange||'Not configured')}</td></tr>`;}).join('')}</tbody></table></div></section>`).join('');saveBtn.disabled=reportLocked;saveBtn.textContent='Update Saved Results';printBtn.disabled=false;
+ const savedRows=results.filter(r=>r.orderId===activeOrder.id);const reportLocked=false;fields.innerHTML=(activeOrder.items||[]).map((t,ti)=>`<section class="card" style="margin:12px 0"><h3>${esc(t.name)}</h3><div class="muted">Sample: ${esc(t.sampleType||'Not specified')}</div><div class="tablewrap"><table class="result-entry-table"><thead><tr><th>Parameter</th><th>Result *</th><th>Unit</th><th>Reference Range</th></tr></thead><tbody>${(t.parameters||[]).map((x,pi)=>{const typ=x.resultType||'numeric',opts=String(x.options||'Positive / Negative / Reactive / Non-reactive').split(/[|,;/]+/).map(z=>z.trim()).filter(Boolean),prior=savedRows.filter(r=>r.testName===t.name&&r.parameter===x.name).sort((a,b)=>String(b.updatedAt||b.createdAt).localeCompare(String(a.updatedAt||a.createdAt)))[0],val=prior?.resultValue??x.result??'';const input=(typ==='qualitative'||typ==='select'||String(x.options||'').trim())?`<select class="input result-value" required data-ti="${ti}" data-pi="${pi}" ${reportLocked?'disabled':''}><option value="">Select result</option>${[...new Set(opts)].map(v=>`<option ${String(val)===v?'selected':''}>${esc(v)}</option>`).join('')}</select>`:`<input class="input result-value" required data-ti="${ti}" data-pi="${pi}" ${reportLocked?'disabled':''} inputmode="decimal" placeholder="Enter result" value="${esc(val)}">`;return `<tr><td><b>${esc(x.name)}</b></td><td>${input}</td><td>${esc(x.unit||'')}</td><td>${esc(x.referenceRange||'Not configured')}</td></tr>`;}).join('')}</tbody></table></div></section>`).join('');saveBtn.disabled=reportLocked;saveBtn.textContent='Update Saved Results';printBtn.disabled=false;
  }
  orderSel.addEventListener('change',renderOrderForm);
  c.querySelectorAll('[data-reopen-report]').forEach(b=>b.addEventListener('click',()=>{orderSel.value=b.dataset.reopenReport;renderOrderForm();$('resultPatientSummary').scrollIntoView({behavior:'smooth',block:'start'});}));
  c.querySelectorAll('[data-print-report]').forEach(b=>b.addEventListener('click',()=>printCombinedReport(b.dataset.printReport,false)));
- $('multiResultForm').addEventListener('submit',async e=>{e.preventDefault();if(!activeOrder)return;const inputs=[...fields.querySelectorAll('.result-value')];if(inputs.some(x=>!x.value.trim())){alert('Please enter or select a result for every parameter.');return;}const now=new Date().toISOString();saveBtn.disabled=true;let saved=0;try{const currentRows=await loadCloudResults();for(const input of inputs){const ti=Number(input.dataset.ti),pi=Number(input.dataset.pi),test=activeOrder.items[ti],param=test.parameters[pi],prior=currentRows.filter(r=>r.orderId===activeOrder.id&&r.testName===test.name&&r.parameter===param.name).sort((a,b)=>String(b.updatedAt||b.createdAt).localeCompare(String(a.updatedAt||a.createdAt)))[0];const r={id:prior?.id||localId('RES'),labId:currentLab.id,orderId:activeOrder.id,patientId:activeOrder.patientId||'',testName:test.name,parameter:param.name,resultValue:input.value.trim(),unit:param.unit||'',referenceRange:param.referenceRange||'Not configured',status:'Saved',enteredBy:currentUser?.email||'',createdAt:prior?.createdAt||now,updatedAt:now,syncStatus:'pending'};await saveCloudResult(r);param.result=r.resultValue;saved++;}activeOrder.updatedAt=now;await saveOrder(activeOrder);const msg=$('multiResultMessage');msg.textContent=`${saved} saved result values updated. ${navigator.onLine?'Cloud save attempted.':'Offline: sync pending.'}`;msg.className='message success';await renderResultsReports(c);}catch(err){$('multiResultMessage').textContent=`Updated ${saved} results; remaining entries not saved: ${err.message}`;$('multiResultMessage').className='message error';saveBtn.disabled=false;}});
+ $('multiResultForm').addEventListener('submit',async e=>{e.preventDefault();if(!activeOrder)return;const inputs=[...fields.querySelectorAll('.result-value')];if(inputs.some(x=>!x.value.trim())){alert('Please enter or select a result for every parameter.');return;}const now=new Date().toISOString();saveBtn.disabled=true;let saved=0;try{const currentRows=await loadCloudResults();for(const input of inputs){const ti=Number(input.dataset.ti),pi=Number(input.dataset.pi),test=activeOrder.items[ti],param=test.parameters[pi],prior=currentRows.filter(r=>r.orderId===activeOrder.id&&r.testName===test.name&&r.parameter===param.name).sort((a,b)=>String(b.updatedAt||b.createdAt).localeCompare(String(a.updatedAt||a.createdAt)))[0];const r={id:prior?.id||localId('RES'),labId:currentLab.id,orderId:activeOrder.id,patientId:activeOrder.patientId||'',testName:test.name,parameter:param.name,resultValue:input.value.trim(),unit:param.unit||'',referenceRange:param.referenceRange||'Not configured',status:'Draft',enteredBy:currentUser?.email||'',createdAt:prior?.createdAt||now,updatedAt:now,syncStatus:'pending'};await saveCloudResult(r);param.result=r.resultValue;saved++;}activeOrder.updatedAt=now;await saveOrder(activeOrder);const msg=$('multiResultMessage');msg.textContent=`${saved} saved result values updated. ${navigator.onLine?'Cloud save attempted.':'Offline: sync pending.'}`;msg.className='message success';await renderResultsReports(c);}catch(err){$('multiResultMessage').textContent=`Updated ${saved} results; remaining entries not saved: ${err.message}`;$('multiResultMessage').className='message error';saveBtn.disabled=false;}});
  printBtn.addEventListener('click',()=>{if(!activeOrder)return;printCombinedReport(activeOrder.id,false);});
 
 }
