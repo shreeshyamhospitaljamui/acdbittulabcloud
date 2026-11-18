@@ -132,10 +132,10 @@ body{background:var(--bg);font-family:Inter,ui-sans-serif,system-ui,-apple-syste
  <section class="layout">
   <aside class="card"><nav class="nav" aria-label="Dashboard ribbon navigation">
    <button class="active" data-page="Overview">▦ Overview</button>
-   <button class="hidden" data-owner-jump="ownerLabList">🏥 Labs & Members</button>
-   <button class="hidden" data-owner-jump="ownerPaymentPanel">💳 Payments</button>
-   <button class="hidden" data-owner-jump="platformAuditPanel">📋 Platform Audit</button>
-   <button class="hidden" data-owner-jump="pricingPanel">₹ Pricing & Plans</button>
+   <button class="hidden" data-owner-jump="ownerSectionLabs">🏥 Labs & Members</button>
+   <button class="hidden" data-owner-jump="ownerSectionPayments">💳 Payments</button>
+   <button class="hidden" data-owner-jump="ownerSectionAudit">📋 Platform Audit</button>
+   <button class="hidden" data-owner-jump="ownerSectionPricing">₹ Pricing & Plans</button>
    <button data-page="Lab Setup">⚙ Lab Setup</button>
    <button data-page="Test Orders">＋ Direct Test Entry</button>
    <button data-page="Sample Tracking">🧪 Sample Tracking</button>
@@ -428,7 +428,7 @@ async function showApp(user){
  const platformOnly=currentPlatformRole==='super_admin';
  document.querySelectorAll('.nav [data-page]').forEach(b=>{b.classList.toggle('hidden',platformOnly&&b.dataset.page!=='Overview'||!platformOnly&&b.dataset.page==='Overview'&&false);});
  document.querySelectorAll('.nav [data-owner-jump]').forEach(b=>b.classList.toggle('hidden',!platformOnly));
- document.querySelectorAll('.nav [data-owner-jump]').forEach(b=>{if(!b.dataset.bound){b.dataset.bound='1';b.addEventListener('click',()=>{const target=$(b.dataset.ownerJump);if(target)target.scrollIntoView({behavior:'smooth',block:'start'});else alert('पहले Overview खुलने दें, फिर दोबारा यह विकल्प चुनें।');});}});
+ document.querySelectorAll('.nav [data-owner-jump]').forEach(b=>{if(!b.dataset.bound){b.dataset.bound='1';b.addEventListener('click',()=>{if(typeof window.showOwnerSection==='function')window.showOwnerSection(b.dataset.ownerJump);else alert('Super Admin पैनल अभी लोड हो रहा है।');});}});
  const stats=document.querySelectorAll('.stats .card');
  if(platformOnly){const labels=[['Account scope','Platform-wide'],['Platform role','Super Admin'],['Lab workspace','Select from platform list'],['Connection',navigator.onLine?'Online':'Offline']];stats.forEach((card,i)=>{const label=card.querySelector('.stat-label'),value=card.querySelector('.stat-value'),sub=card.querySelector('.muted');if(labels[i]){label.textContent=labels[i][0];value.textContent=labels[i][1];if(sub)sub.textContent=i===3?'Internet status of this device':'Platform-level view; not a lab patient count';}});}
 
@@ -455,6 +455,17 @@ async function renderOwnerOverview(c){
  <div class="panel" id="ownerMembersPanel" style="margin-top:14px;display:none"><div class="panel-head"><div><h3 id="ownerMembersTitle">Lab Admin & Member Management</h3><div class="muted">Membership roles and access status; no patient data</div></div><button class="btn secondary" id="refreshLabMembers">Refresh members</button></div><div id="ownerMembersList" class="list"></div></div>
  <div class="panel" id="ownerUiPanel" style="margin-top:14px;display:none"><div class="panel-head"><div><h3 id="ownerUiTitle">Lab Features & Menu Control</h3><div class="muted">Super Admin decides which modules each lab may use and see</div></div></div><div id="ownerUiBody"></div></div>
  <div class="panel" id="ownerPaymentPanel" style="margin-top:14px;scroll-margin-top:130px"><div class="panel-head"><div><h3>Payment Management · Read-only</h3><div class="muted">Razorpay order and payment records visible only when Supabase RLS grants this Super Admin account access</div></div><button class="btn secondary" id="refreshOwnerPayments">Refresh payments</button></div><div class="stats" style="grid-template-columns:repeat(3,minmax(0,1fr))"><div class="card"><div class="stat-label">Records loaded</div><div class="stat-value" id="ownerPaymentCount">—</div></div><div class="card"><div class="stat-label">Paid records</div><div class="stat-value" id="ownerPaidCount">—</div></div><div class="card"><div class="stat-label">Pending / Other</div><div class="stat-value" id="ownerPendingCount">—</div></div></div><div class="row" style="gap:8px;flex-wrap:wrap;margin:10px 0"><input class="input" id="ownerPaymentSearch" type="search" placeholder="Search owner ID / Razorpay order ID" style="flex:2;min-width:220px"><select class="input" id="ownerPaymentStatus" style="flex:1;min-width:150px"><option value="all">All statuses</option><option value="paid">Paid</option><option value="created">Created / Pending</option><option value="failed">Failed</option><option value="other">Other</option></select><button class="btn secondary" type="button" id="ownerPaymentPrev">Previous</button><span class="muted" id="ownerPaymentPage" style="align-self:center">Page 1</span><button class="btn secondary" type="button" id="ownerPaymentNext">Next</button></div><div id="ownerPaymentList" class="list"><div class="empty">Loading payment records…</div></div><div class="notice" style="margin-top:10px">यह पैनल केवल रिकॉर्ड पढ़ता है। Payment को manually Paid/Failed करना, Refund करना या Subscription activate करना यहाँ से नहीं होगा। इसके लिए सुरक्षित server-side verification और audit workflow आवश्यक है। अभी अधिकतम 100 नवीनतम रिकॉर्ड पढ़े जाते हैं; यह पूरा ledger नहीं है।</div></div><div class="panel" id="platformAuditPanel" style="margin-top:14px;scroll-margin-top:130px"><div class="panel-head"><div><h3>Platform Audit Log</h3><div class="muted">Recent Super Admin lab and membership actions</div></div><button class="btn secondary" id="refreshPlatformAudit">Refresh log</button></div><div id="platformAuditList" class="list"><div class="empty">Loading audit log…</div></div></div><div class="panel" id="pricingPanel" style="margin-top:14px;scroll-margin-top:130px"><div class="panel-head"><div><h3>Pricing & Subscription Settings</h3><div class="muted">Change monthly prices any time. New prices apply to new orders; already-created payment orders keep their amount.</div></div><button class="btn secondary" id="refreshPricing">Refresh prices</button></div><div id="pricingSettingsList" class="list"><div class="empty">Loading prices…</div></div></div>`;
+ // Build independent Super Admin menu pages instead of scrolling one long page.
+ const ownerNodes=[...c.children];
+ const makeOwnerSection=(id,title,nodes)=>{const w=document.createElement('section');w.id=id;w.style.cssText='display:none;min-width:0';const h=document.createElement('div');h.className='panel-head';h.innerHTML=`<div><h3>${title}</h3><div class="muted">Super Admin workspace</div></div>`;w.appendChild(h);nodes.forEach(n=>w.appendChild(n));return w;};
+ const ownerOverview=makeOwnerSection('ownerSectionOverview','Overview',ownerNodes.slice(0,4));
+ const ownerLabs=makeOwnerSection('ownerSectionLabs','Labs & Members',ownerNodes.slice(4,7));
+ const ownerPayments=makeOwnerSection('ownerSectionPayments','Payments',[ownerNodes[7]]);
+ const ownerAudit=makeOwnerSection('ownerSectionAudit','Platform Audit',[ownerNodes[8]]);
+ const ownerPricing=makeOwnerSection('ownerSectionPricing','Pricing & Plans',[ownerNodes[9]]);
+ c.replaceChildren(ownerOverview,ownerLabs,ownerPayments,ownerAudit,ownerPricing);
+ window.showOwnerSection=(id)=>{['ownerSectionOverview','ownerSectionLabs','ownerSectionPayments','ownerSectionAudit','ownerSectionPricing'].forEach(k=>{const el=$(k);if(el)el.style.display=k===id?'block':'none';});document.querySelectorAll('.nav [data-owner-jump]').forEach(b=>b.classList.toggle('active',b.dataset.ownerJump===id));const ov=document.querySelector('.nav [data-page="Overview"]');if(ov)ov.classList.toggle('active',id==='ownerSectionOverview');};
+ window.showOwnerSection('ownerSectionOverview');
  let allRows=[],selectedLab=null;
  const roles=['lab_admin','receptionist','lab_technician','pathologist','accountant'];
  async function rpc(name,args){const {data,error}=await client.rpc(name,args);if(error)throw error;return data;}
