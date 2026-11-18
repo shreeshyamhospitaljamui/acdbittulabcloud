@@ -280,4 +280,340 @@
                 { name: "Uric Acid", unit: "mg/dL", ref: "M: 3.4-7.0, F: 2.4-5.7" },
                 { name: "Serum Sodium (Na+)", unit: "mEq/L", ref: "135 - 145" },
                 { name: "Serum Potassium (K+)", unit: "mEq/L", ref: "3.5 - 5.1" },
-                { name: "Serum Chl
+                { name: "Serum Chloride (Cl-)", unit: "mEq/L", ref: "98 - 107" }
+            ]
+        },
+        {
+            name: "Lipid Profile", price: 500, searchKeys: ["lipid", "cholesterol", "triglycerides", "heart"],
+            params: [
+                { name: "Total Cholesterol", unit: "mg/dL", ref: "< 200" },
+                { name: "Triglycerides", unit: "mg/dL", ref: "< 150" },
+                { name: "HDL Cholesterol", unit: "mg/dL", ref: "> 40" },
+                { name: "LDL Cholesterol", unit: "mg/dL", ref: "< 100" },
+                { name: "VLDL Cholesterol", unit: "mg/dL", ref: "5 - 40" },
+                { name: "Total Chol / HDL Ratio", unit: "", ref: "< 4.5" }
+            ]
+        },
+        {
+            name: "Thyroid Profile (T3, T4, TSH)", price: 400, searchKeys: ["thyroid", "tsh", "t3", "t4"],
+            params: [
+                { name: "Total T3", unit: "ng/dL", ref: "80 - 200" },
+                { name: "Total T4", unit: "µg/dL", ref: "5.1 - 14.1" },
+                { name: "TSH", unit: "µIU/mL", ref: "0.27 - 4.2" }
+            ]
+        },
+        {
+            name: "Blood Sugar Fasting (FBS)", price: 60, searchKeys: ["sugar", "fbs", "glucose", "fasting"],
+            params: [{ name: "Fasting Blood Sugar", unit: "mg/dL", ref: "70 - 110" }]
+        },
+        {
+            name: "Blood Sugar PP (PPBS)", price: 60, searchKeys: ["sugar", "ppbs", "glucose", "pp"],
+            params: [{ name: "Post Prandial Blood Sugar", unit: "mg/dL", ref: "70 - 140" }]
+        },
+        {
+            name: "Blood Sugar Random (RBS)", price: 60, searchKeys: ["sugar", "rbs", "glucose", "random"],
+            params: [{ name: "Random Blood Sugar", unit: "mg/dL", ref: "70 - 140" }]
+        },
+        {
+            name: "HbA1c (Glycosylated Haemoglobin)", price: 400, searchKeys: ["hba1c", "sugar", "diabetes"],
+            params: [
+                { name: "HbA1c", unit: "%", ref: "Non-Diabetic: <5.7, Pre: 5.7-6.4, Diabetic: >6.5" },
+                { name: "Est. Average Glucose (eAG)", unit: "mg/dL", ref: "-" }
+            ]
+        },
+        {
+            name: "Widal Test (Slide Method)", price: 150, searchKeys: ["widal", "typhoid", "fever"],
+            params: [
+                { name: "Salmonella Typhi 'O'", unit: "", ref: "Negative" },
+                { name: "Salmonella Typhi 'H'", unit: "", ref: "Negative" },
+                { name: "Salmonella Paratyphi 'AH'", unit: "", ref: "Negative" },
+                { name: "Salmonella Paratyphi 'BH'", unit: "", ref: "Negative" }
+            ]
+        },
+        {
+            name: "Typhidot (IgM / IgG)", price: 300, searchKeys: ["typhidot", "typhoid", "igm", "igg"],
+            params: [
+                { name: "Typhi IgM", unit: "", ref: "Negative" },
+                { name: "Typhi IgG", unit: "", ref: "Negative" }
+            ]
+        },
+        {
+            name: "Dengue NS1 Antigen", price: 400, searchKeys: ["dengue", "ns1", "fever"],
+            params: [{ name: "Dengue NS1 Antigen", unit: "", ref: "Negative" }]
+        },
+        {
+            name: "Malaria Antigen (Pf/Pv)", price: 200, searchKeys: ["malaria", "pf", "pv", "fever"],
+            params: [
+                { name: "Plasmodium falciparum (Pf)", unit: "", ref: "Negative" },
+                { name: "Plasmodium vivax (Pv)", unit: "", ref: "Negative" }
+            ]
+        },
+        {
+            name: "Urine Routine & Microscopic", price: 100, searchKeys: ["urine", "r/m", "urm"],
+            params: [
+                { name: "Quantity", unit: "ml", ref: "Adequate" },
+                { name: "Color", unit: "", ref: "Pale Yellow" },
+                { name: "Transparency", unit: "", ref: "Clear" },
+                { name: "Specific Gravity", unit: "", ref: "1.005 - 1.030" },
+                { name: "pH", unit: "", ref: "4.5 - 8.0" },
+                { name: "Proteins (Albumin)", unit: "", ref: "Absent" },
+                { name: "Glucose (Sugar)", unit: "", ref: "Absent" },
+                { name: "Pus Cells", unit: "/hpf", ref: "0 - 4" },
+                { name: "Epithelial Cells", unit: "/hpf", ref: "0 - 4" },
+                { name: "RBCs", unit: "/hpf", ref: "Nil" },
+                { name: "Casts / Crystals", unit: "", ref: "Absent" }
+            ]
+        },
+        {
+            name: "Blood Group & Rh Factor", price: 100, searchKeys: ["blood group", "abo", "rh"],
+            params: [
+                { name: "Blood Group (ABO)", unit: "", ref: "-" },
+                { name: "Rh Factor", unit: "", ref: "-" }
+            ]
+        },
+        {
+            name: "HBsAg (Hepatitis B Surface Antigen)", price: 250, searchKeys: ["hbsag", "hepatitis", "jaundice"],
+            params: [{ name: "HBsAg (Rapid)", unit: "", ref: "Negative" }]
+        },
+        {
+            name: "HCV (Hepatitis C Virus)", price: 300, searchKeys: ["hcv", "hepatitis"],
+            params: [{ name: "HCV Antibody (Rapid)", unit: "", ref: "Negative" }]
+        },
+        {
+            name: "HIV I & II", price: 300, searchKeys: ["hiv", "aids"],
+            params: [{ name: "HIV I & II Antibodies (Rapid)", unit: "", ref: "Negative" }]
+        },
+        {
+            name: "CRP (C-Reactive Protein)", price: 350, searchKeys: ["crp", "inflammation"],
+            params: [{ name: "CRP (Qualitative)", unit: "", ref: "Negative (< 6.0 mg/L)" }]
+        },
+        {
+            name: "ESR (Westergren Method)", price: 100, searchKeys: ["esr", "erythrocyte"],
+            params: [{ name: "ESR (1st Hour)", unit: "mm", ref: "M: 0-15, F: 0-20" }]
+        },
+        {
+            name: "Urine Pregnancy Test (UPT)", price: 100, searchKeys: ["upt", "pregnancy", "hcg"],
+            params: [{ name: "Urine for hCG", unit: "", ref: "Negative" }]
+        },
+        {
+            name: "Vitamin D3 (25-OH Cholecalciferol)", price: 800, searchKeys: ["vitamin d3", "vit d", "bone"],
+            params: [{ name: "Vitamin D3", unit: "ng/mL", ref: "Deficient <20, Insuff 20-30, Suff 30-100" }]
+        },
+        {
+            name: "Vitamin B12", price: 800, searchKeys: ["vitamin b12", "vit b12", "neuro"],
+            params: [{ name: "Vitamin B12", unit: "pg/mL", ref: "211 - 911" }]
+        }
+    ];
+
+    let activeTests = [];
+    document.getElementById('p_date').valueAsDate = new Date();
+
+    /* 2. TAB LOGIC */
+    function showTab(tabName, moduleName = '') {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        document.getElementById(tabName + '-tab').classList.remove('hidden');
+        
+        if (tabName === 'new-patient') document.getElementById('page-title').innerText = 'New Patient Entry';
+        else if (tabName === 'catalogue') { document.getElementById('page-title').innerText = 'Master Test Catalogue'; loadCatalogueTable(); }
+        else if (tabName === 'super-admin') document.getElementById('page-title').innerText = 'Super Admin';
+        else if (tabName === 'placeholder') {
+            document.getElementById('page-title').innerText = moduleName;
+            document.getElementById('placeholder-title').innerText = moduleName;
+        }
+        
+        const mobileMenu = document.getElementById('mobile-menu');
+        if(!mobileMenu.classList.contains('hidden') && window.innerWidth < 768) mobileMenu.classList.add('hidden');
+    }
+
+    function toggleMenu() { document.getElementById('mobile-menu').classList.toggle('hidden'); }
+
+    /* 3. POPULATE TEST CATALOGUE PAGE */
+    function loadCatalogueTable(filter = "") {
+        const tbody = document.getElementById('catalogue-body');
+        tbody.innerHTML = '';
+        
+        let counter = 1;
+        masterCatalog.forEach(test => {
+            if(filter && !test.name.toLowerCase().includes(filter.toLowerCase()) && !test.searchKeys.join(" ").includes(filter.toLowerCase())) return;
+            
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="text-center">${counter++}</td>
+                <td class="font-semibold text-blue-800">${test.name}</td>
+                <td class="text-gray-500">${test.searchKeys.join(", ")}</td>
+                <td class="font-bold text-green-700">₹ ${test.price}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function filterCatalogue() {
+        const val = document.getElementById('cat_search').value;
+        loadCatalogueTable(val);
+    }
+
+    /* 4. ENTER-KEY NAVIGATION (Includes Table inputs) */
+    function attachEnterNavigation() {
+        const inputs = Array.from(document.querySelectorAll('.nav-elem'));
+        inputs.forEach((input, index) => {
+            const new_element = input.cloneNode(true);
+            input.parentNode.replaceChild(new_element, input);
+            new_element.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (this.id === 'search_test') { document.getElementById('add_test_btn').click(); return; }
+                    if (this.id === 'add_test_btn') {
+                        const resultInputs = document.querySelectorAll('.res-input');
+                        if (resultInputs.length > 0) resultInputs[0].focus();
+                        else if (inputs[index + 1]) inputs[index + 1].focus();
+                        return;
+                    }
+                    const nextList = Array.from(document.querySelectorAll('.nav-elem'));
+                    const currentIndex = nextList.indexOf(this);
+                    if (currentIndex > -1 && currentIndex < nextList.length - 1) nextList[currentIndex + 1].focus();
+                    else if (this.id === 'b_mode') document.getElementById('save_btn').focus();
+                }
+            });
+        });
+    }
+
+    /* 5. SMART SEARCH */
+    const searchInput = document.getElementById('search_test');
+    const searchRes = document.getElementById('search_autocomplete');
+
+    searchInput.addEventListener('input', function() {
+        const val = this.value.toLowerCase().trim();
+        searchRes.innerHTML = '';
+        if (!val) { searchRes.style.display = 'none'; return; }
+        
+        const filtered = masterCatalog.filter(t => 
+            t.name.toLowerCase().includes(val) || t.searchKeys.some(key => key.includes(val))
+        );
+        
+        if (filtered.length > 0) {
+            searchRes.style.display = 'block';
+            filtered.forEach(test => {
+                const div = document.createElement('div');
+                div.className = 'search-item';
+                div.innerHTML = `<b>${test.name}</b> <br><small class="text-gray-500">₹${test.price}</small>`;
+                div.onclick = () => { searchInput.value = ''; selectTest(test); };
+                searchRes.appendChild(div);
+            });
+        } else { searchRes.style.display = 'none'; }
+    });
+
+    document.addEventListener('click', (e) => {
+        if(!e.target.closest('#search_test') && !e.target.closest('.search-item')) searchRes.style.display = 'none';
+    });
+
+    document.getElementById('add_test_btn').onclick = () => {
+        const val = searchInput.value.toLowerCase().trim();
+        if(!val) return;
+        const test = masterCatalog.find(t => t.name.toLowerCase().includes(val) || t.searchKeys.some(key => key.includes(val)));
+        if(test) { searchInput.value = ''; selectTest(test); } 
+        else alert("No test found matching '" + val + "'.");
+    };
+
+    function selectTest(test) {
+        if (activeTests.some(t => t.name === test.name)) { alert("Test already added!"); return; }
+        activeTests.push(test);
+        searchRes.style.display = 'none';
+        renderResultGrid(); calcBill();
+    }
+
+    function renderResultGrid() {
+        const tbody = document.getElementById('result-body');
+        tbody.innerHTML = '';
+        if (activeTests.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-400 py-6 text-sm italic">No tests added yet.<br>Type in Search box and click Add.</td></tr>';
+            return;
+        }
+        activeTests.forEach(test => {
+            const trHeader = document.createElement('tr');
+            trHeader.innerHTML = `<td colspan="4" class="bg-blue-100 font-bold text-blue-800 text-xs p-2">${test.name} <button onclick="removeTest('${test.name}')" class="text-red-500 float-right"><i class="fa-solid fa-trash"></i></button></td>`;
+            tbody.appendChild(trHeader);
+
+            test.params.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="pl-4 py-2 text-xs md:text-sm">${p.name}</td>
+                    <td><input type="text" class="nav-elem res-input border-b" placeholder="Enter..." data-test="${test.name}" data-param="${p.name}"></td>
+                    <td class="text-gray-500 text-xs">${p.unit}</td>
+                    <td class="text-gray-500 text-xs">${p.ref}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        });
+        attachEnterNavigation();
+    }
+
+    function removeTest(testName) { activeTests = activeTests.filter(t => t.name !== testName); renderResultGrid(); calcBill(); }
+
+    function calcBill() {
+        const total = activeTests.reduce((sum, t) => sum + t.price, 0);
+        document.getElementById('b_total').value = total;
+        const disc = parseFloat(document.getElementById('b_disc').value) || 0;
+        const paid = parseFloat(document.getElementById('b_paid').value) || 0;
+        const due = total - disc - paid;
+        document.getElementById('b_due').value = due > 0 ? due : 0;
+    }
+
+    /* 6. SAVE & PRINT */
+    function saveAndPrint() {
+        if(activeTests.length === 0) { alert("Please add at least one test."); return; }
+        
+        document.getElementById('pr_name').innerText = document.getElementById('p_name').value || "N/A";
+        document.getElementById('pr_age').innerText = document.getElementById('p_age').value + " " + document.getElementById('p_age_unit').value;
+        document.getElementById('pr_gender').innerText = document.getElementById('p_gender').value;
+        document.getElementById('pr_dr').innerText = document.getElementById('p_dr').value || "Self";
+        document.getElementById('pr_date').innerText = document.getElementById('p_date').value;
+
+        const inputs = document.querySelectorAll('.res-input');
+        const resultsMap = {};
+        inputs.forEach(inp => {
+            const tName = inp.getAttribute('data-test');
+            const pName = inp.getAttribute('data-param');
+            if(!resultsMap[tName]) resultsMap[tName] = [];
+            resultsMap[tName].push({ param: pName, result: inp.value });
+        });
+
+        const prBody = document.getElementById('pr_body');
+        prBody.innerHTML = '';
+
+        activeTests.forEach(test => {
+            const h = document.createElement('tr');
+            h.innerHTML = `<td colspan="4" style="font-weight:bold; text-decoration:underline; padding-top:15px; padding-bottom:5px;">${test.name}</td>`;
+            prBody.appendChild(h);
+
+            test.params.forEach(p => {
+                const userRes = resultsMap[test.name]?.find(x => x.param === p.name)?.result || "";
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="padding-left:15px; padding: 4px;">${p.name}</td>
+                    <td style="${userRes !== "" ? "font-weight:bold;" : ""} padding: 4px;">${userRes}</td>
+                    <td style="padding: 4px;">${p.unit}</td>
+                    <td style="padding: 4px;">${p.ref}</td>
+                `;
+                prBody.appendChild(tr);
+            });
+        });
+
+        window.print();
+    }
+
+    function clearEntry() {
+        activeTests = [];
+        document.querySelectorAll('input').forEach(i => { if(i.type !== 'date' && i.id !== 'p_id' && i.id !== 'cat_search') i.value = ''; });
+        document.getElementById('b_disc').value = 0;
+        document.getElementById('b_paid').value = 0;
+        renderResultGrid(); calcBill();
+    }
+
+    // Init
+    attachEnterNavigation();
+    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); }, 1000);
+</script>
+</body>
+</html>
+
+
