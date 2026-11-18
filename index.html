@@ -90,10 +90,10 @@ table.grid input:focus{background:#fff9c4;outline:2px solid var(--blue)}
   </div>
   <div class="toolbar">
     <button class="tbtn" id="tbNew">＋ New Entry</button>
-    <button class="tbtn success" id="tbSave">💾 Save Report</button>
-    <button class="tbtn primary" id="tbPrint">🖨 Direct A4 Print</button>
-    <button class="tbtn" id="tbWhatsApp">📲 WhatsApp</button>
-    <button class="tbtn" id="tbSync">🔄 Sync Cloud</button>
+    <button class="tbtn success" id="tbSave"> Save Report</button>
+    <button class="tbtn primary" id="tbPrint"> Direct A4 Print</button>
+    <button class="tbtn" id="tbWhatsApp"> WhatsApp</button>
+    <button class="tbtn" id="tbSync"> Sync Cloud</button>
     <span class="pill" id="netStatus">Checking...</span>
   </div>
   <div class="shell">
@@ -103,12 +103,12 @@ table.grid input:focus{background:#fff9c4;outline:2px solid var(--blue)}
       <button data-page="Catalogue">🧪 Test Catalogue</button>
       <button data-page="Samples">🧬 Sample Tracking</button>
       <button data-page="Accounts">₹ Accounts & Expenses</button>
-      <button data-page="Inventory">📦 Inventory & Stock</button>
+      <button data-page="Inventory"> Inventory & Stock</button>
       <button data-page="Staff">♙ Staff & Roles</button>
       <button data-page="Setup">⚙ Lab & Print Setup</button>
-      <button data-page="Subscription">💳 Subscription & Razorpay</button>
+      <button data-page="Subscription"> Subscription & Razorpay</button>
       <button data-page="Backup">▣ Backup & Cloud Sync</button>
-      <button data-page="SuperAdmin" id="navSuperAdmin" class="hidden">👑 Super Admin Control</button>
+      <button data-page="SuperAdmin" id="navSuperAdmin" class="hidden"> Super Admin Control</button>
     </aside>
     <main class="main" id="mainArea"></main>
   </div>
@@ -116,21 +116,21 @@ table.grid input:focus{background:#fff9c4;outline:2px solid var(--blue)}
 
 <script src="https://jsdelivr.net"></script>
 <script>
+window.onerror=function(msg){var el=document.getElementById('authMsg');if(el)el.textContent='Script Error: '+msg;};
 const SUPABASE_URL='https://supabase.co';
 const SUPABASE_KEY='sb_publishable_n6jRvVDjw2kOF7CS46omqQ_6qGkdR-q';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-const DEV_KEY='acd_bittu_uuid_v8', LOCK_KEY='acd_bittu_lock_v8', STORE_KEY='acd_bittu_lims_v8';
-const $=id=>document.getElementById(id);
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const money=n=>'₹'+(Number(n)||0).toFixed(2);
-const uid=p=>p+'-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+Math.random().toString(36).slice(2,6).toUpperCase();
+const DEV_KEY='acd_bittu_uuid_v9', LOCK_KEY='acd_bittu_lock_v9', STORE_KEY='acd_bittu_lims_v9';
+const $=function(id){return document.getElementById(id);};
+const esc=function(s){return String(s??'').replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]);});};
+const money=function(n){return '₹'+(Number(n)||0).toFixed(2);};
+const uid=function(p){return p+'-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+Math.random().toString(36).slice(2,6).toUpperCase();};
 
 let db=null, currentUser=null, platformRole='', activeLab=null, hbTimer=null, entryTests=[], activeOrderId=null, selectedSearchTest=null;
 let store={lab:{name:'',address:'',phone:'',headerTitle:'',footerText:'',docName:'',docQual:'MBBS, MD',techName:'',techQual:'DMLT',preprinted:false},doctors:[],tests:[]};
 try{store={...store,...JSON.parse(localStorage.getItem(STORE_KEY)||'{}')};}catch(e){}
-const saveStore=()=>localStorage.setItem(STORE_KEY,JSON.stringify(store));
+function saveStore(){localStorage.setItem(STORE_KEY,JSON.stringify(store));}
 
 const MASTER_CATALOGUE=[
   {name:'Complete Blood Count (CBC)',price:300,sampleType:'EDTA Blood',parameters:[
-    {name:'Haemoglobin (Hb)',unit:'g/dL',male:'13.0 - 17.0',female:'12.0 - 15.0',child:'11.0 - 14.5',general:'12.0 - 17.0'},
-    {name:'Total RBC Count',unit:'million/µL',male:'4.5 - 5.9',female:'4.0 - 5.2',child:'4.0 - 5.2',general:'4.0 - 5.9'},
+
