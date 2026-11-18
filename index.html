@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ACD BITTU LAB CLOUD — Desktop LIMS</title>
+<title>ACD BITTU LAB CLOUD — Desktop & Cloud LIMS</title>
 <style>
 :root{--navy:#0f3460;--blue:#1769aa;--panel:#eaf0f6;--border:#bfd0e2;--ink:#132338;--green:#0e7a3a;--red:#b42318;--bg:#dfe6ef}
 *{box-sizing:border-box}
@@ -50,7 +50,6 @@ table.grid input:focus{background:#fff9c4;outline:2px solid var(--blue)}
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
 .stat-card{background:#fff;border:1px solid var(--border);border-radius:4px;padding:10px}
 .stat-card b{font-size:18px;color:var(--navy);display:block;margin-top:3px}
-.notice{background:#fff6db;border:1px solid #ebd082;color:#6e4f09;padding:8px 10px;border-radius:4px;margin-bottom:10px;font-size:11px}
 @media(max-width:850px){.shell{grid-template-columns:1fr}.sidebar{flex-direction:row;overflow-x:auto}.erp-grid,.stats-row{grid-template-columns:1fr}.grid-box{height:auto;min-height:230px}}
 </style>
 </head>
@@ -59,7 +58,6 @@ table.grid input:focus{background:#fff9c4;outline:2px solid var(--blue)}
 <div id="loginView" class="login-card">
   <h2 style="margin:0 0 3px;color:var(--navy)">ACD BITTU LAB CLOUD</h2>
   <div style="color:#555;margin-bottom:12px">Desktop & Cloud Pathology LIMS</div>
-  <div class="notice">Single-Device Security: Online hone par naye device par login karte hi purana device automatic logout ho jayega.</div>
   <form id="loginForm">
     <div class="field"><label>Email Address</label><input class="inp" id="email" type="email" required></div>
     <div class="field"><label>Password</label><input class="inp" id="password" type="password" required></div>
@@ -90,10 +88,10 @@ table.grid input:focus{background:#fff9c4;outline:2px solid var(--blue)}
   </div>
   <div class="toolbar">
     <button class="tbtn" id="tbNew">＋ New Entry</button>
-    <button class="tbtn success" id="tbSave">💾 Save Report</button>
-    <button class="tbtn primary" id="tbPrint">🖨 Direct A4 Print</button>
-    <button class="tbtn" id="tbWhatsApp">📲 WhatsApp</button>
-    <button class="tbtn" id="tbSync">🔄 Sync Cloud</button>
+    <button class="tbtn success" id="tbSave"> Save Report</button>
+    <button class="tbtn primary" id="tbPrint"> Direct A4 Print</button>
+    <button class="tbtn" id="tbWhatsApp"> WhatsApp</button>
+    <button class="tbtn" id="tbSync"> Sync Cloud</button>
     <span class="pill" id="netStatus">Checking...</span>
   </div>
   <div class="shell">
@@ -103,34 +101,44 @@ table.grid input:focus{background:#fff9c4;outline:2px solid var(--blue)}
       <button data-page="Catalogue">🧪 Test Catalogue</button>
       <button data-page="Samples">🧬 Sample Tracking</button>
       <button data-page="Accounts">₹ Accounts & Expenses</button>
-      <button data-page="Inventory">📦 Inventory & Stock</button>
+      <button data-page="Inventory"> Inventory & Stock</button>
       <button data-page="Staff">♙ Staff & Roles</button>
       <button data-page="Setup">⚙ Lab & Print Setup</button>
-      <button data-page="Subscription">💳 Subscription & Razorpay</button>
+      <button data-page="Modification">✎ Report Modification</button>
+      <button data-page="Subscription"> Subscription & Razorpay</button>
       <button data-page="Backup">▣ Backup & Cloud Sync</button>
-      <button data-page="SuperAdmin" id="navSuperAdmin" class="hidden">👑 Super Admin Control</button>
+      <button data-page="SuperAdmin" id="navSuperAdmin" class="hidden"> Super Admin Control</button>
     </aside>
     <main class="main" id="mainArea"></main>
   </div>
 </div>
 
-<script src="https://jsdelivr.net"></script>
 <script>
-window.onerror=function(msg){var el=document.getElementById('authMsg');if(el)el.textContent='Script Error: '+msg;};
 const SUPABASE_URL='https://supabase.co';
 const SUPABASE_KEY='sb_publishable_n6jRvVDjw2kOF7CS46omqQ_6qGkdR-q';
-const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-const DEV_KEY='acd_bittu_uuid_v10', LOCK_KEY='acd_bittu_lock_v10', STORE_KEY='acd_bittu_lims_v10';
+const STORE_KEY='acd_bittu_lims_master_v1';
+let sb=null, db=null, currentUser=null, platformRole='', activeLab=null, entryTests=[], activeOrderId=null, selectedSearchTest=null;
+let store={lab:{name:'',address:'',phone:'',headerTitle:'',footerText:'',docName:'',docQual:'MBBS, MD',techName:'',techQual:'DMLT',preprinted:false,showQR:true},doctors:[],tests:[]};
+try{store={...store,...JSON.parse(localStorage.getItem(STORE_KEY)||'{}')};}catch(e){}
+function saveStore(){localStorage.setItem(STORE_KEY,JSON.stringify(store));}
+
 function getEl(id){return document.getElementById(id);}
 function esc(s){return String(s??'').replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]);});}
 function money(n){return '₹'+(Number(n)||0).toFixed(2);}
 function uid(p){return p+'-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+Math.random().toString(36).slice(2,6).toUpperCase();}
 
-let db=null, currentUser=null, platformRole='', activeLab=null, hbTimer=null, entryTests=[], activeOrderId=null, selectedSearchTest=null;
-let store={lab:{name:'',address:'',phone:'',headerTitle:'',footerText:'',docName:'',docQual:'MBBS, MD',techName:'',techQual:'DMLT',preprinted:false},doctors:[],tests:[]};
-try{store={...store,...JSON.parse(localStorage.getItem(STORE_KEY)||'{}')};}catch(e){}
-function saveStore(){localStorage.setItem(STORE_KEY,JSON.stringify(store));}
+// Safe Supabase SDK Loader (never breaks on copy-paste)
+function loadSupabase(){
+  return new Promise(function(resolve,reject){
+    if(window.supabase&&window.supabase.createClient)return resolve(window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY));
+    const s=document.createElement('script');
+    s.src='https://jsdelivr.net';
+    s.onload=function(){resolve(window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY));};
+    s.onerror=function(){reject(new Error('Supabase SDK load nahi ho paya. Internet check karein.'));};
+    document.head.appendChild(s);
+  });
+}
 
+// CLEAN MASTER CATALOGUE (24-Parameter CBC + Standard Tests)
 const MASTER_CATALOGUE=[
-  {name:'Complete Blood Count (CBC)',price:300,sampleType:'EDTA Blood',parameters:[
-  
+
