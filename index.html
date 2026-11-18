@@ -1193,7 +1193,7 @@ async function renderBackupRestore(c){
   const material=await crypto.subtle.importKey('raw',new TextEncoder().encode(pass),'PBKDF2',false,['deriveKey']);
   const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:310000,hash:'SHA-256'},material,{name:'AES-GCM',length:256},false,['encrypt']);
   const cipher=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(plain));
-  const b=x=>btoa(String.fromCharCode(...new Uint8Array(x)));
+  const b=x=>{const bytes=new Uint8Array(x);let binary='';const chunk=0x8000;for(let i=0;i<bytes.length;i+=chunk)binary+=String.fromCharCode(...bytes.subarray(i,i+chunk));return btoa(binary);};
   return JSON.stringify({product:'ACD BITTU LAB CLOUD',formatVersion:3,algorithm:'PBKDF2-SHA256/AES-256-GCM',iterations:310000,salt:b(salt),iv:b(iv),ciphertext:b(cipher)});
  };
  const dec=async(pass,blob)=>{
@@ -1265,19 +1265,30 @@ async function renderBackupRestore(c){
   try{
    const {data,error}=await client.storage.from('acd-lab-backups').download(path);if(error)throw error;
    const plain=await dec(pass,await data.text()),payload=JSON.parse(plain);
+   if(payload.product!=='ACD BITTU LAB CLOUD'||![2,3].includes(payload.formatVersion))throw new Error('Unsupported backup format.');
    if(payload.labId!==labId)throw new Error('This backup belongs to a different lab workspace.');
+   if(!navigator.onLine)throw new Error('Internet connection is required before restore. No local or cloud records were changed.');
    const localData=payload.localData||payload.data||{};
+   // Validate every local and cloud row before writing anything to IndexedDB.
+   for(const n of stores){
+    const rows=localData[n];
+    if(rows!==undefined&&!Array.isArray(rows))throw new Error('Invalid local backup section: '+n+'.');
+    if(Array.isArray(rows)&&rows.some(row=>row&&row.labId&&row.labId!==labId))throw new Error('Local backup contains records from another lab in '+n+'. Restore stopped before making changes.');
+   }
+   const snap=payload.cloudSnapshot||{};
+   for(const [table,rows] of Object.entries(snap)){
+    if(!Array.isArray(rows))throw new Error('Invalid cloud backup section: '+table+'.');
+    if(rows.some(row=>row&&row.lab_id&&row.lab_id!==labId))throw new Error('Backup contains another lab_id in '+table+'. Restore stopped before making changes.');
+   }
    for(const n of stores){
     const rows=localData[n];if(!Array.isArray(rows))continue;
     if(n==='settings')continue; // Settings are restored from the lab-scoped cloud settings row below.
-    if(rows.some(row=>row&&row.labId&&row.labId!==labId))throw new Error('Local backup contains records from another lab in '+n+'. Restore stopped.');
     const safeRows=rows.filter(row=>row&&row.labId===labId);
     const tx=db.transaction(n,'readwrite'),os=tx.objectStore(n);
     for(const row of safeRows)os.put(row);
     await new Promise((res,rej)=>{tx.oncomplete=res;tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error);});
    }
    // Add cloud snapshot records to this device's cache using the app's local data shape.
-   const snap=payload.cloudSnapshot||{};
    const mappings={
     acd_lab_patients:(r)=>({id:r.id,patientCode:r.patient_code||r.id,labId:r.lab_id,name:r.name,age:r.age,ageValue:r.age_value,ageUnit:r.age_unit||'years',dateOfBirth:r.date_of_birth,gender:r.gender,mobile:r.mobile,address:r.address,referrer:r.referrer,createdAt:r.created_at,updatedAt:r.updated_at,syncStatus:'synced'}),
     acd_lab_orders:(r)=>({id:r.id,labId:r.lab_id,patientId:r.patient_id,patientName:r.patient_name,patientAge:r.patient_age||'',patientGender:r.patient_gender||'',patientMobile:r.patient_mobile||'',patientAddress:r.patient_address||'',referrer:r.referrer||'',items:r.items||[],subtotal:Number(r.subtotal||0),discount:Number(r.discount||0),total:Number(r.total||0),paid:Number(r.paid||0),due:Number(r.due||0),paymentMethod:r.payment_method,paymentStatus:r.payment_status,notes:r.notes,status:r.status,createdAt:r.created_at,updatedAt:r.updated_at,syncStatus:'synced'}),
@@ -1299,7 +1310,6 @@ async function renderBackupRestore(c){
    if(payload.localSetup){store={...defaults,...payload.localSetup,...store};saveData();}
    // Restore cloud rows only after checking every row belongs to the currently open lab.
    // Each table is upserted separately; a failure is reported and never called a full success.
-   if(!navigator.onLine)throw new Error('Internet connection is required to restore records to Supabase. Local cache was merged; cloud restore has not run.');
    const cloudUpserts={
     acd_lab_patients:(r)=>({id:r.id,lab_id:labId,patient_code:r.patient_code||r.id,name:r.name,age:r.age,age_value:r.age_value,age_unit:r.age_unit||'years',date_of_birth:r.date_of_birth,gender:r.gender,mobile:r.mobile,address:r.address,referrer:r.referrer,created_at:r.created_at,updated_at:r.updated_at}),
     acd_lab_orders:(r)=>({id:r.id,lab_id:labId,patient_id:r.patient_id,patient_name:r.patient_name,patient_age:r.patient_age||'',patient_gender:r.patient_gender||'',patient_mobile:r.patient_mobile||'',patient_address:r.patient_address||'',referrer:r.referrer||'',items:r.items||[],subtotal:Number(r.subtotal||0),discount:Number(r.discount||0),total:Number(r.total||0),paid:Number(r.paid||0),due:Number(r.due||0),payment_method:r.payment_method,payment_status:r.payment_status,notes:r.notes,status:r.status,created_at:r.created_at,updated_at:r.updated_at}),
@@ -1314,7 +1324,6 @@ async function renderBackupRestore(c){
    for(const table of cloudTables){
     const sourceRows=snap[table];
     if(!Array.isArray(sourceRows))continue;
-    if(sourceRows.some(r=>r.lab_id!==labId))throw new Error('Backup contains a different lab_id in '+table+'. No cross-lab restore was attempted.');
     if(sourceRows.length){
      const {error:upsertError}=await client.from(table).upsert(sourceRows.map(cloudUpserts[table]),{onConflict:'id'});
      if(upsertError)throw new Error('Cloud restore stopped at '+table+': '+upsertError.message);
