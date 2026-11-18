@@ -90,10 +90,10 @@ table.grid input:focus{background:#fff9c4;outline:2px solid var(--blue)}
   </div>
   <div class="toolbar">
     <button class="tbtn" id="tbNew">＋ New Entry</button>
-    <button class="tbtn success" id="tbSave"> Save Report</button>
-    <button class="tbtn primary" id="tbPrint"> Direct A4 Print</button>
-    <button class="tbtn" id="tbWhatsApp"> WhatsApp</button>
-    <button class="tbtn" id="tbSync"> Sync Cloud</button>
+    <button class="tbtn success" id="tbSave">💾 Save Report</button>
+    <button class="tbtn primary" id="tbPrint">🖨 Direct A4 Print</button>
+    <button class="tbtn" id="tbWhatsApp">📲 WhatsApp</button>
+    <button class="tbtn" id="tbSync">🔄 Sync Cloud</button>
     <span class="pill" id="netStatus">Checking...</span>
   </div>
   <div class="shell">
@@ -103,12 +103,12 @@ table.grid input:focus{background:#fff9c4;outline:2px solid var(--blue)}
       <button data-page="Catalogue">🧪 Test Catalogue</button>
       <button data-page="Samples">🧬 Sample Tracking</button>
       <button data-page="Accounts">₹ Accounts & Expenses</button>
-      <button data-page="Inventory"> Inventory & Stock</button>
+      <button data-page="Inventory">📦 Inventory & Stock</button>
       <button data-page="Staff">♙ Staff & Roles</button>
       <button data-page="Setup">⚙ Lab & Print Setup</button>
-      <button data-page="Subscription"> Subscription & Razorpay</button>
+      <button data-page="Subscription">💳 Subscription & Razorpay</button>
       <button data-page="Backup">▣ Backup & Cloud Sync</button>
-      <button data-page="SuperAdmin" id="navSuperAdmin" class="hidden"> Super Admin Control</button>
+      <button data-page="SuperAdmin" id="navSuperAdmin" class="hidden">👑 Super Admin Control</button>
     </aside>
     <main class="main" id="mainArea"></main>
   </div>
@@ -120,11 +120,11 @@ window.onerror=function(msg){var el=document.getElementById('authMsg');if(el)el.
 const SUPABASE_URL='https://supabase.co';
 const SUPABASE_KEY='sb_publishable_n6jRvVDjw2kOF7CS46omqQ_6qGkdR-q';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-const DEV_KEY='acd_bittu_uuid_v9', LOCK_KEY='acd_bittu_lock_v9', STORE_KEY='acd_bittu_lims_v9';
-const $=function(id){return document.getElementById(id);};
-const esc=function(s){return String(s??'').replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]);});};
-const money=function(n){return '₹'+(Number(n)||0).toFixed(2);};
-const uid=function(p){return p+'-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+Math.random().toString(36).slice(2,6).toUpperCase();};
+const DEV_KEY='acd_bittu_uuid_v10', LOCK_KEY='acd_bittu_lock_v10', STORE_KEY='acd_bittu_lims_v10';
+function getEl(id){return document.getElementById(id);}
+function esc(s){return String(s??'').replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]);});}
+function money(n){return '₹'+(Number(n)||0).toFixed(2);}
+function uid(p){return p+'-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+Math.random().toString(36).slice(2,6).toUpperCase();}
 
 let db=null, currentUser=null, platformRole='', activeLab=null, hbTimer=null, entryTests=[], activeOrderId=null, selectedSearchTest=null;
 let store={lab:{name:'',address:'',phone:'',headerTitle:'',footerText:'',docName:'',docQual:'MBBS, MD',techName:'',techQual:'DMLT',preprinted:false},doctors:[],tests:[]};
@@ -133,4 +133,4 @@ function saveStore(){localStorage.setItem(STORE_KEY,JSON.stringify(store));}
 
 const MASTER_CATALOGUE=[
   {name:'Complete Blood Count (CBC)',price:300,sampleType:'EDTA Blood',parameters:[
-
+  
