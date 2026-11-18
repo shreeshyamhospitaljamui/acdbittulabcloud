@@ -62,7 +62,7 @@
         </nav>
         <div class="p-3 bg-slate-950 text-xs text-center border-t border-slate-800 flex justify-between items-center">
             <span id="sync-status" class="text-yellow-400"><i class="fa-solid fa-cloud-arrow-up"></i> Offline Mode</span>
-            <span class="text-slate-500">v1.0.2</span>
+            <span class="text-slate-500">v1.0.3</span>
         </div>
     </aside>
 
@@ -452,13 +452,12 @@
         loadCatalogueTable(val);
     }
 
-    /* 4. ENTER-KEY NAVIGATION (Includes Table inputs) */
+    /* 4. ENTER-KEY NAVIGATION (Includes Table inputs) - FIXED VERSION */
     function attachEnterNavigation() {
         const inputs = Array.from(document.querySelectorAll('.nav-elem'));
         inputs.forEach((input, index) => {
-            const new_element = input.cloneNode(true);
-            input.parentNode.replaceChild(new_element, input);
-            new_element.addEventListener('keydown', function(e) {
+            // Replaced cloneNode with direct onkeydown assignment to stop it from wiping out addEventListener bindings!
+            input.onkeydown = function(e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     if (this.id === 'search_test') { document.getElementById('add_test_btn').click(); return; }
@@ -470,10 +469,13 @@
                     }
                     const nextList = Array.from(document.querySelectorAll('.nav-elem'));
                     const currentIndex = nextList.indexOf(this);
-                    if (currentIndex > -1 && currentIndex < nextList.length - 1) nextList[currentIndex + 1].focus();
-                    else if (this.id === 'b_mode') document.getElementById('save_btn').focus();
+                    if (currentIndex > -1 && currentIndex < nextList.length - 1) {
+                        nextList[currentIndex + 1].focus();
+                    } else if (this.id === 'b_mode') {
+                        document.getElementById('save_btn').focus();
+                    }
                 }
-            });
+            };
         });
     }
 
@@ -615,5 +617,3 @@
 </script>
 </body>
 </html>
-
-
