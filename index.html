@@ -19,19 +19,16 @@ body{margin:0;font-family:Tahoma,Segoe UI,Arial,sans-serif;font-size:12px;backgr
 .tbtn.success{background:var(--green);color:#fff;border-color:#0a5729}
 .tbtn.danger{background:#fff0ef;color:var(--red);border-color:#e4a5a0}
 .pill{margin-left:auto;padding:3px 9px;border-radius:12px;background:#fff;border:1px solid var(--border);font-weight:700;font-size:11px}
-
 .shell{display:grid;grid-template-columns:210px minmax(0,1fr);min-height:calc(100vh - 68px)}
 .sidebar{background:#123966;color:#e3eefb;padding:8px;display:flex;flex-direction:column;gap:3px;border-right:1px solid #0b2647}
 .sidebar button{background:transparent;border:1px solid transparent;color:#dce9f8;text-align:left;padding:7px 9px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600}
 .sidebar button:hover,.sidebar button.active{background:#1e528d;border-color:#4b82bf;color:#fff}
 .main{padding:10px;overflow-x:auto}
-
 .login-card{max-width:410px;margin:45px auto;background:#fff;border:1px solid var(--border);border-radius:6px;padding:20px;box-shadow:0 4px 16px #00000018}
 .field{margin-bottom:9px}
 .field label{display:block;font-weight:700;font-size:11px;margin-bottom:3px;color:#273b52}
 .inp{width:100%;padding:6px 8px;border:1px solid #9ab0c7;border-radius:3px;font:inherit;background:#fff}
 .inp:focus{outline:2px solid var(--blue);background:#fffef0}
-
 .erp-box{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:8px;margin-bottom:8px}
 .erp-grid{display:grid;grid-template-columns:1.35fr 1.25fr 1fr;gap:8px}
 .sub-card{background:#f8fbff;border:1px solid #c3d3e4;padding:7px;border-radius:3px;position:relative}
@@ -39,11 +36,9 @@ body{margin:0;font-family:Tahoma,Segoe UI,Arial,sans-serif;font-size:12px;backgr
 .frow{display:grid;grid-template-columns:92px 1fr;gap:5px;align-items:center;margin-bottom:5px}
 .frow label{font-weight:700;font-size:11px}
 .finline{display:flex;gap:4px}
-
 .search-drop{position:absolute;left:7px;right:7px;top:100%;background:#fff;border:1px solid #7f9bb8;border-radius:4px;max-height:190px;overflow-y:auto;z-index:20;box-shadow:0 6px 16px #00000025}
 .search-item{padding:6px 9px;border-bottom:1px solid #eef2f7;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
 .search-item:hover,.search-item.hi{background:#e6f2fc;font-weight:700}
-
 .grid-box{background:#fff;border:1px solid #8ea4be;height:calc(100vh - 345px);min-height:250px;overflow:auto}
 table.grid{width:100%;border-collapse:collapse;font-size:12px}
 table.grid th{position:sticky;top:0;background:linear-gradient(#245388,#15375f);color:#fff;padding:6px 7px;text-align:left;border:1px solid #3c6ca3;font-size:11px;z-index:2}
@@ -124,15 +119,15 @@ table.grid input:focus{background:#fff9c4;outline:2px solid var(--blue)}
 const SUPABASE_URL='https://supabase.co';
 const SUPABASE_KEY='sb_publishable_n6jRvVDjw2kOF7CS46omqQ_6qGkdR-q';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-const DEV_KEY='acd_bittu_uuid_v6', LOCK_KEY='acd_bittu_lock_v6', STORE_KEY='acd_bittu_lims_v6';
+const DEV_KEY='acd_bittu_uuid_v8', LOCK_KEY='acd_bittu_lock_v8', STORE_KEY='acd_bittu_lims_v8';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=n=>'₹'+(Number(n)||0).toFixed(2);
 const uid=p=>p+'-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+Math.random().toString(36).slice(2,6).toUpperCase();
 
-let db, currentUser=null, platformRole='', activeLab=null, hbTimer=null, entryTests=[], activeOrderId=null, selectedSearchTest=null;
+let db=null, currentUser=null, platformRole='', activeLab=null, hbTimer=null, entryTests=[], activeOrderId=null, selectedSearchTest=null;
 let store={lab:{name:'',address:'',phone:'',headerTitle:'',footerText:'',docName:'',docQual:'MBBS, MD',techName:'',techQual:'DMLT',preprinted:false},doctors:[],tests:[]};
-try{store={...store,...JSON.parse(localStorage.getItem(STORE_KEY)||'{}')};}catch{}
+try{store={...store,...JSON.parse(localStorage.getItem(STORE_KEY)||'{}')};}catch(e){}
 const saveStore=()=>localStorage.setItem(STORE_KEY,JSON.stringify(store));
 
 const MASTER_CATALOGUE=[
