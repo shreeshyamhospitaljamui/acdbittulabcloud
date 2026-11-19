@@ -282,6 +282,42 @@ main.wrap{
 }
 
 </style>
+<style id="acd-demo-three-card-billing-layout">
+
+/* === Reference-matched 3-card patient entry + full-width results === */
+.acd-entry-grid{
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(250px,.82fr)!important;
+ gap:12px!important;align-items:stretch!important
+}
+.acd-entry-card{min-width:0!important;min-height:250px!important}
+.acd-billing-card{border-top-color:#8b52bd!important}
+.acd-step-icon.billing{background:#f4edfb!important;color:#8b52bd!important}
+.acd-billing-fields{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:4px 9px!important}
+.acd-billing-fields .field{min-width:0!important;margin:5px 0!important}
+.acd-billing-fields label{display:block!important;font-size:11px!important;margin-bottom:4px!important}
+.acd-billing-fields input,.acd-billing-fields select{width:100%!important;min-width:0!important;min-height:35px!important;padding:7px 8px!important;font-size:12px!important}
+.acd-billing-fields #directPaid{color:#13884b!important;font-weight:700!important}
+.acd-billing-fields #directDue{color:#b42332!important;background:#fff4f4!important;font-weight:700!important}
+.acd-payment-mode{grid-column:1/-1!important}
+.acd-billing-note{margin-top:8px!important;padding:7px 8px!important;background:#f7f4fb!important;border-radius:6px!important;color:#6b5a7d!important;font-size:10px!important;line-height:1.35!important}
+.acd-results-card{display:block!important;width:100%!important;min-width:0!important;margin-top:12px!important}
+.acd-results-empty{min-height:72px!important;display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;padding:18px!important;color:#718096!important;background:#fafcff!important;border:1px dashed #d6e0eb!important;border-radius:7px!important}
+@media(max-width:1050px){
+ .acd-entry-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(210px,.78fr)!important;gap:8px!important}
+ .acd-entry-card{padding:9px!important}
+ .acd-entry-card-head h3{font-size:13px!important}
+ .acd-patient-fields{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:760px){
+ .acd-entry-grid{grid-template-columns:1fr!important;gap:8px!important}
+ .acd-entry-card{min-height:0!important}
+ .acd-patient-fields{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .acd-billing-fields{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .acd-results-card{margin-top:9px!important}
+}
+
+</style>
 </head>
 <body>
 <header class="top">
@@ -1247,16 +1283,30 @@ async function renderTestOrders(c){
     <button type="button" class="btn" id="loadAllParameters" style="margin-top:12px">Enter — Load All Test Parameters</button>
    </div>
   </section>
+  <section class="acd-entry-card acd-billing-card">
+   <div class="acd-entry-card-head"><span class="acd-step-icon billing">₹</span><h3>3. Billing</h3></div>
+   <div class="acd-billing-fields">
+    <div class="field"><label>Total Amount (₹)</label><input class="input" id="directTotalAmount" value="0.00" readonly></div>
+    <div class="field"><label>Discount (₹)</label><input class="input" id="directDiscount" type="number" min="0" step="0.01" value="0"></div>
+    <div class="field"><label>Paid (₹)</label><input class="input" id="directPaid" type="number" min="0" step="0.01" value="0"></div>
+    <div class="field"><label>Due (₹)</label><input class="input" id="directDue" value="0.00" readonly></div>
+    <div class="field acd-payment-mode"><label>Payment Mode</label><select class="input" id="directPaymentMode"><option value="Cash">Cash</option><option value="UPI">UPI</option><option value="Card">Card</option><option value="Bank Transfer">Bank Transfer</option><option value="Credit">Credit / Due</option></select></div>
+   </div>
+   <div class="acd-billing-note">Amount is calculated from the selected test catalogue prices.</div>
+  </section>
  </div>
- <section id="directParameterArea" class="hidden acd-results-card"><div class="panel-head"><h3>Test Parameters & Results Entry</h3><span class="muted">One continuous screen</span></div><div id="directParameterTables" class="direct-tests"></div><div class="row" style="margin-top:16px"><button type="button" class="btn" id="saveDirectDraft">Save Results</button><button type="button" class="btn secondary" id="printDirectDraft">Save & Print A4</button><button type="button" class="btn secondary" id="sendDirectWhatsApp">Send on WhatsApp</button></div><div id="directResultMessage" class="message"></div></section>
+ <section id="directParameterArea" class="acd-results-card"><div class="panel-head"><h3>Test Parameters & Results Entry</h3><span class="muted">One continuous screen</span></div><div id="directParameterTables" class="direct-tests"><div class="empty acd-results-empty">Add tests above, then press “Enter — Load All Test Parameters”. Result fields will appear here.</div></div><div class="row" style="margin-top:16px"><button type="button" class="btn" id="saveDirectDraft">Save Results</button><button type="button" class="btn secondary" id="printDirectDraft">Save & Print A4</button><button type="button" class="btn secondary" id="sendDirectWhatsApp">Send on WhatsApp</button></div><div id="directResultMessage" class="message"></div></section>
  </form>`;
  const f=$('directReportForm'),selected=[];let loaded=false,lastSavedDirectOrder=null,activeDirectPatientId=null;
  const doctorInput=f.elements.referrer,doctorMessage=$('directDoctorMessage');
+ const billing=()=>{const subtotal=selected.reduce((sum,t)=>sum+Math.max(0,Number(t.price||0)),0);const discount=Math.max(0,Number($('directDiscount').value||0));const total=Math.max(0,subtotal-discount);const paid=Math.max(0,Number($('directPaid').value||0));return {subtotal,discount,total,paid,due:Math.max(0,total-paid),paymentMethod:$('directPaymentMode').value};};
+ const paintBilling=()=>{const b=billing();$('directDiscount').max=b.subtotal.toFixed(2);if(Number($('directDiscount').value||0)>b.subtotal)$('directDiscount').value=b.subtotal.toFixed(2);const payable=Math.max(0,b.subtotal-Number($('directDiscount').value||0));$('directPaid').max=payable.toFixed(2);if(Number($('directPaid').value||0)>payable)$('directPaid').value=payable.toFixed(2);$('directTotalAmount').value=b.subtotal.toFixed(2);$('directDue').value=Math.max(0,payable-Number($('directPaid').value||0)).toFixed(2);};
+ $('directDiscount').addEventListener('input',paintBilling);$('directPaid').addEventListener('input',paintBilling);$('directPaymentMode').addEventListener('change',paintBilling);
  $('saveDirectDoctor').onclick=()=>{const name=String(doctorInput.value||'').trim();if(!name){doctorMessage.textContent='पहले डॉक्टर का नाम लिखें।';return;}if(!(store.doctors||[]).some(d=>String(d.name||'').toLowerCase()===name.toLowerCase())){store.doctors.push({id:localId('DOC'),name,detail:''});saveData();}const dl=$('directDoctorOptions');dl.innerHTML=(store.doctors||[]).map(d=>`<option value="${esc(d.name)}">`).join('');doctorMessage.textContent='Doctor name इस लैब की सूची में सेव हो गया।';doctorMessage.className='message success';};
  const ageYears=()=>{const v=Number(f.elements.ageValue.value||0),u=f.elements.ageUnit.value;return u==='days'?v/365.2425:u==='months'?v/12:v;};
  const rangeFor=p=>{const ageRaw=String(f.elements.ageValue.value||'').trim(),g=f.elements.gender.value;if(!ageRaw||!g)return 'Reference range not configured: age/gender not supplied';const y=ageYears(),b=Array.isArray(p.ageRanges)?p.ageRanges:[];let r='';if(y<18){const hit=b.find(x=>y>=Number(x.minYears??0)&&y<Number(x.maxYears??200));r=hit?.range||p.child||p.pediatric||'';}else if(g==='Male')r=p.male||p.general||'';else if(g==='Female')r=p.female||p.general||'';else r=p.general||'';return String(r||'Reference range not configured for this age/sex').trim();};
- const paintSelected=()=>{$('selectedTestCount').textContent=`${selected.length} tests selected`;$('directSelectedTests').innerHTML=selected.length?selected.map((t,i)=>`<div class="item"><span><b>${i+1}. ${esc(t.name)}</b><br><small class="muted">${esc(t.sampleType||'Sample not specified')} · ${t.parameters?.length||0} parameters</small></span><button type="button" class="btn danger" data-remove-direct="${i}">Remove</button></div>`).join(''):'<div class="empty">No tests added yet.</div>';c.querySelectorAll('[data-remove-direct]').forEach(b=>b.onclick=()=>{selected.splice(Number(b.dataset.removeDirect),1);loaded=false;$('directParameterArea').classList.add('hidden');paintSelected();});};
- const search=()=>{const q=$('directTestSearch').value.trim().toLowerCase();const matches=tests.map((t,i)=>({t,i,n:String(t.name||'').toLowerCase(),d:String(t.detail||'').toLowerCase()})).filter(x=>!q||x.n.includes(q)||x.d.includes(q)).sort((a,b)=>{if(!q)return a.i-b.i;const rank=x=>x.n===q?0:x.n.startsWith(q)?1:x.n.includes(q)?2:3;return rank(a)-rank(b)||a.i-b.i;}).slice(0,80);$('directSearchResults').innerHTML=matches.length?matches.map(({t,i})=>{const already=selected.some(x=>x.id===t.id);return `<div class="test-result-row"><span><b>${esc(t.name)}</b><br><small class="muted">${esc(t.sampleType||'Sample not specified')} · ${t.parameters?.length||0} parameters</small></span><button type="button" class="btn ${already?'secondary':'primary'}" data-pick-direct="${i}" data-match-rank="${!q?9:(String(t.name||'').toLowerCase()===q?0:(String(t.name||'').toLowerCase().startsWith(q)?1:2))}" ${already||!(t.parameters||[]).length?'disabled':''}>${already?'Added':(t.parameters||[]).length?'+ Add':'No Parameters'}</button></div>`;}).join(''):'<div class="empty">No matching tests found in this lab catalogue.</div>';c.querySelectorAll('[data-pick-direct]').forEach(b=>b.onclick=()=>{const t=tests[Number(b.dataset.pickDirect)];if(t&&!selected.some(x=>x.id===t.id)){selected.push(t);loaded=false;$('directParameterArea').classList.add('hidden');paintSelected();search();}});};
+ const paintSelected=()=>{$('selectedTestCount').textContent=`${selected.length} tests selected`;$('directSelectedTests').innerHTML=selected.length?selected.map((t,i)=>`<div class="item"><span><b>${i+1}. ${esc(t.name)}</b><br><small class="muted">${esc(t.sampleType||'Sample not specified')} · ${t.parameters?.length||0} parameters</small></span><button type="button" class="btn danger" data-remove-direct="${i}">Remove</button></div>`).join(''):'<div class="empty">No tests added yet.</div>';c.querySelectorAll('[data-remove-direct]').forEach(b=>b.onclick=()=>{selected.splice(Number(b.dataset.removeDirect),1);loaded=false;$('directParameterTables').innerHTML='<div class="empty acd-results-empty">Add tests above, then press “Enter — Load All Test Parameters”. Result fields will appear here.</div>';paintSelected();paintBilling();});};
+ const search=()=>{const q=$('directTestSearch').value.trim().toLowerCase();const matches=tests.map((t,i)=>({t,i,n:String(t.name||'').toLowerCase(),d:String(t.detail||'').toLowerCase()})).filter(x=>!q||x.n.includes(q)||x.d.includes(q)).sort((a,b)=>{if(!q)return a.i-b.i;const rank=x=>x.n===q?0:x.n.startsWith(q)?1:x.n.includes(q)?2:3;return rank(a)-rank(b)||a.i-b.i;}).slice(0,80);$('directSearchResults').innerHTML=matches.length?matches.map(({t,i})=>{const already=selected.some(x=>x.id===t.id);return `<div class="test-result-row"><span><b>${esc(t.name)}</b><br><small class="muted">${esc(t.sampleType||'Sample not specified')} · ${t.parameters?.length||0} parameters</small></span><button type="button" class="btn ${already?'secondary':'primary'}" data-pick-direct="${i}" data-match-rank="${!q?9:(String(t.name||'').toLowerCase()===q?0:(String(t.name||'').toLowerCase().startsWith(q)?1:2))}" ${already||!(t.parameters||[]).length?'disabled':''}>${already?'Added':(t.parameters||[]).length?'+ Add':'No Parameters'}</button></div>`;}).join(''):'<div class="empty">No matching tests found in this lab catalogue.</div>';c.querySelectorAll('[data-pick-direct]').forEach(b=>b.onclick=()=>{const t=tests[Number(b.dataset.pickDirect)];if(t&&!selected.some(x=>x.id===t.id)){selected.push(t);loaded=false;$('directParameterTables').innerHTML='<div class="empty acd-results-empty">Add tests above, then press “Enter — Load All Test Parameters”. Result fields will appear here.</div>';paintSelected();paintBilling();search();}});};
  $('directTestSearch').addEventListener('input',search);f.elements.ageValue.addEventListener('input',()=>{loaded=false;});f.elements.ageUnit.addEventListener('change',()=>{loaded=false;});f.elements.gender.addEventListener('change',()=>{loaded=false;});
 
  // Enter navigation is centralized in the document-level handler above to avoid double-advancing.
@@ -1274,7 +1324,7 @@ async function renderTestOrders(c){
   await savePatient(patient);
   const items=selected.map((t,ti)=>({testId:t.id,name:t.name,detail:t.detail||'',rate:Number(t.price||0),sampleType:t.sampleType||'',parameters:t.parameters.map((p,pi)=>({name:p.name,unit:p.unit||'',resultType:p.resultType||'numeric',options:p.options||'',referenceRange:rangeFor(p),result:inputs.find(x=>Number(x.dataset.ti)===ti&&Number(x.dataset.pi)===pi)?.value||''}))}));
   const orderId=lastSavedDirectOrder?.id||makeOrderId(),existingRows=(await loadCloudResults()).filter(r=>r.orderId===orderId);
-  const order={...(lastSavedDirectOrder||{}),id:orderId,labId:currentLab.id,patientId:patient.id,patientName:patient.name,patientAge:patient.age,patientGender:patient.gender,patientMobile:patient.mobile,patientAddress:patient.address,referrer:patient.referrer,items,subtotal:items.reduce((a,x)=>a+x.rate,0),discount:0,total:items.reduce((a,x)=>a+x.rate,0),paid:lastSavedDirectOrder?.paid||0,due:items.reduce((a,x)=>a+x.rate,0)-(lastSavedDirectOrder?.paid||0),paymentMethod:lastSavedDirectOrder?.paymentMethod||'Not recorded',paymentStatus:lastSavedDirectOrder?.paymentStatus||'Unpaid',notes:'Direct test entry workflow',status:'Draft Entry',createdAt:lastSavedDirectOrder?.createdAt||now,updatedAt:now,syncStatus:'local_only'};
+  const bill=billing();if(bill.discount>bill.subtotal||bill.paid>bill.total)throw new Error('Discount cannot exceed total amount and Paid cannot exceed the payable amount.');const order={...(lastSavedDirectOrder||{}),id:orderId,labId:currentLab.id,patientId:patient.id,patientName:patient.name,patientAge:patient.age,patientGender:patient.gender,patientMobile:patient.mobile,patientAddress:patient.address,referrer:patient.referrer,items,subtotal:bill.subtotal,discount:bill.discount,total:bill.total,paid:bill.paid,due:bill.due,paymentMethod:bill.paymentMethod,paymentStatus:bill.due<=0?'Paid':(bill.paid>0?'Partially Paid':'Unpaid'),notes:'Direct test entry workflow',status:'Draft Entry',createdAt:lastSavedDirectOrder?.createdAt||now,updatedAt:now,syncStatus:'local_only'};
   await saveOrder(order);lastSavedDirectOrder=order;
   let saved=0;
   for(const item of items)for(const param of item.parameters){
@@ -1292,7 +1342,7 @@ async function renderTestOrders(c){
   printWindow.document.write('<!doctype html><title>Preparing report…</title><p style="font:16px Arial;padding:24px">Saving results and preparing the A4 report…</p>');
   saveDirect(true,printWindow).catch(e=>{try{printWindow.close();}catch(_){}alert('Save / Print failed: '+e.message);});
  };$('sendDirectWhatsApp').onclick=async()=>{if(!lastSavedDirectOrder){alert('पहले Save Results या Save & Print करें।');return;}await sendReportWhatsApp(lastSavedDirectOrder.id);};
- paintSelected();search();
+ paintSelected();paintBilling();search();
 }
 
 async function updateOrderCount(){
