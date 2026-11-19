@@ -100,50 +100,185 @@ body{background:var(--bg);font-family:Inter,ui-sans-serif,system-ui,-apple-syste
 }
 .result-entry-table .result-value:focus,.result-entry-table .direct-result:focus{outline:2px solid #1769aa;outline-offset:1px}
 </style>
-<style id="acd-dashboard-layout-final">
+<style id="acd-approved-dashboard-layout">
 
-/* ACD BITTU LAB CLOUD — desktop workspace layout (V20.9 application preserved) */
-:root{--acd-sidebar:252px;--acd-header:58px;--acd-deep:#071a31;--acd-blue:#1457a6}
+/* ===== ACD BITTU LAB CLOUD — approved left-sidebar / top-workspace layout ===== */
+:root{--acd-side:250px;--acd-head:64px;--acd-navy:#071a31;--acd-navy2:#0d2949}
 *{box-sizing:border-box}
-body{margin:0!important;min-height:100vh;background:#eef2f7!important;overflow:hidden!important}
-.top{position:fixed!important;z-index:1200!important;left:var(--acd-sidebar)!important;top:0!important;right:0!important;width:auto!important;height:var(--acd-header)!important;min-height:var(--acd-header)!important;padding:0 20px!important;margin:0!important;border-radius:0!important;display:flex!important;align-items:center!important;background:#fff!important;color:#172536!important;border-bottom:1px solid #dbe3ec!important;box-shadow:0 2px 8px rgba(15,35,60,.07)!important}
-.top .brand h1{font-size:16px!important;color:#123c63!important}.top .brand small{color:#738195!important}.top .logo{width:36px!important;height:36px!important;border-radius:9px!important;background:#123c63!important;color:#fff!important}.top .status{color:#174d7d!important;border-color:#d7e2ed!important;background:#f5f9fd!important}
-.wrap{position:fixed!important;left:var(--acd-sidebar)!important;top:var(--acd-header)!important;right:0!important;bottom:0!important;width:auto!important;max-width:none!important;height:auto!important;margin:0!important;padding:14px 16px!important;overflow:hidden!important}
-#appView{width:100%!important;max-width:none!important;height:100%!important;min-height:0!important;margin:0!important;padding:0!important;display:flex!important;flex-direction:column!important;gap:10px!important;overflow:hidden!important}
+html,body{width:100%;height:100%;min-height:100%;margin:0;overflow:hidden!important}
+body{background:#eef2f7!important;font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif!important}
+
+/* Brand block lives at the top of the left rail. */
+header.top{
+ position:fixed!important;z-index:1200!important;left:0!important;top:0!important;bottom:auto!important;
+ width:var(--acd-side)!important;height:var(--acd-head)!important;min-height:var(--acd-head)!important;
+ padding:0 14px!important;margin:0!important;display:flex!important;align-items:center!important;
+ justify-content:flex-start!important;background:linear-gradient(180deg,#071a31,#0d2949)!important;
+ color:#fff!important;border:0!important;border-radius:0!important;box-shadow:none!important
+}
+header.top .brand{display:flex!important;align-items:center!important;gap:10px!important}
+header.top .logo{width:38px!important;height:38px!important;flex:0 0 38px!important;border-radius:9px!important;background:#1769aa!important;color:#fff!important}
+header.top .brand h1{font-size:13px!important;line-height:1.2!important;letter-spacing:.15px!important;color:#fff!important}
+header.top .brand small{font-size:9px!important;color:#b9cee3!important}
+header.top>.row{display:flex!important;position:fixed!important;z-index:1301!important;top:19px!important;right:112px!important;max-width:150px!important}
+
+/* The existing welcome strip becomes the white top header in the workspace. */
+main.wrap{
+ position:fixed!important;left:var(--acd-side)!important;top:var(--acd-head)!important;right:0!important;bottom:0!important;
+ width:auto!important;max-width:none!important;height:auto!important;min-height:0!important;
+ margin:0!important;padding:0!important;overflow:hidden!important
+}
+#appView{
+ display:flex!important;flex-direction:column!important;gap:0!important;
+ width:100%!important;height:100%!important;max-width:none!important;min-width:0!important;min-height:0!important;
+ margin:0!important;padding:0!important;overflow:hidden!important
+}
 #appView.hidden{display:none!important}
-#appView>.welcome{flex:0 0 auto!important;margin:0!important;min-height:42px!important;align-items:center!important}
-#appView>.welcome h2{font-size:20px!important;color:#123c63!important;margin:0 0 3px!important}
-#appView>.notice{flex:0 0 auto!important;margin:0!important;padding:8px 12px!important;font-size:11px!important;line-height:1.35!important}
-#appView>.stats{flex:0 0 auto!important;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:9px!important;margin:0!important}
-#appView>.stats>.card{min-width:0!important;min-height:72px!important;padding:9px 11px!important;border-radius:9px!important}
-#appView>.stats .stat-value{font-size:21px!important;margin-top:3px!important}
-#appView>.layout{display:block!important;position:static!important;flex:1 1 auto!important;min-width:0!important;min-height:0!important;height:100%!important;margin:0!important;overflow:hidden!important}
-#appView>.layout>aside.card{position:fixed!important;z-index:1100!important;left:0!important;top:var(--acd-header)!important;bottom:0!important;width:var(--acd-sidebar)!important;height:auto!important;max-height:none!important;min-height:0!important;margin:0!important;padding:12px 10px!important;border:0!important;border-radius:0!important;background:linear-gradient(180deg,var(--acd-deep),#0c2b4b)!important;box-shadow:3px 0 14px rgba(5,20,40,.14)!important;overflow:hidden!important}
-#appView>.layout>aside.card:before{content:'ACD BITTU LAB CLOUD  •  WORKSPACE';display:block!important;color:#d8e9f8!important;font-size:11px!important;font-weight:800!important;letter-spacing:.45px!important;padding:7px 8px 13px!important;margin:0 0 8px!important;border-bottom:1px solid #ffffff2a!important}
-#appView>.layout .nav{position:static!important;top:auto!important;display:flex!important;flex-direction:column!important;gap:4px!important;width:100%!important;height:calc(100% - 42px)!important;max-height:none!important;overflow-y:auto!important;overflow-x:hidden!important;padding:0!important}
-#appView>.layout .nav button{display:block!important;flex:0 0 auto!important;width:100%!important;min-height:37px!important;padding:8px 10px!important;text-align:left!important;white-space:normal!important;color:#d9e7f5!important;background:transparent!important;border:0!important;border-left:3px solid transparent!important;border-radius:6px!important;font-size:12px!important;line-height:1.25!important}
-#appView>.layout .nav button.active,#appView>.layout .nav button:hover{color:#fff!important;background:#1554a2!important;border-left-color:#59c6ff!important;font-weight:750!important}
-#content.card{display:block!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;margin:0!important;padding:14px!important;overflow:auto!important;overscroll-behavior:contain!important;border:1px solid #d9e2ec!important;border-radius:10px!important;background:#fff!important;box-shadow:0 2px 9px rgba(15,35,60,.05)!important}
+#appView>.welcome{
+ position:fixed!important;z-index:1100!important;top:0!important;left:var(--acd-side)!important;right:0!important;
+ height:var(--acd-head)!important;min-height:var(--acd-head)!important;
+ display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;
+ gap:10px!important;margin:0!important;padding:0 18px!important;background:#fff!important;
+ border-bottom:1px solid #dce5ef!important;box-shadow:0 2px 8px rgba(12,34,58,.06)!important
+}
+#appView>.welcome h2{font-size:19px!important;line-height:1.15!important;margin:0 0 2px!important;color:#172536!important;letter-spacing:-.2px!important}
+#appView>.welcome .muted{font-size:10px!important;line-height:1.2!important}
+#appView>.welcome>div{min-width:0!important}
+#appView>.welcome #centerTools{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:5px!important;margin:0!important}
+#logoutButton{flex:0 0 auto!important;padding:8px 12px!important;font-size:11px!important}
+#appView:has(#content #directReportForm)>.notice{display:none!important}
+#appView:has(#content #directReportForm)>.stats{display:none!important}
+
+/* Full-height dark navigation rail, using the existing 14 navigation buttons. */
+#appView>.layout{
+ display:block!important;position:static!important;flex:1 1 auto!important;
+ width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;
+ margin:0!important;padding:0!important;overflow:visible!important
+}
+#appView>.layout>aside.card{
+ position:fixed!important;z-index:1050!important;left:0!important;top:var(--acd-head)!important;bottom:0!important;
+ width:var(--acd-side)!important;height:auto!important;max-height:none!important;min-height:0!important;
+ margin:0!important;padding:10px 8px 12px!important;border:0!important;border-radius:0!important;
+ background:linear-gradient(180deg,var(--acd-navy),var(--acd-navy2))!important;
+ box-shadow:2px 0 12px rgba(5,20,40,.13)!important;overflow:hidden!important
+}
+#appView>.layout>aside.card:before{
+ content:"LAB WORKSPACE MENU";display:block!important;color:#91b7d8!important;
+ font-size:9px!important;font-weight:800!important;letter-spacing:1px!important;
+ padding:7px 9px 10px!important;margin:0 0 6px!important;border-bottom:1px solid #ffffff20!important
+}
+#appView>.layout>aside .nav{
+ display:flex!important;flex-direction:column!important;gap:3px!important;
+ width:100%!important;height:calc(100% - 38px)!important;max-height:calc(100% - 38px)!important;
+ padding:0!important;position:static!important;top:auto!important;
+ overflow-y:auto!important;overflow-x:hidden!important;white-space:normal!important
+}
+#appView>.layout>aside .nav button{
+ display:block!important;flex:0 0 auto!important;width:100%!important;min-height:36px!important;
+ padding:8px 9px!important;margin:0!important;text-align:left!important;white-space:normal!important;
+ border:1px solid transparent!important;border-left:3px solid transparent!important;border-radius:6px!important;
+ background:transparent!important;color:#dce8f5!important;font-size:11px!important;line-height:1.25!important
+}
+#appView>.layout>aside .nav button.active,
+#appView>.layout>aside .nav button:hover{
+ background:#1459b4!important;border-color:#246bc4!important;border-left-color:#65c8ff!important;
+ color:#fff!important;font-weight:750!important;box-shadow:none!important
+}
+
+/* The right workspace uses the entire remaining viewport. */
+#content.card{
+ display:block!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;
+ margin:0!important;padding:14px!important;overflow:auto!important;overscroll-behavior:contain!important;
+ border:0!important;border-radius:0!important;background:#f4f7fb!important;box-shadow:none!important
+}
+#content>.panel-head{margin-bottom:10px!important}
+#content>.panel-head h3{font-size:17px!important}
 .footer{display:none!important}
-#loginView{max-width:430px!important;margin:55px auto!important;max-height:calc(100vh - 80px)!important;overflow:auto!important}
-/* Fit dense lab entry and report tables inside the workspace without changing their functions. */
-#content .tablewrap{max-width:100%!important;overflow:auto!important}
-@media(max-width:1050px) and (min-width:761px){:root{--acd-sidebar:220px}.wrap{padding:10px!important}#content.card{padding:11px!important}#appView>.stats{gap:6px!important}}
-@media(max-width:760px){
- body{height:auto!important;min-height:100%!important;overflow:auto!important}
- .top{position:sticky!important;left:auto!important;right:auto!important;top:0!important;width:100%!important;height:56px!important;min-height:56px!important;padding:6px 11px!important}
- .top .brand h1{font-size:13px!important}.top .brand small{font-size:9px!important}.top .logo{width:34px!important;height:34px!important}
- .wrap{position:relative!important;inset:auto!important;width:100%!important;height:auto!important;min-height:calc(100vh - 56px)!important;padding:10px!important;overflow:visible!important}
- #appView{height:auto!important;min-height:0!important;overflow:visible!important;gap:8px!important}
- #appView>.welcome{flex-wrap:wrap!important;gap:8px!important}#appView>.welcome h2{font-size:18px!important}
- #appView>.stats{grid-template-columns:repeat(2,minmax(0,1fr))!important}
- #appView>.layout{display:flex!important;flex-direction:column!important;gap:8px!important;height:auto!important;min-height:0!important;overflow:visible!important}
- #appView>.layout>aside.card{position:relative!important;inset:auto!important;width:100%!important;height:auto!important;max-height:none!important;padding:8px!important;border-radius:9px!important;overflow:visible!important}
- #appView>.layout>aside.card:before{font-size:10px!important;padding:3px 6px 7px!important;margin-bottom:6px!important}
- #appView>.layout .nav{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:4px!important;height:auto!important;overflow:visible!important}
- #appView>.layout .nav button{min-height:36px!important;font-size:11px!important;padding:7px!important}
- #content.card{height:auto!important;min-height:55vh!important;overflow:visible!important;padding:10px!important}
- #loginView{margin:20px auto!important;max-height:none!important}
+
+/* Actual Direct Test Entry form: same data fields and actions, reorganized visually. */
+#directReportForm.acd-entry-form{display:block!important;min-width:0!important}
+.acd-entry-grid{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1.08fr)!important;gap:12px!important;align-items:stretch!important}
+.acd-entry-card,.acd-results-card{
+ min-width:0!important;background:#fff!important;border:1px solid #dce5ef!important;
+ border-top:3px solid #1769d2!important;border-radius:10px!important;padding:12px!important;
+ box-shadow:0 2px 8px rgba(15,35,60,.045)!important
+}
+.acd-doctor-card{border-top-color:#16a05a!important}
+.acd-entry-card-head{display:flex!important;align-items:center!important;gap:9px!important;
+ padding:0 0 9px!important;margin:0 0 9px!important;border-bottom:1px solid #e7edf4!important}
+.acd-entry-card-head h3{margin:0!important;font-size:16px!important;color:#1769d2!important}
+.acd-doctor-card .acd-entry-card-head h3{color:#13884b!important}
+.acd-step-icon{display:inline-grid!important;place-items:center!important;width:27px!important;height:27px!important;
+ border-radius:7px!important;background:#eaf3ff!important;color:#1769d2!important;font-size:16px!important}
+.acd-step-icon.green{background:#eaf8ef!important;color:#13884b!important}
+.acd-patient-fields{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:2px 10px!important}
+.acd-patient-fields .field,.acd-doctor-card .field{min-width:0!important;margin:5px 0!important}
+.acd-patient-fields .field label,.acd-doctor-card .field label{font-size:11px!important;margin-bottom:4px!important}
+.acd-entry-card input,.acd-entry-card select{min-width:0!important;width:100%!important;min-height:35px!important;padding:7px 9px!important;border-radius:7px!important;font-size:12px!important}
+.acd-address-field{grid-column:1/-1!important}
+.acd-test-picker{border-top:1px solid #e7edf4!important;margin-top:10px!important;padding-top:9px!important}
+.acd-test-picker .panel-head{margin:0 0 6px!important}
+.acd-test-picker .panel-head h4{font-size:13px!important;margin:0!important}
+.acd-test-picker .test-search-results{max-height:170px!important;background:#fbfdff!important}
+.acd-selected-heading{font-size:11px!important;font-weight:700!important;margin:10px 0 4px!important;color:#42536a!important}
+.acd-test-picker .list{margin-top:4px!important;max-height:130px!important;overflow:auto!important}
+#loadAllParameters{margin-top:8px!important;padding:9px 12px!important;font-size:11px!important}
+.acd-results-card{margin-top:12px!important;border-top-color:#1769d2!important}
+.acd-results-card .panel-head{margin-bottom:9px!important}
+.acd-results-card .panel-head h3{font-size:16px!important}
+.acd-results-card .row{gap:8px!important;flex-wrap:wrap!important}
+.acd-results-card .row .btn{padding:9px 12px!important;font-size:11px!important}
+#directParameterTables .direct-test{margin:0 0 10px!important;padding:10px!important}
+#directParameterTables .tablewrap{max-width:100%!important;overflow:auto!important}
+#directParameterTables table{min-width:680px!important}
+#directParameterTables th{background:#164a9f!important;color:#fff!important}
+#directParameterTables input,#directParameterTables select{min-height:36px!important}
+
+/* Overview and every other module still use the same workspace container. */
+#content .dashboard-home{grid-template-columns:minmax(0,1.5fr) minmax(240px,.8fr)!important}
+#content .home-actions{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+
+@media(max-width:900px){
+ :root{--acd-side:182px;--acd-head:52px}
+ header.top{padding:0 8px!important}
+ header.top .logo{width:30px!important;height:30px!important;flex-basis:30px!important}
+ header.top .brand{gap:6px!important}
+ header.top .brand h1{font-size:10px!important}
+ header.top .brand small{font-size:8px!important}
+ header.top>.row{top:16px!important;right:82px!important;max-width:95px!important}
+ #appView>.welcome{padding:0 10px!important}
+ #appView>.welcome h2{font-size:15px!important}
+ #content.card{padding:9px!important}
+ .acd-entry-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:7px!important}
+ .acd-entry-card{padding:8px!important}
+ .acd-entry-card-head h3{font-size:12px!important}
+ .acd-patient-fields{gap:0 6px!important}
+ .acd-entry-card input,.acd-entry-card select{font-size:10px!important;padding:6px!important}
+}
+@media(max-width:520px){
+ :root{--acd-side:128px;--acd-head:48px}
+ header.top .brand h1{font-size:9px!important}
+ header.top .brand small{display:none!important}
+ header.top>.row{top:14px!important;right:72px!important;max-width:80px!important}
+ #appView>.welcome h2{font-size:13px!important}
+ #appView>.welcome .muted{font-size:8px!important}
+ #logoutButton{padding:6px 7px!important;font-size:9px!important}
+ #appView>.layout>aside.card{padding-left:4px!important;padding-right:4px!important}
+ #appView>.layout>aside .nav button{font-size:9px!important;padding:7px 4px!important;min-height:31px!important}
+ #content.card{padding:6px!important}
+ .acd-entry-grid{grid-template-columns:1fr 1fr!important;gap:5px!important}
+ .acd-entry-card{padding:6px!important}
+ .acd-entry-card-head h3{font-size:10px!important}
+ .acd-step-icon{width:20px!important;height:20px!important;font-size:12px!important}
+ .acd-patient-fields{grid-template-columns:1fr!important}
+ .acd-address-field{grid-column:auto!important}
+ .acd-doctor-card .field{margin:3px 0!important}
+ .acd-test-picker .test-search-results{max-height:120px!important}
+}
+@media print{
+ header.top,#appView>.welcome,#appView>.layout>aside.card{display:none!important}
+ main.wrap{position:static!important;inset:auto!important;padding:0!important}
+ #content.card{height:auto!important;overflow:visible!important}
 }
 
 </style>
@@ -179,6 +314,10 @@ body{margin:0!important;min-height:100vh;background:#eef2f7!important;overflow:h
  <section class="layout">
   <aside class="card"><nav class="nav" aria-label="Dashboard ribbon navigation">
    <button class="active" data-page="Overview">▦ Overview</button>
+   <button class="hidden" data-owner-jump="ownerSectionLabs">🏥 Labs & Members</button>
+   <button class="hidden" data-owner-jump="ownerSectionPayments">💳 Payments</button>
+   <button class="hidden" data-owner-jump="ownerSectionAudit">📋 Platform Audit</button>
+   <button class="hidden" data-owner-jump="ownerSectionPricing">₹ Pricing & Plans</button>
    <button data-page="Lab Setup">⚙ Lab Setup</button>
    <button data-page="Test Orders">＋ Direct Test Entry</button>
    <button data-page="Sample Tracking">🧪 Sample Tracking</button>
@@ -461,7 +600,7 @@ async function refreshCenterWorkspace(){
  let sub=null;try{await client.rpc('acd_start_lab_trial',{p_lab_id:currentLab.id});const {data,error}=await client.rpc('acd_my_subscription_status',{p_lab_id:currentLab.id});if(error)throw error;sub=data;}catch(e){console.warn('Subscription status unavailable',e);}
  if(currentLab.is_active===false){$('content').innerHTML='<div class="notice">Center is deactivated. No records have been deleted.</div>';return;}
  if(sub&&(sub.status==='expired'||sub.status==='cancelled')){await renderSubscriptionGate(currentLab.id,sub);return;}
- setPage('Overview');updatePatientCount();updateOrderCount();await applyUiVisibility();await loadOwnerCenterTools();
+ setPage('Test Orders');updatePatientCount();updateOrderCount();await applyUiVisibility();await loadOwnerCenterTools();
 }
 async function showApp(user){
  currentUser=user;
@@ -469,7 +608,9 @@ async function showApp(user){
  await loadPlatformRole(user);currentLab=null;currentMembership=null;
  $('loginView').classList.add('hidden');$('appView').classList.remove('hidden');$('signedInEmail').textContent=user.email||'Signed-in user';$('topStatus').textContent=currentPlatformRole==='super_admin'?'SUPER ADMIN':'AUTHENTICATED';
  const platformOnly=currentPlatformRole==='super_admin';
- document.querySelectorAll('.nav [data-page]').forEach(b=>{b.classList.toggle('hidden',platformOnly&&b.dataset.page!=='Overview');});
+ document.querySelectorAll('.nav [data-page]').forEach(b=>{b.classList.toggle('hidden',platformOnly&&b.dataset.page!=='Overview'||!platformOnly&&b.dataset.page==='Overview'&&false);});
+ document.querySelectorAll('.nav [data-owner-jump]').forEach(b=>b.classList.toggle('hidden',!platformOnly));
+ document.querySelectorAll('.nav [data-owner-jump]').forEach(b=>{if(!b.dataset.bound){b.dataset.bound='1';b.addEventListener('click',()=>{if(typeof window.showOwnerSection==='function')window.showOwnerSection(b.dataset.ownerJump);else alert('Super Admin पैनल अभी लोड हो रहा है।');});}});
  const stats=document.querySelectorAll('.stats .card');
  if(platformOnly){const labels=[['Account scope','Platform-wide'],['Platform role','Super Admin'],['Lab workspace','Select from platform list'],['Connection',navigator.onLine?'Online':'Offline']];stats.forEach((card,i)=>{const label=card.querySelector('.stat-label'),value=card.querySelector('.stat-value'),sub=card.querySelector('.muted');if(labels[i]){label.textContent=labels[i][0];value.textContent=labels[i][1];if(sub)sub.textContent=i===3?'Internet status of this device':'Platform-level view; not a lab patient count';}});}
 
@@ -482,7 +623,7 @@ async function showApp(user){
  else if(!currentLab){$('content').innerHTML='<div class="notice">Your lab membership was found, but its workspace details could not be loaded. Check the cloud_labs SELECT policy.</div>';}
  else if(currentLab.is_active===false){$('content').innerHTML='<div class="notice"><b>Lab workspace deactivated.</b> Your lab administrator or platform Super Admin must reactivate this workspace before staff can continue. No records have been deleted.</div>'; }
  else if(subscriptionState&&(subscriptionState.status==='expired'||subscriptionState.status==='cancelled')){await renderSubscriptionGate(currentLab.id,subscriptionState);}
- else{setPage('Overview');}
+ else{setPage('Test Orders');}
  if(currentPlatformRole!=='super_admin'&&currentLab?.id)await applyUiVisibility();
  updatePatientCount();updateOrderCount();
  if(currentPlatformRole!=='super_admin'&&currentLab?.id)await loadOwnerCenterTools();
@@ -495,7 +636,18 @@ async function renderOwnerOverview(c){
  <div id="ownerLabList" class="list"><div class="empty">Loading lab workspaces…</div></div>
  <div class="panel" id="ownerMembersPanel" style="margin-top:14px;display:none"><div class="panel-head"><div><h3 id="ownerMembersTitle">Lab Admin & Member Management</h3><div class="muted">Membership roles and access status; no patient data</div></div><button class="btn secondary" id="refreshLabMembers">Refresh members</button></div><div id="ownerMembersList" class="list"></div></div>
  <div class="panel" id="ownerUiPanel" style="margin-top:14px;display:none"><div class="panel-head"><div><h3 id="ownerUiTitle">Lab Features & Menu Control</h3><div class="muted">Super Admin decides which modules each lab may use and see</div></div></div><div id="ownerUiBody"></div></div>
- <div class="panel" style="margin-top:14px"><div class="panel-head"><div><h3>Platform Audit Log</h3><div class="muted">Recent Super Admin lab and membership actions</div></div><button class="btn secondary" id="refreshPlatformAudit">Refresh log</button></div><div id="platformAuditList" class="list"><div class="empty">Loading audit log…</div></div></div><div class="panel" style="margin-top:14px"><div class="panel-head"><div><h3>Pricing & Subscription Settings</h3><div class="muted">Change monthly prices any time. New prices apply to new orders; already-created payment orders keep their amount.</div></div><button class="btn secondary" id="refreshPricing">Refresh prices</button></div><div id="pricingSettingsList" class="list"><div class="empty">Loading prices…</div></div></div>`;
+ <div class="panel" id="ownerPaymentPanel" style="margin-top:14px;scroll-margin-top:130px"><div class="panel-head"><div><h3>Payment Management · Read-only</h3><div class="muted">Razorpay order and payment records visible only when Supabase RLS grants this Super Admin account access</div></div><button class="btn secondary" id="refreshOwnerPayments">Refresh payments</button></div><div class="stats" style="grid-template-columns:repeat(3,minmax(0,1fr))"><div class="card"><div class="stat-label">Records loaded</div><div class="stat-value" id="ownerPaymentCount">—</div></div><div class="card"><div class="stat-label">Paid records</div><div class="stat-value" id="ownerPaidCount">—</div></div><div class="card"><div class="stat-label">Pending / Other</div><div class="stat-value" id="ownerPendingCount">—</div></div></div><div class="row" style="gap:8px;flex-wrap:wrap;margin:10px 0"><input class="input" id="ownerPaymentSearch" type="search" placeholder="Search owner ID / Razorpay order ID" style="flex:2;min-width:220px"><select class="input" id="ownerPaymentStatus" style="flex:1;min-width:150px"><option value="all">All statuses</option><option value="paid">Paid</option><option value="created">Created / Pending</option><option value="failed">Failed</option><option value="other">Other</option></select><button class="btn secondary" type="button" id="ownerPaymentPrev">Previous</button><span class="muted" id="ownerPaymentPage" style="align-self:center">Page 1</span><button class="btn secondary" type="button" id="ownerPaymentNext">Next</button></div><div id="ownerPaymentList" class="list"><div class="empty">Loading payment records…</div></div><div class="notice" style="margin-top:10px">यह पैनल केवल रिकॉर्ड पढ़ता है। Payment को manually Paid/Failed करना, Refund करना या Subscription activate करना यहाँ से नहीं होगा। इसके लिए सुरक्षित server-side verification और audit workflow आवश्यक है। अभी अधिकतम 100 नवीनतम रिकॉर्ड पढ़े जाते हैं; यह पूरा ledger नहीं है।</div></div><div class="panel" id="platformAuditPanel" style="margin-top:14px;scroll-margin-top:130px"><div class="panel-head"><div><h3>Platform Audit Log</h3><div class="muted">Recent Super Admin lab and membership actions</div></div><button class="btn secondary" id="refreshPlatformAudit">Refresh log</button></div><div id="platformAuditList" class="list"><div class="empty">Loading audit log…</div></div></div><div class="panel" id="pricingPanel" style="margin-top:14px;scroll-margin-top:130px"><div class="panel-head"><div><h3>Pricing & Subscription Settings</h3><div class="muted">Change monthly prices any time. New prices apply to new orders; already-created payment orders keep their amount.</div></div><button class="btn secondary" id="refreshPricing">Refresh prices</button></div><div id="pricingSettingsList" class="list"><div class="empty">Loading prices…</div></div></div>`;
+ // Build independent Super Admin menu pages instead of scrolling one long page.
+ const ownerNodes=[...c.children];
+ const makeOwnerSection=(id,title,nodes)=>{const w=document.createElement('section');w.id=id;w.style.cssText='display:none;min-width:0';const h=document.createElement('div');h.className='panel-head';h.innerHTML=`<div><h3>${title}</h3><div class="muted">Super Admin workspace</div></div>`;w.appendChild(h);nodes.forEach(n=>w.appendChild(n));return w;};
+ const ownerOverview=makeOwnerSection('ownerSectionOverview','Overview',ownerNodes.slice(0,4));
+ const ownerLabs=makeOwnerSection('ownerSectionLabs','Labs & Members',ownerNodes.slice(4,7));
+ const ownerPayments=makeOwnerSection('ownerSectionPayments','Payments',[ownerNodes[7]]);
+ const ownerAudit=makeOwnerSection('ownerSectionAudit','Platform Audit',[ownerNodes[8]]);
+ const ownerPricing=makeOwnerSection('ownerSectionPricing','Pricing & Plans',[ownerNodes[9]]);
+ c.replaceChildren(ownerOverview,ownerLabs,ownerPayments,ownerAudit,ownerPricing);
+ window.showOwnerSection=(id)=>{['ownerSectionOverview','ownerSectionLabs','ownerSectionPayments','ownerSectionAudit','ownerSectionPricing'].forEach(k=>{const el=$(k);if(el)el.style.display=k===id?'block':'none';});document.querySelectorAll('.nav [data-owner-jump]').forEach(b=>b.classList.toggle('active',b.dataset.ownerJump===id));const ov=document.querySelector('.nav [data-page="Overview"]');if(ov)ov.classList.toggle('active',id==='ownerSectionOverview');};
+ window.showOwnerSection('ownerSectionOverview');
  let allRows=[],selectedLab=null;
  const roles=['lab_admin','receptionist','lab_technician','pathologist','accountant'];
  async function rpc(name,args){const {data,error}=await client.rpc(name,args);if(error)throw error;return data;}
@@ -521,12 +673,16 @@ async function renderOwnerOverview(c){
    panel.scrollIntoView({behavior:'smooth',block:'start'});
   }catch(e){body.innerHTML=`<div class="notice">Feature settings could not load/save: ${esc(e.message||String(e))}. Supabase SQL migration 08_SUPERADMIN_UI_CONTROL.sql must be run first.</div>`;}
  }
+ let ownerPaymentRows=[],ownerPaymentPage=0;const ownerPaymentPageSize=10;
+ function drawOwnerPayments(){const box=$('ownerPaymentList');if(!box)return;const q=String($('ownerPaymentSearch')?.value||'').trim().toLowerCase(),st=String($('ownerPaymentStatus')?.value||'all').toLowerCase();let rows=ownerPaymentRows.filter(r=>{const status=String(r.payment_status||'unknown').toLowerCase();const text=[r.owner_user_id,r.gateway_order_id,r.payment_status,r.currency].join(' ').toLowerCase();const statusOk=st==='all'||(st==='paid'?status==='paid':st==='created'?['created','pending'].includes(status):st==='failed'?status==='failed':!['paid','created','pending','failed'].includes(status));return (!q||text.includes(q))&&statusOk;});const pages=Math.max(1,Math.ceil(rows.length/ownerPaymentPageSize));ownerPaymentPage=Math.min(ownerPaymentPage,pages-1);const slice=rows.slice(ownerPaymentPage*ownerPaymentPageSize,(ownerPaymentPage+1)*ownerPaymentPageSize);$('ownerPaymentPage').textContent=`Page ${ownerPaymentPage+1} of ${pages} · ${rows.length} matches`;$('ownerPaymentPrev').disabled=ownerPaymentPage===0;$('ownerPaymentNext').disabled=ownerPaymentPage>=pages-1;if(!slice.length){box.innerHTML='<div class="empty">No payment records match this search or status.</div>';return;}box.innerHTML='<div class="tablewrap"><table><thead><tr><th>Date</th><th>Owner User ID</th><th>Centers</th><th>Amount</th><th>Status</th><th>Gateway Order</th></tr></thead><tbody>'+slice.map(r=>`<tr><td>${r.created_at?esc(new Date(r.created_at).toLocaleString()):'—'}</td><td><code>${esc(String(r.owner_user_id||'—').slice(0,12))}${r.owner_user_id?'…':''}</code></td><td>${esc(String(r.center_count??'—'))}</td><td>${esc(String(r.currency||'INR'))} ${money(Number(r.amount_paise||0)/100)}</td><td><b>${esc(String(r.payment_status||'unknown'))}</b></td><td><code>${esc(String(r.gateway_order_id||'—'))}</code></td></tr>`).join('')+'</tbody></table></div><div class="muted">Showing filtered rows from up to 100 latest records allowed by Supabase RLS.</div>';}
+ async function loadPayments(){const box=$('ownerPaymentList');if(!box)return;box.innerHTML='<div class="empty">Loading payment records…</div>';try{const {data,error}=await client.from('acd_owner_payment_records').select('*').order('created_at',{ascending:false}).limit(100);if(error)throw error;ownerPaymentRows=data||[];const paid=ownerPaymentRows.filter(x=>String(x.payment_status||'').toLowerCase()==='paid').length;$('ownerPaymentCount').textContent=ownerPaymentRows.length;$('ownerPaidCount').textContent=paid;$('ownerPendingCount').textContent=ownerPaymentRows.length-paid;ownerPaymentPage=0;drawOwnerPayments();}catch(e){ownerPaymentRows=[];$('ownerPaymentCount').textContent='—';$('ownerPaidCount').textContent='—';$('ownerPendingCount').textContent='—';box.innerHTML=`<div class="notice">Payment records are not available to this account: ${esc(e.message||String(e))}. The payment table is protected unless an explicit Super Admin read policy or audited RPC is configured. No access policy was changed by this build.</div>`;}}
  async function loadPricing(){const box=$('pricingSettingsList');if(!box)return;box.innerHTML='<div class="empty">Loading prices…</div>';try{const rows=await rpc('acd_public_active_plans');box.innerHTML=rows.map(p=>`<div class="item"><span><b>${esc(p.plan_name)}</b><br><small class="muted">${esc(p.plan_code)} · ${Number(p.center_count)} center(s)</small></span><span style="min-width:180px;text-align:right"><input class="input" style="max-width:130px;margin-bottom:5px" type="number" min="0" step="0.01" value="${Number(p.monthly_price_rupees)}" data-plan-price="${esc(p.plan_code)}"><button class="btn secondary" data-save-price="${esc(p.plan_code)}">Save ₹</button></span></div>`).join('')||'<div class="empty">No active plans.</div>';}catch(e){box.innerHTML=`<div class="notice">Pricing unavailable: ${esc(e.message||String(e))}. Run SQL 15 first.</div>`;}}
  async function loadAudit(){const box=$('platformAuditList');box.innerHTML='<div class="empty">Loading audit log…</div>';try{const rows=await rpc('acd_superadmin_recent_audit_logs',{p_limit:50});box.innerHTML=rows&&rows.length?rows.map(a=>`<div class="item"><span><b>${esc(a.action||'Action')}</b><br><small>${esc(a.entity_type||'')} · ${esc(String(a.entity_id||'').slice(0,24))}</small><br><small class="muted">${a.created_at?new Date(a.created_at).toLocaleString():''} · Actor ${esc(String(a.actor_user_id||'').slice(0,8))}…</small></span><span class="muted">Recorded</span></div>`).join(''):'<div class="empty">No platform actions recorded yet.</div>';}catch(e){box.innerHTML=`<div class="notice">Audit log unavailable: ${esc(e.message||'Run the Super Admin SQL migration.')}</div>`;}}
- $('refreshLabs').onclick=load;$('ownerLabSearch').addEventListener('input',draw);$('refreshPlatformAudit').onclick=loadAudit;$('refreshPricing').onclick=loadPricing;$('pricingSettingsList').addEventListener('click',async e=>{const b=e.target.closest('[data-save-price]');if(!b)return;const code=b.dataset.savePrice,inp=$('pricingSettingsList').querySelector(`[data-plan-price="${CSS.escape(code)}"]`);const price=Number(inp?.value);if(!Number.isFinite(price)||price<0){alert('Enter a valid non-negative price.');return;}b.disabled=true;try{await rpc('acd_superadmin_set_plan_price',{p_plan_code:code,p_price_rupees:price,p_is_active:true});alert('Price updated. New orders will use this price.');await loadPricing();await loadAudit();}catch(err){alert('Price update failed: '+(err.message||err));}finally{b.disabled=false;}});$('refreshLabMembers').onclick=()=>selectedLab&&loadMembers(selectedLab.id,selectedLab.name);
+ $('ownerPaymentSearch').addEventListener('input',()=>{ownerPaymentPage=0;drawOwnerPayments();});$('ownerPaymentStatus').addEventListener('change',()=>{ownerPaymentPage=0;drawOwnerPayments();});$('ownerPaymentPrev').onclick=()=>{ownerPaymentPage=Math.max(0,ownerPaymentPage-1);drawOwnerPayments();};$('ownerPaymentNext').onclick=()=>{ownerPaymentPage++;drawOwnerPayments();};
+ $('refreshLabs').onclick=load;$('ownerLabSearch').addEventListener('input',draw);$('refreshPlatformAudit').onclick=loadAudit;$('refreshPricing').onclick=loadPricing;$('refreshOwnerPayments').onclick=loadPayments;$('pricingSettingsList').addEventListener('click',async e=>{const b=e.target.closest('[data-save-price]');if(!b)return;const code=b.dataset.savePrice,inp=$('pricingSettingsList').querySelector(`[data-plan-price="${CSS.escape(code)}"]`);const price=Number(inp?.value);if(!Number.isFinite(price)||price<0){alert('Enter a valid non-negative price.');return;}b.disabled=true;try{await rpc('acd_superadmin_set_plan_price',{p_plan_code:code,p_price_rupees:price,p_is_active:true});alert('Price updated. New orders will use this price.');await loadPricing();await loadAudit();}catch(err){alert('Price update failed: '+(err.message||err));}finally{b.disabled=false;}});$('refreshLabMembers').onclick=()=>selectedLab&&loadMembers(selectedLab.id,selectedLab.name);
  $('ownerLabList').addEventListener('click',async e=>{const mb=e.target.closest('[data-members]'),ub=e.target.closest('[data-ui-lab]'),tb=e.target.closest('[data-lab-toggle]');if(mb){loadMembers(mb.dataset.members,mb.dataset.labname||'Laboratory');return;}if(ub){loadUiConfig(ub.dataset.uiLab,ub.dataset.labname||'Laboratory');return;}if(tb){const active=tb.dataset.active==='true';if(!confirm(`${active?'Deactivate':'Activate'} this lab workspace? This changes workspace access; it does not delete any records.`))return;tb.disabled=true;try{await rpc('acd_superadmin_set_lab_status',{p_lab_id:tb.dataset.labToggle,p_is_active:!active});await load();await loadAudit();}catch(err){alert('Lab status was not changed: '+(err.message||err));}finally{tb.disabled=false;}}});
  $('ownerMembersList').addEventListener('click',async e=>{const fb=e.target.closest('[data-force-device-reset]');if(fb){const uid=fb.dataset.forceDeviceReset;if(!uid)return;if(!confirm('Force reset this user device lock? The old device will lose cloud access when it reconnects.'))return;fb.disabled=true;try{await rpc('acd_superadmin_force_device_reset',{p_user_id:uid});alert('Device lock reset. The user can now sign in on another device.');await loadAudit();}catch(err){alert('Force reset failed: '+(err.message||err));}finally{fb.disabled=false;}return;}const rb=e.target.closest('[data-save-member]'),tb=e.target.closest('[data-member-toggle]');if(rb){const id=rb.dataset.saveMember,sel=$(`ownerMembersList`).querySelector(`[data-role-select="${CSS.escape(id)}"]`);if(!sel)return;rb.disabled=true;try{await rpc('acd_superadmin_update_membership',{p_membership_id:id,p_is_active:null,p_role:sel.value});await loadMembers(selectedLab.id,selectedLab.name);await loadAudit();}catch(err){alert('Role was not changed: '+(err.message||err));}finally{rb.disabled=false;}}else if(tb){const active=tb.dataset.active==='true';if(!confirm(`${active?'Disable':'Enable'} this member?`))return;tb.disabled=true;try{await rpc('acd_superadmin_update_membership',{p_membership_id:tb.dataset.memberToggle,p_is_active:!active,p_role:null});await loadMembers(selectedLab.id,selectedLab.name);await loadAudit();}catch(err){alert('Membership status was not changed: '+(err.message||err));}finally{tb.disabled=false;}}});
- await Promise.all([load(),loadAudit(),loadPricing()]);
+ await Promise.all([load(),loadAudit(),loadPricing(),loadPayments()]);
 }
 function renderWorkspaceOnboarding(){const c=$('content');c.innerHTML=`<div class="panel-head"><h3>Create your laboratory workspace</h3></div><div class="notice">You are signed in but do not belong to a lab yet. Enter the details of the laboratory you manage. Each lab gets its own isolated workspace.</div><form id="workspaceForm"><div class="field"><label>Laboratory name</label><input class="input" name="name" required maxlength="120"></div><div class="field"><label>Address</label><input class="input" name="address" maxlength="300"></div><div class="field"><label>Phone</label><input class="input" name="phone" maxlength="25"></div><button class="btn" id="createWorkspaceButton">Create Workspace</button><span id="workspaceMessage" class="message"></span></form>`;$('workspaceForm').addEventListener('submit',async e=>{e.preventDefault();const f=e.currentTarget,fd=new FormData(f),b=$('createWorkspaceButton'),m=$('workspaceMessage');b.disabled=true;m.textContent='Creating secure workspace…';try{const {data,error}=await client.rpc('register_lab_workspace',{p_lab_name:String(fd.get('name')).trim(),p_address:String(fd.get('address')||''),p_phone:String(fd.get('phone')||'')});if(error)throw error;m.textContent='Workspace created successfully.';m.className='message success';setTimeout(()=>showApp(currentUser),500);}catch(err){m.textContent=err.message||'Could not create workspace. Apply the supplied database migration first.';m.className='message error';}finally{b.disabled=false;}});}
 function showLogin(){$('appView').classList.add('hidden');$('loginView').classList.remove('hidden');$('topStatus').textContent='SECURE LOGIN';}
@@ -1065,13 +1221,35 @@ async function renderTestOrders(c){
  let tests=store.tests||[];try{tests=await loadLabTests();}catch(err){c.innerHTML=`<div class="notice">Could not load the lab Test Catalogue: ${esc(err.message)}.</div>`;return;}
  c.innerHTML=`<div class="panel-head"><div><h3>Direct Test Entry & Report</h3><div class="muted">No report step. Select tests one by one, then enter all results together.</div></div><span class="muted">${tests.length} catalogue tests</span></div>
  <div class="notice">Patient name, age and gender are optional. Date of Birth is not collected. Patient ID is generated automatically. Add each investigation with ＋ Add Test. Press Enter once to load every selected test and all its configured parameters below. In numeric result cells, press Enter to move to the next result. Save and print stores a report reference internally; no report screen or report number is shown. Unconfigured reference ranges are never invented.</div>
- <form id="directReportForm"><div class="designer-grid">
- <div class="field"><label>Patient Name</label><input class="input" name="patientName" maxlength="120"></div><div class="field"><label>Patient ID (Automatic · Locked)</label><input class="input" readonly value="Generated when saved"></div>
- <div class="field"><label>Age (Optional)</label><input class="input" name="ageValue" type="number" min="0" step="any" placeholder="e.g. 5"></div><div class="field"><label>Age Unit</label><select class="input" name="ageUnit"><option value="days">Days</option><option value="months">Months</option><option value="years" selected>Years</option></select></div>
- <div class="field"><label>Doctor / Referrer</label><input class="input" name="referrer" maxlength="120" list="directDoctorOptions" placeholder="Doctor name लिखें या चुनें"><datalist id="directDoctorOptions">${(store.doctors||[]).map(d=>`<option value="${esc(d.name)}">`).join('')}</datalist><button type="button" class="btn secondary" id="saveDirectDoctor" style="margin-top:6px;padding:7px 10px">＋ Add Doctor Name</button><small class="muted" id="directDoctorMessage">नाम यहीं से सेव कर सकते हैं।</small></div>
- <div class="field"><label>Gender (Optional)</label><select class="input" name="gender"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div><div class="field"><label>Mobile Number</label><input class="input" name="mobile" inputmode="tel" maxlength="20"></div><div class="field"><label>Address</label><input class="input" name="address" maxlength="300"></div></div>
- <div class="mod-section"><div class="panel-head"><h4>＋ Add Test</h4><span class="muted" id="selectedTestCount">0 tests selected</span></div><div class="field"><label>Search available tests in this lab</label><input class="input" id="directTestSearch" placeholder="Search CBC, Blood Sugar, LFT, KFT, Widal..." autocomplete="off"></div><div id="directSearchResults" class="test-search-results"><div class="empty">Type a test name to search your complete catalogue.</div></div><div style="margin-top:12px"><b>Selected Tests — in the order you added them</b><div id="directSelectedTests" class="list"><div class="empty">No tests added yet.</div></div></div><button type="button" class="btn" id="loadAllParameters" style="margin-top:12px">Enter — Load All Test Parameters</button></div>
- <section id="directParameterArea" class="hidden"><div class="panel-head"><h3>Enter All Results</h3><span class="muted">One continuous screen</span></div><div id="directParameterTables" class="direct-tests"></div><div class="row" style="margin-top:16px"><button type="button" class="btn" id="saveDirectDraft">Save Results</button><button type="button" class="btn secondary" id="printDirectDraft">Save & Print A4</button><button type="button" class="btn secondary" id="sendDirectWhatsApp">Send on WhatsApp</button></div><div id="directResultMessage" class="message"></div></section></form>`;
+ <form id="directReportForm" class="acd-entry-form">
+ <div class="acd-entry-grid">
+  <section class="acd-entry-card acd-patient-card">
+   <div class="acd-entry-card-head"><span class="acd-step-icon">▣</span><h3>1. Patient Details</h3></div>
+   <div class="acd-patient-fields">
+    <div class="field"><label>Patient Name</label><input class="input" name="patientName" maxlength="120"></div>
+    <div class="field"><label>Patient ID (Automatic · Locked)</label><input class="input" readonly value="Generated when saved"></div>
+    <div class="field"><label>Age (Optional)</label><input class="input" name="ageValue" type="number" min="0" step="any" placeholder="e.g. 5"></div>
+    <div class="field"><label>Age Unit</label><select class="input" name="ageUnit"><option value="days">Days</option><option value="months">Months</option><option value="years" selected>Years</option></select></div>
+    <div class="field"><label>Gender (Optional)</label><select class="input" name="gender"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div>
+    <div class="field"><label>Mobile Number</label><input class="input" name="mobile" inputmode="tel" maxlength="20"></div>
+    <div class="field acd-address-field"><label>Address</label><input class="input" name="address" maxlength="300"></div>
+   </div>
+  </section>
+  <section class="acd-entry-card acd-doctor-card">
+   <div class="acd-entry-card-head"><span class="acd-step-icon green">⚕</span><h3>2. Doctor & Tests</h3></div>
+   <div class="field"><label>Doctor / Referrer</label><input class="input" name="referrer" maxlength="120" list="directDoctorOptions" placeholder="Doctor name लिखें या चुनें"><datalist id="directDoctorOptions">${(store.doctors||[]).map(d=>`<option value="${esc(d.name)}">`).join('')}</datalist><button type="button" class="btn secondary" id="saveDirectDoctor" style="margin-top:6px;padding:7px 10px">＋ Add Doctor Name</button><small class="muted" id="directDoctorMessage">नाम यहीं से सेव कर सकते हैं।</small></div>
+   <div class="acd-test-picker">
+    <div class="panel-head"><h4>＋ Add Test</h4><span class="muted" id="selectedTestCount">0 tests selected</span></div>
+    <div class="field"><label>Search available tests in this lab</label><input class="input" id="directTestSearch" placeholder="Search CBC, Blood Sugar, LFT, KFT, Widal..." autocomplete="off"></div>
+    <div id="directSearchResults" class="test-search-results"><div class="empty">Type a test name to search your complete catalogue.</div></div>
+    <div class="acd-selected-heading">Selected Tests — in the order you added them</div>
+    <div id="directSelectedTests" class="list"><div class="empty">No tests added yet.</div></div>
+    <button type="button" class="btn" id="loadAllParameters" style="margin-top:12px">Enter — Load All Test Parameters</button>
+   </div>
+  </section>
+ </div>
+ <section id="directParameterArea" class="hidden acd-results-card"><div class="panel-head"><h3>Test Parameters & Results Entry</h3><span class="muted">One continuous screen</span></div><div id="directParameterTables" class="direct-tests"></div><div class="row" style="margin-top:16px"><button type="button" class="btn" id="saveDirectDraft">Save Results</button><button type="button" class="btn secondary" id="printDirectDraft">Save & Print A4</button><button type="button" class="btn secondary" id="sendDirectWhatsApp">Send on WhatsApp</button></div><div id="directResultMessage" class="message"></div></section>
+ </form>`;
  const f=$('directReportForm'),selected=[];let loaded=false,lastSavedDirectOrder=null,activeDirectPatientId=null;
  const doctorInput=f.elements.referrer,doctorMessage=$('directDoctorMessage');
  $('saveDirectDoctor').onclick=()=>{const name=String(doctorInput.value||'').trim();if(!name){doctorMessage.textContent='पहले डॉक्टर का नाम लिखें।';return;}if(!(store.doctors||[]).some(d=>String(d.name||'').toLowerCase()===name.toLowerCase())){store.doctors.push({id:localId('DOC'),name,detail:''});saveData();}const dl=$('directDoctorOptions');dl.innerHTML=(store.doctors||[]).map(d=>`<option value="${esc(d.name)}">`).join('');doctorMessage.textContent='Doctor name इस लैब की सूची में सेव हो गया।';doctorMessage.className='message success';};
