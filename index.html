@@ -529,10 +529,16 @@ async function showApp(user){
  // Resolve the trusted platform role before device-lock handling. The platform owner
  // must retain access to the console even if an old lab-device lock is stale.
  try{await loadPlatformRole(user);}catch(roleError){await client.auth.signOut();stopBrowserDeviceHeartbeat();showLogin();msg(roleError.message||'Account access could not be verified.');return;}
- if(currentPlatformRole!=='super_admin'){
-  try{await claimBrowserDevice(user);}catch(lockError){await client.auth.signOut();stopBrowserDeviceHeartbeat();showLogin();msg('This account is active on another device.');return;}
- }else{
+ // Super Admin and Lab Admin both use the existing single-device session lock.
+ // Only session enforcement changes here; dashboard rendering below is preserved.
+ try{
+  await claimBrowserDevice(user);
+ }catch(lockError){
+  await client.auth.signOut();
   stopBrowserDeviceHeartbeat();
+  showLogin();
+  msg('This account is active on another device.');
+  return;
  }
  currentLab=null;currentMembership=null;
  $('loginView').classList.add('hidden');$('appView').classList.remove('hidden');$('signedInEmail').textContent=user.email||'Signed-in user';$('topStatus').textContent=currentPlatformRole==='super_admin'?'SUPER ADMIN':'AUTHENTICATED';
