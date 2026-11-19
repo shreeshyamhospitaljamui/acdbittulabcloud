@@ -170,7 +170,11 @@ for(const t of tests){const {data:item,error:ie}=await db.from("lab_order_items"
 say("Patient, order, tests and results saved successfully in Supabase.");window.print();
 }catch(err){say("Save error: "+err.message+" — please check your Supabase table permissions/schema.");}finally{button.disabled=false;button.textContent="Save & Print (A4)"}};
 $("nav").querySelectorAll("button").forEach(b=>b.onclick=async()=>{
-  if(b.dataset.page==="Device Management"&&role!=="super_admin")return;
+    if (b.dataset.page === "Subscription (Razorpay)") {
+    location.href = "subscription.html";
+    return;
+    } 
+ if(b.dataset.page==="Device Management"&&role!=="super_admin")return;
   document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");
   const managing=b.dataset.page==="Device Management";const master=b.dataset.page==="Master Control";
   if(master&&role!=="super_admin")return;
