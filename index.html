@@ -82,10 +82,9 @@ $("showPass").onclick=()=>{const p=$("password"),show=p.type==="password";p.type
     const {data:{session},error:sessionError}=await db.auth.getSession();
     if(sessionError)throw sessionError;
     if(!session?.user?.id)throw new Error("Recovery link did not create a session. Request a fresh link and open it again.");
-    const uid=session.user.id;
-    const {data:profile,error:profileError}=await db.from("profiles").select("platform_role").eq("id",uid).maybeSingle();
-    if(profileError)throw profileError;
-    if(profile?.platform_role!=="super_admin")throw new Error("This email is not registered as Super Admin.");
+    // Do not read profiles here: the existing device-session RLS guard can
+    // hide the profile until recovery is granted. The SECURITY DEFINER RPC
+    // independently verifies the authenticated user is a Super Admin.
     const {data:result,error:recoverError}=await db.rpc("acd_super_admin_recover_device",{p_device_id:acdDeviceId()});
     if(recoverError||result?.status!=="granted")throw new Error(recoverError?.message||"Emergency recovery was not granted.");
     sessionStorage.setItem("acd_role","super_admin");sessionStorage.removeItem("acd_lab_id");
