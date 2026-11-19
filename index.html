@@ -464,10 +464,11 @@ function makePatientId(){const d=new Date(),date=[d.getFullYear(),String(d.getMo
 async function updatePatientCount(){try{$('patientCount').textContent=(await getPatients()).length;}catch{$('patientCount').textContent='!';}}
 async function loadPlatformRole(user){
  currentUser=user; currentPlatformRole='';
+ // profiles is the platform-role registry, not a mandatory profile for every lab user.
+ // Regular Lab Admin access is established by an active cloud_memberships row.
  const {data,error}=await client.from('profiles').select('platform_role').eq('id',user.id).maybeSingle();
  if(error) throw new Error('Account role could not be verified. Please try again.');
- if(!data) throw new Error('Account profile is missing. Please contact the platform owner.');
- currentPlatformRole=String(data.platform_role||'').trim().toLowerCase();
+ currentPlatformRole=String(data?.platform_role||'').trim().toLowerCase();
  return currentPlatformRole;
 }
 const ACD_MODULES=[
