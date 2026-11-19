@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#123c63">
+  <title>ACD BITTU LAB CLOUD</title>
+  <style>
+    :root{--navy:#123c63;--blue:#1769aa;--teal:#12a89a;--bg:#f3f6fa;--ink:#172536;--muted:#718096;--line:#e4eaf1;--white:#fff}
+    *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+    .top{background:linear-gradient(115deg,#102f50,#1769aa);color:#fff;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{display:flex;align-items:center;gap:12px}.logo{width:42px;height:42px;border-radius:13px;background:#fff;color:var(--navy);display:grid;place-items:center;font-weight:900;font-size:18px}
+    .brand h1{font-size:18px;margin:0;letter-spacing:.3px}.brand small{display:block;color:#d7e8f8;font-size:12px;margin-top:2px}
+    .status{font-size:12px;border:1px solid #ffffff66;border-radius:30px;padding:7px 11px;white-space:nowrap}
+    .wrap{max-width:1180px;margin:24px auto;padding:0 16px}.welcome{display:flex;justify-content:space-between;align-items:end;gap:12px;margin-bottom:20px}.welcome h2{margin:0 0 5px;font-size:25px}.welcome p{margin:0;color:var(--muted);font-size:14px}
+    .demo{background:#fff4d6;color:#76530b;border:1px solid #f2d78b;padding:10px 13px;border-radius:10px;font-size:12px;max-width:360px}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.card{background:var(--white);border:1px solid var(--line);border-radius:15px;padding:17px;box-shadow:0 2px 8px #1b36500a}
+    .stat-label{font-size:13px;color:var(--muted)}.stat-value{font-size:27px;font-weight:750;margin-top:8px}.stat-note{font-size:12px;color:var(--muted);margin-top:3px}
+    .layout{display:grid;grid-template-columns:230px 1fr;gap:16px;margin-top:17px}.side{align-self:start;padding:10px}.nav{display:flex;flex-direction:column;gap:5px}.nav button{border:0;background:transparent;text-align:left;padding:12px;border-radius:9px;color:#42536a;font:inherit;cursor:pointer}.nav button.active,.nav button:hover{background:#eaf3fb;color:var(--blue);font-weight:650}
+    .main{min-height:360px}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:15px}.panel-head h3{margin:0;font-size:18px}.btn{border:0;background:var(--blue);color:#fff;padding:10px 14px;border-radius:9px;font-weight:650;cursor:pointer}.btn.secondary{background:#eaf3fb;color:var(--blue)}
+    .empty{border:1px dashed #cbd7e4;border-radius:12px;padding:35px 15px;text-align:center;color:var(--muted)}.empty strong{display:block;color:#34465b;margin-bottom:6px}
+    .table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:12px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-weight:600;background:#f8fafc}
+    .fields{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}.field input,.field select{width:100%;padding:11px;border:1px solid #d8e1eb;border-radius:8px;font:inherit;background:#fff}
+    .footer{text-align:center;color:#8794a4;font-size:12px;padding:22px}
+    @media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}.side{padding:8px}.nav{display:grid;grid-template-columns:repeat(2,1fr)}.welcome{align-items:start;flex-direction:column}.fields{grid-template-columns:1fr}.top{padding:14px}.brand h1{font-size:15px}}
+  </style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><div class="logo">ACD</div><div><h1>ACD BITTU LAB CLOUD</h1><small>Multi-Lab Pathology Management</small></div></div>
+  <div class="status">DEMO PREVIEW · NOT CONNECTED</div>
+</header>
+<div class="wrap">
+  <section class="welcome">
+    <div><h2>Lab Dashboard</h2><p>Manage your laboratory workflow from one place.</p></div>
+    <div class="demo"><b>Preview only:</b> This screen is a design prototype. Login, database, PDF reports, backups and offline sync are not connected yet. Do not enter real patient information.</div>
+  </section>
+  <section class="stats">
+    <div class="card"><div class="stat-label">Total Patients</div><div class="stat-value">—</div><div class="stat-note">Patient register</div></div>
+    <div class="card"><div class="stat-label">Today’s Orders</div><div class="stat-value">—</div><div class="stat-note">Test requests</div></div>
+    <div class="card"><div class="stat-label">Reports Ready</div><div class="stat-value">—</div><div class="stat-note">Verified reports</div></div>
+    <div class="card"><div class="stat-label">Pending Reports</div><div class="stat-value">—</div><div class="stat-note">Awaiting completion</div></div>
+  </section>
+  <section class="layout">
+    <aside class="card side">
+      <nav class="nav" aria-label="Main navigation">
+        <button class="active" data-page="overview">▦ Overview</button>
+        <button data-page="patients">♙ Patients</button>
+        <button data-page="orders">▤ Test Orders</button>
+        <button data-page="results">✓ Results & Reports</button>
+        <button data-page="tests">⚗ Test Catalogue</button>
+        <button data-page="doctors">♧ Doctors</button>
+        <button data-page="staff">♙ Staff & Roles</button>
+        <button data-page="settings">⚙ Lab Settings</button>
+        <button data-page="backup">▣ Retention & Backup</button>
+      </nav>
+    </aside>
+    <main class="card main" id="content">
+      <div class="panel-head"><h3>Overview</h3><button class="btn secondary" type="button" onclick="alert('This is a visual preview. Backend setup comes next.')">System status</button></div>
+      <div class="empty"><strong>Welcome to ACD BITTU LAB CLOUD</strong>Your lab workspace will appear here after secure setup and login.</div>
+    </main>
+  </section>
+  <div class="footer">© ACD BITTU LAB CLOUD · Prototype interface</div>
+</div>
+<script>
+const pages={
+ overview:['Overview','Your lab summary and daily activity will appear here.'],
+ patients:['Patients','Patient registration, search and patient history will be available here.'],
+ orders:['Test Orders','Create test orders, add tests and track sample status here.'],
+ results:['Results & Reports','Enter results, review, approve and generate PDF reports here.'],
+ tests:['Test Catalogue','Add, edit or deactivate test names, rates, units and reference ranges here.'],
+ doctors:['Doctors','Manage doctor names, qualifications and report signatories here.'],
+ staff:['Staff & Roles','Invite staff and control permissions for each lab here.'],
+ settings:['Lab Settings','Manage lab name, logo, address, contact details and report layout here.'],
+ backup:['Retention & Backup','Configure report retention, archive, deletion permissions and backup status here.']
+};
+document.querySelectorAll('[data-page]').forEach(button=>button.addEventListener('click',()=>{
+ document.querySelectorAll('[data-page]').forEach(b=>b.classList.remove('active'));button.classList.add('active');
+ const [title,description]=pages[button.dataset.page];
+ document.getElementById('content').innerHTML=`<div class="panel-head"><h3>${title}</h3></div><div class="empty"><strong>${title}</strong>${description}<br><br><span style="font-size:12px">Module not connected in this preview.</span></div>`;
+}));
+</script>
+</body>
+</html>
