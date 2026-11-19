@@ -54,15 +54,17 @@
             <ul class="space-y-1 text-sm">
                 <li><a href="#" onclick="showTab('new-patient')" class="block py-2 px-4 hover:bg-blue-600 focus:bg-blue-700 transition"><i class="fa-solid fa-user-plus w-6"></i> New Patient Entry</a></li>
                 <li><a href="#" onclick="showTab('catalogue')" class="block py-2 px-4 hover:bg-slate-800 transition"><i class="fa-solid fa-list w-6"></i> Test Catalogue</a></li>
+                <li><a href="#" onclick="showTab('inventory')" class="block py-2 px-4 hover:bg-slate-800 transition"><i class="fa-solid fa-boxes-stacked w-6"></i> Inventory & Stock</a></li>
+                <li><a href="#" onclick="showTab('accounts')" class="block py-2 px-4 hover:bg-slate-800 transition"><i class="fa-solid fa-wallet w-6"></i> Accounts & Expenses</a></li>
+                <li><a href="#" onclick="showTab('lab-setup')" class="block py-2 px-4 hover:bg-slate-800 transition"><i class="fa-solid fa-print w-6"></i> Lab & Print Setup</a></li>
                 <li><a href="#" onclick="showTab('placeholder', 'Saved Reports')" class="block py-2 px-4 hover:bg-slate-800 transition"><i class="fa-solid fa-file-medical w-6"></i> Saved Reports</a></li>
                 <li><a href="#" onclick="showTab('placeholder', 'Sample Tracking')" class="block py-2 px-4 hover:bg-slate-800 transition"><i class="fa-solid fa-vial w-6"></i> Sample Tracking</a></li>
-                <li><a href="#" onclick="showTab('placeholder', 'Accounts')" class="block py-2 px-4 hover:bg-slate-800 transition"><i class="fa-solid fa-wallet w-6"></i> Accounts & Expenses</a></li>
                 <li class="mt-4 border-t border-slate-700 pt-4"><a href="#" onclick="showTab('super-admin')" class="block py-2 px-4 hover:bg-red-600 text-red-300 hover:text-white transition"><i class="fa-solid fa-shield-halved w-6"></i> Super Admin</a></li>
             </ul>
         </nav>
         <div class="p-3 bg-slate-950 text-xs text-center border-t border-slate-800 flex justify-between items-center">
             <span id="sync-status" class="text-yellow-400"><i class="fa-solid fa-cloud-arrow-up"></i> Offline Mode</span>
-            <span class="text-slate-500">v1.0.3</span>
+            <span class="text-slate-500">v1.0.4</span>
         </div>
     </aside>
 
@@ -171,7 +173,139 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="mt-2 text-xs text-gray-500 italic">* To add/edit tests in future, Super Admin options will be provided. Currently showing default Master Data.</div>
+                </div>
+            </div>
+
+            <!-- 3. INVENTORY TAB -->
+            <div id="inventory-tab" class="tab-content hidden h-full flex flex-col">
+                <div class="bg-white rounded-lg shadow-sm flex-1 flex flex-col p-4">
+                    <h2 class="text-lg font-bold text-gray-700 border-b pb-2 mb-4"><i class="fa-solid fa-boxes-stacked text-purple-500"></i> Inventory & Stock</h2>
+                    
+                    <datalist id="invItems">
+                        <option value="EDTA Tube (K2/K3)">
+                        <option value="Serum Separator Tube (SST)">
+                        <option value="Fluoride Tube (Glucose)">
+                        <option value="Sodium Citrate Tube (PT/APTT)">
+                        <option value="3ml Syringe">
+                        <option value="5ml Syringe">
+                        <option value="Tourniquet">
+                        <option value="Band-Aid / Cotton">
+                        <option value="CBC Cellpack / Diluent">
+                        <option value="CBC Lyse">
+                        <option value="Glucose Reagent (GOD-POD)">
+                        <option value="Uric Acid Kit">
+                        <option value="Creatinine Kit">
+                        <option value="Bilirubin Kit">
+                        <option value="SGOT/SGPT Reagent">
+                        <option value="CRP Latex Kit">
+                        <option value="Widal Antigen Set">
+                        <option value="Typhidot Rapid Card">
+                        <option value="Dengue NS1/IgG/IgM Card">
+                        <option value="HBsAg Rapid Card">
+                        <option value="HCV Rapid Card">
+                        <option value="HIV Rapid Card">
+                        <option value="Pregnancy Test Kit (UPT)">
+                        <option value="Urine Strips (10 Param)">
+                        <option value="Glass Slides">
+                        <option value="Microscope Cover Slips">
+                        <option value="Immersion Oil">
+                    </datalist>
+                    <datalist id="invUnits">
+                        <option value="Box"><option value="Piece"><option value="Bottle"><option value="Pack"><option value="Vial"><option value="Kit"><option value="Roll">
+                    </datalist>
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                        <div class="input-group"><label>Item / Reagent Name</label><input type="text" id="inv_item" list="invItems" placeholder="Select or type item"></div>
+                        <div class="input-group"><label>Quantity</label><input type="number" id="inv_qty" placeholder="0"></div>
+                        <div class="input-group"><label>Unit</label><input type="text" id="inv_unit" list="invUnits" placeholder="e.g. Box"></div>
+                        <div class="input-group"><label>Expiry Date</label><input type="date" id="inv_expiry"></div>
+                        <div class="input-group"><label>Status</label><select id="inv_status"><option>In Stock</option><option>Low Stock</option><option>Expired</option></select></div>
+                        <div class="input-group md:col-span-3 flex items-end">
+                            <button class="bg-blue-600 text-white px-4 py-2 rounded text-sm w-full font-bold" onclick="addInventory()">Save to Inventory</button>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-y-auto flex-1 border border-gray-300 rounded">
+                        <table class="excel-grid w-full">
+                            <thead><tr><th>Item / Reagent</th><th>Quantity</th><th>Unit</th><th>Expiry Date</th><th>Status</th><th>Action</th></tr></thead>
+                            <tbody id="inventory-body"><tr><td colspan="6" class="text-center text-gray-500 py-4">No items in inventory.</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. ACCOUNTS TAB -->
+            <div id="accounts-tab" class="tab-content hidden h-full flex flex-col">
+                <div class="bg-white rounded-lg shadow-sm flex-1 flex flex-col p-4">
+                    <h2 class="text-lg font-bold text-gray-700 border-b pb-2 mb-4"><i class="fa-solid fa-wallet text-green-500"></i> Accounts & Expenses</h2>
+                    
+                    <datalist id="expCats">
+                        <option value="Rent">
+                        <option value="Staff Salary">
+                        <option value="Electricity Bill">
+                        <option value="Water Bill">
+                        <option value="Reagents & Chemicals">
+                        <option value="Lab Consumables (Tubes/Syringes)">
+                        <option value="Machine Maintenance/AMC">
+                        <option value="Marketing & Printing">
+                        <option value="Tea & Snacks">
+                        <option value="Miscellaneous">
+                    </datalist>
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                        <div class="input-group md:col-span-2"><label>Description</label><input type="text" id="acc_desc" placeholder="Details of expense/income"></div>
+                        <div class="input-group"><label>Amount (₹)</label><input type="number" id="acc_amt" placeholder="0"></div>
+                        <div class="input-group"><label>Category</label><input type="text" id="acc_cat" list="expCats" placeholder="Select or type"></div>
+                        <div class="input-group"><label>Type</label><select id="acc_type"><option>Expense</option><option>Income</option></select></div>
+                        <div class="input-group md:col-span-3 flex items-end">
+                            <button class="bg-green-600 text-white px-4 py-2 rounded text-sm w-full font-bold" onclick="addAccount()">Save Entry</button>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-y-auto flex-1 border border-gray-300 rounded">
+                        <table class="excel-grid w-full">
+                            <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Type</th><th>Amount (₹)</th><th>Action</th></tr></thead>
+                            <tbody id="accounts-body"><tr><td colspan="6" class="text-center text-gray-500 py-4">No records found.</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. LAB SETUP (Letterhead & Details) -->
+            <div id="lab-setup-tab" class="tab-content hidden h-full flex flex-col">
+                <div class="bg-white rounded-lg shadow-sm flex-1 flex flex-col p-4 max-w-4xl mx-auto w-full">
+                    <h2 class="text-lg font-bold text-gray-700 border-b pb-2 mb-4"><i class="fa-solid fa-print text-indigo-500"></i> Lab Details & Print Settings</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Basic Info -->
+                        <div class="border p-4 rounded bg-gray-50">
+                            <h3 class="font-bold text-gray-700 mb-3 border-b pb-1">Lab Identity</h3>
+                            <div class="input-group mb-2"><label>Lab Name</label><input type="text" id="set_lab_name" value="ACD BITTU LAB CLOUD"></div>
+                            <div class="input-group mb-2"><label>Address</label><input type="text" id="set_lab_address" value="Opp. Main Hospital, Jamui, Bihar"></div>
+                            <div class="input-group mb-2"><label>Phone/Contact</label><input type="text" id="set_lab_phone" value="+91-8873541169"></div>
+                        </div>
+
+                        <!-- Signatures -->
+                        <div class="border p-4 rounded bg-gray-50">
+                            <h3 class="font-bold text-gray-700 mb-3 border-b pb-1">Report Signatures (Footer)</h3>
+                            <div class="input-group mb-2"><label>Dr. Consultant Name</label><input type="text" id="set_dr_name" value="Dr. Consultant Name"></div>
+                            <div class="input-group mb-2"><label>Dr. Qualification</label><input type="text" id="set_dr_qual" value="MD (Pathology)"></div>
+                            <div class="input-group mb-2"><label>Technician Name</label><input type="text" id="set_tech_name" value="Technician Name"></div>
+                            <div class="input-group mb-2"><label>Technician Qualification</label><input type="text" id="set_tech_qual" value="DMLT"></div>
+                        </div>
+
+                        <!-- Print Setup -->
+                        <div class="border p-4 rounded bg-gray-50 md:col-span-2">
+                            <h3 class="font-bold text-gray-700 mb-3 border-b pb-1">Letterhead / Print Style</h3>
+                            <label class="flex items-center gap-2 text-sm text-gray-700 font-semibold cursor-pointer">
+                                <input type="checkbox" id="set_letterhead" class="w-4 h-4 text-blue-600" onchange="toggleLetterheadPreview()"> 
+                                I print on pre-printed Lab Letterhead (Hides digital Header & Footer)
+                            </label>
+                            <p class="text-xs text-gray-500 mt-1 mb-4">If checked, the system will leave blank space at the top and bottom of the A4 page so you can feed your physical letterhead paper into the printer.</p>
+                            
+                            <button class="bg-indigo-600 text-white px-6 py-2 rounded text-sm font-bold w-full md:w-auto" onclick="saveLabSetup()">Save Settings</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -197,9 +331,9 @@
 
 <!-- PRINT TEMPLATE -->
 <div id="print-area" class="no-print hide-on-desktop">
-    <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px;">
-        <h1 style="font-size: 24px; font-weight: bold; margin: 0;">ACD BITTU LAB CLOUD</h1>
-        <p style="margin: 2px; font-size: 14px;">Opp. Main Hospital, Jamui, Bihar | Ph: +91-8873541169</p>
+    <div id="print-header" style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px;">
+        <h1 id="pr_lab_name" style="font-size: 24px; font-weight: bold; margin: 0;">ACD BITTU LAB CLOUD</h1>
+        <p id="pr_lab_details" style="margin: 2px; font-size: 14px;">Opp. Main Hospital, Jamui, Bihar | Ph: +91-8873541169</p>
     </div>
     
     <table style="width: 100%; margin-bottom: 20px; font-size: 13px; border: 1px solid #000; padding: 5px;">
@@ -227,14 +361,26 @@
         <tbody id="pr_body"></tbody>
     </table>
 
-    <div style="width: 100%; position: absolute; bottom: 30px; display: flex; justify-content: space-between; font-size: 12px; padding: 0 20px;">
-        <div style="text-align: center;"><br><b>Technician</b></div>
-        <div style="text-align: center;"><b>Dr. Consultant</b><br>MD (Pathology)</div>
+    <div id="print-footer" style="width: 100%; position: absolute; bottom: 30px; display: flex; justify-content: space-between; font-size: 12px; padding: 0 20px;">
+        <div style="text-align: center;">
+            <br>
+            <b id="pr_tech_name">Technician Name</b><br>
+            <span id="pr_tech_qual">DMLT</span>
+        </div>
+        <div style="text-align: center;">
+            <b id="pr_dr_name">Dr. Consultant Name</b><br>
+            <span id="pr_dr_qual">MD (Pathology)</span>
+        </div>
     </div>
 </div>
 
+<!-- HIDDEN IFRAME FOR BLOCKER-FREE PRINTING -->
+<iframe id="hiddenPrintFrame" style="position:fixed; right:0; bottom:0; width:0; height:0; border:0;"></iframe>
+
 <script>
-    /* 1. COMPREHENSIVE MASTER TEST CATALOGUE (25+ Tests) */
+    /* ==========================================
+       1. MASTER TEST CATALOGUE (25+ Tests) 
+       ========================================== */
     const masterCatalog = [
         {
             name: "Complete Blood Count (CBC)", price: 300, searchKeys: ["cbc", "blood count", "haemogram"],
@@ -408,13 +554,33 @@
     let activeTests = [];
     document.getElementById('p_date').valueAsDate = new Date();
 
-    /* 2. TAB LOGIC */
+    /* ==========================================
+       2. TAB NAVIGATION LOGIC
+       ========================================== */
     function showTab(tabName, moduleName = '') {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
         document.getElementById(tabName + '-tab').classList.remove('hidden');
         
-        if (tabName === 'new-patient') document.getElementById('page-title').innerText = 'New Patient Entry';
-        else if (tabName === 'catalogue') { document.getElementById('page-title').innerText = 'Master Test Catalogue'; loadCatalogueTable(); }
+        if (tabName === 'new-patient') {
+            document.getElementById('page-title').innerText = 'New Patient Entry';
+            document.getElementById('p_name').focus();
+        }
+        else if (tabName === 'catalogue') { 
+            document.getElementById('page-title').innerText = 'Master Test Catalogue'; 
+            loadCatalogueTable(); 
+        }
+        else if (tabName === 'inventory') {
+            document.getElementById('page-title').innerText = 'Inventory & Stock';
+            renderInventoryTable();
+        }
+        else if (tabName === 'accounts') {
+            document.getElementById('page-title').innerText = 'Accounts & Expenses';
+            renderAccountsTable();
+        }
+        else if (tabName === 'lab-setup') {
+            document.getElementById('page-title').innerText = 'Lab & Print Setup';
+            loadLabSetup();
+        }
         else if (tabName === 'super-admin') document.getElementById('page-title').innerText = 'Super Admin';
         else if (tabName === 'placeholder') {
             document.getElementById('page-title').innerText = moduleName;
@@ -427,59 +593,46 @@
 
     function toggleMenu() { document.getElementById('mobile-menu').classList.toggle('hidden'); }
 
-    /* 3. POPULATE TEST CATALOGUE PAGE */
-    function loadCatalogueTable(filter = "") {
-        const tbody = document.getElementById('catalogue-body');
-        tbody.innerHTML = '';
+    /* ==========================================
+       3. ENTER-KEY NAVIGATION (GLOBAL FIX)
+       ========================================== */
+    document.addEventListener('keydown', ev => {
+        if (ev.key !== 'Enter') return;
+        const el = ev.target;
         
-        let counter = 1;
-        masterCatalog.forEach(test => {
-            if(filter && !test.name.toLowerCase().includes(filter.toLowerCase()) && !test.searchKeys.join(" ").includes(filter.toLowerCase())) return;
-            
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td class="text-center">${counter++}</td>
-                <td class="font-semibold text-blue-800">${test.name}</td>
-                <td class="text-gray-500">${test.searchKeys.join(", ")}</td>
-                <td class="font-bold text-green-700">₹ ${test.price}</td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
+        // Ignore structural fields that need enter
+        if (el.tagName === 'TEXTAREA' || el.id === 'search_test' || el.id === 'cat_search') return;
+        
+        // Grid Navigation
+        if (el.matches('.res-input')) {
+            ev.preventDefault();
+            const inputs = Array.from(document.querySelectorAll('.res-input'));
+            const idx = inputs.indexOf(el);
+            if (idx > -1 && idx < inputs.length - 1) {
+                inputs[idx + 1].focus();
+            } else {
+                document.getElementById('save_btn').focus();
+            }
+            return;
+        }
 
-    function filterCatalogue() {
-        const val = document.getElementById('cat_search').value;
-        loadCatalogueTable(val);
-    }
+        // Form Navigation
+        const form = el.closest('.box-strip');
+        if (form) {
+            ev.preventDefault();
+            const fields = Array.from(form.querySelectorAll('input:not([readonly]), select'));
+            const idx = fields.indexOf(el);
+            if (idx > -1 && idx < fields.length - 1) {
+                fields[idx + 1].focus();
+            } else if (el.id === 'b_mode') {
+                document.getElementById('save_btn').focus();
+            }
+        }
+    });
 
-    /* 4. ENTER-KEY NAVIGATION (Includes Table inputs) - FIXED VERSION */
-    function attachEnterNavigation() {
-        const inputs = Array.from(document.querySelectorAll('.nav-elem'));
-        inputs.forEach((input, index) => {
-            // Replaced cloneNode with direct onkeydown assignment to stop it from wiping out addEventListener bindings!
-            input.onkeydown = function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    if (this.id === 'search_test') { document.getElementById('add_test_btn').click(); return; }
-                    if (this.id === 'add_test_btn') {
-                        const resultInputs = document.querySelectorAll('.res-input');
-                        if (resultInputs.length > 0) resultInputs[0].focus();
-                        else if (inputs[index + 1]) inputs[index + 1].focus();
-                        return;
-                    }
-                    const nextList = Array.from(document.querySelectorAll('.nav-elem'));
-                    const currentIndex = nextList.indexOf(this);
-                    if (currentIndex > -1 && currentIndex < nextList.length - 1) {
-                        nextList[currentIndex + 1].focus();
-                    } else if (this.id === 'b_mode') {
-                        document.getElementById('save_btn').focus();
-                    }
-                }
-            };
-        });
-    }
-
-    /* 5. SMART SEARCH */
+    /* ==========================================
+       4. SMART SEARCH & RESULTS GRID
+       ========================================== */
     const searchInput = document.getElementById('search_test');
     const searchRes = document.getElementById('search_autocomplete');
 
@@ -504,6 +657,7 @@
         } else { searchRes.style.display = 'none'; }
     });
 
+    // Close dropdown on outside click
     document.addEventListener('click', (e) => {
         if(!e.target.closest('#search_test') && !e.target.closest('.search-item')) searchRes.style.display = 'none';
     });
@@ -516,11 +670,25 @@
         else alert("No test found matching '" + val + "'.");
     };
 
+    // Listen for enter on search specifically to trigger add
+    searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            document.getElementById('add_test_btn').click();
+        }
+    });
+
     function selectTest(test) {
         if (activeTests.some(t => t.name === test.name)) { alert("Test already added!"); return; }
         activeTests.push(test);
         searchRes.style.display = 'none';
         renderResultGrid(); calcBill();
+        
+        // Auto focus first param of newly added test
+        setTimeout(() => {
+            const inputs = document.querySelectorAll('.res-input');
+            if(inputs.length > 0) inputs[inputs.length - test.params.length].focus();
+        }, 50);
     }
 
     function renderResultGrid() {
@@ -539,14 +707,13 @@
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td class="pl-4 py-2 text-xs md:text-sm">${p.name}</td>
-                    <td><input type="text" class="nav-elem res-input border-b" placeholder="Enter..." data-test="${test.name}" data-param="${p.name}"></td>
+                    <td><input type="text" class="nav-elem res-input border-b w-full bg-transparent outline-none focus:bg-blue-50" placeholder="Enter..." data-test="${test.name}" data-param="${p.name}"></td>
                     <td class="text-gray-500 text-xs">${p.unit}</td>
                     <td class="text-gray-500 text-xs">${p.ref}</td>
                 `;
                 tbody.appendChild(tr);
             });
         });
-        attachEnterNavigation();
     }
 
     function removeTest(testName) { activeTests = activeTests.filter(t => t.name !== testName); renderResultGrid(); calcBill(); }
@@ -560,16 +727,87 @@
         document.getElementById('b_due').value = due > 0 ? due : 0;
     }
 
-    /* 6. SAVE & PRINT */
+    /* ==========================================
+       5. LAB SETUP & LOCAL STORAGE DATA
+       ========================================== */
+    function loadLabSetup() {
+        const setup = JSON.parse(localStorage.getItem('acd_lab_setup')) || {};
+        if(setup.labName) document.getElementById('set_lab_name').value = setup.labName;
+        if(setup.labAddress) document.getElementById('set_lab_address').value = setup.labAddress;
+        if(setup.labPhone) document.getElementById('set_lab_phone').value = setup.labPhone;
+        if(setup.drName) document.getElementById('set_dr_name').value = setup.drName;
+        if(setup.drQual) document.getElementById('set_dr_qual').value = setup.drQual;
+        if(setup.techName) document.getElementById('set_tech_name').value = setup.techName;
+        if(setup.techQual) document.getElementById('set_tech_qual').value = setup.techQual;
+        
+        const lhCheck = document.getElementById('set_letterhead');
+        lhCheck.checked = setup.letterhead === true;
+        toggleLetterheadPreview();
+    }
+
+    function saveLabSetup() {
+        const setup = {
+            labName: document.getElementById('set_lab_name').value,
+            labAddress: document.getElementById('set_lab_address').value,
+            labPhone: document.getElementById('set_lab_phone').value,
+            drName: document.getElementById('set_dr_name').value,
+            drQual: document.getElementById('set_dr_qual').value,
+            techName: document.getElementById('set_tech_name').value,
+            techQual: document.getElementById('set_tech_qual').value,
+            letterhead: document.getElementById('set_letterhead').checked
+        };
+        localStorage.setItem('acd_lab_setup', JSON.stringify(setup));
+        
+        // Update Print Template Instantly
+        applySetupToPrint(setup);
+        alert("Lab Setup Saved!");
+    }
+
+    function toggleLetterheadPreview() {
+        const isChecked = document.getElementById('set_letterhead').checked;
+        const header = document.getElementById('print-header');
+        const footer = document.getElementById('print-footer');
+        
+        // Visual indicator in setup
+        if(isChecked) {
+            header.style.display = 'none';
+            footer.style.display = 'none';
+        } else {
+            header.style.display = 'block';
+            footer.style.display = 'flex';
+        }
+    }
+
+    function applySetupToPrint(setup) {
+        document.getElementById('pr_lab_name').innerText = setup.labName || "ACD BITTU LAB CLOUD";
+        document.getElementById('pr_lab_details').innerText = (setup.labAddress || "") + " | Ph: " + (setup.labPhone || "");
+        document.getElementById('pr_dr_name').innerText = setup.drName || "";
+        document.getElementById('pr_dr_qual').innerText = setup.drQual || "";
+        document.getElementById('pr_tech_name').innerText = setup.techName || "";
+        document.getElementById('pr_tech_qual').innerText = setup.techQual || "";
+        
+        document.getElementById('print-header').style.display = setup.letterhead ? 'none' : 'block';
+        document.getElementById('print-footer').style.display = setup.letterhead ? 'none' : 'flex';
+    }
+
+    /* ==========================================
+       6. SAVE & PRINT (BLOCKER-FREE IFRAME)
+       ========================================== */
     function saveAndPrint() {
         if(activeTests.length === 0) { alert("Please add at least one test."); return; }
         
+        // Ensure setup is applied
+        const setup = JSON.parse(localStorage.getItem('acd_lab_setup')) || {};
+        applySetupToPrint(setup);
+
+        // Fill Patient Data
         document.getElementById('pr_name').innerText = document.getElementById('p_name').value || "N/A";
         document.getElementById('pr_age').innerText = document.getElementById('p_age').value + " " + document.getElementById('p_age_unit').value;
         document.getElementById('pr_gender').innerText = document.getElementById('p_gender').value;
         document.getElementById('pr_dr').innerText = document.getElementById('p_dr').value || "Self";
         document.getElementById('pr_date').innerText = document.getElementById('p_date').value;
 
+        // Gather Results
         const inputs = document.querySelectorAll('.res-input');
         const resultsMap = {};
         inputs.forEach(inp => {
@@ -579,6 +817,7 @@
             resultsMap[tName].push({ param: pName, result: inp.value });
         });
 
+        // Build Report Table
         const prBody = document.getElementById('pr_body');
         prBody.innerHTML = '';
 
@@ -600,20 +839,141 @@
             });
         });
 
-        window.print();
+        // TRIGGER PRINT VIA HIDDEN IFRAME (Popup Blocker Bypass)
+        const printContent = document.getElementById('print-area').innerHTML;
+        const iframe = document.getElementById('hiddenPrintFrame');
+        
+        const doc = iframe.contentWindow.document;
+        doc.open();
+        doc.write(`
+            <html>
+            <head>
+                <style>
+                    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-print-color-adjust: exact; }
+                    .excel-grid { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+                    .excel-grid th { background: #f3f4f6 !important; color: black !important; padding: 6px; text-align: left; border-bottom: 2px solid #000; }
+                    .excel-grid td { border-bottom: 1px solid #d1d5db; padding: 4px; }
+                    @page { size: A4; margin: ${setup.letterhead ? '35mm' : '15mm'}; }
+                </style>
+            </head>
+            <body onload="window.print();">
+                ${printContent}
+            </body>
+            </html>
+        `);
+        doc.close();
+        
+        // Clear entry after print logic is triggered
+        setTimeout(clearEntry, 1000);
     }
 
     function clearEntry() {
         activeTests = [];
-        document.querySelectorAll('input').forEach(i => { if(i.type !== 'date' && i.id !== 'p_id' && i.id !== 'cat_search') i.value = ''; });
+        document.querySelectorAll('#new-patient-tab input').forEach(i => { if(i.type !== 'date' && i.id !== 'p_id') i.value = ''; });
         document.getElementById('b_disc').value = 0;
         document.getElementById('b_paid').value = 0;
         renderResultGrid(); calcBill();
+        document.getElementById('p_name').focus();
     }
 
-    // Init
-    attachEnterNavigation();
+    /* ==========================================
+       7. INVENTORY & ACCOUNTS (LOCAL DB FOR NOW)
+       ========================================== */
+    function addInventory() {
+        const item = document.getElementById('inv_item').value;
+        const qty = document.getElementById('inv_qty').value;
+        const unit = document.getElementById('inv_unit').value;
+        const expiry = document.getElementById('inv_expiry').value;
+        const status = document.getElementById('inv_status').value;
+        
+        if(!item || !qty) { alert("Please enter item name and quantity."); return; }
+        
+        let inv = JSON.parse(localStorage.getItem('acd_inventory')) || [];
+        inv.push({ id: Date.now(), item, qty, unit, expiry, status });
+        localStorage.setItem('acd_inventory', JSON.stringify(inv));
+        
+        document.getElementById('inv_item').value = '';
+        document.getElementById('inv_qty').value = '';
+        renderInventoryTable();
+    }
+
+    function renderInventoryTable() {
+        const inv = JSON.parse(localStorage.getItem('acd_inventory')) || [];
+        const tbody = document.getElementById('inventory-body');
+        tbody.innerHTML = '';
+        if(inv.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">No items in inventory.</td></tr>';
+            return;
+        }
+        inv.forEach((r, i) => {
+            let color = r.status === 'Low Stock' ? 'text-orange-500' : (r.status === 'Expired' ? 'text-red-600' : 'text-green-600');
+            tbody.innerHTML += `<tr>
+                <td>${r.item}</td><td>${r.qty}</td><td>${r.unit}</td><td>${r.expiry}</td>
+                <td class="${color} font-bold">${r.status}</td>
+                <td><button class="text-red-500 hover:text-red-700" onclick="deleteInv(${i})"><i class="fa-solid fa-trash"></i></button></td>
+            </tr>`;
+        });
+    }
+
+    function deleteInv(index) {
+        let inv = JSON.parse(localStorage.getItem('acd_inventory')) || [];
+        inv.splice(index, 1);
+        localStorage.setItem('acd_inventory', JSON.stringify(inv));
+        renderInventoryTable();
+    }
+
+    function addAccount() {
+        const desc = document.getElementById('acc_desc').value;
+        const amt = document.getElementById('acc_amt').value;
+        const cat = document.getElementById('acc_cat').value;
+        const type = document.getElementById('acc_type').value;
+        const date = new Date().toISOString().split('T')[0];
+        
+        if(!desc || !amt || !cat) { alert("Please fill all details."); return; }
+        
+        let acc = JSON.parse(localStorage.getItem('acd_accounts')) || [];
+        acc.push({ id: Date.now(), date, desc, amt, cat, type });
+        localStorage.setItem('acd_accounts', JSON.stringify(acc));
+        
+        document.getElementById('acc_desc').value = '';
+        document.getElementById('acc_amt').value = '';
+        renderAccountsTable();
+    }
+
+    function renderAccountsTable() {
+        const acc = JSON.parse(localStorage.getItem('acd_accounts')) || [];
+        const tbody = document.getElementById('accounts-body');
+        tbody.innerHTML = '';
+        if(acc.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">No records found.</td></tr>';
+            return;
+        }
+        acc.forEach((r, i) => {
+            let color = r.type === 'Income' ? 'text-green-600' : 'text-red-600';
+            tbody.innerHTML += `<tr>
+                <td>${r.date}</td><td>${r.desc}</td><td>${r.cat}</td>
+                <td class="${color} font-bold">${r.type}</td><td class="font-bold">₹${r.amt}</td>
+                <td><button class="text-red-500 hover:text-red-700" onclick="deleteAcc(${i})"><i class="fa-solid fa-trash"></i></button></td>
+            </tr>`;
+        });
+    }
+
+    function deleteAcc(index) {
+        let acc = JSON.parse(localStorage.getItem('acd_accounts')) || [];
+        acc.splice(index, 1);
+        localStorage.setItem('acd_accounts', JSON.stringify(acc));
+        renderAccountsTable();
+    }
+
+    /* ==========================================
+       8. INIT CALLS
+       ========================================== */
     setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); }, 1000);
+    
+    // Load setup on boot
+    const setup = JSON.parse(localStorage.getItem('acd_lab_setup')) || {};
+    applySetupToPrint(setup);
+
 </script>
 </body>
 </html>
