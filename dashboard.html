@@ -96,8 +96,23 @@ button:disabled{opacity:.55;cursor:not-allowed}
     padding: 0 !important;
   }
 
-  #workspace > *:not(#entryPage) {
+  
+  /* Keep report header and result section only */
+  #workspace > *:not(#entryPage):not(.print-header) {
     display: none !important;
+  }
+
+  .app,
+  .main,
+  .content,
+  #entryPage,
+  .results {
+    min-height: 0 !important;
+    height: auto !important;
+  }
+
+  .content {
+    display: block !important;
   }
 
   #entryPage {
@@ -110,6 +125,7 @@ button:disabled{opacity:.55;cursor:not-allowed}
   #entryPage > .cards {
     display: none !important;
   }
+
 
   .print-header {
     display: block !important;
