@@ -103,7 +103,8 @@ $("paymentsBody").innerHTML=payments.length?payments.map(p=>'<tr><td>'+esc(fmtDa
 const invoices=listValue(data.invoices,data.invoice_records);
 $("invoicesBody").innerHTML=invoices.length?invoices.map(i=>'<tr><td>'+esc(text(i.invoice_number))+'</td><td>'+esc(fmtDate(i.invoice_date||i.created_at))+'</td><td>'+esc(text(i.billing_type))+'</td><td>'+esc(money(i.amount_paise??i.amount))+'</td><td><button class="btn" data-invoice-id="'+esc(i.id)+'">Download PDF</button></td></tr>').join(""):'<tr><td colspan="5" class="empty">No invoice records found.</td></tr>';
 $("invoicesBody").querySelectorAll("[data-invoice-id]").forEach(button=>button.addEventListener("click",()=>downloadInvoice(button.dataset.invoiceId,button)));
-async function load(){
+}
+  async function load(){
 $("refreshBtn").disabled=true;setNotice("Loading subscription details from Supabase…");
 try{
 const {data:{session},error:sessionError}=await db.auth.getSession();if(sessionError)throw sessionError;if(!session){location.replace("index.html");return}
