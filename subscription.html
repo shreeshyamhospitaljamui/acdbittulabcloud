@@ -101,8 +101,8 @@ else{$("actionDescription").textContent="Your subscription is not currently acti
 const payments=listValue(data.payments,data.payment_records,data.payment_history);
 $("paymentsBody").innerHTML=payments.length?payments.map(p=>'<tr><td>'+esc(fmtDate(p.created_at||p.paid_at||p.payment_date))+'</td><td>'+esc(text(p.billing_type||p.payment_type||p.description))+'</td><td>'+esc(money(p.amount_paise??p.amount))+'</td><td>'+esc(text(p.payment_status||p.status))+'</td><td>'+esc(text(p.gateway_payment_id||p.gateway_order_id||p.razorpay_payment_id||p.payment_id||p.id))+'</td></tr>').join(""):'<tr><td colspan="5" class="empty">No payment records found.</td></tr>';
 const invoices=listValue(data.invoices,data.invoice_records);
-$("invoicesBody").innerHTML=invoices.length?invoices.map(i=>'<tr><td>'+esc(text(i.invoice_number))+'</td><td>'+esc(fmtDate(i.invoice_date||i.created_at))+'</td><td>'+esc(text(i.billing_type))+'</td><td>'+esc(money(i.amount_paise??i.amount))+'</td><td>PDF not enabled yet</td></tr>').join(""):'<tr><td colspan="5" class="empty">No invoice records found.</td></tr>';
-}
+$("invoicesBody").innerHTML=invoices.length?invoices.map(i=>'<tr><td>'+esc(text(i.invoice_number))+'</td><td>'+esc(fmtDate(i.invoice_date||i.created_at))+'</td><td>'+esc(text(i.billing_type))+'</td><td>'+esc(money(i.amount_paise??i.amount))+'</td><td><button class="btn" data-invoice-id="'+esc(i.id)+'">Download PDF</button></td></tr>').join(""):'<tr><td colspan="5" class="empty">No invoice records found.</td></tr>';
+$("invoicesBody").querySelectorAll("[data-invoice-id]").forEach(button=>button.addEventListener("click",()=>downloadInvoice(button.dataset.invoiceId,button)));
 async function load(){
 $("refreshBtn").disabled=true;setNotice("Loading subscription details from Supabase…");
 try{
@@ -133,6 +133,108 @@ checkout.on("payment.failed",r=>setNotice(r.error?.description||"Payment failed.
 checkout.open();
 }catch(e){setNotice(e.message||"Payment could not be started.","error")}
 finally{b.disabled=false;b.textContent=original}
+}
+async function downloadInvoice(invoiceId, button) {
+  const printTab = window.open("", "_blank");
+
+  if (!printTab) {
+    setNotice("Please allow pop-ups to download invoice.", "error");
+    return;
+  }
+
+  if (button) button.disabled = true;
+
+  try {
+    const { data: invoice, error } = await db
+      .from("acd_owner_invoices")
+      .select("id, invoice_number, invoice_date, amount_paise, currency, billing_type, period_months, owner_user_id, payment_record_id")
+      .eq("id", invoiceId)
+      .single();
+
+    if (error) throw error;
+    if (!invoice) throw new Error("Invoice not found.");
+
+    const { data: payment, error: paymentError } = await db
+      .from("acd_owner_payment_records")
+      .select("gateway_payment_id, payment_status, paid_at")
+      .eq("id", invoice.payment_record_id)
+      .maybeSingle();
+
+    if (paymentError) throw paymentError;
+
+    if (!payment || payment.payment_status !== "paid") {
+      throw new Error("Only paid invoices can be downloaded.");
+    }
+
+    const { data: sessionData } = await db.auth.getSession();
+    const email = sessionData?.session?.user?.email || "—";
+
+    const amount = (Number(invoice.amount_paise) / 100).toLocaleString("en-IN", {
+      style: "currency",
+      currency: invoice.currency || "INR"
+    });
+
+    const date = new Date(invoice.invoice_date).toLocaleDateString("en-IN");
+    const paidDate = payment.paid_at
+      ? new Date(payment.paid_at).toLocaleString("en-IN")
+      : date;
+
+    const safe = value => String(value ?? "—").replace(/[&<>"']/g, ch => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;",
+      '"': "&quot;", "'": "&#39;"
+    })[ch]);
+
+    printTab.document.open();
+    printTab.document.write(`<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Invoice ${safe(invoice.invoice_number)}</title>
+<style>
+body{font-family:Arial,sans-serif;color:#222;padding:35px}
+.invoice{max-width:750px;margin:auto;border:1px solid #ddd;padding:35px}
+h1{color:#174ea6;margin-bottom:4px}
+.muted{color:#666;font-size:13px}
+table{width:100%;border-collapse:collapse;margin-top:28px}
+td,th{padding:13px;border:1px solid #ddd;text-align:left}
+.total{font-size:20px;font-weight:bold;text-align:right;margin-top:25px}
+.paid{color:green;font-weight:bold}
+@media print{button{display:none}.invoice{border:0}}
+</style>
+</head>
+<body>
+<div class="invoice">
+<h1>ACD BITTU LAB CLOUD</h1>
+<p class="muted">Subscription Tax Invoice / Payment Receipt</p>
+<hr>
+<h2>INVOICE</h2>
+<p><b>Invoice Number:</b> ${safe(invoice.invoice_number)}</p>
+<p><b>Invoice Date:</b> ${safe(date)}</p>
+<p><b>Owner Email:</b> ${safe(email)}</p>
+<table>
+<tr><th>Description</th><th>Details</th></tr>
+<tr><td>Subscription</td><td>${safe(invoice.billing_type)}</td></tr>
+<tr><td>Subscription Period</td><td>${safe(invoice.period_months)} months</td></tr>
+<tr><td>Payment ID</td><td>${safe(payment.gateway_payment_id)}</td></tr>
+<tr><td>Payment Date</td><td>${safe(paidDate)}</td></tr>
+<tr><td>Payment Status</td><td class="paid">PAID</td></tr>
+</table>
+<div class="total">Total Paid: ${safe(amount)}</div>
+<hr>
+<p class="muted">This is a computer-generated payment receipt.</p>
+<button onclick="window.print()">Download / Save as PDF</button>
+</div>
+</body>
+</html>`);
+    printTab.document.close();
+
+    setNotice("Invoice opened. Choose Save as PDF to download.", "success");
+  } catch (error) {
+    printTab.close();
+    setNotice("Invoice download failed: " + error.message, "error");
+  } finally {
+    if (button) button.disabled = false;
+  }
 }
 $("backBtn").onclick=()=>location.href="dashboard.html";$("refreshBtn").onclick=load;$("renewBtn").onclick=startPayment;load();
 </script>
