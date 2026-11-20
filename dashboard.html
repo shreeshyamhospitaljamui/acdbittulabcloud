@@ -190,6 +190,7 @@ $("nav").querySelectorAll("button").forEach(b=>b.onclick=async()=>{
   if(b.dataset.page!=="New Patient Entry")say("This menu is a navigation placeholder. Its module will be built next; patient entry is connected now.");else say("Connected to Supabase. Ready for patient entry.");
 });
 function tick(){$("clock").textContent=new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false})}tick();setInterval(tick,1000);
-init().catch(async e=>{say("Session/setup error: "+e.message);if(e.message?.toLowerCase().includes("session")){await db.auth.signOut();location.replace("index.html")}});
+init().catch(async e=>say("Session/setup error: "+e.message));
+</script>
 <script src="platform-mode.js"></script>
-</script></body></html>
+</body></html>
