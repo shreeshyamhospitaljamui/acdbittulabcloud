@@ -54,8 +54,12 @@ button:disabled{opacity:.55;cursor:not-allowed}
 /* A4 report only while printing */
 @media print {
   @page {
-    size: A4 portrait;
-    margin: 7mm 8mm 10mm;
+  size: A4 var(--rd-print-orientation, portrait);
+  margin:
+    var(--rd-margin-top, 7mm)
+    var(--rd-margin-right, 8mm)
+    var(--rd-margin-bottom, 10mm)
+    var(--rd-margin-left, 8mm);
   }
 
   html, body {
@@ -598,8 +602,69 @@ $("save").onclick=async()=>{
    '<div><b>Received On:</b> '+safe($("date").value)+'</div>'+
    '<div><b>Referred By:</b> '+safe($("doctor").value.trim()||"Self")+'</div>'+
    '<div><b>Reported On:</b> '+safe(new Date().toLocaleDateString("en-GB"))+'</div>';
-  $("printTestTitle").textContent="";
-  say("Patient, order और सभी test results save हो गए।");window.print();
+  $("printTestTitle").textContent = "";
+
+const { data: reportCfg, error: cfgErr } =
+  await db.rpc("acd_get_lab_report_settings", {
+    p_lab_id: labId
+  });
+
+if (cfgErr) throw cfgErr;
+
+const globalCfg = reportCfg?.global_defaults || {};
+const labCfg = reportCfg?.lab_settings || {};
+
+const layout = {
+  ...(globalCfg.layout || {}),
+  ...(labCfg.layout || {})
+};
+
+const printing = {
+  ...(globalCfg.printing || {}),
+  ...(labCfg.printing || {})
+};
+
+const signatures = {
+  ...(globalCfg.signatures || {}),
+  ...(labCfg.signatures || {})
+};
+
+const root = document.documentElement;
+const mm = (v, d) => Math.max(0, Number(v ?? d)) + "mm";
+
+root.style.setProperty("--rd-margin-top", mm(layout.page_margin_top_mm, 7));
+root.style.setProperty("--rd-margin-left", mm(layout.page_margin_left_mm, 8));
+root.style.setProperty("--rd-margin-right", mm(layout.page_margin_right_mm, 8));
+root.style.setProperty("--rd-margin-bottom", mm(layout.page_margin_bottom_mm, 10));
+
+root.style.setProperty(
+  "--rd-print-orientation",
+  layout.orientation === "landscape" ? "landscape" : "portrait"
+);
+
+const footer = document.querySelector(".signature-footer");
+
+if (footer) {
+  footer.style.display =
+    signatures.technician === false && signatures.doctor === false
+      ? "none" : "flex";
+
+  if (footer.children[0]) {
+    footer.children[0].style.display =
+      signatures.technician === false ? "none" : "";
+  }
+
+  if (footer.children[1]) {
+    footer.children[1].style.display =
+      signatures.doctor === false ? "none" : "";
+  }
+}
+
+say("Patient, order और सभी test results save हो गए।");
+
+if (printing.print_after_save !== false) {
+  window.print();
+}
  }catch(e){say("Save error: "+e.message)}finally{btn.disabled=false;btn.textContent="Save & Print (A4)"}
 };
 $("logout").onclick=async()=>{try{await db.rpc("acd_device_release",{p_device_id:deviceId()})}catch(e){}await db.auth.signOut();location.replace("index.html")};
