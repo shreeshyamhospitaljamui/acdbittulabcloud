@@ -94,7 +94,7 @@ function render(data){
  const payments=listValue(data.payments,data.payment_records,data.payment_history);
  $("paymentsBody").innerHTML=payments.length?payments.map(p=>'<tr><td>'+esc(fmtDate(p.created_at||p.paid_at||p.payment_date))+'</td><td>'+esc(text(p.billing_type||p.payment_type||p.description))+'</td><td>'+esc(money(p.amount_paise??p.amount))+'</td><td>'+esc(text(p.payment_status||p.status))+'</td><td>'+esc(text(p.gateway_payment_id||p.gateway_order_id||p.razorpay_payment_id||p.payment_id||p.id))+'</td></tr>').join(""):'<tr><td colspan="5" class="empty">No payment records found.</td></tr>';
  const invoices=listValue(data.invoices,data.invoice_records);
- $("invoicesBody").innerHTML=invoices.length?invoices.map(i=>'<tr><td>'+esc(text(i.invoice_number))+'</td><td>'+esc(fmtDate(i.invoice_date||i.created_at))+'</td><td>'+esc(text(i.billing_type))+'</td><td>'+esc(money(i.amount_paise??i.amount))+'</td><td>'+(i.invoice_url?'<a href="'+esc(i.invoice_url)+'" target="_blank" rel="noopener">Download</a>':'Not generated yet')+'</td></tr>').join(""):'<tr><td colspan="5" class="empty">No invoice records found.</td></tr>';
+ $("invoicesBody").innerHTML=invoices.length?invoices.map(i=>'<tr><td>'+esc(text(i.invoice_number))+'</td><td>'+esc(fmtDate(i.invoice_date||i.created_at))+'</td><td>'+esc(text(i.billing_type))+'</td><td>'+esc(money(i.amount_paise??i.amount))+'</td><td>'+(i.id?'<button class="btn invoice-download" type="button" data-invoice-id="'+esc(i.id)+'">Download PDF</button>':'Unavailable')+'</td></tr>').join(""):'<tr><td colspan="5" class="empty">No invoice records found.</td></tr>';
 }
 async function load(){
  $("refreshBtn").disabled=true;setNotice("Loading subscription details from Supabase…");
@@ -113,6 +113,33 @@ async function load(){
 }
 $("backBtn").onclick=()=>location.href="dashboard.html";
 $("refreshBtn").onclick=load;
+$("invoicesBody").addEventListener("click",async event=>{
+ const button=event.target.closest(".invoice-download");
+ if(!button)return;
+ const invoiceId=button.dataset.invoiceId;
+ if(!invoiceId)return;
+ const original=button.textContent;
+ button.disabled=true;button.textContent="Preparing PDF…";
+ try{
+  const {data:{session},error:sessionError}=await db.auth.getSession();
+  if(sessionError)throw sessionError;
+  if(!session)throw new Error("Please sign in again.");
+  const response=await fetch(SUPABASE_URL+"/functions/v1/acd-invoice-pdf",{
+   method:"POST",
+   headers:{"Content-Type":"application/json","apikey":SUPABASE_ANON_KEY,"Authorization":"Bearer "+session.access_token},
+   body:JSON.stringify({invoice_id:invoiceId})
+  });
+  const result=await response.json().catch(()=>({}));
+  if(!response.ok||!result.download_url)throw new Error(result.error||"Invoice download could not be prepared.");
+  window.open(result.download_url,"_blank","noopener");
+  setNotice("Invoice "+(result.invoice_number||"")+" PDF is ready. The secure download link is valid for 15 minutes.");
+ }catch(error){
+  console.error("Invoice download:",error);
+  setNotice("Invoice download failed: "+(error.message||"Unknown error"),true);
+ }finally{
+  button.disabled=false;button.textContent=original;
+ }
+});
 $("renewBtn").onclick=()=>setNotice("Renewal checkout is not enabled yet. The Razorpay order and verification flow must be connected before accepting payment.",true);
 $("changePlanBtn").onclick=()=>setNotice("Plan changes are not enabled yet. No plan or subscription has been changed.",true);
 load();
