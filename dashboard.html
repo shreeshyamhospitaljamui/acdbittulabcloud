@@ -911,23 +911,43 @@ saDashboard.classList.add("hidden");
     }
   }
 
-  function fillLabs() {
-    if (typeof labs === "undefined") return;
-
+  
+  async function fillLabs() {
     const select = el("saLab");
-    select.innerHTML = '<option value="">Select Laboratory</option>';
+    const previousLab = select.value || labId || "";
 
-    labs.forEach(lab => {
-      const option = document.createElement("option");
-      option.value = lab.id;
-      option.textContent = lab.name;
-      select.appendChild(option);
-    });
+    status("Refreshing laboratory list...");
 
-    if (typeof labId !== "undefined" && labId) {
-      select.value = labId;
+    try {
+      const { data, error } = await db
+        .from("cloud_labs")
+        .select("id,name,address,phone")
+        .order("name");
+
+      if (error) throw error;
+
+      labs = data || [];
+
+      select.innerHTML =
+        '<option value="">Select Laboratory</option>';
+
+      labs.forEach(lab => {
+        const option = document.createElement("option");
+        option.value = lab.id;
+        option.textContent = lab.name;
+        select.appendChild(option);
+      });
+
+      select.value = labs.some(lab => lab.id === previousLab)
+        ? previousLab
+        : "";
+
+      status(`Laboratories loaded: ${labs.length}`);
+    } catch (error) {
+      status("Laboratory refresh error: " + error.message, true);
     }
   }
+
 
   el("saLoad").onclick = loadLabSettings;
   el("saRefresh").onclick = loadAudit;
@@ -939,7 +959,7 @@ saDashboard.classList.add("hidden");
   const superButton = nav.querySelector('[data-page="Super Admin"]');
 
   if (superButton) {
-    superButton.addEventListener("click", (event) => {
+    superButton.addEventListener("click", async (event) => {
   event.preventDefault();
   event.stopImmediatePropagation();
       const isSuper = typeof role !== "undefined" && role === "super_admin";
@@ -954,8 +974,8 @@ saDashboard.classList.add("hidden");
         return;
       }
 
-      fillLabs();
-      status("Super Admin session verified.");
+      await fillLabs();
+      
       loadAudit();
       if (el("saLab").value) loadLabSettings();
     }, true);
