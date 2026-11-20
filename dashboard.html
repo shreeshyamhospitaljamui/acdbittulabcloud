@@ -627,6 +627,132 @@ saDashboard.classList.add("hidden");
     el("saStatus").className = error ? "sa-status sa-error" : "sa-status";
   };
 
+  // ===== SUPER ADMIN: PATIENT & ORDER WORKSPACE =====
+  const saWorkspace = document.createElement("section");
+  saWorkspace.innerHTML = `
+    <hr style="margin:20px 0;border:0;border-top:1px solid #ddd">
+    <h3>Laboratory Management</h3>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0">
+      <button class="btn green" id="saPatientsTab">Patients</button>
+      <button class="btn light" id="saOrdersTab">Orders</button>
+    </div>
+
+    <input id="saWorkspaceSearch"
+      placeholder="Search patient name, mobile or order ID"
+      style="width:100%;padding:12px;margin-bottom:10px">
+
+    <div id="saWorkspaceStatus" class="sa-status"></div>
+    <div id="saWorkspaceTable"></div>
+  `;
+  saDashboard.appendChild(saWorkspace);
+
+  let saWorkspaceSection = "patients";
+
+  async function saLoadWorkspace(section = saWorkspaceSection) {
+    saWorkspaceSection = section;
+
+    const labId = el("saLab").value;
+    const search = el("saWorkspaceSearch").value.trim();
+
+    if (!labId) {
+      el("saWorkspaceStatus").textContent = "पहले Laboratory चुनें।";
+      return;
+    }
+
+    el("saWorkspaceStatus").textContent = "Loading...";
+    el("saWorkspaceTable").innerHTML = "";
+
+    try {
+      const { data, error } = await db.rpc(
+        "acd_superadmin_get_lab_workspace",
+        {
+          p_lab_id: labId,
+          p_section: section,
+          p_search: search || null,
+          p_limit: 50,
+          p_offset: 0
+        }
+      );
+
+      if (error) throw error;
+
+      const rows = data?.rows || [];
+
+      if (!rows.length) {
+        el("saWorkspaceTable").textContent = "कोई रिकॉर्ड नहीं मिला।";
+      } else if (section === "patients") {
+        el("saWorkspaceTable").innerHTML = `
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse">
+              <thead>
+                <tr>
+                  <th>Patient</th><th>Mobile</th>
+                  <th>Age</th><th>Gender</th><th>Orders</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows.map(p => `
+                  <tr>
+                    <td>${saText(p.patient_name)}</td>
+                    <td>${saText(p.mobile || "-")}</td>
+                    <td>${saText(p.age ?? "-")} ${saText(p.age_unit || "")}</td>
+                    <td>${saText(p.gender || "-")}</td>
+                    <td>${saText(p.total_orders)}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>`;
+      } else {
+        el("saWorkspaceTable").innerHTML = `
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse">
+              <thead>
+                <tr>
+                  <th>Patient</th><th>Date</th>
+                  <th>Tests</th><th>Total</th>
+                  <th>Paid</th><th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows.map(o => `
+                  <tr>
+                    <td>${saText(o.patient_name || "-")}</td>
+                    <td>${saText(o.order_date || "-")}</td>
+                    <td>${saText(o.test_count)}</td>
+                    <td>${saMoney(o.total_amount)}</td>
+                    <td>${saMoney(o.paid_amount)}</td>
+                    <td>${saText(o.status || "Pending")}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>`;
+      }
+
+      el("saWorkspaceStatus").textContent =
+        `Showing ${rows.length} of ${data.total} records. Read-only view.`;
+
+    } catch (error) {
+      el("saWorkspaceStatus").textContent =
+        "Error: " + error.message;
+    }
+  }
+
+  el("saPatientsTab").addEventListener("click", () => {
+    saLoadWorkspace("patients");
+  });
+
+  el("saOrdersTab").addEventListener("click", () => {
+    saLoadWorkspace("orders");
+  });
+
+  el("saWorkspaceSearch").addEventListener("input", () => {
+    saLoadWorkspace(saWorkspaceSection);
+  });
+  // ===== END PATIENT & ORDER WORKSPACE =====
+ 
   function moduleControls(container, prefix, config = {}) {
     const allowed = config.allowed || {};
     const visible = config.visible || {};
