@@ -280,6 +280,30 @@ button:disabled{opacity:.55;cursor:not-allowed}
         <div class="field full"><label>Default Address</label><input id="rdGlobalAddress"></div>
         <div class="field"><label>Phone</label><input id="rdGlobalPhone"></div>
         <div class="field"><label>Email</label><input id="rdGlobalEmail"></div>
+<div class="field">
+  <label>Default Letterhead Mode</label>
+  <select id="rdGlobalPrintMode">
+    <option value="preprinted">Pre-Printed Letterhead</option>
+    <option value="blank">Software Letterhead</option>
+  </select>
+</div>
+<div class="field">
+  <label>Top Margin (mm)</label>
+  <input id="rdGlobalMarginTop" type="number" min="0" max="80" value="7">
+</div>
+<div class="field">
+  <label>Left Margin (mm)</label>
+  <input id="rdGlobalMarginLeft" type="number" min="0" max="40" value="8">
+</div>
+<div class="field">
+  <label>Right Margin (mm)</label>
+  <input id="rdGlobalMarginRight" type="number" min="0" max="40" value="8">
+</div>
+<div class="field">
+  <label>Bottom Margin (mm)</label>
+  <input id="rdGlobalMarginBottom" type="number" min="0" max="80" value="10">
+</div>
+        
       </div>
       <button class="btn green" id="rdSaveGlobal">Save Global Defaults</button>
     </div>
@@ -309,8 +333,14 @@ button:disabled{opacity:.55;cursor:not-allowed}
   <div class="field"><label>Lab Alias</label><input id="rdLabAlias"></div>
   <div class="field"><label>Child Age Limit</label><input id="rdChildAge" type="number" value="12"></div>
   <div class="field"><label>Patient ID Generation</label><select id="rdAutoPatient"><option value="true">Automatic</option><option value="false">Manual</option></select></div>
-  <div class="field"><label>Default Printing</label><select id="rdPrintMode"><option value="blank">On Blank Paper</option><option value="preprinted">On Printed Paper</option></select></div>
-  <div class="field"><label>X-Ray Header (pt)</label><input id="rdXrayHeader" type="number" value="350"></div>
+  
+  <div class="field" id="rdPrintModeWrap" style="display:none">
+  <label>Letterhead Mode (Super Admin Only)</label>
+  <select id="rdPrintMode">
+    <option value="preprinted">Pre-Printed Letterhead</option>
+    <option value="blank">Software Letterhead</option>
+  </select>
+  </div>
   <div class="field"><label>X-Ray Footer (pt)</label><input id="rdXrayFooter" type="number" value="800"></div>
   <div class="field"><label>X-Ray Alignment</label><select id="rdXrayAlign"><option>Left</option><option>Middle</option><option>Right</option></select></div>
 </div>
