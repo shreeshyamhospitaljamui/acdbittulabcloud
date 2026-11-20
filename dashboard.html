@@ -1507,7 +1507,23 @@ const merged = {
       $rd("rdGlobalAddress").value = globalSettings.branding?.address || "";
       $rd("rdGlobalPhone").value = globalSettings.branding?.phone || "";
       $rd("rdGlobalEmail").value = globalSettings.branding?.email || "";
+$rd("rdGlobalPrintMode").value =
+  globalSettings.printing?.default_printing || "preprinted";
 
+$rd("rdGlobalMarginTop").value =
+  globalSettings.layout?.page_margin_top_mm ?? 7;
+
+$rd("rdGlobalMarginLeft").value =
+  globalSettings.layout?.page_margin_left_mm ?? 8;
+
+$rd("rdGlobalMarginRight").value =
+  globalSettings.layout?.page_margin_right_mm ?? 8;
+
+$rd("rdGlobalMarginBottom").value =
+  globalSettings.layout?.page_margin_bottom_mm ?? 10;
+
+$rd("rdPrintModeWrap").style.display = isSuper ? "" : "none";
+$rd("rdPrintMode").disabled = !isSuper;
       panel.querySelector(".rd-global-card").style.display =
         isSuper ? "" : "none";
 
@@ -1534,10 +1550,19 @@ const merged = {
           logo_url: $rd("rdGlobalLogo").value.trim(),
           address: $rd("rdGlobalAddress").value.trim(),
           phone: $rd("rdGlobalPhone").value.trim(),
-          email: $rd("rdGlobalEmail").value.trim()
-        },
-        layout: currentGlobal.layout || {},
-        signatures: currentGlobal.signatures || {}
+          layout: {
+  ...(currentGlobal.layout || {}),
+  page_margin_top_mm: Number($rd("rdGlobalMarginTop").value) || 7,
+  page_margin_left_mm: Number($rd("rdGlobalMarginLeft").value) || 8,
+  page_margin_right_mm: Number($rd("rdGlobalMarginRight").value) || 8,
+  page_margin_bottom_mm: Number($rd("rdGlobalMarginBottom").value) || 10
+},
+printing: {
+  ...(currentGlobal.printing || {}),
+  default_printing: $rd("rdGlobalPrintMode").value
+},
+signatures: currentGlobal.signatures || {}
+        
       };
 
       const { error } = await db.rpc(
