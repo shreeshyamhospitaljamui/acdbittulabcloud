@@ -267,7 +267,51 @@ button:disabled{opacity:.55;cursor:not-allowed}
 <div class="signature-footer"><div>Technician Signature: __________________________</div><div>Doctor Signature: __________________________</div></div>
 </div>
 <div id="otherPage" class="placeholder-panel hidden">यह मॉड्यूल पहले जैसा ही मेनू में रखा गया है। इस कार्य में इसके फीचर्स में कोई बदलाव नहीं किया गया है।</div>
-<div id="cataloguePage" class="hidden">
+
+<div id="reportDesignerPage" class="hidden">
+  <section class="panel">
+    <div class="panel-head">Report Designer — Super Admin Global Defaults</div>
+    <div class="panel-body">
+      <p>ये Default Settings सभी नई Labs पर लागू होंगी।</p>
+      <label><input type="checkbox" id="rdOwnerCanCustomize" checked> Allow Lab Owner Customization</label>
+      <div class="fields">
+        <div class="field full"><label>Default Heading</label><input id="rdGlobalName" placeholder="Laboratory Name"></div>
+        <div class="field full"><label>Default Logo URL</label><input id="rdGlobalLogo"></div>
+        <div class="field full"><label>Default Address</label><input id="rdGlobalAddress"></div>
+        <div class="field"><label>Phone</label><input id="rdGlobalPhone"></div>
+        <div class="field"><label>Email</label><input id="rdGlobalEmail"></div>
+      </div>
+      <button class="btn green" id="rdSaveGlobal">Save Global Defaults</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">Individual Laboratory Report Design</div>
+    <div class="panel-body">
+      <div id="rdLabStatus">Loading laboratory settings...</div>
+      <div class="fields">
+        <div class="field full"><label>Laboratory Name</label><input id="rdLabName"></div>
+        <div class="field full"><label>Logo URL</label><input id="rdLabLogo"></div>
+        <div class="field full"><label>Address</label><input id="rdLabAddress"></div>
+        <div class="field"><label>Phone</label><input id="rdLabPhone"></div>
+        <div class="field"><label>Email</label><input id="rdLabEmail"></div>
+        <div class="field"><label>Heading Font Size</label><input id="rdHeadingSize" type="number" min="14" max="36" value="22"></div>
+        <div class="field"><label>Address Font Size</label><input id="rdAddressSize" type="number" min="8" max="18" value="11"></div>
+        <div class="field"><label>Heading Color</label><input id="rdHeadingColor" type="color" value="#173f83"></div>
+        <div class="field"><label>Paper</label><select id="rdPaper"><option>A4</option></select></div>
+        <div class="field"><label>Orientation</label><select id="rdOrientation"><option value="portrait">Portrait</option><option value="landscape">Landscape</option></select></div>
+        <div class="field"><label>Header Gap (mm)</label><input id="rdHeaderGap" type="number" min="0" max="40" value="5"></div>
+        <div class="field"><label>Footer Gap (mm)</label><input id="rdFooterGap" type="number" min="0" max="60" value="18"></div>
+      </div>
+      <p><label><input id="rdShowTechnician" type="checkbox" checked> Show Technician Signature</label></p>
+      <p><label><input id="rdShowDoctor" type="checkbox" checked> Show Doctor Signature</label></p>
+      <p><label><input id="rdOwnerLocked" type="checkbox"> Lock Owner Customization (Super Admin only)</label></p>
+      <button class="btn green" id="rdSaveLab">Save Laboratory Design</button>
+      <div id="rdLabMessage"></div>
+    </div>
+  </section>
+</div>
+  <div id="cataloguePage" class="hidden">
   <div class="catalogue-layout">
     <aside class="catalogue-list">
       <h3>Master Test Catalogue</h3>
