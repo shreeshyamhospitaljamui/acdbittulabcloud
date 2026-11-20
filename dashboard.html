@@ -165,6 +165,7 @@ button:disabled{opacity:.55;cursor:not-allowed}
 const SUPABASE_URL="https://axfvvquhswapiwmvrepe.supabase.co";
 const SUPABASE_ANON_KEY="sb_publishable_n6jRvVDjw2kOF7CS46omqQ_6qGkdR-q";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+ window.db = db;
 const $=id=>document.getElementById(id);
 let user=null,role=null,labId=null,labs=[],catalogue=[],selectedTests=[],flatRows=[];
 function say(t){$("notice").textContent=t}
