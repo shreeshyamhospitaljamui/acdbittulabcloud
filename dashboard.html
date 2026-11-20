@@ -2,93 +2,187 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ACD BITTU LAB CLOUD — Patient Entry</title>
+<title>ACD BITTU LAB CLOUD — New Patient Entry</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{--navy:#07172d;--blue:#0866df;--line:#dce3eb;--bg:#f3f6fa;--text:#1d2939}
-*{box-sizing:border-box}body{margin:0;font:13px Arial;background:var(--bg);color:var(--text)}.app{display:flex;min-height:100vh}.sidebar{width:190px;background:var(--navy);color:white;padding:14px 9px;flex-shrink:0}.brand{font-weight:bold;padding:12px 8px 20px;border-bottom:1px solid #29405e}.nav button{display:block;width:100%;text-align:left;background:none;color:#dce8f7;border:0;padding:11px 9px;cursor:pointer}.nav button.active,.nav button:hover{background:#075bd4}.main{flex:1;min-width:0}.top{height:48px;background:white;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 18px}.content{padding:16px;display:grid;gap:12px}.cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}.panel{background:white;border:1px solid var(--line);border-radius:8px;overflow:hidden}.head{padding:11px 13px;font-weight:bold;color:#075ec9;border-bottom:1px solid var(--line)}.body{padding:12px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.field label{display:block;font-size:11px;color:#596579;margin-bottom:4px}input,select{width:100%;height:34px;border:1px solid #ccd5e1;border-radius:5px;padding:6px 8px;font-size:12px}button.btn{border:0;border-radius:5px;padding:9px 13px;background:#0969df;color:white;font-weight:bold;cursor:pointer}button.light{background:#e8eef6;color:#344054}button.green{background:#119653}button.danger{background:#fee4e2;color:#b42318}.full{grid-column:1/-1}.searchrow{display:flex;gap:7px}.searchrow input{flex:1}.suggest{border:1px solid #dce3eb;border-radius:5px;max-height:190px;overflow:auto;margin-top:5px}.suggest button{display:block;width:100%;text-align:left;background:white;border:0;border-bottom:1px solid #eee;padding:9px;cursor:pointer}.suggest button:hover{background:#edf5ff}.selected{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.chip{background:#e8f2ff;color:#0756b5;border-radius:15px;padding:6px 9px;font-size:11px}.chip button{border:0;background:none;color:#b42318;font-weight:bold;cursor:pointer}.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%;font-size:12px}th{background:#173f83;color:white;text-align:left;padding:9px}td{border:1px solid #e2e7ee;padding:6px}td input,td select{height:30px;min-width:100px}.notice{color:#087443;padding:4px 0;min-height:18px}.actions{display:flex;gap:7px;justify-content:flex-end;padding:10px}.hidden{display:none!important}.print-head{display:none}
-@media(max-width:900px){.cards{grid-template-columns:1fr 1fr}.sidebar{width:155px}}
+:root{--navy:#07172d;--blue:#0866df;--line:#dce3eb;--bg:#f3f6fa;--text:#1d2939;--muted:#667085;--green:#12a150}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);font-size:13px}
+.app{min-height:100vh;display:flex}.sidebar{width:182px;flex:0 0 182px;background:var(--navy);color:#e8eef8;display:flex;flex-direction:column;min-height:100vh}
+.brand{height:64px;display:flex;align-items:center;gap:9px;padding:10px;border-bottom:1px solid #1c304b}.brand-mark{width:27px;height:27px;border-radius:7px;background:#0b75e8;display:grid;place-items:center;font-weight:bold;color:white;font-size:17px}.brand strong{font-size:10px;letter-spacing:.3px;display:block}.brand small{font-size:8px;color:#9fb2cc;display:block;margin-top:3px}
+.nav{padding:9px 0;display:flex;flex-direction:column;gap:2px}.nav button{border:0;background:transparent;color:#d8e2f0;text-align:left;padding:10px 9px;font-size:11px;cursor:pointer;border-left:3px solid transparent}.nav button:hover{background:#142c4b}.nav button.active{background:#075bd4;color:#fff;border-left-color:#63b1ff}.nav .super{margin-top:8px;border-top:1px solid #26364d;padding-top:14px;color:#ff9da9}
+.main{min-width:0;flex:1;display:flex;flex-direction:column}.topbar{height:44px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 12px;font-size:12px;font-weight:600}.topright{display:flex;align-items:center;gap:12px;color:var(--muted);font-weight:400}.avatar{width:24px;height:24px;border-radius:50%;background:#d9eaff;color:#075bd4;display:grid;place-items:center}
+.content{padding:12px;display:flex;flex-direction:column;gap:10px;min-height:calc(100vh - 44px)}
+.select-lab{background:#fff;border:1px solid var(--line);padding:8px;border-radius:7px;display:flex;gap:8px;align-items:center}.select-lab select{max-width:260px}
+.cards{display:grid;grid-template-columns:1.05fr 1fr 1fr;gap:9px}.panel{background:white;border:1px solid #e1e6ed;border-radius:8px;box-shadow:0 1px 3px #152b4510;overflow:hidden}.panel-head{padding:10px 10px 7px;border-top:3px solid #2e8bea;color:#075ec9;font-weight:700;font-size:12px}.panel.doctor .panel-head{color:#087f70;border-top-color:#22b8a5}.panel.billing .panel-head{color:#8a43b6;border-top-color:#a56ad0}
+.panel-body{padding:0 10px 10px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:7px}.field{min-width:0}.field.full{grid-column:1/-1}label{display:block;font-size:9px;color:#5b6573;margin:3px 0 4px}
+input,select{width:100%;height:27px;border:1px solid #d8dee7;border-radius:5px;padding:4px 7px;background:#fff;color:#263445;font-size:11px;min-width:0}input:focus,select:focus{outline:2px solid #b8d7ff;border-color:#2680e8}
+.addrow{display:flex;gap:5px}.addrow input{flex:1}.btn{border:0;border-radius:5px;padding:7px 10px;background:#0969df;color:white;font-size:10px;font-weight:700;cursor:pointer}.btn.green{background:var(--green)}.btn.light{background:#e8eef6;color:#344054}.btn.danger{background:#fee4e2;color:#b42318}
+.amounts{display:grid;grid-template-columns:1fr 1fr;gap:6px}.paid input{color:#07934a;font-weight:bold}.due input{color:#c42f35;font-weight:bold}
+.results{flex:1;min-height:260px}.results-head{display:flex;justify-content:space-between;align-items:center;padding:7px 9px;gap:8px}.results-title{font-weight:700;font-size:11px}.actions{display:flex;gap:5px}.table-wrap{padding:0 5px 8px;overflow:auto}table{border-collapse:collapse;width:100%;font-size:10px}th{background:#173f83;color:white;text-align:left;padding:7px 6px;white-space:nowrap}td{border:1px solid #e2e7ee;padding:5px 6px}td input,td select{height:25px;min-width:70px}td.empty{text-align:center;color:#98a2b3;font-style:italic;height:30px}
+#notice{font-size:10px;color:#067647;padding:0 10px 8px;min-height:15px}.hidden{display:none!important}.placeholder-panel{background:#fff;border:1px solid var(--line);border-radius:8px;padding:18px;color:#667085;min-height:120px}
+button:disabled{opacity:.55;cursor:not-allowed}
 @media print{
- @page{size:A4;margin:13mm 12mm 22mm}
- body{background:#fff;font-size:11px}.sidebar,.top,.no-print,.actions,#notice{display:none!important}.app,.main,.content{display:block;min-height:0;padding:0}.cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px}.panel{box-shadow:none;break-inside:avoid;margin-bottom:7px}.head{padding:6px}.body{padding:7px}.print-head{display:block;margin-bottom:10px}.report-table{width:100%;border-collapse:collapse}.report-table thead{display:table-header-group}.report-table tr{break-inside:avoid}.report-table th{background:#e8edf5!important;color:#111!important;border:1px solid #777}.report-table td{border:1px solid #888;padding:5px}.signature-footer{position:fixed;bottom:-15mm;left:0;right:0;border-top:1px solid #777;padding-top:5px;display:flex;justify-content:space-between;font-size:10px}.results-panel{overflow:visible}
+ @page{size:A4;margin:12mm 10mm 18mm}
+ body{background:#fff;font-size:10pt}.sidebar,.topbar,.select-lab,.actions,.no-print{display:none!important}
+ .app,.main,.content{display:block;min-height:0}.content{padding:0}.cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5mm}
+ .panel{box-shadow:none;break-inside:avoid}.panel-head{padding:5px}.panel-body{padding:0 5px 5px}
+ .results{margin-top:5mm;overflow:visible}.table-wrap{overflow:visible}table{font-size:8pt}th{background:#173f83!important;color:#fff!important;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+ td{padding:4px}td input,td select{border:0;height:auto;padding:0;font-size:8pt;appearance:none}
+ #notice{display:none}
+ .print-header{display:block!important}
+ .signature-footer{display:block!important;position:fixed;bottom:-11mm;left:0;right:0;text-align:right;font-size:9pt;background:white;padding-top:3mm;border-top:1px solid #777}
 }
-@media(max-width:650px){.app{display:block}.sidebar{width:100%;min-height:0}.nav{display:flex;flex-wrap:wrap}.nav button{width:auto}.cards{grid-template-columns:1fr}.content{padding:8px}}
+.print-header,.signature-footer{display:none}
+@media(max-width:700px){.sidebar{width:145px;flex-basis:145px}.brand{padding:7px}.nav button{font-size:10px;padding:9px 6px}.content{padding:8px}.cards{grid-template-columns:1fr 1fr}.panel.billing{grid-column:1/-1}.topbar{height:40px}}
+@media(max-width:480px){.sidebar{width:52px;flex-basis:52px}.brand{justify-content:center;padding:5px}.brand-copy,.nav .txt{display:none}.nav button{text-align:center;padding:12px 2px;font-size:15px}.cards{grid-template-columns:1fr}.panel.billing{grid-column:auto}.content{padding:7px}.topbar{padding:0 8px}.results{min-height:250px}}
 </style>
 </head>
 <body>
 <div class="app">
-<aside class="sidebar"><div class="brand">✚ ACD BITTU LAB CLOUD</div><nav class="nav"><button class="active">New Patient &amp; Entry</button><button onclick="location.href='subscription.html'">Subscription</button><button id="logoutSide">Logout</button></nav></aside>
+<aside class="sidebar"><div class="brand"><div class="brand-mark">✚</div><div class="brand-copy"><strong>ACD BITTU LAB CLOUD</strong><small>Desktop + Cloud LIMS</small></div></div>
+<nav class="nav" id="nav">
+<button class="active" data-page="New Patient Entry">♟ <span class="txt">New Patient &amp; Entry</span></button>
+<button data-page="Saved Reports">▣ <span class="txt">Saved Reports</span></button>
+<button data-page="Test Catalogue">☷ <span class="txt">Test Catalogue</span></button>
+<button data-page="Sample Tracking">◆ <span class="txt">Sample Tracking</span></button>
+<button data-page="Accounts & Expenses">▤ <span class="txt">Accounts &amp; Expenses</span></button>
+<button data-page="Inventory & Stock">▣ <span class="txt">Inventory &amp; Stock</span></button>
+<button data-page="Staff & Roles">♧ <span class="txt">Staff &amp; Roles</span></button>
+<button data-page="Lab & Print Setup">⚙ <span class="txt">Lab &amp; Print Setup</span></button>
+<button data-page="Subscription (Razorpay)">▰ <span class="txt">Subscription (Razorpay)</span></button>
+<button class="super" data-page="Super Admin">⬟ <span class="txt">Super Admin</span></button>
+</nav></aside>
 <main class="main">
-<header class="top"><b id="pageTitle">New Patient Entry</b><span><span id="account"></span> &nbsp; <button class="btn light" id="logout">Logout</button></span></header>
-<section class="content">
-<div class="print-head"><h2 id="printLab">ACD BITTU LAB CLOUD</h2><div id="printMeta"></div></div>
+<header class="topbar"><span id="pageTitle">New Patient Entry</span><div class="topright"><span id="clock">00:00</span><span id="account"></span><button class="btn light" id="logout">Logout</button><span class="avatar">♟</span></div></header>
+<section class="content" id="workspace">
+<div class="select-lab hidden" id="labChooser"><b>Laboratory:</b><select id="labSelect"><option value="">Loading laboratories…</option></select><span id="labStatus">Selected</span></div>
+<div class="print-header" id="printHeader"><h2 id="printLabName">Laboratory Report</h2><div id="printPatientMeta"></div></div>
+<div id="entryPage">
 <div class="cards">
-<section class="panel"><div class="head">1. Patient Details</div><div class="body grid">
-<div class="field full"><label>Patient Name</label><input id="patient" placeholder="Patient name"></div>
-<div class="field"><label>Mobile</label><input id="mobile" maxlength="10"></div><div class="field"><label>Age</label><input id="age" type="number" min="0"></div>
-<div class="field"><label>Age Unit</label><select id="ageUnit"><option>Y</option><option>M</option><option>D</option></select></div><div class="field"><label>Gender</label><select id="gender"><option>Male</option><option>Female</option><option>Other</option></select></div>
-</div></section>
-<section class="panel"><div class="head">2. Doctor &amp; Test Selection</div><div class="body grid">
+<section class="panel"><div class="panel-head">▣ &nbsp;1. Patient Details</div><div class="panel-body"><div class="fields">
+<div class="field"><label>Lab ID</label><input id="labId" disabled></div><div class="field"><label>Mobile</label><input id="mobile" inputmode="numeric" maxlength="10" placeholder="10 Digits"></div>
+<div class="field full"><label>Patient Name</label><input id="patient" placeholder="Enter patient name"></div>
+<div class="field"><label>Age</label><input id="age" type="number" min="0" placeholder="Age"></div><div class="field"><label>Unit</label><select id="ageUnit"><option>Y</option><option>M</option><option>D</option></select></div>
+<div class="field full"><label>Gender</label><select id="gender"><option>Male</option><option>Female</option><option>Other</option></select></div>
+</div></div></section>
+<section class="panel doctor"><div class="panel-head">♧ &nbsp;2. Doctor &amp; Tests</div><div class="panel-body"><div class="fields">
 <div class="field"><label>Date</label><input id="date" type="date"></div><div class="field"><label>Ref. Doctor</label><input id="doctor" value="Self"></div>
-<div class="field full"><label>Search Test (CBC, KFT, LFT...)</label><div class="searchrow"><input id="testSearch" autocomplete="off" placeholder="Type test name and press Enter"><button class="btn" id="addTest">Add</button></div><div id="suggest" class="suggest hidden"></div><div id="selectedTests" class="selected"></div></div>
-</div></section>
-<section class="panel"><div class="head">3. Billing</div><div class="body grid">
-<div class="field"><label>Total Amount (₹)</label><input id="total" type="number" min="0" value="0"></div><div class="field"><label>Discount (₹)</label><input id="discount" type="number" min="0" value="0"></div><div class="field"><label>Paid (₹)</label><input id="paid" type="number" min="0" value="0"></div><div class="field"><label>Due (₹)</label><input id="due" readonly value="0"></div><div class="field full"><label>Payment Mode</label><select id="payment"><option>Cash</option><option>UPI</option><option>Card</option><option>Bank Transfer</option></select></div>
-</div></section>
+<div class="field full"><label>Search Test (Type to add)</label><div class="addrow"><input id="testSearch" list="testSuggestions" placeholder="e.g., CBC, KFT, LFT..."><datalist id="testSuggestions"></datalist><button class="btn" id="addTest">+ Add</button></div></div>
+<div class="field full"><small id="selectedTestsLabel">Selected tests: none</small></div>
+</div></div></section>
+<section class="panel billing"><div class="panel-head">₹ &nbsp;3. Billing</div><div class="panel-body"><div class="amounts">
+<div class="field"><label>Total Amount (₹)</label><input id="total" type="number" min="0" value="0"></div><div class="field"><label>Discount (₹)</label><input id="discount" type="number" min="0" value="0"></div>
+<div class="field paid"><label>Paid/Jama (₹)</label><input id="paid" type="number" min="0" value="0"></div><div class="field due"><label>Due (₹)</label><input id="due" type="number" value="0" readonly></div>
+<div class="field full"><label>Payment Mode</label><select id="payment"><option>Cash</option><option>UPI</option><option>Card</option><option>Bank Transfer</option></select></div>
+</div></div></section>
 </div>
-<section class="panel results-panel"><div class="head">4. Combined Test Parameters &amp; Results</div><div class="tablewrap"><table class="report-table"><thead><tr><th style="width:31%">Test Parameter</th><th>Result</th><th>Unit</th><th>Reference Range</th></tr></thead><tbody id="testRows"><tr><td colspan="4">Search and add CBC, KFT, LFT or other tests above.</td></tr></tbody></table></div><div class="actions no-print"><button class="btn light" id="clear">Clear All</button><button class="btn green" id="save">Save &amp; Print A4</button></div><div id="notice" class="notice no-print"></div></section>
-<div class="signature-footer"><span>Technician: __________________</span><span>Authorized Signature: __________________</span></div>
+<section class="panel results"><div class="results-head"><span class="results-title">Test Parameters &amp; Results Entry — Combined</span><div class="actions"><button class="btn light" id="clear">Clear All</button><button class="btn green" id="save">Save &amp; Print (A4)</button></div></div>
+<div class="table-wrap"><table><thead><tr><th style="width:30%">Test / Parameter</th><th>Result</th><th>Unit</th><th>Reference Range</th><th class="no-print"></th></tr></thead><tbody id="testRows"><tr><td class="empty" colspan="5">पहले ऊपर से CBC, KFT, LFT आदि टेस्ट जोड़ें।</td></tr></tbody></table></div><div id="notice"></div></section>
+<div class="signature-footer">Authorized Signature: ______________________________</div>
+</div>
+<div id="otherPage" class="placeholder-panel hidden">यह मॉड्यूल पहले जैसा ही मेनू में रखा गया है। इस कार्य में इसके फीचर्स में कोई बदलाव नहीं किया गया है।</div>
 </section></main></div>
 <script>
 const SUPABASE_URL="https://axfvvquhswapiwmvrepe.supabase.co";
-const SUPABASE_ANON_KEY="sb_publishable_n6jRvVDjw2kOF7CS46omqQ_6qGkdR-q";
+const SUPABASE_ANON_KEY="sb_publishable_n6jRvVDjw2kOF7CS46omqQ_6q";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
-const $=id=>document.getElementById(id);let user=null,labId=null,labName="",catalogue=[],selected=[],parameterRows=[];
-const deviceId=()=>{let x=localStorage.getItem("acd_device_id");if(!x){x=crypto.randomUUID();localStorage.setItem("acd_device_id",x)}return x};
-function say(s){$("notice").textContent=s}
+const $=id=>document.getElementById(id);
+let user=null,role=null,labId=null,labs=[],catalogue=[],selectedTests=[],flatRows=[];
+function say(t){$("notice").textContent=t}
 function safe(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function due(){ $("due").value=Math.max(0,(+$("total").value||0)-(+ $("discount").value||0)-(+ $("paid").value||0)).toFixed(2)}
-["total","discount","paid"].forEach(id=>$(id).addEventListener("input",due));
+function deviceId(){let id=localStorage.getItem("acd_device_id");if(!id){id=crypto.randomUUID?crypto.randomUUID():"acd-"+Date.now()+"-"+Math.random().toString(36).slice(2);localStorage.setItem("acd_device_id",id)}return id}
+function calcDue(){let total=+($("total").value||0),discount=+($("discount").value||0),paid=+($("paid").value||0);$("due").value=Math.max(0,total-discount-paid)}
+["total","discount","paid"].forEach(id=>$(id).addEventListener("input",calcDue));
+function resultControl(p,index){
+ const type=(p.result_type||"numeric").toLowerCase(), opts=Array.isArray(p.result_options)?p.result_options:[];
+ if(["positive_negative","reactive_nonreactive","present_absent","blood_group"].includes(type)){
+  let fallback=type==="positive_negative"?["Positive","Negative"]:type==="reactive_nonreactive"?["Reactive","Non-Reactive"]:type==="present_absent"?["Present","Absent"]:["A+","A-","B+","B-","AB+","AB-","O+","O-"];
+  const list=opts.length?opts:fallback;
+  return '<select data-result="'+index+'"><option value="">Select</option>'+list.map(v=>'<option value="'+safe(v)+'">'+safe(v)+'</option>').join("")+'</select>';
+ }
+ if(type==="titre")return '<input data-result="'+index+'" list="titreOptions" placeholder="Enter titre">';
+ return '<input data-result="'+index+'" '+(type==="numeric"?'inputmode="decimal"':'')+' placeholder="Enter result">';
+}
+function renderRows(){
+ const body=$("testRows");
+ if(!flatRows.length){body.innerHTML='<tr><td class="empty" colspan="5">पहले ऊपर से CBC, KFT, LFT आदि टेस्ट जोड़ें।</td></tr>';return}
+ body.innerHTML=flatRows.map((r,i)=>'<tr><td><b>'+safe(r.test_name)+'</b><br>'+safe(r.parameter_name)+'</td><td>'+resultControl(r,i)+'</td><td>'+safe(r.unit||"")+'</td><td>'+safe(r.reference_range||"")+'</td><td class="no-print"><button class="btn danger" data-remove-test="'+safe(r.test_id)+'">×</button></td></tr>').join("");
+ body.querySelectorAll("[data-result]").forEach(el=>{el.value=flatRows[+el.dataset.result].result_value||"";el.addEventListener("input",()=>flatRows[+el.dataset.result].result_value=el.value);el.addEventListener("change",()=>flatRows[+el.dataset.result].result_value=el.value);el.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();const controls=[...body.querySelectorAll("[data-result]")];const next=controls[controls.indexOf(el)+1];if(next)next.focus()}})});
+ body.querySelectorAll("[data-remove-test]").forEach(b=>b.onclick=()=>{selectedTests=selectedTests.filter(t=>t.id!==b.dataset.removeTest);flatRows=flatRows.filter(r=>r.test_id!==b.dataset.removeTest);renderRows();renderSelected()});
+}
+function renderSelected(){$("selectedTestsLabel").textContent="Selected tests: "+(selectedTests.map(t=>t.test_name).join(", ")||"none")}
 async function loadCatalogue(){
  const {data,error}=await db.from("acd_test_catalogue").select("id,test_code,test_name,department,default_price").eq("is_active",true).order("sort_order");
  if(error)throw error;catalogue=data||[];
+ $("testSuggestions").innerHTML=catalogue.map(t=>'<option value="'+safe(t.test_name)+'"></option><option value="'+safe(t.test_code)+'"></option>').join("");
 }
-function findTests(q){q=q.trim().toLowerCase();return catalogue.filter(t=>!selected.some(s=>s.id===t.id)&&(t.test_name.toLowerCase().includes(q)||t.test_code.toLowerCase().includes(q)||t.department.toLowerCase().includes(q))).slice(0,30)}
-function showSuggestions(){const q=$("testSearch").value;const box=$("suggest");if(!q.trim()){box.classList.add("hidden");return}const matches=findTests(q);box.innerHTML=matches.length?matches.map(t=>`<button type="button" data-id="${t.id}"><b>${safe(t.test_name)}</b> <small>(${safe(t.test_code)}) · ${safe(t.department)}</small></button>`).join(""):'<button type="button" disabled>No matching test</button>';box.classList.remove("hidden");box.querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>addById(b.dataset.id))}
-async function addById(id){const t=catalogue.find(x=>x.id===id);if(!t||selected.some(x=>x.id===id))return;selected.push(t);$("testSearch").value="";$("suggest").classList.add("hidden");renderSelected();await loadParameters()}
-$("addTest").onclick=()=>{const q=$("testSearch").value.trim().toLowerCase();const t=findTests(q)[0];if(t)addById(t.id);else say("Catalogue में यह test नहीं मिला।")};
-$("testSearch").addEventListener("input",showSuggestions);
-$("testSearch").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("addTest").click()}});
-function renderSelected(){$("selectedTests").innerHTML=selected.map(t=>`<span class="chip">${safe(t.test_name)} <button type="button" data-remove="${t.id}">×</button></span>`).join("");$("selectedTests").querySelectorAll("[data-remove]").forEach(b=>b.onclick=async()=>{selected=selected.filter(t=>t.id!==b.dataset.remove);renderSelected();await loadParameters()})}
-async function loadParameters(){if(!selected.length){parameterRows=[];renderRows();return}const ids=selected.map(t=>t.id);const {data,error}=await db.from("acd_test_parameters").select("id,test_id,parameter_name,unit,reference_range,result_type,result_options,sort_order").in("test_id",ids).order("sort_order");if(error){say("Parameters load error: "+error.message);return}parameterRows=(data||[]).map(p=>({...p,result:""}));renderRows()}
-function resultControl(p,i){let opts=p.result_options||[];if(p.result_type==="positive_negative")opts=["Positive","Negative"];if(p.result_type==="reactive_nonreactive")opts=["Reactive","Non-Reactive"];if(p.result_type==="present_absent")opts=["Present","Absent"];if(p.result_type==="blood_group")opts=["A+","A-","B+","B-","AB+","AB-","O+","O-"];if(opts.length)return `<select data-result="${i}"><option value="">Select</option>${opts.map(o=>`<option>${safe(o)}</option>`).join("")}</select>`;if(p.result_type==="titre")return `<input data-result="${i}" list="titreOptions" placeholder="Titre / dilution">`;return `<input data-result="${i}" placeholder="Enter result">`}
-function renderRows(){const body=$("testRows");if(!parameterRows.length){body.innerHTML='<tr><td colspan="4">Search and add CBC, KFT, LFT or other tests above.</td></tr>';return}body.innerHTML=parameterRows.map((p,i)=>`<tr><td>${safe(p.parameter_name)}</td><td>${resultControl(p,i)}</td><td>${safe(p.unit)}</td><td>${safe(p.reference_range)}</td></tr>`).join("");body.querySelectorAll("[data-result]").forEach(el=>{el.value=parameterRows[+el.dataset.result].result||"";el.addEventListener("input",()=>parameterRows[+el.dataset.result].result=el.value);el.addEventListener("change",()=>parameterRows[+el.dataset.result].result=el.value);el.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();const all=[...body.querySelectorAll("[data-result]")];const n=all.indexOf(el);if(all[n+1])all[n+1].focus()}})})}
-$("clear").onclick=()=>{selected=[];parameterRows=[];renderSelected();renderRows();say("Entry cleared.")};
-$("logout").onclick=$("logoutSide").onclick=async()=>{try{await db.rpc("acd_device_release",{p_device_id:deviceId()})}catch(e){}await db.auth.signOut();location.replace("index.html")};
+async function addTest(){
+ const q=$("testSearch").value.trim().toLowerCase();if(!q){say("Test का नाम लिखें।");return}
+ const t=catalogue.find(x=>x.test_name.toLowerCase()===q||x.test_code.toLowerCase()===q)||catalogue.find(x=>x.test_name.toLowerCase().includes(q)||x.test_code.toLowerCase().includes(q));
+ if(!t){say("यह टेस्ट catalogue में नहीं मिला।");return}
+ if(selectedTests.some(x=>x.id===t.id)){say("यह टेस्ट पहले से जोड़ा गया है।");$("testSearch").value="";return}
+ const {data:params,error}=await db.from("acd_test_parameters").select("id,parameter_name,unit,reference_range,result_type,result_options,sort_order").eq("test_id",t.id).order("sort_order");
+ if(error){say("Parameter load error: "+error.message);return}
+ selectedTests.push(t);
+ (params||[]).forEach(p=>flatRows.push({test_id:t.id,test_name:t.test_name,parameter_id:p.id,parameter_name:p.parameter_name,unit:p.unit,reference_range:p.reference_range,result_type:p.result_type,result_options:p.result_options,result_value:""}));
+ if(!params?.length)flatRows.push({test_id:t.id,test_name:t.test_name,parameter_id:null,parameter_name:t.test_name,unit:"",reference_range:"",result_type:"text",result_options:[],result_value:""});
+ $("testSearch").value="";renderSelected();renderRows();say(t.test_name+" जोड़ा गया। अगला टेस्ट खोज सकते हैं।");
+}
+$("addTest").onclick=addTest;$("testSearch").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();addTest()}});
+$("clear").onclick=()=>{selectedTests=[];flatRows=[];renderRows();renderSelected();say("चुने हुए टेस्ट हटाए गए।")};
+function setupEnterFlow(){
+ const ids=["patient","mobile","age","ageUnit","gender","doctor","testSearch"];
+ ids.forEach((id,i)=>$(id).addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();if(id==="testSearch"){addTest();return}$(ids[i+1])?.focus()}}));
+}
 async function init(){
- const {data:{session}}=await db.auth.getSession();if(!session){location.replace("index.html");return}user=session.user;
- const {data:claim,error:ce}=await db.rpc("acd_device_claim",{p_device_id:deviceId()});if(ce||claim?.status!=="granted"){await db.auth.signOut();location.replace("index.html");return}
+ const {data:{session}}=await db.auth.getSession();if(!session){location.replace("index.html");return}
+ user=session.user;
+ const {data:claim,error:claimError}=await db.rpc("acd_device_claim",{p_device_id:deviceId()});
+ if(claimError||claim?.status!=="granted"){await db.auth.signOut();location.replace("index.html");return}
  const {data:profile,error:pe}=await db.from("profiles").select("platform_role,full_name").eq("id",user.id).maybeSingle();if(pe)throw pe;
- $("account").textContent=profile?.full_name||user.email;
- const isSuper=profile?.platform_role==="super_admin";
- if(isSuper){const {data:labs,error}=await db.from("cloud_labs").select("id,name").order("name");if(error)throw error;if(!labs?.length)throw new Error("No laboratories found.");labId=labs[0].id;labName=labs[0].name}
- else{const {data:ms,error}=await db.from("cloud_memberships").select("lab_id,cloud_labs(id,name)").eq("user_id",user.id).eq("is_active",true).eq("status","active").eq("role","lab_admin");if(error)throw error;if(!ms?.length)throw new Error("No active Lab Owner membership found.");labId=ms[0].lab_id;labName=ms[0].cloud_labs?.name||"Laboratory"}
- $("printLab").textContent=labName;$("date").value=new Date().toISOString().slice(0,10);
- await loadCatalogue();say("Catalogue loaded: "+catalogue.length+" tests. Ready.");
+ role=profile?.platform_role==="super_admin"?"super_admin":"lab_admin";$("account").textContent=profile?.full_name||user.email;
+ if(role==="super_admin"){
+  const {data,error}=await db.from("cloud_labs").select("id,name").order("name");if(error)throw error;labs=data||[];
+  $("labChooser").classList.remove("hidden");$("labSelect").innerHTML='<option value="">Choose laboratory</option>'+labs.map(l=>'<option value="'+safe(l.id)+'">'+safe(l.name)+'</option>').join("");
+  const saved=sessionStorage.getItem("acd_lab_id");if(saved&&labs.some(l=>l.id===saved))$("labSelect").value=saved;else if(labs.length===1)$("labSelect").value=labs[0].id;
+  setLab($("labSelect").value);
+ }else{
+  const {data:members,error}=await db.from("cloud_memberships").select("lab_id,cloud_labs(id,name)").eq("user_id",user.id).eq("is_active",true);if(error)throw error;
+  if(!members?.length)throw new Error("No active laboratory membership found.");
+  labs=members.map(m=>({id:m.lab_id,name:m.cloud_labs?.name||"Laboratory"}));
+  $("labChooser").classList.remove("hidden");$("labSelect").innerHTML=labs.map(l=>'<option value="'+safe(l.id)+'">'+safe(l.name)+'</option>').join("");
+  $("labSelect").disabled=labs.length===1;const saved=sessionStorage.getItem("acd_lab_id");setLab(labs.some(l=>l.id===saved)?saved:labs[0].id);$("labSelect").value=labId;
+ }
+ await loadCatalogue();$("date").value=new Date().toISOString().slice(0,10);say("Supabase से connected। Catalogue loaded: "+catalogue.length+" tests.");
 }
+function setLab(id){labId=id||null;const l=labs.find(x=>x.id===labId);$("labId").value=l?l.name:"Select a lab";$("labStatus").textContent=l?"Selected":"No laboratory selected";$("printLabName").textContent=l?.name||"Laboratory Report";if(role==="lab_admin"&&id)sessionStorage.setItem("acd_lab_id",id)}
+$("labSelect").onchange=()=>setLab($("labSelect").value);
 $("save").onclick=async()=>{
- if(!labId)return say("Laboratory not selected.");if(!$("patient").value.trim())return say("Patient name required.");if(!selected.length)return say("At least one test must be selected.");
+ if(!labId){say("पहले laboratory चुनें।");return}
+ const patientName=$("patient").value.trim();if(!patientName){say("Patient name भरें।");$("patient").focus();return}
+ if(!selectedTests.length){say("कम से कम एक test जोड़ें।");return}
  const btn=$("save");btn.disabled=true;btn.textContent="Saving…";
  try{
-  const {data:p,error:pe}=await db.from("lab_patients").insert({lab_id:labId,patient_name:$("patient").value.trim(),mobile:$("mobile").value.trim()||null,age:$("age").value?Number($("age").value):null,age_unit:$("ageUnit").value,gender:$("gender").value}).select().single();if(pe)throw pe;
+  const {data:p,error:pe}=await db.from("lab_patients").insert({lab_id:labId,patient_name:patientName,mobile:$("mobile").value.trim()||null,age:$("age").value?Number($("age").value):null,age_unit:$("ageUnit").value,gender:$("gender").value}).select().single();if(pe)throw pe;
   const {data:o,error:oe}=await db.from("lab_orders").insert({lab_id:labId,patient_id:p.id,ref_doctor:$("doctor").value.trim()||"Self",order_date:$("date").value,total_amount:+$("total").value||0,discount_amount:+$("discount").value||0,paid_amount:+$("paid").value||0,payment_mode:$("payment").value}).select().single();if(oe)throw oe;
-  for(const t of selected){const {data:item,error:ie}=await db.from("lab_order_items").insert({lab_id:labId,order_id:o.id,test_name:t.test_name}).select().single();if(ie)throw ie;
-   for(const r of parameterRows.filter(x=>x.test_id===t.id)){const {error:re}=await db.from("lab_test_results").insert({lab_id:labId,order_item_id:item.id,parameter_name:r.parameter_name,result_value:r.result||null,unit:r.unit,reference_range:r.reference_range});if(re)throw re}
+  for(const t of selectedTests){
+   const {data:item,error:ie}=await db.from("lab_order_items").insert({lab_id:labId,order_id:o.id,test_name:t.test_name}).select().single();if(ie)throw ie;
+   const rows=flatRows.filter(r=>r.test_id===t.id);
+   if(rows.length){const payload=rows.map(r=>({lab_id:labId,order_item_id:item.id,parameter_name:r.parameter_name,result_value:r.result_value||null,unit:r.unit||null,reference_range:r.reference_range||null}));const {error:re}=await db.from("lab_test_results").insert(payload);if(re)throw re}
   }
-  $("printMeta").textContent=`Patient: ${$("patient").value} | Age: ${$("age").value||"-"} ${$("ageUnit").value} | Gender: ${$("gender").value} | Mobile: ${$("mobile").value||"-"} | Date: ${$("date").value} | Ref. Doctor: ${$("doctor").value||"Self"}`;
-  say("Saved successfully. Print dialog opening.");window.print();
- }catch(e){say("Save error: "+e.message)}finally{btn.disabled=false;btn.textContent="Save & Print A4"}
+  $("printPatientMeta").textContent=[patientName,$("mobile").value,$("age").value?$("age").value+" "+$("ageUnit").value:"",$("gender").value,"Date: "+$("date").value].filter(Boolean).join(" | ");
+  say("Patient, order और सभी test results save हो गए।");window.print();
+ }catch(e){say("Save error: "+e.message)}finally{btn.disabled=false;btn.textContent="Save & Print (A4)"}
 };
-init().catch(e=>say("Setup error: "+e.message));
+$("logout").onclick=async()=>{try{await db.rpc("acd_device_release",{p_device_id:deviceId()})}catch(e){}await db.auth.signOut();location.replace("index.html")};
+$("nav").querySelectorAll("button").forEach(b=>b.onclick=()=>{
+ document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");$("pageTitle").textContent=b.dataset.page;
+ const isEntry=b.dataset.page==="New Patient Entry";$("entryPage").classList.toggle("hidden",!isEntry);$("otherPage").classList.toggle("hidden",isEntry);
+ if(b.dataset.page==="Subscription (Razorpay)"){location.href="subscription.html";return}
+ if(!isEntry)$("otherPage").textContent=b.dataset.page+" — इस मॉड्यूल के मौजूदा फीचर्स को इस Patient Entry update में नहीं बदला गया है।";
+});
+setupEnterFlow();function tick(){$("clock").textContent=new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false})}tick();setInterval(tick,1000);
+init().catch(e=>say("Session/setup error: "+e.message));
 </script>
+<script src="platform-mode.js"></script>
 </body></html>
