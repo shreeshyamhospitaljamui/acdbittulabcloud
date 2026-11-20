@@ -460,6 +460,167 @@ init().catch(e=>say("Session/setup error: "+e.message));
 
   workspace.appendChild(page);
 
+  // ===== SUPER ADMIN: OPEN INDIVIDUAL LAB DASHBOARD =====
+  const saDashboard = document.createElement("div");
+  saDashboard.id = "saLabDashboard";
+  saDashboard.className = "sa-card hidden";
+  saDashboard.innerHTML = `
+    <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap">
+      <div>
+        <h2 id="saDashLabName">Laboratory Dashboard</h2>
+        <small id="saDashLabInfo">Selected laboratory overview</small>
+      </div>
+      <button class="btn light" id="saBackToControl">← Back to Super Admin</button>
+    </div>
+    <hr style="border:0;border-top:1px solid #e5eaf0;margin:12px 0">
+    <h3>Laboratory Overview</h3>
+    <div id="saDashMetrics" class="sa-grid"></div>
+    <h3 style="margin-top:18px">Subscription & Staff</h3>
+    <div id="saDashDetails"></div>
+    <h3 style="margin-top:18px">Recent Orders</h3>
+    <div id="saDashOrders"></div>
+    <div class="sa-status" id="saDashStatus"></div>
+  `;
+  page.appendChild(saDashboard);
+
+  const saOpenButton = document.createElement("button");
+  saOpenButton.className = "btn green";
+  saOpenButton.textContent = "Open Lab Dashboard";
+  saOpenButton.style.marginTop = "10px";
+  page.querySelectorAll(".sa-card")[1].appendChild(saOpenButton);
+
+  const saCards = [...page.querySelectorAll(".sa-card")];
+
+  function saText(value) {
+    return String(value ?? "").replace(/[&<>"']/g, c => ({
+      "&":"&amp;", "<":"&lt;", ">":"&gt;",
+      '"':"&quot;", "'":"&#39;"
+    }[c]));
+  }
+
+  function saMoney(value) {
+    return "₹" + Number(value || 0).toLocaleString("en-IN", {
+      maximumFractionDigits: 2
+    });
+  }
+
+  function saMetric(label, value) {
+    return `
+      <div class="sa-module">
+        <span>${saText(label)}</span>
+        <strong style="font-size:19px;color:#123c75">
+          ${saText(value)}
+        </strong>
+      </div>`;
+  }
+
+  async function saOpenLabDashboard() {
+    const selectedLab = el("saLab").value;
+
+    if (!selectedLab) {
+      status("पहले Laboratory चुनें।", true);
+      return;
+    }
+
+    saOpenButton.disabled = true;
+    saOpenButton.textContent = "Loading...";
+    el("saDashStatus").textContent = "Loading laboratory data...";
+
+    try {
+      const { data, error } = await db.rpc(
+        "acd_superadmin_get_lab_dashboard",
+        { p_lab_id: selectedLab }
+      );
+
+      if (error) throw error;
+      if (!data || !data.lab) {
+        throw new Error("Laboratory dashboard data not found.");
+      }
+
+      const lab = data.lab;
+      const m = data.metrics || {};
+      const sub = data.subscription || {};
+
+      el("saDashLabName").textContent = lab.name || "Laboratory";
+      el("saDashLabInfo").textContent =
+        (lab.address || "Address not added") +
+        " • " + (lab.is_active ? "Active" : "Inactive");
+
+      el("saDashMetrics").innerHTML = [
+        saMetric("Total Patients", m.patients),
+        saMetric("Total Orders", m.orders),
+        saMetric("Today's Orders", m.orders_today),
+        saMetric("Total Results", m.results),
+        saMetric("Total Staff", m.staff_total),
+        saMetric("Active Staff", m.staff_active),
+        saMetric("Enabled Tests", m.tests_enabled),
+        saMetric("Total Collection", saMoney(m.collected_total)),
+        saMetric("Total Due", saMoney(m.due_total)),
+        saMetric("Total Billing", saMoney(m.revenue_total))
+      ].join("");
+
+      const members = Array.isArray(data.members) ? data.members : [];
+
+      el("saDashDetails").innerHTML = `
+        <div class="sa-module">
+          <b>Subscription</b>
+          Plan: ${saText(sub.plan_code || "Not available")}<br>
+          Status: ${saText(sub.status || "Not available")}<br>
+          <b style="margin-top:8px">Staff Members</b>
+          ${members.length ? members.map(member => `
+            <div class="sa-log">
+              ${saText(member.role)}
+              — ${member.is_active && member.status === "active"
+                ? "Active" : saText(member.status || "Inactive")}
+            </div>
+          `).join("") : "No staff records found."}
+        </div>
+      `;
+
+      const orders = Array.isArray(data.recent_orders)
+        ? data.recent_orders : [];
+
+      el("saDashOrders").innerHTML = orders.length
+        ? orders.map(order => `
+          <div class="sa-log">
+            <b>${saText(order.order_date || "")}</b>
+            — ${saText(order.status || "Pending")}
+            <br>
+            Total: ${saMoney(order.total_amount)}
+            • Paid: ${saMoney(order.paid_amount)}
+          </div>
+        `).join("")
+        : "No recent orders found.";
+
+      saCards.forEach(card => {
+        card.classList.toggle(card === saDashboard ? "hidden" : "hidden", card !== saDashboard);
+      });
+
+      saDashboard.classList.remove("hidden");
+      el("saDashStatus").textContent =
+        "Lab overview loaded. Data is limited to the selected laboratory.";
+
+    } catch (error) {
+      el("saDashStatus").textContent = "Dashboard error: " + error.message;
+      status("Lab Dashboard load failed.", true);
+    } finally {
+      saOpenButton.disabled = false;
+      saOpenButton.textContent = "Open Lab Dashboard";
+    }
+  }
+
+  saOpenButton.addEventListener("click", saOpenLabDashboard);
+
+  el("saBackToControl").addEventListener("click", () => {
+    saDashboard.classList.add("hidden");
+    saCards.forEach(card => {
+  if (card !== saDashboard) card.classList.remove("hidden");
+});
+saDashboard.classList.add("hidden");
+    status("Returned to Super Admin Control Center.");
+  });
+  // ===== END INDIVIDUAL LAB DASHBOARD =====
+ 
   const el = id => document.getElementById(id);
   const status = (message, error = false) => {
     el("saStatus").textContent = message;
