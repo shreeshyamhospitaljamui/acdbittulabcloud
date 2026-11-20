@@ -459,7 +459,7 @@ init().catch(e=>say("Session/setup error: "+e.message));
   `;
 
   workspace.appendChild(page);
-
+const el = id => document.getElementById(id);
   // ===== SUPER ADMIN: OPEN INDIVIDUAL LAB DASHBOARD =====
   const saDashboard = document.createElement("div");
   saDashboard.id = "saLabDashboard";
@@ -621,7 +621,7 @@ saDashboard.classList.add("hidden");
   });
   // ===== END INDIVIDUAL LAB DASHBOARD =====
  
-  const el = id => document.getElementById(id);
+  
   const status = (message, error = false) => {
     el("saStatus").textContent = message;
     el("saStatus").className = error ? "sa-status sa-error" : "sa-status";
