@@ -305,6 +305,10 @@ async function init(){
  // Do not claim the same device a second time; start heartbeat to keep that claim alive.
  const {data:profile,error:pe}=await db.from("profiles").select("platform_role,full_name").eq("id",user.id).maybeSingle();if(pe)throw pe;
  role=profile?.platform_role==="super_admin"?"super_admin":"lab_admin";$("account").textContent=profile?.full_name||user.email;
+ const superNavButton = $("nav").querySelector('[data-page="Super Admin"]');
+if (superNavButton) {
+  superNavButton.style.display = role === "super_admin" ? "" : "none";
+}
  if(role==="super_admin"){
   const {data,error}=await db.from("cloud_labs").select("id,name,address,phone").order("name");if(error)throw error;labs=data||[];
   $("labChooser").classList.remove("hidden");$("labSelect").innerHTML='<option value="">Choose laboratory</option>'+labs.map(l=>'<option value="'+safe(l.id)+'">'+safe(l.name)+'</option>').join("");
