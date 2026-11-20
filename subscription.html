@@ -53,7 +53,7 @@ h1{font-size:25px;margin:0 0 6px}.sub{color:var(--muted);font-size:13px}
   </div></section>
   <section class="section"><h2>Subscription Overview</h2><div class="section-body cols">
     <div id="overviewRows"><div class="empty">Subscription information will appear here after loading.</div></div>
-    <div><div class="kicker">Renewal &amp; Plan Actions</div><p class="small">Your subscription remains active until its expiry date. There is no cancellation option.</p><div class="actions"><button class="btn" id="renewBtn" type="button" disabled>Renew Subscription</button><button class="btn secondary" id="changePlanBtn" type="button" disabled>Change Plan</button></div><div class="small" id="actionHint">Payment checkout will be enabled after the payment flow is connected and verified.</div></div>
+    <div><div class="kicker">Renewal &amp; Plan Actions</div><p class="small">Your subscription remains active until its expiry date. There is no cancellation option.</p><div class="actions"><button class="btn" id="renewBtn" type="button" disabled>Renew Subscription</button><button class="btn secondary" id="changePlanBtn" type="button" disabled>Change Plan</button></div><div class="small" id="actionHint">Renewal and plan changes remain disabled until the live Razorpay flow is verified.</div></div>
   </div></section>
   <section class="section"><h2>Payment History</h2><div class="tablewrap"><table><thead><tr><th>Date</th><th>Payment Type</th><th>Amount</th><th>Status</th><th>Payment ID</th></tr></thead><tbody id="paymentsBody"><tr><td colspan="5" class="empty">Loading payment history…</td></tr></tbody></table></div></section>
   <section class="section"><h2>Invoices &amp; Receipts</h2><div class="tablewrap"><table><thead><tr><th>Invoice Number</th><th>Date</th><th>Type</th><th>Amount</th><th>Document</th></tr></thead><tbody id="invoicesBody"><tr><td colspan="5" class="empty">Loading invoices…</td></tr></tbody></table></div><div class="section-body small">Invoice records are shown here. A PDF download will appear when the invoice document is generated and stored.</div></section>
@@ -72,17 +72,17 @@ const text=v=>v===null||v===undefined||v===""?"—":String(v);
 const pick=(obj,keys)=>{for(const k of keys){if(obj&&obj[k]!==undefined&&obj[k]!==null)return obj[k]}return null};
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 function setNotice(msg,error=false){$("notice").textContent=msg;$("notice").className="notice"+(error?" error":"")}
-function rows(obj,keys){return keys.map(([label,fields])=>{const v=pick(obj,fields);return v===null? "":'<div class="row"><span>'+esc(label)+'</span><strong>'+esc(text(v))+'</strong></div>'}).filter(Boolean).join("")||'<div class="empty">No additional billing details available.</div>'}
+function rows(obj,keys){return keys.map(([label,fields])=>{const v=pick(obj,fields);if(v===null)return "";const shown=(/date/i.test(label)&&v)?fmtDate(v):text(v);return '<div class="row"><span>'+esc(label)+'</span><strong>'+esc(shown)+'</strong></div>'}).filter(Boolean).join("")||'<div class="empty">No additional billing details available.</div>'}
 function normalizeOverview(raw){let x=raw;if(Array.isArray(x))x=x[0]||{};if(typeof x==="string"){try{x=JSON.parse(x)}catch{}}return x&&typeof x==="object"?x:{}}
 function firstObject(...values){for(const v of values){if(Array.isArray(v)&&v.length)return v[0];if(v&&typeof v==="object")return v}return {}}
 function listValue(...values){for(const v of values)if(Array.isArray(v))return v;return []}
 function render(data){
- const owner=firstObject(data.owner_subscription,data.ownerSubscription,data.subscription,data.owner);
+ const owner=firstObject(data.subscription,data.owner_subscription,data.ownerSubscription,data.owner);
  const labSub=firstObject(data.lab_subscription,data.labSubscription);
  const status=pick(owner,["status"])||pick(data,["status","subscription_status"]);
- const plan=pick(owner,["plan_name","plan","name"])||pick(data,["plan_name","plan"]);
+ const plan=pick(owner,["plan_name","plan","name","plan_code"])||pick(data,["plan_name","plan"]);
  const expiry=pick(owner,["current_period_end","period_end","expires_at","expiry_date","end_date"])||pick(data,["current_period_end","expires_at","expiry_date"]);
- const activeLabs=pick(data,["active_lab_count","active_labs_count","lab_count"])??(Array.isArray(data.labs)?data.labs.length:null);
+ const activeLabs=pick(data,["active_centers","active_lab_count","active_labs_count","lab_count"])??(Array.isArray(data.labs)?data.labs.length:null);
  $("planValue").textContent=text(plan||"Annual Subscription");
  $("planHint").textContent=plan?"Current subscribed plan":"Plan name not returned by billing overview";
  $("statusValue").innerHTML='<span class="pill'+(String(status).toLowerCase()==="expired"?' warn':'')+'">'+esc(text(status||"Unknown"))+'</span>';
@@ -91,8 +91,8 @@ function render(data){
  $("labsValue").textContent=text(activeLabs);
  $("overviewRows").innerHTML=rows(owner,[["Subscription ID",["id","subscription_id"]],["Start Date",["current_period_start","period_start","started_at"]],["Expiry Date",["current_period_end","period_end","expires_at","expiry_date"]],["Billing Cycle",["billing_cycle","interval"]],["Currency",["currency"]]]);
  $("billingRows").innerHTML=rows(data,[["Owner Email",["owner_email","email"]],["Owner Name",["owner_name","full_name"]],["Billing Currency",["currency"]],["Active Laboratories",["active_lab_count","active_labs_count","lab_count"]]]);
- const payments=listValue(data.payment_records,data.payments,data.payment_history);
- $("paymentsBody").innerHTML=payments.length?payments.map(p=>'<tr><td>'+esc(fmtDate(p.created_at||p.paid_at||p.payment_date))+'</td><td>'+esc(text(p.billing_type||p.payment_type||p.description))+'</td><td>'+esc(money(p.amount_paise??p.amount))+'</td><td>'+esc(text(p.status))+'</td><td>'+esc(text(p.razorpay_payment_id||p.payment_id||p.id))+'</td></tr>').join(""):'<tr><td colspan="5" class="empty">No payment records found.</td></tr>';
+ const payments=listValue(data.payments,data.payment_records,data.payment_history);
+ $("paymentsBody").innerHTML=payments.length?payments.map(p=>'<tr><td>'+esc(fmtDate(p.created_at||p.paid_at||p.payment_date))+'</td><td>'+esc(text(p.billing_type||p.payment_type||p.description))+'</td><td>'+esc(money(p.amount_paise??p.amount))+'</td><td>'+esc(text(p.payment_status||p.status))+'</td><td>'+esc(text(p.gateway_payment_id||p.gateway_order_id||p.razorpay_payment_id||p.payment_id||p.id))+'</td></tr>').join(""):'<tr><td colspan="5" class="empty">No payment records found.</td></tr>';
  const invoices=listValue(data.invoices,data.invoice_records);
  $("invoicesBody").innerHTML=invoices.length?invoices.map(i=>'<tr><td>'+esc(text(i.invoice_number))+'</td><td>'+esc(fmtDate(i.invoice_date||i.created_at))+'</td><td>'+esc(text(i.billing_type))+'</td><td>'+esc(money(i.amount_paise??i.amount))+'</td><td>'+(i.invoice_url?'<a href="'+esc(i.invoice_url)+'" target="_blank" rel="noopener">Download</a>':'Not generated yet')+'</td></tr>').join(""):'<tr><td colspan="5" class="empty">No invoice records found.</td></tr>';
 }
@@ -106,6 +106,7 @@ async function load(){
   if(error)throw error;
   const overview=normalizeOverview(data);
   render(overview);
+  $("billingRows").innerHTML='<div class="row"><span>Owner Email</span><strong>'+esc(session.user.email||"Not available")+'</strong></div><div class="row"><span>Active Centers</span><strong>'+esc(text(overview.active_centers??"—"))+'</strong></div><div class="row"><span>Billing Currency</span><strong>INR</strong></div>';
   setNotice("Subscription information loaded successfully.");
  }catch(e){console.error("Subscription page load:",e);setNotice("Could not load subscription information: "+(e.message||"Unknown error")+". Please check your account access and Supabase connection.",true)}
  finally{$("refreshBtn").disabled=false}
