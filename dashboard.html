@@ -1429,20 +1429,38 @@ saDashboard.classList.add("hidden");
       currentGlobal = globalSettings;
       currentLocked = data?.owner_locked === true;
 
-      const merged = {
-        branding: {
-          ...(globalSettings.branding || {}),
-          ...(labSettings.branding || {})
-        },
-        layout: {
-          ...(globalSettings.layout || {}),
-          ...(labSettings.layout || {})
-        },
-        signatures: {
-          ...(globalSettings.signatures || {}),
-          ...(labSettings.signatures || {})
-        }
-      };
+      
+const merged = {
+  branding: {
+    ...(globalSettings.branding || {}),
+    ...(labSettings.branding || {})
+  },
+  layout: {
+    ...(globalSettings.layout || {}),
+    ...(labSettings.layout || {})
+  },
+  printing: {
+    ...(globalSettings.printing || {}),
+    ...(labSettings.printing || {})
+  },
+  positions: {
+    ...(globalSettings.positions || {}),
+    ...(labSettings.positions || {})
+  },
+  colors: {
+    ...(globalSettings.colors || {}),
+    ...(labSettings.colors || {})
+  },
+  font_sizes: {
+    ...(globalSettings.font_sizes || {}),
+    ...(labSettings.font_sizes || {})
+  },
+  signatures: {
+    ...(globalSettings.signatures || {}),
+    ...(labSettings.signatures || {})
+  }
+};
+
 
       setFields("rd", merged);
 
