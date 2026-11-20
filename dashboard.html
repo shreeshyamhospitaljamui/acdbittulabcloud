@@ -915,6 +915,18 @@ saDashboard.classList.add("hidden");
     }
   }
 
+  let saAuditRefreshTimer = null;
+
+  function startSaAuditAutoRefresh() {
+    if (saAuditRefreshTimer) return;
+
+    saAuditRefreshTimer = setInterval(() => {
+      if (!page.classList.contains("hidden")) {
+        loadAudit();
+      }
+    }, 30000);
+  }
+ 
   
   async function fillLabs() {
     const select = el("saLab");
@@ -981,6 +993,7 @@ saDashboard.classList.add("hidden");
       await fillLabs();
       
       loadAudit();
+     startSaAuditAutoRefresh();
       if (el("saLab").value) loadLabSettings();
     }, true);
   }
