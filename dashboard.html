@@ -66,14 +66,26 @@ button:disabled{opacity:.55;cursor:not-allowed}
     font-family: Arial, Helvetica, sans-serif;
   }
 
-  /* Hide all dashboard and navigation sections */
-  body > .app,
+  
+  /* Hide dashboard navigation, keep report workspace */
+  body > .app {
+    display: block !important;
+    min-height: 0 !important;
+  }
+
   .sidebar,
   .topbar,
   .select-lab,
   #otherPage,
   #cataloguePage {
     display: none !important;
+  }
+
+  .main {
+    display: block !important;
+    width: 100% !important;
+  }
+
   }
 
   /* Keep only the report workspace */
