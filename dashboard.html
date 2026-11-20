@@ -883,20 +883,33 @@ saDashboard.classList.add("hidden");
 
       const rows = Array.isArray(data) ? data : [];
 
+      
       el("saAudit").innerHTML = rows.length
-        ? rows.map(item => `
-          <div class="sa-log">
-            <b>${String(item.action || "").replace(/[<>]/g, "")}</b>
-            — ${String(item.entity_type || "").replace(/[<>]/g, "")}
-            <br>
-            Lab: ${item.lab_id || "Global"}
-            <br>
-            ${item.created_at
-              ? new Date(item.created_at).toLocaleString()
-              : ""}
-          </div>
-        `).join("")
+        ? rows.map(item => {
+            const fields =
+              item.after_state?.changed_fields ||
+              item.before_state?.changed_fields ||
+              [];
+
+            return `
+              <div class="sa-log">
+                <b>${saText(item.action || "Activity")}</b>
+                — ${saText(item.entity_type || "Record")}
+                <br>
+                Laboratory ID: ${saText(item.lab_id || "Global")}
+                <br>
+                User ID: ${saText(item.actor_user_id || "System")}
+                <br>
+                Changed Fields: ${saText(fields.join(", ") || "Not specified")}
+                <br>
+                Time: ${item.created_at
+                  ? new Date(item.created_at).toLocaleString("en-IN")
+                  : "Not available"}
+              </div>
+            `;
+          }).join("")
         : "No audit records found.";
+
     } catch (error) {
       el("saAudit").textContent = "Audit error: " + error.message;
     }
