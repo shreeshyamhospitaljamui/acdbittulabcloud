@@ -1256,10 +1256,15 @@ saDashboard.classList.add("hidden");
     return labId;
   }
 
+  
   function setFields(prefix, settings) {
     const b = settings?.branding || {};
     const l = settings?.layout || {};
     const sig = settings?.signatures || {};
+    const p = settings?.printing || {};
+    const pos = settings?.positions || {};
+    const colors = settings?.colors || {};
+    const sizes = settings?.font_sizes || {};
 
     const values = {
       rdLabName: b.lab_name,
@@ -1267,13 +1272,46 @@ saDashboard.classList.add("hidden");
       rdLabAddress: b.address,
       rdLabPhone: b.phone,
       rdLabEmail: b.email,
+      rdLabAlias: b.alias,
+      rdChildAge: p.child_age_limit,
+      rdAutoPatient: String(p.auto_patient_id ?? true),
+      rdPrintMode: p.default_printing,
+      rdXrayHeader: p.xray_header,
+      rdXrayFooter: p.xray_footer,
+      rdXrayAlign: p.xray_alignment,
+      rdPaper: l.paper,
+      rdOrientation: l.orientation,
       rdHeadingSize: l.heading_size,
       rdAddressSize: l.address_size,
       rdHeadingColor: l.heading_color,
-      rdPaper: l.paper,
-      rdOrientation: l.orientation,
       rdHeaderGap: l.header_gap_mm,
-      rdFooterGap: l.footer_gap_mm
+      rdFooterGap: l.footer_gap_mm,
+      rdGapHeader: l.gap_header,
+      rdGapBetweenHeader: l.gap_between_header,
+      rdGapContent: l.gap_content,
+      rdGapTest: l.gap_test,
+      rdGapSubtest: l.gap_subtest,
+      rdGapFooter: l.gap_footer,
+      rdGapDoctor: l.gap_doctor,
+      rdTestHeaderFont: l.test_header_font,
+      rdTestNameFont: l.test_name_font,
+      rdPatientFont: l.patient_font,
+      rdCommentFont: l.comment_font,
+      rdPosTestName: pos.test_name,
+      rdPosSubtest: pos.subtest,
+      rdPosResult: pos.result,
+      rdPosUnit: pos.unit,
+      rdPosRange: pos.reference_range,
+      rdPosEnd: pos.result_end,
+      rdHbUnit: p.hemoglobin_unit,
+      rdColorHeading: colors.heading,
+      rdColorAddress: colors.address,
+      rdColorPhone: colors.phone,
+      rdColorEmail: colors.email,
+      rdSizeHeading: sizes.heading,
+      rdSizeAddress: sizes.address,
+      rdSizePhone: sizes.phone,
+      rdSizeEmail: sizes.email
     };
 
     Object.entries(values).forEach(([id, value]) => {
@@ -1281,27 +1319,84 @@ saDashboard.classList.add("hidden");
       if (el && value !== undefined && value !== null) el.value = value;
     });
 
-    if ($rd("rdShowTechnician")) $rd("rdShowTechnician").checked = sig.technician !== false;
-    if ($rd("rdShowDoctor")) $rd("rdShowDoctor").checked = sig.doctor !== false;
+    const checks = {
+      rdShowTechnician: sig.technician,
+      rdShowDoctor: sig.doctor,
+      rdRectanglePatient: l.rectangle_patient,
+      rdLinesPatient: l.lines_patient,
+      rdPrintAfterSave: p.print_after_save
+    };
+
+    Object.entries(checks).forEach(([id, value]) => {
+      const el = $rd(id);
+      if (el && value !== undefined) el.checked = value;
+    });
   }
 
   function readLabSettings() {
+    const num = id => Number($rd(id).value) || 0;
+    const val = id => $rd(id).value;
+
     return {
       branding: {
-        lab_name: $rd("rdLabName").value.trim(),
-        logo_url: $rd("rdLabLogo").value.trim(),
-        address: $rd("rdLabAddress").value.trim(),
-        phone: $rd("rdLabPhone").value.trim(),
-        email: $rd("rdLabEmail").value.trim()
+        lab_name: val("rdLabName").trim(),
+        logo_url: val("rdLabLogo").trim(),
+        address: val("rdLabAddress").trim(),
+        phone: val("rdLabPhone").trim(),
+        email: val("rdLabEmail").trim(),
+        alias: val("rdLabAlias").trim()
       },
       layout: {
-        paper: $rd("rdPaper").value,
-        orientation: $rd("rdOrientation").value,
-        heading_size: Number($rd("rdHeadingSize").value) || 22,
-        address_size: Number($rd("rdAddressSize").value) || 11,
-        heading_color: $rd("rdHeadingColor").value,
-        header_gap_mm: Number($rd("rdHeaderGap").value) || 0,
-        footer_gap_mm: Number($rd("rdFooterGap").value) || 0
+        paper: val("rdPaper"),
+        orientation: val("rdOrientation"),
+        heading_size: num("rdHeadingSize"),
+        address_size: num("rdAddressSize"),
+        heading_color: val("rdHeadingColor"),
+        header_gap_mm: num("rdHeaderGap"),
+        footer_gap_mm: num("rdFooterGap"),
+        gap_header: num("rdGapHeader"),
+        gap_between_header: num("rdGapBetweenHeader"),
+        gap_content: num("rdGapContent"),
+        gap_test: num("rdGapTest"),
+        gap_subtest: num("rdGapSubtest"),
+        gap_footer: num("rdGapFooter"),
+        gap_doctor: num("rdGapDoctor"),
+        test_header_font: num("rdTestHeaderFont"),
+        test_name_font: num("rdTestNameFont"),
+        patient_font: num("rdPatientFont"),
+        comment_font: num("rdCommentFont"),
+        rectangle_patient: $rd("rdRectanglePatient").checked,
+        lines_patient: $rd("rdLinesPatient").checked
+      },
+      printing: {
+        child_age_limit: num("rdChildAge"),
+        auto_patient_id: val("rdAutoPatient") === "true",
+        default_printing: val("rdPrintMode"),
+        xray_header: num("rdXrayHeader"),
+        xray_footer: num("rdXrayFooter"),
+        xray_alignment: val("rdXrayAlign"),
+        hemoglobin_unit: val("rdHbUnit").trim(),
+        print_after_save: $rd("rdPrintAfterSave").checked
+      },
+      positions: {
+        test_name: num("rdPosTestName"),
+        subtest: num("rdPosSubtest"),
+        result: num("rdPosResult"),
+        unit: num("rdPosUnit"),
+        reference_range: num("rdPosRange"),
+        result_end: num("rdPosEnd")
+      },
+      colors: {
+        heading: val("rdColorHeading"),
+        address: val("rdColorAddress"),
+        phone: val("rdColorPhone"),
+        email: val("rdColorEmail")
+      },
+      font_sizes: {
+        heading: num("rdSizeHeading"),
+        address: num("rdSizeAddress"),
+        phone: num("rdSizePhone"),
+        email: num("rdSizeEmail")
       },
       signatures: {
         technician: $rd("rdShowTechnician").checked,
@@ -1310,6 +1405,7 @@ saDashboard.classList.add("hidden");
       owner_locked: currentLocked
     };
   }
+
 
   async function loadDesigner() {
     const id = getLabId();
