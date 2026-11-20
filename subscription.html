@@ -136,103 +136,48 @@ checkout.open();
 finally{b.disabled=false;b.textContent=original}
 }
 async function downloadInvoice(invoiceId, button) {
-  const printTab = window.open("", "_blank");
-
-  if (!printTab) {
-    setNotice("Please allow pop-ups to download invoice.", "error");
-    return;
-  }
-
   if (button) button.disabled = true;
 
   try {
-    const { data: invoice, error } = await db
-      .from("acd_owner_invoices")
-      .select("id, invoice_number, invoice_date, amount_paise, currency, billing_type, period_months, owner_user_id, payment_record_id")
-      .eq("id", invoiceId)
-      .single();
+    const { data: { session }, error: sessionError } = await db.auth.getSession();
 
-    if (error) throw error;
-    if (!invoice) throw new Error("Invoice not found.");
+    if (sessionError) throw sessionError;
+    if (!session) throw new Error("Please sign in again.");
 
-    const { data: payment, error: paymentError } = await db
-      .from("acd_owner_payment_records")
-      .select("gateway_payment_id, payment_status, paid_at")
-      .eq("id", invoice.payment_record_id)
-      .maybeSingle();
+    setNotice("Generating invoice PDF...");
 
-    if (paymentError) throw paymentError;
+    const response = await fetch(
+      SUPABASE_URL + "/functions/v1/acd-invoice-pdf",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_ANON_KEY,
+          "Authorization": "Bearer " + session.access_token
+        },
+        body: JSON.stringify({ invoice_id: invoiceId })
+      }
+    );
 
-    if (!payment || payment.payment_status !== "paid") {
-      throw new Error("Only paid invoices can be downloaded.");
+    const result = await response.json().catch(() => ({}));
+
+    if (!response.ok || result.ok !== true || !result.download_url) {
+      throw new Error(result.error || "PDF generation failed.");
     }
 
-    const { data: sessionData } = await db.auth.getSession();
-    const email = sessionData?.session?.user?.email || "—";
+    const link = document.createElement("a");
+    link.href = result.download_url;
+    link.download = result.invoice_number + ".pdf";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
 
-    const amount = (Number(invoice.amount_paise) / 100).toLocaleString("en-IN", {
-      style: "currency",
-      currency: invoice.currency || "INR"
-    });
+    setNotice("Invoice PDF download started.", "success");
 
-    const date = new Date(invoice.invoice_date).toLocaleDateString("en-IN");
-    const paidDate = payment.paid_at
-      ? new Date(payment.paid_at).toLocaleString("en-IN")
-      : date;
-
-    const safe = value => String(value ?? "—").replace(/[&<>"']/g, ch => ({
-      "&": "&amp;", "<": "&lt;", ">": "&gt;",
-      '"': "&quot;", "'": "&#39;"
-    })[ch]);
-
-    printTab.document.open();
-    printTab.document.write(`<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Invoice ${safe(invoice.invoice_number)}</title>
-<style>
-body{font-family:Arial,sans-serif;color:#222;padding:35px}
-.invoice{max-width:750px;margin:auto;border:1px solid #ddd;padding:35px}
-h1{color:#174ea6;margin-bottom:4px}
-.muted{color:#666;font-size:13px}
-table{width:100%;border-collapse:collapse;margin-top:28px}
-td,th{padding:13px;border:1px solid #ddd;text-align:left}
-.total{font-size:20px;font-weight:bold;text-align:right;margin-top:25px}
-.paid{color:green;font-weight:bold}
-@media print{button{display:none}.invoice{border:0}}
-</style>
-</head>
-<body>
-<div class="invoice">
-<h1>ACD BITTU LAB CLOUD</h1>
-<p class="muted">Subscription Tax Invoice / Payment Receipt</p>
-<hr>
-<h2>INVOICE</h2>
-<p><b>Invoice Number:</b> ${safe(invoice.invoice_number)}</p>
-<p><b>Invoice Date:</b> ${safe(date)}</p>
-<p><b>Owner Email:</b> ${safe(email)}</p>
-<table>
-<tr><th>Description</th><th>Details</th></tr>
-<tr><td>Subscription</td><td>${safe(invoice.billing_type)}</td></tr>
-<tr><td>Subscription Period</td><td>${safe(invoice.period_months)} months</td></tr>
-<tr><td>Payment ID</td><td>${safe(payment.gateway_payment_id)}</td></tr>
-<tr><td>Payment Date</td><td>${safe(paidDate)}</td></tr>
-<tr><td>Payment Status</td><td class="paid">PAID</td></tr>
-</table>
-<div class="total">Total Paid: ${safe(amount)}</div>
-<hr>
-<p class="muted">This is a computer-generated payment receipt.</p>
-<button onclick="window.print()">Download / Save as PDF</button>
-</div>
-</body>
-</html>`);
-    printTab.document.close();
-
-    setNotice("Invoice opened. Choose Save as PDF to download.", "success");
   } catch (error) {
-    printTab.close();
-    setNotice("Invoice download failed: " + error.message, "error");
+    console.error("Invoice PDF download:", error);
+    setNotice("Download failed: " + error.message, "error");
+
   } finally {
     if (button) button.disabled = false;
   }
