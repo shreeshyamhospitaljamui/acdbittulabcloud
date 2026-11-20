@@ -1545,25 +1545,26 @@ $rd("rdPrintMode").disabled = !isSuper;
 
     try {
       const settings = {
-        branding: {
-          lab_name: $rd("rdGlobalName").value.trim(),
-          logo_url: $rd("rdGlobalLogo").value.trim(),
-          address: $rd("rdGlobalAddress").value.trim(),
-          phone: $rd("rdGlobalPhone").value.trim(),
-          layout: {
-  ...(currentGlobal.layout || {}),
-  page_margin_top_mm: Number($rd("rdGlobalMarginTop").value) || 7,
-  page_margin_left_mm: Number($rd("rdGlobalMarginLeft").value) || 8,
-  page_margin_right_mm: Number($rd("rdGlobalMarginRight").value) || 8,
-  page_margin_bottom_mm: Number($rd("rdGlobalMarginBottom").value) || 10
-},
-printing: {
-  ...(currentGlobal.printing || {}),
-  default_printing: $rd("rdGlobalPrintMode").value
-},
-signatures: currentGlobal.signatures || {}
-        
-      };
+  branding: {
+    lab_name: $rd("rdGlobalName").value.trim(),
+    logo_url: $rd("rdGlobalLogo").value.trim(),
+    address: $rd("rdGlobalAddress").value.trim(),
+    phone: $rd("rdGlobalPhone").value.trim(),
+    email: $rd("rdGlobalEmail").value.trim()
+  },
+  layout: {
+    ...(currentGlobal.layout || {}),
+    page_margin_top_mm: Number($rd("rdGlobalMarginTop").value) || 7,
+    page_margin_left_mm: Number($rd("rdGlobalMarginLeft").value) || 8,
+    page_margin_right_mm: Number($rd("rdGlobalMarginRight").value) || 8,
+    page_margin_bottom_mm: Number($rd("rdGlobalMarginBottom").value) || 10
+  },
+  printing: {
+    ...(currentGlobal.printing || {}),
+    default_printing: $rd("rdGlobalPrintMode").value
+  },
+  signatures: currentGlobal.signatures || {}
+};
 
       const { error } = await db.rpc(
         "acd_save_global_report_defaults",
