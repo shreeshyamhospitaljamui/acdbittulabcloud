@@ -269,7 +269,7 @@ button:disabled{opacity:.55;cursor:not-allowed}
 <div id="otherPage" class="placeholder-panel hidden">यह मॉड्यूल पहले जैसा ही मेनू में रखा गया है। इस कार्य में इसके फीचर्स में कोई बदलाव नहीं किया गया है।</div>
 
 <div id="reportDesignerPage" class="hidden">
-  <section class="panel">
+  <section class="panel rd-global-card">
     <div class="panel-head">Report Designer — Super Admin Global Defaults</div>
     <div class="panel-body">
       <p>ये Default Settings सभी नई Labs पर लागू होंगी।</p>
@@ -1179,5 +1179,246 @@ saDashboard.classList.add("hidden");
   moduleControls("saLabModules", "sal");
 })();
    </script>
- <script src="platform-mode.js"></script>
+  
+/* ACD BITTU LAB CLOUD — REPORT DESIGNER */
+(function () {
+  const $rd = id => document.getElementById(id);
+  const nav = document.getElementById("nav");
+  const panel = $rd("reportDesignerPage");
+  let currentLocked = false;
+  let currentGlobal = {};
+
+  if (!nav || !panel) return;
+
+  function rdStatus(message, error = false) {
+    $rd("rdLabStatus").textContent = message;
+    $rd("rdLabMessage").textContent = error ? message : "";
+  }
+
+  function getLabId() {
+    if (role === "super_admin") {
+      return $rd("saLab")?.value || $rd("labSelect")?.value || labId;
+    }
+    return labId;
+  }
+
+  function setFields(prefix, settings) {
+    const b = settings?.branding || {};
+    const l = settings?.layout || {};
+    const sig = settings?.signatures || {};
+
+    const values = {
+      rdLabName: b.lab_name,
+      rdLabLogo: b.logo_url,
+      rdLabAddress: b.address,
+      rdLabPhone: b.phone,
+      rdLabEmail: b.email,
+      rdHeadingSize: l.heading_size,
+      rdAddressSize: l.address_size,
+      rdHeadingColor: l.heading_color,
+      rdPaper: l.paper,
+      rdOrientation: l.orientation,
+      rdHeaderGap: l.header_gap_mm,
+      rdFooterGap: l.footer_gap_mm
+    };
+
+    Object.entries(values).forEach(([id, value]) => {
+      const el = $rd(id);
+      if (el && value !== undefined && value !== null) el.value = value;
+    });
+
+    if ($rd("rdShowTechnician")) $rd("rdShowTechnician").checked = sig.technician !== false;
+    if ($rd("rdShowDoctor")) $rd("rdShowDoctor").checked = sig.doctor !== false;
+  }
+
+  function readLabSettings() {
+    return {
+      branding: {
+        lab_name: $rd("rdLabName").value.trim(),
+        logo_url: $rd("rdLabLogo").value.trim(),
+        address: $rd("rdLabAddress").value.trim(),
+        phone: $rd("rdLabPhone").value.trim(),
+        email: $rd("rdLabEmail").value.trim()
+      },
+      layout: {
+        paper: $rd("rdPaper").value,
+        orientation: $rd("rdOrientation").value,
+        heading_size: Number($rd("rdHeadingSize").value) || 22,
+        address_size: Number($rd("rdAddressSize").value) || 11,
+        heading_color: $rd("rdHeadingColor").value,
+        header_gap_mm: Number($rd("rdHeaderGap").value) || 0,
+        footer_gap_mm: Number($rd("rdFooterGap").value) || 0
+      },
+      signatures: {
+        technician: $rd("rdShowTechnician").checked,
+        doctor: $rd("rdShowDoctor").checked
+      },
+      owner_locked: currentLocked
+    };
+  }
+
+  async function loadDesigner() {
+    const id = getLabId();
+    if (!id) {
+      rdStatus("पहले Laboratory चुनें।", true);
+      return;
+    }
+
+    rdStatus("Loading Report Design...");
+
+    try {
+      const { data, error } = await db.rpc(
+        "acd_get_lab_report_settings",
+        { p_lab_id: id }
+      );
+      if (error) throw error;
+
+      const globalSettings = data?.global_defaults || {};
+      const labSettings = data?.lab_settings || {};
+
+      currentGlobal = globalSettings;
+      currentLocked = data?.owner_locked === true;
+
+      const merged = {
+        branding: {
+          ...(globalSettings.branding || {}),
+          ...(labSettings.branding || {})
+        },
+        layout: {
+          ...(globalSettings.layout || {}),
+          ...(labSettings.layout || {})
+        },
+        signatures: {
+          ...(globalSettings.signatures || {}),
+          ...(labSettings.signatures || {})
+        }
+      };
+
+      setFields("rd", merged);
+
+      const isSuper = role === "super_admin";
+      $rd("rdOwnerCanCustomize").checked =
+        data?.owner_can_customize !== false;
+
+      $rd("rdOwnerCanCustomize").disabled = !isSuper;
+      $rd("rdOwnerLocked").checked = currentLocked;
+      $rd("rdOwnerLocked").disabled = !isSuper;
+
+      $rd("rdGlobalName").value = globalSettings.branding?.lab_name || "";
+      $rd("rdGlobalLogo").value = globalSettings.branding?.logo_url || "";
+      $rd("rdGlobalAddress").value = globalSettings.branding?.address || "";
+      $rd("rdGlobalPhone").value = globalSettings.branding?.phone || "";
+      $rd("rdGlobalEmail").value = globalSettings.branding?.email || "";
+
+      panel.querySelector(".rd-global-card").style.display =
+        isSuper ? "" : "none";
+
+      rdStatus(
+        data?.owner_can_customize === false && !isSuper
+          ? "Report Design Super Admin द्वारा locked है।"
+          : "Report Design loaded successfully."
+      );
+    } catch (error) {
+      rdStatus("Load error: " + error.message, true);
+    }
+  }
+
+  async function saveGlobalDefaults() {
+    if (role !== "super_admin") {
+      rdStatus("Super Admin access required.", true);
+      return;
+    }
+
+    try {
+      const settings = {
+        branding: {
+          lab_name: $rd("rdGlobalName").value.trim(),
+          logo_url: $rd("rdGlobalLogo").value.trim(),
+          address: $rd("rdGlobalAddress").value.trim(),
+          phone: $rd("rdGlobalPhone").value.trim(),
+          email: $rd("rdGlobalEmail").value.trim()
+        },
+        layout: currentGlobal.layout || {},
+        signatures: currentGlobal.signatures || {}
+      };
+
+      const { error } = await db.rpc(
+        "acd_save_global_report_defaults",
+        {
+          p_settings: settings,
+          p_owner_can_customize: $rd("rdOwnerCanCustomize").checked
+        }
+      );
+      if (error) throw error;
+
+      currentGlobal = settings;
+      rdStatus("Global Report Defaults saved.");
+      await loadDesigner();
+    } catch (error) {
+      rdStatus("Global save error: " + error.message, true);
+    }
+  }
+
+  async function saveLabDesign() {
+    const id = getLabId();
+    if (!id) {
+      rdStatus("Laboratory select करें।", true);
+      return;
+    }
+
+    try {
+      currentLocked = role === "super_admin"
+        ? $rd("rdOwnerLocked").checked
+        : currentLocked;
+
+      const settings = readLabSettings();
+
+      const { error } = await db.rpc(
+        "acd_save_lab_report_settings",
+        {
+          p_lab_id: id,
+          p_settings: settings
+        }
+      );
+      if (error) throw error;
+
+      rdStatus("Laboratory Report Design saved successfully.");
+    } catch (error) {
+      rdStatus("Save error: " + error.message, true);
+    }
+  }
+
+  nav.addEventListener("click", event => {
+    const button = event.target.closest('[data-page="Report Designer"]');
+    if (!button) return;
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    document.querySelectorAll(".nav button").forEach(b =>
+      b.classList.toggle("active", b === button)
+    );
+
+    document.getElementById("pageTitle").textContent = "Report Designer";
+
+    ["entryPage", "cataloguePage", "otherPage", "superAdminCenter"]
+      .forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add("hidden");
+      });
+
+    panel.classList.remove("hidden");
+    loadDesigner();
+  }, true);
+
+  $rd("rdSaveGlobal").onclick = saveGlobalDefaults;
+  $rd("rdSaveLab").onclick = saveLabDesign;
+
+  if (role !== "super_admin") {
+    $rd("rdSaveGlobal").disabled = true;
+  }
+})();
+  
+<script src="platform-mode.js"></script> 
+
 </body></html>
