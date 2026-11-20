@@ -105,7 +105,7 @@ button:disabled{opacity:.55;cursor:not-allowed}
 <button data-page="Sample Tracking">◆ <span class="txt">Sample Tracking</span></button>
 <button data-page="Accounts & Expenses">▤ <span class="txt">Accounts &amp; Expenses</span></button>
 <button data-page="Inventory & Stock">▣ <span class="txt">Inventory &amp; Stock</span></button>
-<button data-page="Staff & Roles">♧ <span class="txt">Staff &amp; Roles</span></button>
+
 <button data-page="Lab & Print Setup">⚙ <span class="txt">Lab &amp; Print Setup</span></button>
 <button data-page="Subscription (Razorpay)">▰ <span class="txt">Subscription (Razorpay)</span></button>
 <button class="super" data-page="Super Admin">⬟ <span class="txt">Super Admin</span></button>
@@ -371,7 +371,7 @@ init().catch(e=>say("Session/setup error: "+e.message));
     "Results & Reports",
     "Accounts",
     "Inventory",
-    "Staff & Roles",
+    
     "Retention & Backup",
     "Permission Manager",
     "Cloud Setup",
@@ -475,7 +475,7 @@ const el = id => document.getElementById(id);
     <hr style="border:0;border-top:1px solid #e5eaf0;margin:12px 0">
     <h3>Laboratory Overview</h3>
     <div id="saDashMetrics" class="sa-grid"></div>
-    <h3 style="margin-top:18px">Subscription & Staff</h3>
+    <h3 style="margin-top:18px">Owner & Subscription</h3>
     <div id="saDashDetails"></div>
     <h3 style="margin-top:18px">Recent Orders</h3>
     <div id="saDashOrders"></div>
@@ -551,31 +551,22 @@ const el = id => document.getElementById(id);
         saMetric("Total Orders", m.orders),
         saMetric("Today's Orders", m.orders_today),
         saMetric("Total Results", m.results),
-        saMetric("Total Staff", m.staff_total),
-        saMetric("Active Staff", m.staff_active),
+        
         saMetric("Enabled Tests", m.tests_enabled),
         saMetric("Total Collection", saMoney(m.collected_total)),
         saMetric("Total Due", saMoney(m.due_total)),
         saMetric("Total Billing", saMoney(m.revenue_total))
       ].join("");
 
-      const members = Array.isArray(data.members) ? data.members : [];
-
       el("saDashDetails").innerHTML = `
-        <div class="sa-module">
-          <b>Subscription</b>
-          Plan: ${saText(sub.plan_code || "Not available")}<br>
-          Status: ${saText(sub.status || "Not available")}<br>
-          <b style="margin-top:8px">Staff Members</b>
-          ${members.length ? members.map(member => `
-            <div class="sa-log">
-              ${saText(member.role)}
-              — ${member.is_active && member.status === "active"
-                ? "Active" : saText(member.status || "Inactive")}
-            </div>
-          `).join("") : "No staff records found."}
-        </div>
-      `;
+  <div class="sa-module">
+    <b>Owner Subscription</b><br>
+    Plan: ${saText(sub.plan_code || "Not available")}<br>
+    Status: ${saText(sub.status || "Not available")}<br>
+    Trial Ends: ${saText(sub.trial_ends_at || "Not available")}<br>
+    Subscription Ends: ${saText(sub.current_period_end || "Not available")}
+  </div>
+`;
 
       const orders = Array.isArray(data.recent_orders)
         ? data.recent_orders : [];
