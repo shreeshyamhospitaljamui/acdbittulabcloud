@@ -153,36 +153,95 @@
     return state.role === "super_admin";
   }
 
+  
   async function loadDevices() {
     const body = $("saDeviceRows");
     body.innerHTML = '<tr><td colspan="7">Loading…</td></tr>';
     try {
       const { data, error } = await db.rpc("acd_superadmin_list_device_sessions");
       if (error) throw error;
+
       const rows = Array.isArray(data) ? data : [];
       state.devices = rows;
+
       body.innerHTML = rows.length ? rows.map(d => {
         const online = d.status === "online";
-        const time = d.heartbeat_at ? new Date(d.heartbeat_at).toLocaleString() : "—";
+        const active = d.account_active === true;
+        const self = d.user_id === window.acdCurrentUserId;
+        const time = d.heartbeat_at
+          ? new Date(d.heartbeat_at).toLocaleString()
+          : "—";
+
         return `<tr>
           <td><strong>${esc(d.full_name || d.email || d.user_id)}</strong><br><span class="sa-muted">${esc(d.email || "")}</span></td>
-          <td>${esc(d.platform_role || "lab user")}</td>
+          <td>${esc(d.role || d.platform_role || "Lab Owner")}</td>
           <td>${esc((d.lab_names || []).join(", ") || "—")}</td>
           <td><code>${esc(d.device_id || "—")}</code></td>
           <td>${esc(time)}</td>
           <td><span class="sa-status ${online ? "sa-online" : "sa-offline"}">${online ? "ONLINE" : "OFFLINE"}</span>${d.takeover_pending ? "<br><small>Takeover pending</small>" : ""}</td>
-          <td><button class="btn sa-danger" data-reset-user="${esc(d.user_id)}" ${d.user_id === window.acdCurrentUserId ? "disabled" : ""}>Force Reset</button></td>
+          <td>
+            <strong style="color:${active ? "green" : "red"}">${active ? "ACCOUNT ACTIVE" : "ACCOUNT DEACTIVATED"}</strong><br>
+            <button class="btn sa-danger" data-reset-user="${esc(d.user_id)}" ${self || !active ? "disabled" : ""}>Force Reset</button>
+            <button class="btn" data-account-user="${esc(d.user_id)}" data-next-active="${!active}" ${self ? "disabled" : ""}>${active ? "Deactivate Account" : "Activate Account"}</button>
+          </td>
         </tr>`;
       }).join("") : '<tr><td colspan="7">No device sessions found.</td></tr>';
+
       body.querySelectorAll("[data-reset-user]").forEach(button => {
         button.addEventListener("click", () => resetDevice(button.dataset.resetUser, button));
       });
+
+      body.querySelectorAll("[data-account-user]").forEach(button => {
+        button.addEventListener("click", () =>
+          setOwnerAccountActive(
+            button.dataset.accountUser,
+            button.dataset.nextActive === "true",
+            button
+          )
+        );
+      });
+
       $("saDeviceMessage").textContent = "Device list updated.";
     } catch (e) {
       body.innerHTML = `<tr><td colspan="7">Could not load devices: ${esc(e.message)}</td></tr>`;
       $("saDeviceMessage").textContent = "Device list load failed.";
     }
   }
+
+  
+  async function setOwnerAccountActive(userId, isActive, button) {
+    const action = isActive ? "Activate" : "Deactivate";
+
+    const message = isActive
+      ? "इस Lab Owner का account फिर से चालू करना है?"
+      : "इस Lab Owner का account बंद करना है? उसके सभी linked labs बंद होंगे और सभी sessions revoke होंगे। Data delete नहीं होगा।";
+
+    if (!confirm(message)) return;
+
+    button.disabled = true;
+
+    try {
+      const { data, error } = await db.rpc(
+        "acd_superadmin_set_owner_account_active",
+        {
+          p_user_id: userId,
+          p_is_active: isActive
+        }
+      );
+
+      if (error) throw error;
+
+      $("saDeviceMessage").textContent =
+        action + " account successful.";
+
+      await loadDevices();
+    } catch (e) {
+      $("saDeviceMessage").textContent =
+        action + " account failed: " + e.message;
+      button.disabled = false;
+    }
+  }
+
 
   async function resetDevice(userId, button) {
     if (!confirm("इस user का मौजूदा device session reset करना है? User को दोबारा login करना होगा.")) return;
