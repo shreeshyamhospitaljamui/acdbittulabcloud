@@ -303,6 +303,60 @@ button:disabled{opacity:.55;cursor:not-allowed}
         <div class="field"><label>Header Gap (mm)</label><input id="rdHeaderGap" type="number" min="0" max="40" value="5"></div>
         <div class="field"><label>Footer Gap (mm)</label><input id="rdFooterGap" type="number" min="0" max="60" value="18"></div>
       </div>
+      
+<div class="panel-head">Patient & Printing Settings</div>
+<div class="fields">
+  <div class="field"><label>Lab Alias</label><input id="rdLabAlias"></div>
+  <div class="field"><label>Child Age Limit</label><input id="rdChildAge" type="number" value="12"></div>
+  <div class="field"><label>Patient ID Generation</label><select id="rdAutoPatient"><option value="true">Automatic</option><option value="false">Manual</option></select></div>
+  <div class="field"><label>Default Printing</label><select id="rdPrintMode"><option value="blank">On Blank Paper</option><option value="preprinted">On Printed Paper</option></select></div>
+  <div class="field"><label>X-Ray Header (pt)</label><input id="rdXrayHeader" type="number" value="350"></div>
+  <div class="field"><label>X-Ray Footer (pt)</label><input id="rdXrayFooter" type="number" value="800"></div>
+  <div class="field"><label>X-Ray Alignment</label><select id="rdXrayAlign"><option>Left</option><option>Middle</option><option>Right</option></select></div>
+</div>
+
+<div class="panel-head">Spacing & Test Layout</div>
+<div class="fields">
+  <div class="field"><label>Gap for Header (pt)</label><input id="rdGapHeader" type="number" value="140"></div>
+  <div class="field"><label>Gap Between Header (pt)</label><input id="rdGapBetweenHeader" type="number" value="25"></div>
+  <div class="field"><label>Gap for Content (pt)</label><input id="rdGapContent" type="number" value="270"></div>
+  <div class="field"><label>Gap Between Test (pt)</label><input id="rdGapTest" type="number" value="20"></div>
+  <div class="field"><label>Gap Between Subtest (pt)</label><input id="rdGapSubtest" type="number" value="20"></div>
+  <div class="field"><label>Gap for Footer (pt)</label><input id="rdGapFooter" type="number" value="1000"></div>
+  <div class="field"><label>Gap for Doctor Name (pt)</label><input id="rdGapDoctor" type="number" value="20"></div>
+  <div class="field"><label>Test Header Font (pt)</label><input id="rdTestHeaderFont" type="number" value="12"></div>
+  <div class="field"><label>Test Name Font (pt)</label><input id="rdTestNameFont" type="number" value="11"></div>
+  <div class="field"><label>Patient Details Font (pt)</label><input id="rdPatientFont" type="number" value="10"></div>
+  <div class="field"><label>Comment & Note Font (pt)</label><input id="rdCommentFont" type="number" value="10"></div>
+</div>
+
+<div class="panel-head">Report Positions</div>
+<div class="fields">
+  <div class="field"><label>Test Name Position</label><input id="rdPosTestName" type="number" value="80"></div>
+  <div class="field"><label>Subtest Position</label><input id="rdPosSubtest" type="number" value="100"></div>
+  <div class="field"><label>Result Position</label><input id="rdPosResult" type="number" value="310"></div>
+  <div class="field"><label>Unit Position</label><input id="rdPosUnit" type="number" value="420"></div>
+  <div class="field"><label>Reference Range Position</label><input id="rdPosRange" type="number" value="540"></div>
+  <div class="field"><label>Result End Position</label><input id="rdPosEnd" type="number" value="750"></div>
+  <div class="field"><label>Hemoglobin Unit</label><input id="rdHbUnit" value="g/dL"></div>
+</div>
+
+<div class="panel-head">Colors & Font Sizes</div>
+<div class="fields">
+  <div class="field"><label>Heading Color</label><input id="rdColorHeading" type="color" value="#000000"></div>
+  <div class="field"><label>Address Color</label><input id="rdColorAddress" type="color" value="#000000"></div>
+  <div class="field"><label>Phone Color</label><input id="rdColorPhone" type="color" value="#000000"></div>
+  <div class="field"><label>Email Color</label><input id="rdColorEmail" type="color" value="#000000"></div>
+  <div class="field"><label>Heading Size</label><input id="rdSizeHeading" type="number" value="30"></div>
+  <div class="field"><label>Address Size</label><input id="rdSizeAddress" type="number" value="16"></div>
+  <div class="field"><label>Phone Size</label><input id="rdSizePhone" type="number" value="16"></div>
+  <div class="field"><label>Email Size</label><input id="rdSizeEmail" type="number" value="16"></div>
+</div>
+
+<p><label><input id="rdRectanglePatient" type="checkbox"> Rectangle Over Patient Details</label></p>
+<p><label><input id="rdLinesPatient" type="checkbox"> Lines Over Patient Details</label></p>
+<p><label><input id="rdPrintAfterSave" type="checkbox" checked> Print Report After Save</label></p>
+      
       <p><label><input id="rdShowTechnician" type="checkbox" checked> Show Technician Signature</label></p>
       <p><label><input id="rdShowDoctor" type="checkbox" checked> Show Doctor Signature</label></p>
       <p><label><input id="rdOwnerLocked" type="checkbox"> Lock Owner Customization (Super Admin only)</label></p>
