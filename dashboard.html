@@ -20,6 +20,20 @@ input,select{width:100%;height:27px;border:1px solid #d8dee7;border-radius:5px;p
 .amounts{display:grid;grid-template-columns:1fr 1fr;gap:6px}.paid input{color:#07934a;font-weight:bold}.due input{color:#c42f35;font-weight:bold}
 .results{flex:1;min-height:260px}.results-head{display:flex;justify-content:space-between;align-items:center;padding:7px 9px;gap:8px}.results-title{font-weight:700;font-size:11px}.actions{display:flex;gap:5px}.table-wrap{padding:0 5px 8px;overflow:auto}table{border-collapse:collapse;width:100%;font-size:10px}th{background:#173f83;color:white;text-align:left;padding:7px 6px;white-space:nowrap}td{border:1px solid #e2e7ee;padding:5px 6px}td input,td select{height:25px;min-width:70px}td.empty{text-align:center;color:#98a2b3;font-style:italic;height:30px}
 #notice{font-size:10px;color:#067647;padding:0 10px 8px;min-height:15px}.hidden{display:none!important}.placeholder-panel{background:#fff;border:1px solid var(--line);border-radius:8px;padding:18px;color:#667085;min-height:120px}
+.catalogue-layout{display:grid;grid-template-columns:minmax(190px,260px) 1fr;gap:10px;min-height:420px}
+.catalogue-list{background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px}
+.catalogue-list h3,.catalogue-detail h3{margin:2px 0 10px;font-size:13px;color:#17427f}
+.catalogue-test{display:block;width:100%;text-align:left;border:1px solid #e4e9f0;background:#fff;color:#344054;padding:9px;border-radius:6px;margin:5px 0;cursor:pointer;font-size:11px}
+.catalogue-test.active{border-color:#1672dc;background:#edf5ff;color:#075ec9;font-weight:700}
+.catalogue-test small{display:block;color:#7b8794;margin-top:3px}
+.catalogue-detail{background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px;min-width:0}
+.catalogue-detail table{font-size:11px}
+.catalogue-detail th{background:#174783}
+.catalogue-detail td{padding:8px 7px}
+.catalogue-meta{font-size:10px;color:#667085;margin-bottom:10px}
+.catalogue-empty{padding:28px 10px;text-align:center;color:#98a2b3}
+@media(max-width:600px){.catalogue-layout{grid-template-columns:1fr}.catalogue-list{max-height:220px;overflow:auto}.catalogue-detail{overflow:auto}}
+
 button:disabled{opacity:.55;cursor:not-allowed}
 @media print{
  @page{size:A4;margin:12mm 10mm 18mm}
@@ -81,6 +95,24 @@ button:disabled{opacity:.55;cursor:not-allowed}
 <div class="signature-footer">Authorized Signature: ______________________________</div>
 </div>
 <div id="otherPage" class="placeholder-panel hidden">यह मॉड्यूल पहले जैसा ही मेनू में रखा गया है। इस कार्य में इसके फीचर्स में कोई बदलाव नहीं किया गया है।</div>
+<div id="cataloguePage" class="hidden">
+  <div class="catalogue-layout">
+    <aside class="catalogue-list">
+      <h3>Master Test Catalogue</h3>
+      <input id="catalogueFilter" placeholder="Search test name..." style="margin-bottom:8px">
+      <div id="catalogueTestList"></div>
+    </aside>
+    <section class="catalogue-detail">
+      <h3 id="catalogueSelectedTitle">Test Parameters</h3>
+      <div class="catalogue-meta" id="catalogueSelectedMeta">बाईं ओर से कोई टेस्ट चुनें।</div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Parameter</th><th>Unit</th><th>Reference Range</th><th>Result Type</th></tr></thead>
+        <tbody id="catalogueParameterRows"><tr><td class="catalogue-empty" colspan="4">Select a test to view its parameters.</td></tr></tbody></table>
+      </div>
+    </section>
+  </div>
+</div>
+
 </section></main></div>
 <script>
 const SUPABASE_URL="https://axfvvquhswapiwmvrepe.supabase.co";
@@ -117,6 +149,30 @@ async function loadCatalogue(){
  const {data,error}=await db.from("acd_test_catalogue").select("id,test_code,test_name,department,default_price").eq("is_active",true).order("sort_order");
  if(error)throw error;catalogue=data||[];
  $("testSuggestions").innerHTML=catalogue.map(t=>'<option value="'+safe(t.test_name)+'"></option><option value="'+safe(t.test_code)+'"></option>').join("");
+}
+let activeCatalogueTestId=null;
+function renderCatalogueList(filter=""){
+ const list=$("catalogueTestList"),q=filter.trim().toLowerCase();
+ const items=catalogue.filter(t=>!q||t.test_name.toLowerCase().includes(q)||t.test_code.toLowerCase().includes(q)||(t.department||"").toLowerCase().includes(q));
+ list.innerHTML=items.length?items.map(t=>'<button class="catalogue-test '+(t.id===activeCatalogueTestId?'active':'')+'" data-catalogue-id="'+safe(t.id)+'">'+safe(t.test_name)+'<small>'+safe(t.department||t.test_code)+'</small></button>').join(""):'<div class="catalogue-empty">कोई टेस्ट नहीं मिला।</div>';
+ list.querySelectorAll("[data-catalogue-id]").forEach(b=>b.onclick=()=>openCatalogueTest(b.dataset.catalogueId));
+}
+async function openCatalogueTest(id){
+ const t=catalogue.find(x=>x.id===id);if(!t)return;
+ activeCatalogueTestId=id;renderCatalogueList($("catalogueFilter").value);
+ $("catalogueSelectedTitle").textContent=t.test_name;
+ $("catalogueSelectedMeta").textContent=(t.department||"")+(t.test_code?" • Code: "+t.test_code:"");
+ $("catalogueParameterRows").innerHTML='<tr><td class="catalogue-empty" colspan="4">Loading parameters…</td></tr>';
+ const {data,error}=await db.from("acd_test_parameters").select("parameter_name,unit,reference_range,result_type,result_options,sort_order").eq("test_id",id).order("sort_order");
+ if(error){$("catalogueParameterRows").innerHTML='<tr><td class="catalogue-empty" colspan="4">Load error: '+safe(error.message)+'</td></tr>';return}
+ $("catalogueParameterRows").innerHTML=(data||[]).length?(data||[]).map(p=>'<tr><td><b>'+safe(p.parameter_name)+'</b></td><td>'+safe(p.unit||"-")+'</td><td>'+safe(p.reference_range||"-")+'</td><td>'+safe(p.result_type||"numeric")+(p.result_options?.length?'<br><small>'+safe(p.result_options.join(", "))+'</small>':"")+'</td></tr>').join(""):'<tr><td class="catalogue-empty" colspan="4">इस टेस्ट में कोई parameter नहीं है।</td></tr>';
+}
+$("catalogueFilter").addEventListener("input",()=>renderCatalogueList($("catalogueFilter").value));
+async function showCataloguePage(){
+ if(!catalogue.length)await loadCatalogue();
+ renderCatalogueList($("catalogueFilter").value);
+ if(activeCatalogueTestId)await openCatalogueTest(activeCatalogueTestId);
+ else if(catalogue.length)await openCatalogueTest(catalogue[0].id);
 }
 async function addTest(){
  const q=$("testSearch").value.trim().toLowerCase();if(!q){say("Test का नाम लिखें।");return}
@@ -181,8 +237,13 @@ $("save").onclick=async()=>{
 $("logout").onclick=async()=>{try{await db.rpc("acd_device_release",{p_device_id:deviceId()})}catch(e){}await db.auth.signOut();location.replace("index.html")};
 $("nav").querySelectorAll("button").forEach(b=>b.onclick=()=>{
  document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");$("pageTitle").textContent=b.dataset.page;
- const isEntry=b.dataset.page==="New Patient Entry";$("entryPage").classList.toggle("hidden",!isEntry);$("otherPage").classList.toggle("hidden",isEntry);
+ const isEntry=b.dataset.page==="New Patient Entry";
+ const isCatalogue=b.dataset.page==="Test Catalogue";
+ $("entryPage").classList.toggle("hidden",!isEntry);
+ $("cataloguePage").classList.toggle("hidden",!isCatalogue);
+ $("otherPage").classList.toggle("hidden",isEntry||isCatalogue);
  if(b.dataset.page==="Subscription (Razorpay)"){location.href="subscription.html";return}
+ if(isCatalogue){showCataloguePage().catch(e=>{$("catalogueParameterRows").innerHTML='<tr><td class="catalogue-empty" colspan="4">'+safe(e.message)+'</td></tr>'});return}
  if(!isEntry)$("otherPage").textContent=b.dataset.page+" — इस मॉड्यूल के मौजूदा फीचर्स को इस Patient Entry update में नहीं बदला गया है।";
 });
 setupEnterFlow();function tick(){$("clock").textContent=new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false})}tick();setInterval(tick,1000);
