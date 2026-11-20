@@ -103,16 +103,16 @@
     { key: "platform", label: "Platform Mode" },
     { key: "features", label: "Master Control" }
   ];
-  const navButtons = controls.map(item => {
+    // Sidebar में केवल Master Control दिखेगा।
+  const navButtons = (() => {
     const b = document.createElement("button");
     b.type = "button";
-    b.dataset.saNav = item.key;
-    b.textContent = item.key === "devices" ? "▣ Device Management" :
-                    item.key === "platform" ? "◉ Platform Mode" : "⚙ Master Control";
+    b.dataset.saNav = "features";
+    b.textContent = "⚙ Master Control";
     b.style.cssText = "margin-top:2px;color:#ffcf8b";
     nav.appendChild(b);
-    return b;
-  });
+    return [b];
+  })();
 
   function showConsole(tab = "devices") {
     document.querySelectorAll(".nav button").forEach(b => b.classList.remove("active"));
@@ -338,7 +338,7 @@
           b.addEventListener("click", event => {
             event.preventDefault();
             event.stopImmediatePropagation();
-            showConsole("devices");
+            showConsole("features");
           }, true);
         } else {
           b.addEventListener("click", () => { panel.style.display = "none"; });
