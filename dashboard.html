@@ -360,5 +360,325 @@ $("nav").querySelectorAll("button").forEach(b=>b.onclick=()=>{
 setupEnterFlow();function tick(){$("clock").textContent=new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false})}tick();setInterval(tick,1000);
 init().catch(e=>say("Session/setup error: "+e.message));
 </script>
-<script src="platform-mode.js"></script>
+
+<script>
+/* ACD BITTU LAB CLOUD — SUPER ADMIN CONTROL CENTER */
+(function () {
+  const modules = [
+    "Lab Setup",
+    "Test Orders",
+    "Sample Tracking",
+    "Results & Reports",
+    "Accounts",
+    "Inventory",
+    "Staff & Roles",
+    "Retention & Backup",
+    "Permission Manager",
+    "Cloud Setup",
+    "Modification Settings"
+  ];
+
+  const nav = document.getElementById("nav");
+  const workspace = document.getElementById("workspace");
+
+  if (!nav || !workspace) return;
+
+  const page = document.createElement("section");
+  page.id = "superAdminCenter";
+  page.className = "hidden";
+  page.innerHTML = `
+    <style>
+      #superAdminCenter .sa-card {
+        background:#fff;border:1px solid #dce3eb;
+        border-radius:9px;padding:13px;margin-bottom:12px;
+      }
+      #superAdminCenter h2 {font-size:17px;color:#123c75;margin:0 0 8px}
+      #superAdminCenter h3 {font-size:13px;margin:0 0 10px;color:#1759a6}
+      #superAdminCenter .sa-grid {
+        display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;
+      }
+      #superAdminCenter .sa-module {
+        border:1px solid #e1e7ef;border-radius:7px;padding:9px;
+        font-size:11px;display:flex;flex-direction:column;gap:7px;
+      }
+      #superAdminCenter .sa-module label {display:flex;gap:6px;align-items:center}
+      #superAdminCenter .sa-module input {width:15px;height:15px}
+      #superAdminCenter .sa-actions {display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+      #superAdminCenter .sa-status {font-size:11px;color:#087f48;margin-top:8px}
+      #superAdminCenter .sa-error {color:#b42318}
+      #superAdminCenter .sa-log {border-bottom:1px solid #edf0f4;padding:8px 0;font-size:10px}
+      #superAdminCenter select {max-width:100%;height:34px}
+      @media(max-width:480px){#superAdminCenter .sa-grid{grid-template-columns:1fr}}
+    </style>
+
+    <div class="sa-card">
+      <h2>⬟ Super Admin Control Center</h2>
+      <div style="font-size:11px;color:#667085">
+        Platform Owner • All Laboratory Controls
+      </div>
+      <div class="sa-status" id="saStatus">Loading...</div>
+    </div>
+
+    <div class="sa-card">
+      <h3>Laboratory Selection</h3>
+      <select id="saLab" style="width:100%">
+        <option value="">Select Laboratory</option>
+      </select>
+      <div class="sa-actions">
+        <button class="btn" id="saLoad">Load Lab Settings</button>
+        <button class="btn light" id="saRefresh">Refresh Audit Logs</button>
+      </div>
+    </div>
+
+    <div class="sa-card">
+      <h3>Global Control — All Laboratories</h3>
+      <div style="font-size:10px;color:#667085;margin-bottom:9px">
+        Global settings apply by default. Individual lab settings can override them.
+      </div>
+      <div class="sa-grid" id="saGlobalModules"></div>
+      <div class="sa-actions">
+        <button class="btn green" id="saSaveGlobal">Save Global Settings</button>
+      </div>
+    </div>
+
+    <div class="sa-card">
+      <h3>Individual Laboratory Control</h3>
+      <div style="font-size:10px;color:#667085;margin-bottom:9px">
+        These settings apply only to the selected laboratory.
+      </div>
+      <div class="sa-grid" id="saLabModules"></div>
+      <div class="sa-actions">
+        <button class="btn green" id="saSaveLab">Save Selected Lab</button>
+      </div>
+    </div>
+
+    <div class="sa-card">
+      <h3>Recent Platform Audit History</h3>
+      <div id="saAudit">Click Refresh Audit Logs.</div>
+    </div>
+  `;
+
+  workspace.appendChild(page);
+
+  const el = id => document.getElementById(id);
+  const status = (message, error = false) => {
+    el("saStatus").textContent = message;
+    el("saStatus").className = error ? "sa-status sa-error" : "sa-status";
+  };
+
+  function moduleControls(container, prefix, config = {}) {
+    const allowed = config.allowed || {};
+    const visible = config.visible || {};
+
+    el(container).innerHTML = modules.map((name, i) => `
+      <div class="sa-module">
+        <b>${name}</b>
+        <label>
+          <input type="checkbox" id="${prefix}a${i}"
+            ${allowed[name] !== false ? "checked" : ""}>
+          Allowed
+        </label>
+        <label>
+          <input type="checkbox" id="${prefix}v${i}"
+            ${visible[name] !== false ? "checked" : ""}>
+          Visible
+        </label>
+      </div>
+    `).join("");
+  }
+
+  function readControls(prefix) {
+    const allowed = {};
+    const visible = {};
+
+    modules.forEach((name, i) => {
+      allowed[name] = el(prefix + "a" + i).checked;
+      visible[name] = el(prefix + "v" + i).checked;
+    });
+
+    return { allowed, visible };
+  }
+
+  function configFromResponse(data, key) {
+    const value = data?.[key]?.uiVisibility || {};
+    return {
+      allowed: value.allowed || {},
+      visible: value.visible || {}
+    };
+  }
+
+  async function loadLabSettings() {
+    const id = el("saLab").value;
+    if (!id) {
+      status("पहले Laboratory चुनें।", true);
+      return;
+    }
+
+    status("Loading laboratory settings...");
+
+    try {
+      const { data, error } = await db.rpc(
+        "acd_superadmin_get_lab_ui_config",
+        { p_lab_id: id }
+      );
+
+      if (error) throw error;
+
+      moduleControls(
+        "saGlobalModules",
+        "sag",
+        configFromResponse(data, "global")
+      );
+
+      moduleControls(
+        "saLabModules",
+        "sal",
+        configFromResponse(data, "lab_override")
+      );
+
+      status("Settings loaded successfully.");
+    } catch (error) {
+      status("Load error: " + error.message, true);
+    }
+  }
+
+  async function saveGlobal() {
+    status("Saving global settings...");
+
+    try {
+      const config = {
+        uiVisibility: readControls("sag")
+      };
+
+      const { error } = await db.rpc(
+        "acd_superadmin_save_global_ui_config",
+        { p_config: config }
+      );
+
+      if (error) throw error;
+
+      status("Global settings saved successfully.");
+      await loadAudit();
+    } catch (error) {
+      status("Save error: " + error.message, true);
+    }
+  }
+
+  async function saveLab() {
+    const id = el("saLab").value;
+
+    if (!id) {
+      status("पहले Laboratory चुनें।", true);
+      return;
+    }
+
+    status("Saving individual lab settings...");
+
+    try {
+      const { error } = await db.rpc(
+        "acd_superadmin_save_lab_ui_config",
+        {
+          p_lab_id: id,
+          p_config: readControls("sal")
+        }
+      );
+
+      if (error) throw error;
+
+      status("Selected lab settings saved successfully.");
+      await loadAudit();
+    } catch (error) {
+      status("Save error: " + error.message, true);
+    }
+  }
+
+  async function loadAudit() {
+    el("saAudit").textContent = "Loading audit history...";
+
+    try {
+      const { data, error } = await db.rpc(
+        "acd_superadmin_recent_audit_logs",
+        { p_limit: 30 }
+      );
+
+      if (error) throw error;
+
+      const rows = Array.isArray(data) ? data : [];
+
+      el("saAudit").innerHTML = rows.length
+        ? rows.map(item => `
+          <div class="sa-log">
+            <b>${String(item.action || "").replace(/[<>]/g, "")}</b>
+            — ${String(item.entity_type || "").replace(/[<>]/g, "")}
+            <br>
+            Lab: ${item.lab_id || "Global"}
+            <br>
+            ${item.created_at
+              ? new Date(item.created_at).toLocaleString()
+              : ""}
+          </div>
+        `).join("")
+        : "No audit records found.";
+    } catch (error) {
+      el("saAudit").textContent = "Audit error: " + error.message;
+    }
+  }
+
+  function fillLabs() {
+    if (typeof labs === "undefined") return;
+
+    const select = el("saLab");
+    select.innerHTML = '<option value="">Select Laboratory</option>';
+
+    labs.forEach(lab => {
+      const option = document.createElement("option");
+      option.value = lab.id;
+      option.textContent = lab.name;
+      select.appendChild(option);
+    });
+
+    if (typeof labId !== "undefined" && labId) {
+      select.value = labId;
+    }
+  }
+
+  el("saLoad").onclick = loadLabSettings;
+  el("saRefresh").onclick = loadAudit;
+  el("saSaveGlobal").onclick = saveGlobal;
+  el("saSaveLab").onclick = saveLab;
+
+  el("saLab").addEventListener("change", loadLabSettings);
+
+  const superButton = nav.querySelector('[data-page="Super Admin"]');
+
+  if (superButton) {
+    superButton.addEventListener("click", () => {
+      const isSuper = typeof role !== "undefined" && role === "super_admin";
+
+      page.classList.remove("hidden");
+      el("entryPage").classList.add("hidden");
+      el("cataloguePage").classList.add("hidden");
+      el("otherPage").classList.add("hidden");
+
+      if (!isSuper) {
+        status("Access denied: Super Admin account required.", true);
+        return;
+      }
+
+      fillLabs();
+      status("Super Admin session verified.");
+      loadAudit();
+      if (el("saLab").value) loadLabSettings();
+    });
+  }
+
+  el("labSelect")?.addEventListener("change", () => {
+    if (el("saLab")) el("saLab").value = el("labSelect").value;
+  });
+
+  moduleControls("saGlobalModules", "sag");
+  moduleControls("saLabModules", "sal");
+})();
+   </script>
+ <script src="platform-mode.js"></script>
 </body></html>
