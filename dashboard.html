@@ -91,6 +91,8 @@ let user=null,role=null,labId=null,labs=[],catalogue=[],selectedTests=[],flatRow
 function say(t){$("notice").textContent=t}
 function safe(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function deviceId(){let id=localStorage.getItem("acd_device_id");if(!id){id=crypto.randomUUID?crypto.randomUUID():"acd-"+Date.now()+"-"+Math.random().toString(36).slice(2);localStorage.setItem("acd_device_id",id)}return id}
+let heartbeatBusy=false;
+async function deviceHeartbeat(){if(heartbeatBusy)return;heartbeatBusy=true;try{const {data,error}=await db.rpc("acd_device_heartbeat",{p_device_id:deviceId()});if(error)throw error;if(data?.status==="takeover"||data?.status==="revoked"){await db.auth.signOut();location.replace("index.html")}}catch(e){console.warn("Device heartbeat:",e.message)}finally{heartbeatBusy=false}}
 function calcDue(){let total=+($("total").value||0),discount=+($("discount").value||0),paid=+($("paid").value||0);$("due").value=Math.max(0,total-discount-paid)}
 ["total","discount","paid"].forEach(id=>$(id).addEventListener("input",calcDue));
 function resultControl(p,index){
@@ -137,8 +139,10 @@ function setupEnterFlow(){
 async function init(){
  const {data:{session}}=await db.auth.getSession();if(!session){location.replace("index.html");return}
  user=session.user;
- const {data:claim,error:claimError}=await db.rpc("acd_device_claim",{p_device_id:deviceId()});
- if(claimError||claim?.status!=="granted"){await db.auth.signOut();location.replace("index.html");return}
+ await deviceHeartbeat();setInterval(deviceHeartbeat,12000);
+ document.addEventListener("visibilitychange",()=>{if(!document.hidden)deviceHeartbeat()});
+ // index.html already completed the secure device claim before redirecting here.
+ // Do not claim the same device a second time; start heartbeat to keep that claim alive.
  const {data:profile,error:pe}=await db.from("profiles").select("platform_role,full_name").eq("id",user.id).maybeSingle();if(pe)throw pe;
  role=profile?.platform_role==="super_admin"?"super_admin":"lab_admin";$("account").textContent=profile?.full_name||user.email;
  if(role==="super_admin"){
