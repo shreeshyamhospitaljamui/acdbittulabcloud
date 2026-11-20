@@ -652,7 +652,9 @@ init().catch(e=>say("Session/setup error: "+e.message));
   const superButton = nav.querySelector('[data-page="Super Admin"]');
 
   if (superButton) {
-    superButton.addEventListener("click", () => {
+    superButton.addEventListener("click", (event) => {
+  event.preventDefault();
+  event.stopImmediatePropagation();
       const isSuper = typeof role !== "undefined" && role === "super_admin";
 
       page.classList.remove("hidden");
@@ -669,7 +671,7 @@ init().catch(e=>say("Session/setup error: "+e.message));
       status("Super Admin session verified.");
       loadAudit();
       if (el("saLab").value) loadLabSettings();
-    });
+    }, true);
   }
 
   el("labSelect")?.addEventListener("change", () => {
