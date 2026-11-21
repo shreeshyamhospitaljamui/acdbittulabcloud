@@ -533,7 +533,40 @@ function renderRows(){
   const r=item.row,i=item.index;
   return '<tr><td class="param-name"><b>'+safe(r.parameter_name)+'</b></td><td>'+resultControl(r,i)+'</td><td>'+safe(r.unit||"")+'</td><td>'+safe(r.reference_range||"")+'</td><td class="no-print"><button class="btn danger" data-remove-test="'+safe(r.test_id)+'">×</button></td></tr>';
  }).join("");
- body.querySelectorAll("[data-result]").forEach(el=>{el.value=flatRows[+el.dataset.result].result_value||"";el.addEventListener("input",()=>flatRows[+el.dataset.result].result_value=el.value);el.addEventListener("change",()=>flatRows[+el.dataset.result].result_value=el.value);el.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();const controls=[...body.querySelectorAll("[data-result]")];const next=controls[controls.indexOf(el)+1];if(next)next.focus()}})});
+ 
+body.querySelectorAll("[data-result]").forEach(el => {
+  const index = +el.dataset.result;
+  el.value = flatRows[index].result_value || "";
+
+  const update = () => {
+    flatRows[index].result_value = el.value;
+
+    const row = flatRows[index];
+    const test = selectedTests.find(t => t.id === row.test_id);
+
+    if (test && (test.test_code === "CBC" || test.test_name.toLowerCase() === "cbc")) {
+      calculateCBCResults(test.id);
+
+      body.querySelectorAll("[data-result]").forEach(input => {
+        const i = +input.dataset.result;
+        input.value = flatRows[i].result_value || "";
+      });
+    }
+  };
+
+  el.addEventListener("input", update);
+  el.addEventListener("change", update);
+
+  el.addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const controls = [...body.querySelectorAll("[data-result]")];
+      const next = controls[controls.indexOf(el) + 1];
+      if (next) next.focus();
+    }
+  });
+});
+
  body.querySelectorAll("[data-remove-test]").forEach(b=>b.onclick=()=>{selectedTests=selectedTests.filter(t=>t.id!==b.dataset.removeTest);flatRows=flatRows.filter(r=>r.test_id!==b.dataset.removeTest);renderRows();renderSelected()});
 }
   
