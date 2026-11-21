@@ -990,14 +990,7 @@ async function addTest() {
   say(displayName + " जोड़ा गया।");
 }
 
-  $("testSearch").value = "";
-  chosenSearchTestId = null;
-  chosenSearchParameter = null;
-  $("testSearchResults").classList.add("hidden");
-  renderSelected();
-  renderRows();
-  say(t.test_name + " जोड़ा गया।");
-}
+  
 
 $("addTest").onclick=addTest;
 $("clear").onclick=()=>{selectedTests=[];flatRows=[];renderRows();renderSelected();say("चुने हुए टेस्ट हटाए गए।")};
