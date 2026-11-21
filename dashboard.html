@@ -372,8 +372,7 @@ html.acd-lab-admin #nav [data-sa-nav] {
 
   <div class="report-patient-grid" id="printPatientMeta"></div>
   
-<div class="report-tra\u003Csection class=\"panel results\">\u003Cdiv class=\"results-head\">\u003Cspan class=\"results-title\">Investigation / Result Entry — Combined\u003C/span>\u003Cdiv class=\"actions\">\u003Cbutton class=\"btn light\" id=\"clear\">Clear All\u003C/button>\u003Cbutton class=\"btn green\" id=\"save\">Save &amp; Print (A4)\u003C/button>\u003C/div>\u003C/div>cking-row">
-
+<div class="report-tracking-row">
   <div class="report-qr-section">
     <div id="printPatientQR"></div>
     
@@ -1446,8 +1445,7 @@ $("printPatientMeta").innerHTML =
 
   '<div><b>Referring Doctor:</b> ' +
   safe($("doctor").value.trim() || "Self") +
-  '</div>' +
-;
+    '</div>';
   
 
   $("printTestTitle").textContent = "LABORATORY REPORT";
