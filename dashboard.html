@@ -324,6 +324,94 @@ button:disabled{opacity:.55;cursor:not-allowed}
 </div>
 <div id="otherPage" class="placeholder-panel hidden">यह मॉड्यूल पहले जैसा ही मेनू में रखा गया है। इस कार्य में इसके फीचर्स में कोई बदलाव नहीं किया गया है।</div>
 
+<div id="savedReportsPage" class="hidden">
+  <section class="panel">
+    <div class="panel-head">▣ Saved Reports</div>
+    <div class="panel-body">
+
+      <div class="grid" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px">
+        <div class="panel" style="padding:14px">
+          <small>Total Reports</small>
+          <h2 id="srTotal">—</h2>
+        </div>
+        <div class="panel" style="padding:14px">
+          <small>Today's Reports</small>
+          <h2 id="srToday">—</h2>
+        </div>
+        <div class="panel" style="padding:14px">
+          <small>Pending Reports</small>
+          <h2 id="srPending">—</h2>
+        </div>
+        <div class="panel" style="padding:14px">
+          <small>Completed Reports</small>
+          <h2 id="srCompleted">—</h2>
+        </div>
+      </div>
+
+      <h3>Search Reports</h3>
+      <div class="fields">
+        <div class="field full">
+          <input id="srSearch" placeholder="Patient Name / Mobile / Report ID">
+        </div>
+        <div class="field">
+          <label>From Date</label>
+          <input id="srFromDate" type="date">
+        </div>
+        <div class="field">
+          <label>To Date</label>
+          <input id="srToDate" type="date">
+        </div>
+        <div class="field">
+          <label>Status</label>
+          <select id="srStatus">
+            <option value="all">All Reports</option>
+            <option value="completed">Completed</option>
+            <option value="pending">Pending</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Reports Per Page</label>
+          <select id="srPageSize" disabled>
+            <option value="25" selected>25 Reports</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin:15px 0">
+        <h3 style="margin:0">Report List</h3>
+        <button class="btn light" id="srRefresh">↻ Refresh</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Patient Details</th>
+              <th>Report Date</th>
+              <th>Tests</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="srRows">
+            <tr><td colspan="5" class="empty">Loading reports...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:15px;gap:10px">
+        <small id="srPageInfo">Page 1</small>
+        <div class="actions">
+          <button class="btn light" id="srPrev" disabled>Previous</button>
+          <button class="btn" id="srNext" disabled>Next</button>
+        </div>
+      </div>
+
+      <div id="srMessage" style="margin-top:12px"></div>
+    </div>
+  </section>
+</div>
+  
 <div id="reportDesignerPage" class="hidden">
   <section class="panel rd-global-card">
     <div class="panel-head">Report Designer — Super Admin Global Defaults</div>
