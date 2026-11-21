@@ -652,7 +652,7 @@ $("save").onclick=async()=>{
    '<div><b>Received On:</b> '+safe($("date").value)+'</div>'+
    '<div><b>Referred By:</b> '+safe($("doctor").value.trim()||"Self")+'</div>'+
    '<div><b>Reported On:</b> '+safe(new Date().toLocaleDateString("en-GB"))+'</div>';
-  $("printTestTitle").textContent = "";
+  $("printTestTitle").textContent = "LABORATORY REPORT";
 
 const { data: reportCfg, error: cfgErr } =
   await db.rpc("acd_get_lab_report_settings", {
