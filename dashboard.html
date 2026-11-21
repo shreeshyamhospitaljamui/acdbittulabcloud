@@ -1297,15 +1297,34 @@ if (printing.print_after_save !== false) {
 };
 $("logout").onclick=async()=>{try{await db.rpc("acd_device_release",{p_device_id:deviceId()})}catch(e){}await db.auth.signOut();location.replace("index.html")};
 $("nav").querySelectorAll("button").forEach(b=>b.onclick=()=>{
- document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");$("pageTitle").textContent=b.dataset.page;
+ 
  const isEntry=b.dataset.page==="New Patient Entry";
  const isCatalogue=b.dataset.page==="Test Catalogue";
+ const isSavedReports=b.dataset.page==="Saved Reports";
+
  $("entryPage").classList.toggle("hidden",!isEntry);
  $("cataloguePage").classList.toggle("hidden",!isCatalogue);
- $("otherPage").classList.toggle("hidden",isEntry||isCatalogue);
- if(b.dataset.page==="Subscription (Razorpay)"){location.href="subscription.html";return}
- if(isCatalogue){showCataloguePage().catch(e=>{$("catalogueParameterRows").innerHTML='<tr><td class="catalogue-empty" colspan="4">'+safe(e.message)+'</td></tr>'});return}
- if(!isEntry)$("otherPage").textContent=b.dataset.page+" — इस मॉड्यूल के मौजूदा फीचर्स को इस Patient Entry update में नहीं बदला गया है।";
+ $("savedReportsPage").classList.toggle("hidden",!isSavedReports);
+ $("otherPage").classList.toggle("hidden",isEntry||isCatalogue||isSavedReports);
+
+ if(b.dataset.page==="Subscription (Razorpay)"){
+   location.href="subscription.html";
+   return;
+ }
+
+ if(isCatalogue){
+   showCataloguePage().catch(e=>{
+     $("catalogueParameterRows").innerHTML=
+       '<tr><td class="catalogue-empty" colspan="4">'+safe(e.message)+'</td></tr>';
+   });
+   return;
+ }
+
+ if(!isEntry && !isSavedReports){
+   $("otherPage").textContent=b.dataset.page+
+     " — इस मॉड्यूल के मौजूदा फीचर्स को इस Patient Entry update में नहीं बदला गया है।";
+ }
+
 });
 setupEnterFlow();function tick(){$("clock").textContent=new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false})}tick();setInterval(tick,1000);
 init().catch(e=>say("Session/setup error: "+e.message));
