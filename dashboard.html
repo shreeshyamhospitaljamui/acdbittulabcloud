@@ -704,18 +704,107 @@ function renderTestSearchResults(){
 $("testSearch").addEventListener("input",renderTestSearchResults);
 $("testSearch").addEventListener("focus",()=>{if($("testSearch").value.trim())renderTestSearchResults()});
 document.addEventListener("click",e=>{if(!e.target.closest(".test-search-wrap"))$("testSearchResults").classList.add("hidden")});
-async function addTest(){
- const q=$("testSearch").value.trim().toLowerCase();if(!q){say("Test का नाम लिखें।");return}
- const t=catalogue.find(x=>x.id===chosenSearchTestId)||catalogue.find(x=>x.test_name.toLowerCase()===q||x.test_code.toLowerCase()===q)||catalogue.find(x=>x.test_name.toLowerCase().includes(q)||x.test_code.toLowerCase().includes(q));
- if(!t){say("यह टेस्ट catalogue में नहीं मिला।");return}
- if(selectedTests.some(x=>x.id===t.id)){say("यह टेस्ट पहले से जोड़ा गया है।");$("testSearch").value="";return}
- const {data:params,error}=await db.from("acd_test_parameters").select("id,parameter_name,unit,reference_range,result_type,result_options,sort_order").eq("test_id",t.id).order("sort_order");
- if(error){say("Parameter load error: "+error.message);return}
- selectedTests.push(t);
- (params||[]).forEach(p=>flatRows.push({test_id:t.id,test_name:t.test_name,test_code:t.test_code,parameter_id:p.id,parameter_name:p.parameter_name,unit:p.unit,reference_range:p.reference_range,result_type:p.result_type,result_options:p.result_options,result_value:""}));
- if(!params?.length)flatRows.push({test_id:t.id,test_name:t.test_name,test_code:t.test_code,parameter_id:null,parameter_name:t.test_name,unit:"",reference_range:"",result_type:"text",result_options:[],result_value:""});
- $("testSearch").value="";chosenSearchTestId=null;$("testSearchResults").classList.add("hidden");renderSelected();renderRows();say(t.test_name+" जोड़ा गया। अगला टेस्ट खोज सकते हैं।");
+
+let chosenSearchParameter = null;
+
+async function addTest() {
+  const q = $("testSearch").value.trim().toLowerCase();
+  if (!q) {
+    say("Test का नाम लिखें।");
+    return;
+  }
+
+  const parameter = chosenSearchParameter;
+
+  const t = parameter
+    ? catalogue.find(x => x.id === parameter.test_id)
+    : catalogue.find(x =>
+        x.test_name.toLowerCase() === q ||
+        x.test_code.toLowerCase() === q
+      ) || catalogue.find(x =>
+        x.test_name.toLowerCase().includes(q) ||
+        x.test_code.toLowerCase().includes(q)
+      );
+
+  if (!t) {
+    say("यह टेस्ट catalogue में नहीं मिला।");
+    return;
+  }
+
+  const selectionId = parameter
+    ? t.id + "::" + parameter.id
+    : t.id;
+
+  if (selectedTests.some(x => x.id === selectionId)) {
+    say("यह टेस्ट पहले से जोड़ा गया है।");
+    $("testSearch").value = "";
+    chosenSearchParameter = null;
+    return;
+  }
+
+  let params = [];
+
+  if (parameter) {
+    params = [parameter];
+  } else {
+    const { data, error } = await db
+      .from("acd_test_parameters")
+      .select("id,parameter_name,unit,reference_range,result_type,result_options,sort_order")
+      .eq("test_id", t.id)
+      .order("sort_order");
+
+    if (error) {
+      say("Parameter load error: " + error.message);
+      return;
+    }
+
+    params = data || [];
+  }
+
+  selectedTests.push({
+    ...t,
+    id: selectionId,
+    source_test_id: t.id,
+    test_name: parameter ? parameter.parameter_name : t.test_name
+  });
+
+  params.forEach(p => flatRows.push({
+    test_id: selectionId,
+    test_name: parameter ? parameter.parameter_name : t.test_name,
+    test_code: t.test_code,
+    parameter_id: p.id,
+    parameter_name: p.parameter_name,
+    unit: p.unit,
+    reference_range: p.reference_range,
+    result_type: p.result_type,
+    result_options: p.result_options,
+    result_value: ""
+  }));
+
+  if (!params.length) {
+    flatRows.push({
+      test_id: selectionId,
+      test_name: t.test_name,
+      test_code: t.test_code,
+      parameter_id: null,
+      parameter_name: t.test_name,
+      unit: "",
+      reference_range: "",
+      result_type: "text",
+      result_options: [],
+      result_value: ""
+    });
+  }
+
+  $("testSearch").value = "";
+  chosenSearchTestId = null;
+  chosenSearchParameter = null;
+  $("testSearchResults").classList.add("hidden");
+  renderSelected();
+  renderRows();
+  say(t.test_name + " जोड़ा गया।");
 }
+
 $("addTest").onclick=addTest;
 $("clear").onclick=()=>{selectedTests=[];flatRows=[];renderRows();renderSelected();say("चुने हुए टेस्ट हटाए गए।")};
 function setupEnterFlow(){
