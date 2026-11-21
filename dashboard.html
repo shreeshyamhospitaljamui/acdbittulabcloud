@@ -2641,6 +2641,11 @@ const merged = {
 };
 
 
+currentSignaturePaths = {
+  technician: merged.signatures?.technician_path || "",
+  doctor: merged.signatures?.doctor_path || ""
+};
+      
       setFields("rd", merged);
 
       const isSuper = role === "super_admin";
@@ -2780,7 +2785,7 @@ $rd("rdPrintMode").disabled = !isSuper;
       $rd("rdTechnicianFile").value = "";
       $rd("rdDoctorFile").value = "";
 
-      if (error) throw error;
+      
 
       rdStatus("Laboratory Report Design saved successfully.");
     } catch (error) {
