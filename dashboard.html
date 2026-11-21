@@ -669,6 +669,41 @@ const signatures = {
   ...(labCfg.signatures || {})
 };
 
+const branding = {
+  ...(globalCfg.branding || {}),
+  ...(labCfg.branding || {})
+};
+
+const brandBox = $("printLabBranding");
+const brandLogo = $("printLabLogo");
+
+$("printLabName").textContent = branding.lab_name || "";
+$("printLabAddress").textContent = branding.address || "";
+
+const contactParts = [
+  branding.phone,
+  branding.email
+].filter(Boolean);
+
+$("printLabContact").textContent = contactParts.join(" | ");
+
+const logoUrl = String(branding.logo_url || "").trim();
+const validLogoUrl = /^https?:\/\//i.test(logoUrl);
+
+if (validLogoUrl) {
+  brandLogo.src = logoUrl;
+  brandLogo.style.display = "block";
+  brandLogo.onerror = () => {
+    brandLogo.style.display = "none";
+  };
+} else {
+  brandLogo.removeAttribute("src");
+  brandLogo.style.display = "none";
+}
+
+brandBox.style.display =
+  printing.default_printing === "preprinted" ? "none" : "flex";
+   
 const root = document.documentElement;
 const mm = (v, d) => Math.max(0, Number(v ?? d)) + "mm";
 
