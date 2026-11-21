@@ -1233,6 +1233,45 @@ $("save").onclick=async()=>{
    if(rows.length){const payload=rows.map(r=>({lab_id:labId,order_item_id:item.id,parameter_name:r.parameter_name,result_value:r.result_value||null,unit:r.unit||null,reference_range:r.reference_range||null}));const {error:re}=await db.from("lab_test_results").insert(payload);if(re)throw re}
   }
   
+// Generate Patient QR Code
+const qrBox = $("printPatientQR");
+qrBox.innerHTML = "";
+
+if (typeof QRCode === "undefined") {
+  throw new Error("QR Code library not loaded.");
+}
+
+new QRCode(qrBox, {
+  text: JSON.stringify({
+    patient_id: p.id,
+    order_id: o.id
+  }),
+  width: 100,
+  height: 100,
+  correctLevel: QRCode.CorrectLevel.M
+});
+
+// Generate Order Barcode
+if (typeof JsBarcode === "undefined") {
+  throw new Error("Barcode library not loaded.");
+}
+
+JsBarcode("#printOrderBarcode", o.id, {
+  format: "CODE128",
+  width: 1.5,
+  height: 42,
+  displayValue: false,
+  margin: 2
+});
+
+$("printOrderBarcodeText").textContent = o.id;
+
+// Actual Order Registration Time
+$("printRegisteredTime").textContent =
+  o.created_at
+    ? new Date(o.created_at).toLocaleString("en-IN")
+    : "-";
+   
 const reportGeneratedAt = new Date();
 
 $("printPatientMeta").innerHTML =
