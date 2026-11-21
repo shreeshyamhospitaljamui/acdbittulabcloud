@@ -746,9 +746,10 @@ async function showCataloguePage(){
  if(activeCatalogueTestId)await openCatalogueTest(activeCatalogueTestId);
  else if(catalogue.length)await openCatalogueTest(catalogue[0].id);
 }
-let chosenSearchTestId=null;
+let chosenSearchWidal = false;
 
 let searchRequestId = 0;
+
 
 async function renderTestSearchResults() {
   const q = $("testSearch").value.trim().toLowerCase();
@@ -757,10 +758,44 @@ async function renderTestSearchResults() {
 
   chosenSearchTestId = null;
   chosenSearchParameter = null;
+  chosenSearchWidal = false;
 
   if (!q) {
     box.classList.add("hidden");
     box.innerHTML = "";
+    return;
+  }
+
+  if (q.includes("widal") || q.includes("विडाल") || q.includes("वाइडल")) {
+    const { data, error } = await db
+      .from("acd_test_parameters")
+      .select("id,parameter_name")
+      .eq("test_id", "a4a9fc07-b26f-4960-a002-4f21acafdd35")
+      .order("sort_order");
+
+    if (requestId !== searchRequestId) return;
+
+    if (error) {
+      box.innerHTML = '<div class="test-search-empty">Search error: ' + safe(error.message) + '</div>';
+    } else {
+      const hasWidal = (data || []).some(p => p.parameter_name === "Widal Test (Overall Result)");
+      box.innerHTML = hasWidal
+        ? '<button type="button" class="test-search-option" data-search-widal="true">Widal Test<small>पूरा Widal Matrix • Overall Positive/Negative + 4 Antigen Rows + 6 Dilutions</small></button>'
+        : '<div class="test-search-empty">Widal Matrix नहीं मिला।</div>';
+
+      box.querySelectorAll("[data-search-widal]").forEach(b => {
+        b.addEventListener("click", () => {
+          chosenSearchWidal = true;
+          chosenSearchParameter = null;
+          chosenSearchTestId = null;
+          $("testSearch").value = "Widal Test";
+          box.classList.add("hidden");
+          box.innerHTML = "";
+        });
+      });
+    }
+
+    box.classList.remove("hidden");
     return;
   }
 
@@ -779,37 +814,29 @@ async function renderTestSearchResults() {
   if (requestId !== searchRequestId) return;
 
   if (error) {
-    box.innerHTML = '<div class="test-search-empty">Search error: ' +
-      safe(error.message) + '</div>';
+    box.innerHTML = '<div class="test-search-empty">Search error: ' + safe(error.message) + '</div>';
     box.classList.remove("hidden");
     return;
   }
 
-  const parameters = (parameterMatches || [])
-    .filter(p => catalogue.some(t => t.id === p.test_id));
+  const parameters = (parameterMatches || []).filter(p =>
+    catalogue.some(t => t.id === p.test_id)
+  );
 
   const testHTML = testMatches.map(t =>
     '<button type="button" class="test-search-option" data-search-test="' +
-    safe(t.id) + '">' +
-    safe(t.test_name) +
-    '<small>पूरा प्रोफाइल • ' + safe(t.test_code) +
-    (t.department ? " • " + safe(t.department) : "") +
-    '</small></button>'
+    safe(t.id) + '">' + safe(t.test_name) +
+    '<small>पूरा प्रोफाइल • ' + safe(t.test_code) + '</small></button>'
   ).join("");
 
   const parameterHTML = parameters.map(p => {
     const parent = catalogue.find(t => t.id === p.test_id);
-
     return '<button type="button" class="test-search-option" data-search-parameter="' +
-      safe(p.id) + '">' +
-      safe(p.parameter_name) +
-      '<small>सिर्फ यह टेस्ट • ' + safe(parent.test_name) +
-      '</small></button>';
+      safe(p.id) + '">' + safe(p.parameter_name) +
+      '<small>सिर्फ यह टेस्ट • ' + safe(parent.test_name) + '</small></button>';
   }).join("");
 
-  const html = testHTML + parameterHTML;
-
-  box.innerHTML = html ||
+  box.innerHTML = testHTML + parameterHTML ||
     '<div class="test-search-empty">कोई matching test नहीं मिला।</div>';
 
   box.classList.remove("hidden");
@@ -818,9 +845,9 @@ async function renderTestSearchResults() {
     b.addEventListener("click", () => {
       const t = catalogue.find(x => x.id === b.dataset.searchTest);
       if (!t) return;
-
       chosenSearchTestId = t.id;
       chosenSearchParameter = null;
+      chosenSearchWidal = false;
       $("testSearch").value = t.test_name;
       box.classList.add("hidden");
       box.innerHTML = "";
@@ -831,15 +858,16 @@ async function renderTestSearchResults() {
     b.addEventListener("click", () => {
       const p = parameters.find(x => x.id === b.dataset.searchParameter);
       if (!p) return;
-
       chosenSearchParameter = p;
       chosenSearchTestId = null;
+      chosenSearchWidal = false;
       $("testSearch").value = p.parameter_name;
       box.classList.add("hidden");
       box.innerHTML = "";
     });
   });
 }
+
 
 $("testSearch").addEventListener("input", renderTestSearchResults);
 $("testSearch").addEventListener("focus", () => {
