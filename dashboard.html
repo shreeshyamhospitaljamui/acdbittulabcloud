@@ -539,6 +539,40 @@ html.acd-lab-admin #nav [data-sa-nav] {
       
       <p><label><input id="rdShowTechnician" type="checkbox" checked> Show Technician Signature</label></p>
       <p><label><input id="rdShowDoctor" type="checkbox" checked> Show Doctor Signature</label></p>
+      
+<div class="panel-head">Lab-wise Digital Signatures</div>
+
+<div class="fields">
+  <div class="field">
+    <label>Technician Name</label>
+    <input id="rdTechnicianName" maxlength="120">
+  </div>
+
+  <div class="field">
+    <label>Technician Signature</label>
+    <input id="rdTechnicianFile" type="file"
+      accept="image/png,image/jpeg,image/webp">
+  </div>
+
+  <div class="field">
+    <label>Doctor Name</label>
+    <input id="rdDoctorName" maxlength="120">
+  </div>
+
+  <div class="field">
+    <label>Doctor Qualification / Registration</label>
+    <input id="rdDoctorQualification" maxlength="180">
+  </div>
+
+  <div class="field full">
+    <label>Doctor Signature</label>
+    <input id="rdDoctorFile" type="file"
+      accept="image/png,image/jpeg,image/webp">
+  </div>
+</div>
+
+<p>PNG / JPG / WebP — Maximum 2 MB per image.</p>
+      
       <p><label><input id="rdOwnerLocked" type="checkbox"> Lock Owner Customization (Super Admin only)</label></p>
       <button class="btn green" id="rdSaveLab">Save Laboratory Design</button>
       <div id="rdLabMessage"></div>
