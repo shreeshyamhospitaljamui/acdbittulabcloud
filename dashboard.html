@@ -1312,6 +1312,7 @@ function srStatus(report) {
 
 function srVisibleReports() {
   return srAllReports.filter(r => !r.report_deleted_at);
+}
 
 function srRender() {
   const q = $("srSearch").value.trim().toLowerCase();
@@ -1388,9 +1389,9 @@ async function loadSavedReports() {
       results:lab_test_results(id,parameter_name,result_value,unit,reference_range)
     )
   `)
-  .eq("lab_id",labId)
-  ..is("report_deleted_at", null)
-  .order("created_at",{ascending:false})
+.eq("lab_id",labId)
+.is("report_deleted_at", null)
+.order("created_at",{ascending:false})
   .limit(1000);
 
   if(error) {
@@ -1409,6 +1410,7 @@ async function loadSavedReports() {
 
 function srFind(id) {
   return srAllReports.find(r => r.id === id && !r.report_deleted_at);
+}
 
 function srEnsureDialog() {
   if(srDialog) return srDialog;
