@@ -5,10 +5,20 @@
  * window.db = db;
  * This file does not modify Patient Entry, catalogue, billing, printing or login.
  */
-(() => {
+(async () => {
   "use strict";
 
   const db = window.db;
+  const { data: authData, error: authError } = await db.auth.getUser();
+  if (authError || !authData?.user) return;
+
+  const { data: profile, error: profileError } = await db
+    .from("profiles")
+    .select("platform_role")
+    .eq("id", authData.user.id)
+    .maybeSingle();
+
+  if (profileError || profile?.platform_role !== "super_admin") return;
   const nav = document.getElementById("nav");
   const workspace = document.getElementById("workspace");
   if (!db || !nav || !workspace) {
@@ -380,15 +390,9 @@ $("superAdminCenter")?.classList.add("hidden");
     if ($("saFeatures").style.display !== "none") await loadFeatureControls();
   });
 
-  (async () => {
-    try {
-      const allowed = await requireSuperAdmin();
-      if (!allowed) {
-        navButtons.forEach(b => b.remove());
-        panel.remove();
-        style.remove();
-        return;
-      }
+ (async () => {
+  try {
+    const allowed = true;
       const { data } = await db.auth.getUser();
       window.acdCurrentUserId = data?.user?.id || null;
 
