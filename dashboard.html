@@ -523,64 +523,116 @@ function rowsForDisplay(){
  });
  return out;
 }
+
 function renderRows(){
  const body=$("testRows");
- if(!flatRows.length){body.innerHTML='<tr><td class="empty" colspan="5">पहले ऊपर से CBC, KFT, LFT आदि टेस्ट जोड़ें।</td></tr>';return}
- const display=rowsForDisplay();
- body.innerHTML=display.map(item=>{
-  if(item.group)return '<tr class="'+(item.testHeader?'test-heading-row':'group-row')+'"><td colspan="5">'+safe(item.group)+'</td></tr>';
-  const r=item.row,i=item.index;
-  return '<tr><td class="param-name"><b>'+safe(r.parameter_name)+'</b></td><td>'+resultControl(r,i)+'</td><td>'+safe(r.unit||"")+'</td><td>'+safe(r.reference_range||"")+'</td><td class="no-print"><button class="btn danger" data-remove-test="'+safe(r.test_id)+'">×</button></td></tr>';
- }).join("");
- 
-body.querySelectorAll("[data-result]").forEach(el => {
-  const index = +el.dataset.result;
-  el.value = flatRows[index].result_value || "";
+ if(!flatRows.length){
+  body.innerHTML='<tr><td class="empty" colspan="5">पहले ऊपर से CBC, KFT, LFT आदि टेस्ट जोड़ें।</td></tr>';
+  return;
+ }
 
-  const update = () => {
-    flatRows[index].result_value = el.value;
-flatRows[index].manual_override = el.value.trim() !== "";
+ const dilutions=["1:20","1:40","1:80","1:160","1:320","1:640"];
+ const antigens=["S. Typhi O","S. Typhi H","S. Para Typhi AH","S. Para Typhi BH"];
+ const out=[];
 
-    const row = flatRows[index];
-    const test = selectedTests.find(t => t.id === row.test_id);
+ selectedTests.forEach(t=>{
+  const rows=flatRows.filter(r=>r.test_id===t.id);
+  const overall=rows.find(r=>r.parameter_name==="Widal Test (Overall Result)");
+  const isWidal=!!overall && antigens.some(a=>rows.some(r=>r.parameter_name.startsWith(a+" - ")));
 
-    if (test && (test.test_code === "CBC" || test.test_name.toLowerCase() === "cbc")) {
-      calculateCBCResults(test.id);
+  out.push('<tr class="test-heading-row"><td colspan="5">'+safe(t.test_name.toUpperCase())+'</td></tr>');
 
-      body.querySelectorAll("[data-result]").forEach(input => {
-        const i = +input.dataset.result;
-        input.value = flatRows[i].result_value || "";
-      });
-    }
+  if(isWidal){
+   const oi=flatRows.indexOf(overall);
+   out.push(
+    '<tr><td><b>WIDAL TEST</b></td><td>'+resultControl(overall,oi)+'</td><td>-</td><td>Positive / Negative</td><td></td></tr>'
+   );
+
+   let matrix='<tr><td colspan="5"><div style="overflow-x:auto"><table style="width:100%;min-width:560px;border-collapse:collapse"><thead><tr><th>INVESTIGATION</th>'+
+    dilutions.map(d=>'<th style="text-align:center">'+d+'</th>').join('')+
+    '</tr></thead><tbody>';
+
+   antigens.forEach(ant=>{
+    matrix+='<tr><td><b>'+safe(ant)+'</b></td>';
+    dilutions.forEach(d=>{
+     const r=rows.find(x=>x.parameter_name===ant+" - "+d);
+     if(!r){
+      matrix+='<td>-</td>';
+      return;
+     }
+     const idx=flatRows.indexOf(r);
+     matrix+='<td><select data-result="'+idx+'" style="min-width:48px"><option value="">Select</option><option value="+">+</option><option value="-">-</option></select></td>';
+    });
+    matrix+='</tr>';
+   });
+
+   matrix+='</tbody></table></div></td></tr>';
+   out.push(matrix);
+   return;
+  }
+
+  rows.forEach(r=>{
+   const i=flatRows.indexOf(r);
+   out.push('<tr><td class="param-name"><b>'+safe(r.parameter_name)+'</b></td><td>'+resultControl(r,i)+'</td><td>'+safe(r.unit||"")+'</td><td>'+safe(r.reference_range||"")+'</td><td class="no-print"><button class="btn danger" data-remove-test="'+safe(r.test_id)+'">×</button></td></tr>');
+  });
+ });
+
+ body.innerHTML=out.join("");
+
+ body.querySelectorAll("[data-result]").forEach(el=>{
+  const index=+el.dataset.result;
+  el.value=flatRows[index].result_value||"";
+
+  const update=()=>{
+   flatRows[index].result_value=el.value;
+   flatRows[index].manual_override=el.value.trim()!=="";
+
+   const row=flatRows[index];
+   const test=selectedTests.find(t=>t.id===row.test_id);
+
+   if(test&&(test.test_code==="CBC"||test.test_name.toLowerCase()==="cbc")){
+    calculateCBCResults(test.id);
+    body.querySelectorAll("[data-result]").forEach(input=>{
+     const i=+input.dataset.result;
+     input.value=flatRows[i].result_value||"";
+    });
+   }
   };
 
-  el.addEventListener("input", update);
-  el.addEventListener("change", update);
+  el.addEventListener("input",update);
+  el.addEventListener("change",update);
 
-  el.addEventListener("keydown", e => {
-  if (e.key === "Enter") {
+  el.addEventListener("keydown",e=>{
+   if(e.key==="Enter"){
     e.preventDefault();
 
-    if (el.dataset.titre === "true") {
-      const value = el.value.trim();
-
-      if (/^\d+$/.test(value)) {
-        el.value = "1:" + value;
-        update();
-      } else if (/^1:\d+$/.test(value)) {
-        update();
-      }
+    if(el.dataset.titre==="true"){
+     const value=el.value.trim();
+     if(/^\d+$/.test(value)){
+      el.value="1:"+value;
+      update();
+     }else if(/^1:\d+$/.test(value)){
+      update();
+     }
     }
 
-    const controls = [...body.querySelectorAll("[data-result]")];
-    const next = controls[controls.indexOf(el) + 1];
-    if (next) next.focus();
-  }
-});
-});
+    const controls=[...body.querySelectorAll("[data-result]")];
+    const next=controls[controls.indexOf(el)+1];
+    if(next)next.focus();
+   }
+  });
+ });
 
- body.querySelectorAll("[data-remove-test]").forEach(b=>b.onclick=()=>{selectedTests=selectedTests.filter(t=>t.id!==b.dataset.removeTest);flatRows=flatRows.filter(r=>r.test_id!==b.dataset.removeTest);renderRows();renderSelected()});
+ body.querySelectorAll("[data-remove-test]").forEach(b=>{
+  b.onclick=()=>{
+   selectedTests=selectedTests.filter(t=>t.id!==b.dataset.removeTest);
+   flatRows=flatRows.filter(r=>r.test_id!==b.dataset.removeTest);
+   renderRows();
+   renderSelected();
+  };
+ });
 }
+
   
 /* CHANGE 1: CBC automatic calculations */
 
