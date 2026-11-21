@@ -630,10 +630,23 @@ if (superNavButton) {
   $("labChooser").classList.remove("hidden");$("labSelect").innerHTML=labs.map(l=>'<option value="'+safe(l.id)+'">'+safe(l.name)+'</option>').join("");
   $("labSelect").disabled=labs.length===1;const saved=sessionStorage.getItem("acd_lab_id");setLab(labs.some(l=>l.id===saved)?saved:labs[0].id);$("labSelect").value=labId;
  }
- await loadCatalogue();$("date").value=new Date().toISOString().slice(0,10);say("Supabase से connected। Catalogue loaded: "+catalogue.length+" tests.");
+ 
+await loadCatalogue();
+await loadCatalogue();
+$("date").value = new Date().toISOString().slice(0, 10);
+say("Supabase से connected। Catalogue loaded: " + catalogue.length + " tests.");
+$("date").value = new Date().toISOString().slice(0, 10);
+say("Supabase से connected। Catalogue loaded: " + catalogue.length + " tests.");
+
 }
 function setLab(id){labId=id||null;const l=labs.find(x=>x.id===labId);$("labId").value=l?l.name:"Select a lab";$("labStatus").textContent=l?"Selected":"No laboratory selected";if(role==="lab_admin"&&id)sessionStorage.setItem("acd_lab_id",id)}
-$("labSelect").onchange=()=>setLab($("labSelect").value);
+
+/* CHANGE 3: Refresh feature menu when laboratory changes */
+$("labSelect").onchange = async () => {
+  setLab($("labSelect").value);
+  await updateFeatureNavigation();
+};
+
 $("save").onclick=async()=>{
  if(!labId){say("पहले laboratory चुनें।");return}
  const patientName=$("patient").value.trim();if(!patientName){say("Patient name भरें।");$("patient").focus();return}
@@ -1842,6 +1855,75 @@ $rd("rdPrintMode").disabled = !isSuper;
     $rd("rdSaveGlobal").disabled = true;
   }
 })();
+    
+/* CHANGE 1: Feature visibility menu mapping */
+const FEATURE_MENU_MAP = {
+  "New Patient Entry": "patient_entry",
+  "Saved Reports": "saved_reports",
+  "Test Catalogue": "test_catalogue",
+  "Sample Tracking": "sample_tracking",
+  "Accounts & Expenses": "accounts_expenses",
+  "Inventory & Stock": "inventory_stock",
+  "Lab & Print Setup": "lab_print_setup",
+  "Subscription (Razorpay)": "subscription",
+  "Report Designer": "lab_print_setup"
+};
+    
+/* CHANGE 2: Check feature visibility from Supabase */
+async function updateFeatureNavigation() {
+  
+if (!labId) {
+  const buttons = [
+    ...$("nav").querySelectorAll("button[data-page]")
+  ];
+
+  buttons.forEach(button => {
+    if (FEATURE_MENU_MAP[button.dataset.page]) {
+      button.style.display = "none";
+    }
+  });
+
+  return;
+}
+  
+
+  const buttons = [
+    ...$("nav").querySelectorAll("button[data-page]")
+  ];
+
+  await Promise.all(buttons.map(async button => {
+    const featureKey = FEATURE_MENU_MAP[button.dataset.page];
+    if (!featureKey) return;
+
+    try {
+      const { data, error } = await db.rpc(
+        "acd_lab_feature_is_visible",
+        {
+          p_lab_id: labId,
+          p_feature_key: featureKey
+        }
+      );
+
+      if (error) throw error;
+
+      button.style.display = data === true ? "" : "none";
+
+    } catch (error) {
+      button.style.display = "none";
+      console.error(
+        "Feature visibility check failed:",
+        featureKey,
+        error
+      );
+    }
+  }));
+}
+  
+/* CHANGE 7: Run feature check if lab is already loaded */
+if (window.acdLabReady && labId) {
+  updateFeatureNavigation();
+}
+    
   </script>
 <script src="platform-mode.js"></script> 
 
