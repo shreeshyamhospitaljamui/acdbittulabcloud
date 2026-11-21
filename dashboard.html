@@ -2744,7 +2744,28 @@ $rd("rdPrintMode").disabled = !isSuper;
         ? $rd("rdOwnerLocked").checked
         : currentLocked;
 
+      
+      currentSignaturePaths.technician =
+        await uploadLabSignature(
+          $rd("rdTechnicianFile").files[0],
+          id,
+          "technician"
+        );
+
+      currentSignaturePaths.doctor =
+        await uploadLabSignature(
+          $rd("rdDoctorFile").files[0],
+          id,
+          "doctor"
+        );
+
       const settings = readLabSettings();
+
+      settings.signatures.technician_path =
+        currentSignaturePaths.technician;
+
+      settings.signatures.doctor_path =
+        currentSignaturePaths.doctor;
 
       const { error } = await db.rpc(
         "acd_save_lab_report_settings",
@@ -2753,6 +2774,12 @@ $rd("rdPrintMode").disabled = !isSuper;
           p_settings: settings
         }
       );
+
+      if (error) throw error;
+
+      $rd("rdTechnicianFile").value = "";
+      $rd("rdDoctorFile").value = "";
+
       if (error) throw error;
 
       rdStatus("Laboratory Report Design saved successfully.");
