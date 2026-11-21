@@ -1632,6 +1632,11 @@ $("nav").querySelectorAll("button").forEach(b=>b.onclick=()=>{
  const isEntry=b.dataset.page==="New Patient Entry";
  const isCatalogue=b.dataset.page==="Test Catalogue";
  const isSavedReports=b.dataset.page==="Saved Reports";
+  
+$("nav").querySelectorAll("button").forEach(btn=>{
+  btn.classList.toggle("active", btn === b);
+});
+  
 $("pageTitle").textContent = b.dataset.page;
 
 ["reportDesignerPage","superAdminCenter"].forEach(id=>{
