@@ -739,6 +739,31 @@ function rowsForDisplay(){
  return out;
 }
 
+function getResultStatus(result, referenceRange) {
+  const value = Number(
+    String(result ?? "").replace(/,/g, "").trim()
+  );
+
+  if (!String(result ?? "").trim() || !Number.isFinite(value)) {
+    return "";
+  }
+
+  const matches = String(referenceRange ?? "")
+    .match(/\d[\d,]*(?:\.\d+)?/g);
+
+  if (!matches || matches.length < 2) return "";
+
+  const low = Number(matches[0].replace(/,/g, ""));
+  const high = Number(matches[1].replace(/,/g, ""));
+
+  if (!Number.isFinite(low) || !Number.isFinite(high)) return "";
+
+  if (value < low) return "Low";
+  if (value > high) return "High";
+
+  return "Normal";
+}
+  
 function renderRows(){
  const body=$("testRows");
  if(!flatRows.length){
@@ -755,7 +780,7 @@ function renderRows(){
   const overall=rows.find(r=>r.parameter_name==="Widal Test (Overall Result)");
   const isWidal=!!overall && antigens.some(a=>rows.some(r=>r.parameter_name.startsWith(a+" - ")));
 
-  out.push('<tr class="test-heading-row"><td colspan="5">'+safe(t.test_name.toUpperCase())+'</td></tr>');
+  out.push('<tr class="test-heading-row"><td colspan="6">'+safe(t.test_name.toUpperCase())+'</td></tr>');
 
   if(isWidal){
    const oi=flatRows.indexOf(overall);
@@ -788,8 +813,18 @@ function renderRows(){
 
   rows.forEach(r=>{
    const i=flatRows.indexOf(r);
-   out.push('<tr><td class="param-name"><b>'+safe(r.parameter_name)+'</b></td><td>'+resultControl(r,i)+'</td><td>'+safe(r.unit||"")+'</td><td>'+safe(r.reference_range||"")+'</td><td class="no-print"><button class="btn danger" data-remove-test="'+safe(r.test_id)+'">×</button></td></tr>');
-  });
+   
+out.push(
+  '<tr>' +
+  '<td class="param-name"><b>' + safe(r.parameter_name) + '</b></td>' +
+  '<td>' + resultControl(r,i) + '</td>' +
+  '<td>' + safe(r.reference_range || "") + '</td>' +
+  '<td>' + safe(r.unit || "") + '</td>' +
+  '<td class="result-status">' + getResultStatus(r.result_value, r.reference_range) + '</td>' +
+  '<td class="no-print"><button class="btn danger" data-remove-test="' + safe(r.test_id) + '">×</button></td>' +
+  '</tr>'
+);
+
  });
 
  body.innerHTML=out.join("");
