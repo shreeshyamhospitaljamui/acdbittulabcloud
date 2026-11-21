@@ -173,7 +173,9 @@ button:disabled{opacity:.55;cursor:not-allowed}
     padding: 8px 10px;
     font-size: 9pt;
   }
-
+.report-test-title {
+  margin-top: var(--rd-gap-between-header, 25pt) !important;
+}
   .results tr.test-heading-row td {
     padding-top: var(--rd-gap-test, 20pt) !important;
   }
@@ -753,7 +755,24 @@ root.style.setProperty(
   Math.max(0, Number(layout.gap_doctor ?? 20)) + "pt"
 );
    
-root.style.setProperty(
+
+  root.style.setProperty(
+  "--rd-patient-font",
+  Math.max(6, Math.min(24, Number(layout.patient_font ?? 10))) + "pt"
+);
+
+const patientMeta = $("printPatientMeta");
+
+patientMeta.classList.toggle(
+  "rd-patient-rectangle",
+  layout.rectangle_patient === true
+);
+
+patientMeta.classList.toggle(
+  "rd-patient-lines",
+  layout.lines_patient === true
+);
+   root.style.setProperty(
   "--rd-print-orientation",
   layout.orientation === "landscape" ? "landscape" : "portrait"
 );
