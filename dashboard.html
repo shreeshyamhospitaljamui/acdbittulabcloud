@@ -487,7 +487,7 @@ function calcDue(){let total=+($("total").value||0),discount=+($("discount").val
 function resultControl(p,index){
  const type=(p.result_type||"numeric").toLowerCase(), opts=Array.isArray(p.result_options)?p.result_options:[];
  if(["positive_negative","reactive_nonreactive","present_absent","blood_group"].includes(type)){
-  let fallback=type==="positive_negative"?["Positive","Negative"]:type==="reactive_nonreactive"?["Reactive","Non-Reactive"]:type==="present_absent"?["Present","Absent"]:["A+","A-","B+","B-","AB+","AB-","O+","O-"];
+  let fallback=type==="positive_negative"?["Positive","Negative"]:type==="reactive_nonreactive"?["Reactive","Non-Reactive"]:type==="present_absent"?["Present","Absent"]:["A Positive","A Negative","B Positive","B Negative","AB Positive","AB Negative","O Positive","O Negative"];
   const list=opts.length?opts:fallback;
   return '<select data-result="'+index+'"><option value="">Select</option>'+list.map(v=>'<option value="'+safe(v)+'">'+safe(v)+'</option>').join("")+'</select>';
  }
