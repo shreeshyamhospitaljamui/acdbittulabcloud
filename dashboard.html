@@ -2307,31 +2307,7 @@ saDashboard.classList.add("hidden");
 
   el("saLab").addEventListener("change", loadLabSettings);
 
-  const superButton = nav.querySelector('[data-page="Super Admin"]');
-
-  if (superButton) {
-    superButton.addEventListener("click", async (event) => {
-  event.preventDefault();
-  event.stopImmediatePropagation();
-      const isSuper = typeof role !== "undefined" && role === "super_admin";
-
-      page.classList.remove("hidden");
-      el("entryPage").classList.add("hidden");
-      el("cataloguePage").classList.add("hidden");
-      el("otherPage").classList.add("hidden");
-
-      if (!isSuper) {
-        status("Access denied: Super Admin account required.", true);
-        return;
-      }
-
-      await fillLabs();
-      
-      loadAudit();
-     startSaAuditAutoRefresh();
-      if (el("saLab").value) loadLabSettings();
-    }, true);
-  }
+  
 
   el("labSelect")?.addEventListener("change", () => {
     if (el("saLab")) el("saLab").value = el("labSelect").value;
