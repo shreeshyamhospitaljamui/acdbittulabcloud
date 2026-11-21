@@ -635,8 +635,7 @@ await loadCatalogue();
 
 $("date").value = new Date().toISOString().slice(0, 10);
 say("Supabase से connected। Catalogue loaded: " + catalogue.length + " tests.");
-$("date").value = new Date().toISOString().slice(0, 10);
-say("Supabase से connected। Catalogue loaded: " + catalogue.length + " tests.");
+
 
 }
 function setLab(id){labId=id||null;const l=labs.find(x=>x.id===labId);$("labId").value=l?l.name:"Select a lab";$("labStatus").textContent=l?"Selected":"No laboratory selected";if(role==="lab_admin"&&id)sessionStorage.setItem("acd_lab_id",id)}
