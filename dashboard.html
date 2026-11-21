@@ -803,21 +803,21 @@ function renderRows(){
 
   if(isWidal){
    const oi=flatRows.indexOf(overall);
-   out.push(
-    
-out.push(
-  '<tr>' +
-  '<td><b>WIDAL TEST</b></td>' +
-  '<td>' + resultControl(overall,oi) + '</td>' +
-  '<td>Positive / Negative</td>' +
-  '<td>-</td>' +
-  '<td></td>' +
-  '<td class="no-print"></td>' +
-  '</tr>'
-);
+   
+    out.push(
+      '<tr>' +
+      '<td><b>WIDAL TEST</b></td>' +
+      '<td>' + resultControl(overall,oi) + '</td>' +
+      '<td>Positive / Negative</td>' +
+      '<td>-</td>' +
+      '<td></td>' +
+      '<td class="no-print"></td>' +
+      '</tr>'
+    );
 
 
-   let matrix='<tr><td colspan="5"><div style="overflow-x:auto"><table style="width:100%;min-width:560px;border-collapse:collapse"><thead><tr><th>INVESTIGATION</th>'+
+
+   let matrix='<tr><td colspan="6"><div style="overflow-x:auto"><table style="width:100%;min-width:560px;border-collapse:collapse"><thead><tr><th>INVESTIGATION</th>'+
     dilutions.map(d=>'<th style="text-align:center">'+d+'</th>').join('')+
     '</tr></thead><tbody>';
 
