@@ -1632,7 +1632,12 @@ $("nav").querySelectorAll("button").forEach(b=>b.onclick=()=>{
  const isEntry=b.dataset.page==="New Patient Entry";
  const isCatalogue=b.dataset.page==="Test Catalogue";
  const isSavedReports=b.dataset.page==="Saved Reports";
+$("pageTitle").textContent = b.dataset.page;
 
+["reportDesignerPage","superAdminCenter"].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el) el.classList.add("hidden");
+});
  $("entryPage").classList.toggle("hidden",!isEntry);
  $("cataloguePage").classList.toggle("hidden",!isCatalogue);
  $("savedReportsPage").classList.toggle("hidden",!isSavedReports);
@@ -2677,7 +2682,13 @@ $rd("rdPrintMode").disabled = !isSuper;
 
     document.getElementById("pageTitle").textContent = "Report Designer";
 
-    ["entryPage", "cataloguePage", "otherPage", "superAdminCenter"]
+    [
+  "entryPage",
+  "cataloguePage",
+  "savedReportsPage",
+  "otherPage",
+  "superAdminCenter"
+]
       .forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.add("hidden");
