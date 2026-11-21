@@ -869,11 +869,15 @@ out.push(
   '</tr>'
 );
 
+
  });
+
+ }); // selectedTests.forEach को बंद करें
 
  body.innerHTML=out.join("");
 
  body.querySelectorAll("[data-result]").forEach(el=>{
+
   const index=+el.dataset.result;
   el.value=flatRows[index].result_value||"";
 
