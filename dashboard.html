@@ -540,6 +540,7 @@ body.querySelectorAll("[data-result]").forEach(el => {
 
   const update = () => {
     flatRows[index].result_value = el.value;
+flatRows[index].manual_override = el.value.trim() !== "";
 
     const row = flatRows[index];
     const test = selectedTests.find(t => t.id === row.test_id);
@@ -582,7 +583,17 @@ function calculateCBCResults(testId) {
     return row ? Number(row.result_value) : NaN;
   };
 
-  const set = (name, value) => {
+  
+const set = (name, value) => {
+  const row = rows.find(
+    r => r.parameter_name.toLowerCase() === name.toLowerCase()
+  );
+
+  if (!row || !Number.isFinite(value) || row.manual_override) return;
+
+  row.result_value = value.toFixed(2);
+};
+  
     const row = rows.find(
       r => r.parameter_name.toLowerCase() === name.toLowerCase()
     );
