@@ -1295,6 +1295,139 @@ if (printing.print_after_save !== false) {
 }
  }catch(e){say("Save error: "+e.message)}finally{btn.disabled=false;btn.textContent="Save & Print (A4)"}
 };
+  
+/* SAVED REPORTS — DATABASE LOADING, SEARCH AND PAGINATION */
+let srAllReports = [];
+let srPage = 1;
+const srPageSize = 25;
+
+function srStatus(report) {
+  const results = (report.items || []).flatMap(item => item.results || []);
+  return results.length > 0 && results.every(r =>
+    String(r.result_value || "").trim() !== ""
+  ) ? "completed" : "pending";
+}
+
+function srRender() {
+  const q = $("srSearch").value.trim().toLowerCase();
+  const from = $("srFromDate").value;
+  const to = $("srToDate").value;
+  const status = $("srStatus").value;
+
+  const filtered = srAllReports.filter(r => {
+    const name = r.patient?.patient_name || "";
+    const mobile = r.patient?.mobile || "";
+    const id = r.id || "";
+    const tests = (r.items || []).map(x => x.test_name).join(" ");
+    const date = r.order_date || "";
+    const state = srStatus(r);
+
+    return (!q || [name, mobile, id, tests].join(" ").toLowerCase().includes(q)) &&
+      (!from || date >= from) &&
+      (!to || date <= to) &&
+      (status === "all" || state === status);
+  });
+
+  const today = new Date().toLocaleDateString("en-CA");
+  $("srTotal").textContent = srAllReports.length;
+  $("srToday").textContent = srAllReports.filter(r => r.order_date === today).length;
+  $("srPending").textContent = srAllReports.filter(r => srStatus(r) === "pending").length;
+  $("srCompleted").textContent = srAllReports.filter(r => srStatus(r) === "completed").length;
+
+  const pages = Math.max(1, Math.ceil(filtered.length / srPageSize));
+  srPage = Math.min(srPage, pages);
+
+  const start = (srPage - 1) * srPageSize;
+  const visible = filtered.slice(start, start + srPageSize);
+
+  $("srRows").innerHTML = visible.length ? visible.map(r => {
+    const name = r.patient?.patient_name || "Unknown Patient";
+    const mobile = r.patient?.mobile || "";
+    const tests = (r.items || []).map(x => x.test_name).join(", ") || "No tests";
+    const state = srStatus(r);
+    const date = r.order_date || "";
+
+    return `<tr>
+      <td><b>${safe(name)}</b><br><small>${safe(mobile)}</small><br><small>${safe(r.id)}</small></td>
+      <td>${safe(date)}</td>
+      <td>${safe(tests)}</td>
+      <td><span class="badge">${state === "completed" ? "Completed" : "Pending"}</span></td>
+      <td><button class="btn light" data-sr-view="${safe(r.id)}">View</button></td>
+    </tr>`;
+  }).join("") : '<tr><td colspan="5" class="empty">कोई रिपोर्ट नहीं मिली।</td></tr>';
+
+  $("srPageInfo").textContent =
+    `Page ${srPage} of ${pages} • ${filtered.length} reports`;
+
+  $("srPrev").disabled = srPage <= 1;
+  $("srNext").disabled = srPage >= pages;
+}
+
+async function loadSavedReports() {
+  if (!labId) {
+    $("srMessage").textContent = "पहले Laboratory चुनें।";
+    return;
+  }
+
+  $("srRows").innerHTML =
+    '<tr><td colspan="5" class="empty">Loading reports...</td></tr>';
+
+  $("srMessage").textContent = "";
+
+  const { data, error } = await db
+    .from("lab_orders")
+    .select(`
+      id,order_date,status,created_at,
+      patient:lab_patients(patient_name,mobile),
+      items:lab_order_items(
+        test_name,
+        results:lab_test_results(parameter_name,result_value)
+      )
+    `)
+    .eq("lab_id", labId)
+    .order("created_at", { ascending: false })
+    .limit(1000);
+
+  if (error) {
+    $("srRows").innerHTML =
+      '<tr><td colspan="5" class="empty">Reports load error: ' +
+      safe(error.message) + '</td></tr>';
+    $("srMessage").textContent = "Database से रिपोर्ट लोड नहीं हुई।";
+    return;
+  }
+
+  srAllReports = data || [];
+  srPage = 1;
+  srRender();
+  $("srMessage").textContent =
+    srAllReports.length + " reports loaded successfully.";
+}
+
+["srSearch","srFromDate","srToDate","srStatus"].forEach(id => {
+  $(id).addEventListener("input", () => {
+    srPage = 1;
+    srRender();
+  });
+  $(id).addEventListener("change", () => {
+    srPage = 1;
+    srRender();
+  });
+});
+
+$("srRefresh").onclick = loadSavedReports;
+
+$("srPrev").onclick = () => {
+  if (srPage > 1) {
+    srPage--;
+    srRender();
+  }
+};
+
+$("srNext").onclick = () => {
+  srPage++;
+  srRender();
+};
+  
 $("logout").onclick=async()=>{try{await db.rpc("acd_device_release",{p_device_id:deviceId()})}catch(e){}await db.auth.signOut();location.replace("index.html")};
 $("nav").querySelectorAll("button").forEach(b=>b.onclick=()=>{
  
