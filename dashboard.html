@@ -2478,13 +2478,26 @@ saDashboard.classList.add("hidden");
       if (el && value !== undefined && value !== null) el.value = value;
     });
 
-    const checks = {
-      rdShowTechnician: sig.technician,
-      rdShowDoctor: sig.doctor,
-      rdRectanglePatient: l.rectangle_patient,
-      rdLinesPatient: l.lines_patient,
-      rdPrintAfterSave: p.print_after_save
-    };
+    
+const valuesSignature = {
+  rdTechnicianName: sig.technician_name || "",
+  rdDoctorName: sig.doctor_name || "",
+  rdDoctorQualification: sig.doctor_qualification || ""
+};
+
+Object.entries(valuesSignature).forEach(([id, value]) => {
+  const el = $rd(id);
+  if (el) el.value = value;
+});
+
+const checks = {
+  rdShowTechnician: sig.technician,
+  rdShowDoctor: sig.doctor,
+  rdRectanglePatient: l.rectangle_patient,
+  rdLinesPatient: l.lines_patient,
+  rdPrintAfterSave: p.print_after_save
+};
+
 
     Object.entries(checks).forEach(([id, value]) => {
       const el = $rd(id);
@@ -2557,11 +2570,18 @@ saDashboard.classList.add("hidden");
         phone: num("rdSizePhone"),
         email: num("rdSizeEmail")
       },
-      signatures: {
-        technician: $rd("rdShowTechnician").checked,
-        doctor: $rd("rdShowDoctor").checked
-      },
-      owner_locked: currentLocked
+      
+signatures: {
+  technician: $rd("rdShowTechnician").checked,
+  doctor: $rd("rdShowDoctor").checked,
+  technician_name: $rd("rdTechnicianName").value.trim(),
+  doctor_name: $rd("rdDoctorName").value.trim(),
+  doctor_qualification: $rd("rdDoctorQualification").value.trim(),
+  technician_path: currentSignaturePaths.technician,
+  doctor_path: currentSignaturePaths.doctor
+},
+owner_locked: currentLocked
+
     };
   }
 
