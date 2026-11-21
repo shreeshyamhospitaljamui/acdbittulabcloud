@@ -1113,7 +1113,7 @@ if (superNavButton) {
  }
  
 await loadCatalogue();
-
+await updateFeatureNavigation();
 $("date").value = new Date().toISOString().slice(0, 10);
 say("Supabase से connected। Catalogue loaded: " + catalogue.length + " tests.");
 
