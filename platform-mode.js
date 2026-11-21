@@ -9,7 +9,10 @@
   "use strict";
 
   const db = window.db;
-  const { data: authData, error: authError } = await db.auth.getUser();
+  const db = window.db;
+if (!db) return;
+
+const { data: authData, error: authError } = await db.auth.getUser();
   if (authError || !authData?.user) return;
 
   const { data: profile, error: profileError } = await db
