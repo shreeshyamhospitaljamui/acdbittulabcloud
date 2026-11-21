@@ -490,8 +490,7 @@ function resultControl(p,index){
   let fallback=type==="positive_negative"?["Positive","Negative"]:type==="reactive_nonreactive"?["Reactive","Non-Reactive"]:type==="present_absent"?["Present","Absent"]:["A Positive","A Negative","B Positive","B Negative","AB Positive","AB Negative","O Positive","O Negative"];
   const list=opts.length?opts:fallback;
   return '<select data-result="'+index+'"><option value="">Select</option>'+list.map(v=>'<option value="'+safe(v)+'">'+safe(v)+'</option>').join("")+'</select>';
- }
- if(type==="titre")return '<input data-result="'+index+'" list="titreOptions" placeholder="Enter titre">';
+ }if(type==="titre")return '<input type="text" data-result="'+index+'" data-titre="true" list="titreOptions'+index+'" placeholder="Enter titre"><datalist id="titreOptions'+index+'"><option value="1:20"><option value="1:40"><option value="1:80"><option value="1:160"><option value="1:320"><option value="1:640"></datalist>';
  return '<input data-result="'+index+'" '+(type==="numeric"?'inputmode="decimal"':'')+' placeholder="Enter result">';
 }
 const CBC_GROUPS=[
@@ -559,13 +558,25 @@ flatRows[index].manual_override = el.value.trim() !== "";
   el.addEventListener("change", update);
 
   el.addEventListener("keydown", e => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      const controls = [...body.querySelectorAll("[data-result]")];
-      const next = controls[controls.indexOf(el) + 1];
-      if (next) next.focus();
+  if (e.key === "Enter") {
+    e.preventDefault();
+
+    if (el.dataset.titre === "true") {
+      const value = el.value.trim();
+
+      if (/^\d+$/.test(value)) {
+        el.value = "1:" + value;
+        update();
+      } else if (/^1:\d+$/.test(value)) {
+        update();
+      }
     }
-  });
+
+    const controls = [...body.querySelectorAll("[data-result]")];
+    const next = controls[controls.indexOf(el) + 1];
+    if (next) next.focus();
+  }
+});
 });
 
  body.querySelectorAll("[data-remove-test]").forEach(b=>b.onclick=()=>{selectedTests=selectedTests.filter(t=>t.id!==b.dataset.removeTest);flatRows=flatRows.filter(r=>r.test_id!==b.dataset.removeTest);renderRows();renderSelected()});
