@@ -716,7 +716,7 @@ async function addTest(){
  if(!params?.length)flatRows.push({test_id:t.id,test_name:t.test_name,test_code:t.test_code,parameter_id:null,parameter_name:t.test_name,unit:"",reference_range:"",result_type:"text",result_options:[],result_value:""});
  $("testSearch").value="";chosenSearchTestId=null;$("testSearchResults").classList.add("hidden");renderSelected();renderRows();say(t.test_name+" जोड़ा गया। अगला टेस्ट खोज सकते हैं।");
 }
-$("addTest").onclick=addTest;$("testSearch").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();addTest()}});
+$("addTest").onclick=addTest;
 $("clear").onclick=()=>{selectedTests=[];flatRows=[];renderRows();renderSelected();say("चुने हुए टेस्ट हटाए गए।")};
 function setupEnterFlow(){
  const ids=["patient","mobile","age","ageUnit","gender","doctor","testSearch"];
