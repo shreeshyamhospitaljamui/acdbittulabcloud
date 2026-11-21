@@ -572,6 +572,8 @@ flatRows[index].manual_override = el.value.trim() !== "";
 }
   
 /* CHANGE 1: CBC automatic calculations */
+
+/* CBC automatic calculations with manual override */
 function calculateCBCResults(testId) {
   const rows = flatRows.filter(r => r.test_id === testId);
   if (!rows.length) return;
@@ -580,30 +582,36 @@ function calculateCBCResults(testId) {
     const row = rows.find(
       r => r.parameter_name.toLowerCase() === name.toLowerCase()
     );
-    return row ? Number(row.result_value) : NaN;
+
+    if (!row || String(row.result_value ?? "").trim() === "") {
+      return NaN;
+    }
+
+    const value = Number(row.result_value);
+    return Number.isFinite(value) ? value : NaN;
   };
 
-  
-const set = (name, value) => {
-  const row = rows.find(
-    r => r.parameter_name.toLowerCase() === name.toLowerCase()
-  );
+  const set = (name, value) => {
+    const row = rows.find(
+      r => r.parameter_name.toLowerCase() === name.toLowerCase()
+    );
 
-  if (!row || !Number.isFinite(value) || row.manual_override) return;
+    if (!row || row.manual_override) return;
 
-  row.result_value = value.toFixed(2);
-};
-  
-    
+    row.result_value = Number.isFinite(value)
+      ? value.toFixed(2)
+      : "";
+  };
 
   const hb = get("Haemoglobin");
   const rbc = get("Erythrocytes");
   const tlc = get("Leucocytes");
   const pcv = get("PCV (HCT)");
 
-  if (Number.isFinite(hb)) {
-    set("Haemoglobin Percent", hb / 14.6 * 100);
-  }
+  set(
+    "Haemoglobin Percent",
+    Number.isFinite(hb) ? hb / 14.6 * 100 : NaN
+  );
 
   [
     ["Neutrophils", "Absolute Neutrophil"],
@@ -613,23 +621,37 @@ const set = (name, value) => {
     ["Basophils", "Absolute Basophil"]
   ].forEach(([percent, absolute]) => {
     const value = get(percent);
-    if (Number.isFinite(tlc) && Number.isFinite(value)) {
-      set(absolute, tlc * value / 100);
-    }
+
+    set(
+      absolute,
+      Number.isFinite(tlc) && Number.isFinite(value)
+        ? tlc * value / 100
+        : NaN
+    );
   });
 
-  if (Number.isFinite(pcv) && Number.isFinite(rbc) && rbc > 0) {
-    set("MCV", pcv * 10 / rbc);
-  }
+  set(
+    "MCV",
+    Number.isFinite(pcv) && Number.isFinite(rbc) && rbc > 0
+      ? pcv * 10 / rbc
+      : NaN
+  );
 
-  if (Number.isFinite(hb) && Number.isFinite(rbc) && rbc > 0) {
-    set("MCH", hb * 10 / rbc);
-  }
+  set(
+    "MCH",
+    Number.isFinite(hb) && Number.isFinite(rbc) && rbc > 0
+      ? hb * 10 / rbc
+      : NaN
+  );
 
-  if (Number.isFinite(hb) && Number.isFinite(pcv) && pcv > 0) {
-    set("MCHC", hb * 100 / pcv);
-  }
+  set(
+    "MCHC",
+    Number.isFinite(hb) && Number.isFinite(pcv) && pcv > 0
+      ? hb * 100 / pcv
+      : NaN
+  );
 }
+
   
 function renderSelected(){$("selectedTestsLabel").textContent="Selected tests: "+(selectedTests.map(t=>t.test_name).join(", ")||"none")}
 async function loadCatalogue(){
