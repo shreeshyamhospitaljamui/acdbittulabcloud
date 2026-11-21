@@ -167,12 +167,21 @@ button:disabled{opacity:.55;cursor:not-allowed}
 
   .report-patient-grid {
     display: grid !important;
+    margin-top: var(--rd-gap-header, 140pt) !important;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 6px 12px;
     padding: 8px 10px;
     font-size: 9pt;
   }
 
+  .results tr.test-heading-row td {
+    padding-top: var(--rd-gap-test, 20pt) !important;
+  }
+
+  .results tr.group-row td {
+    padding-top: var(--rd-gap-subtest, 20pt) !important;
+  }
+  
   .results {
     display: block !important;
     width: 100% !important;
@@ -711,7 +720,38 @@ root.style.setProperty("--rd-margin-top", mm(layout.page_margin_top_mm, 7));
 root.style.setProperty("--rd-margin-left", mm(layout.page_margin_left_mm, 8));
 root.style.setProperty("--rd-margin-right", mm(layout.page_margin_right_mm, 8));
 root.style.setProperty("--rd-margin-bottom", mm(layout.page_margin_bottom_mm, 10));
-
+root.style.setProperty(
+  "--rd-gap-header",
+  printing.default_printing === "preprinted"
+    ? Math.max(0, Number(layout.gap_header ?? 140)) + "pt"
+    : "0pt"
+);
+   
+root.style.setProperty(
+  "--rd-gap-between-header",
+  Math.max(0, Number(layout.gap_between_header ?? 25)) + "pt"
+);
+root.style.setProperty(
+  "--rd-gap-content",
+  Math.max(0, Number(layout.gap_content ?? 270)) + "pt"
+);
+root.style.setProperty(
+  "--rd-gap-test",
+  Math.max(0, Number(layout.gap_test ?? 20)) + "pt"
+);
+root.style.setProperty(
+  "--rd-gap-subtest",
+  Math.max(0, Number(layout.gap_subtest ?? 20)) + "pt"
+);
+root.style.setProperty(
+  "--rd-gap-footer",
+  Math.max(0, Number(layout.gap_footer ?? 1000)) + "pt"
+);
+root.style.setProperty(
+  "--rd-gap-doctor",
+  Math.max(0, Number(layout.gap_doctor ?? 20)) + "pt"
+);
+   
 root.style.setProperty(
   "--rd-print-orientation",
   layout.orientation === "landscape" ? "landscape" : "portrait"
