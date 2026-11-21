@@ -223,6 +223,15 @@ button:disabled{opacity:.55;cursor:not-allowed}
 }
   
 .report-test-title {
+  
+.report-generated-time {
+  text-align: right;
+  font-size: 8pt;
+  padding: 6px 10px;
+  color: #333;
+  break-inside: avoid;
+}
+  
   margin-top: var(--rd-gap-between-header, 25pt) !important;
 }
   .results tr.test-heading-row td {
@@ -356,6 +365,12 @@ html.acd-lab-admin #nav [data-sa-nav] {
 
   <div class="report-qr-section">
     <div id="printPatientQR"></div>
+    
+<div class="report-generated-time">
+  <b>Report Generated:</b>
+  <span id="printReportGeneratedTime"></span>
+</div>
+    
     <small>Patient QR Code</small>
   </div>
 
@@ -1401,6 +1416,9 @@ $("printRegisteredTime").textContent =
    
 const reportGeneratedAt = new Date();
 
+$("printReportGeneratedTime").textContent =
+  reportGeneratedAt.toLocaleString("en-IN");
+   
 $("printPatientMeta").innerHTML =
   '<div><b>Patient Name:</b> ' +
   safe(patientName) + '</div>' +
