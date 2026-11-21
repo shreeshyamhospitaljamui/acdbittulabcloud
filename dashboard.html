@@ -393,7 +393,26 @@ html.acd-lab-admin #nav [data-sa-nav] {
 </div></div></section>
 </div>
 <section class="panel results"><div class="results-head"><span class="results-title">Investigation / Result Entry — Combined</span><div class="actions"><button class="btn light" id="clear">Clear All</button><button class="btn green" id="save">Save &amp; Print (A4)</button></div></div>
-<div class="table-wrap"><table><thead><tr><th style="width:37%">Investigation</th><th style="width:24%">Result</th><th style="width:15%">Units</th><th style="width:24%">Ref. Range</th><th class="no-print"></th></tr></thead><tbody id="testRows"><tr><td class="empty" colspan="5">पहले ऊपर से CBC, KFT, LFT आदि टेस्ट जोड़ें।</td></tr></tbody></table></div><div id="notice"></div></section>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Investigation</th>
+<th>Result</th>
+<th>Reference Value</th>
+<th>Unit</th>
+<th>Status</th>
+<th class="no-print"></th>
+</tr>
+</thead>
+<tbody id="testRows">
+<tr>
+<td class="empty" colspan="6">पहले ऊपर से CBC, KFT, LFT आदि टेस्ट जोड़ें।</td>
+</tr>
+</tbody>
+</table>
+</div>
 
 <div class="signature-footer">
 
@@ -767,7 +786,7 @@ function getResultStatus(result, referenceRange) {
 function renderRows(){
  const body=$("testRows");
  if(!flatRows.length){
-  body.innerHTML='<tr><td class="empty" colspan="5">पहले ऊपर से CBC, KFT, LFT आदि टेस्ट जोड़ें।</td></tr>';
+  body.innerHTML='<tr><td class="empty" colspan="6">पहले ऊपर से CBC, KFT, LFT आदि टेस्ट जोड़ें।</td></tr>';
   return;
  }
 
@@ -785,8 +804,18 @@ function renderRows(){
   if(isWidal){
    const oi=flatRows.indexOf(overall);
    out.push(
-    '<tr><td><b>WIDAL TEST</b></td><td>'+resultControl(overall,oi)+'</td><td>-</td><td>Positive / Negative</td><td></td></tr>'
-   );
+    
+out.push(
+  '<tr>' +
+  '<td><b>WIDAL TEST</b></td>' +
+  '<td>' + resultControl(overall,oi) + '</td>' +
+  '<td>Positive / Negative</td>' +
+  '<td>-</td>' +
+  '<td></td>' +
+  '<td class="no-print"></td>' +
+  '</tr>'
+);
+
 
    let matrix='<tr><td colspan="5"><div style="overflow-x:auto"><table style="width:100%;min-width:560px;border-collapse:collapse"><thead><tr><th>INVESTIGATION</th>'+
     dilutions.map(d=>'<th style="text-align:center">'+d+'</th>').join('')+
@@ -833,21 +862,39 @@ out.push(
   const index=+el.dataset.result;
   el.value=flatRows[index].result_value||"";
 
-  const update=()=>{
-   flatRows[index].result_value=el.value;
-   flatRows[index].manual_override=el.value.trim()!=="";
+  
+const update = () => {
+  flatRows[index].result_value = el.value;
+  flatRows[index].manual_override = el.value.trim() !== "";
 
-   const row=flatRows[index];
-   const test=selectedTests.find(t=>t.id===row.test_id);
+  const row = flatRows[index];
+  const test = selectedTests.find(t => t.id === row.test_id);
 
-   if(test&&(test.test_code==="CBC"||test.test_name.toLowerCase()==="cbc")){
+  if (test && (test.test_code === "CBC" ||
+      test.test_name.toLowerCase() === "cbc")) {
+
     calculateCBCResults(test.id);
-    body.querySelectorAll("[data-result]").forEach(input=>{
-     const i=+input.dataset.result;
-     input.value=flatRows[i].result_value||"";
+
+    body.querySelectorAll("[data-result]").forEach(input => {
+      const i = +input.dataset.result;
+      input.value = flatRows[i].result_value || "";
     });
-   }
-  };
+  }
+
+  body.querySelectorAll("[data-result]").forEach(input => {
+    const i = +input.dataset.result;
+    const resultRow = input.closest("tr");
+    const statusCell = resultRow?.querySelector(".result-status");
+
+    if (statusCell) {
+      statusCell.textContent = getResultStatus(
+        flatRows[i].result_value,
+        flatRows[i].reference_range
+      );
+    }
+  });
+};
+
 
   el.addEventListener("input",update);
   el.addEventListener("change",update);
