@@ -1248,6 +1248,50 @@ const branding = {
   ...(labCfg.branding || {})
 };
 
+async function loadPrintSignature(kind, imageId, nameId) {
+  const path = signatures[kind + "_path"];
+  const img = $(imageId);
+  const name = $(nameId);
+
+  name.textContent =
+    signatures[kind + "_name"] ||
+    (kind === "technician" ? "Technician" : "Doctor");
+
+  img.style.display = "none";
+  img.removeAttribute("src");
+
+  if (!path) return;
+
+  const { data, error } = await db.storage
+    .from("lab-report-signatures")
+    .createSignedUrl(path, 3600);
+
+  if (error) throw error;
+  if (!data?.signedUrl) {
+    throw new Error(kind + " signature URL unavailable.");
+  }
+
+  img.src = data.signedUrl;
+  img.style.display = "block";
+
+  await img.decode();
+}
+
+await loadPrintSignature(
+  "technician",
+  "printTechnicianSignature",
+  "printTechnicianName"
+);
+
+await loadPrintSignature(
+  "doctor",
+  "printDoctorSignature",
+  "printDoctorName"
+);
+
+$("printDoctorQualification").textContent =
+  signatures.doctor_qualification || "";
+   
 const brandBox = $("printLabBranding");
 const brandLogo = $("printLabLogo");
 
