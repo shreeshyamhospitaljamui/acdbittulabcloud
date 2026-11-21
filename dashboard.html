@@ -131,10 +131,39 @@ button:disabled{opacity:.55;cursor:not-allowed}
   }
 
 
-  .print-header {
-    display: block !important;
-    margin: 0 0 5px !important;
+  
+  .print-lab-branding {
+    display: flex !important;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    box-sizing: border-box;
+    border-bottom: 1px solid #333;
+    color: #111 !important;
   }
+
+  .print-lab-branding img {
+    display: block;
+    width: 58px;
+    height: 58px;
+    object-fit: contain;
+    flex: 0 0 58px;
+  }
+
+  #printLabName {
+    font-size: 16pt;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  #printLabAddress,
+  #printLabContact {
+    font-size: 9pt;
+    line-height: 1.4;
+  }
+
 
   .report-patient-grid {
     display: grid !important;
