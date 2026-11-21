@@ -1452,6 +1452,15 @@ $("nav").querySelectorAll("button").forEach(b=>b.onclick=()=>{
    });
    return;
  }
+if(isSavedReports){
+  loadSavedReports().catch(e=>{
+    $("srMessage").textContent="Error: "+e.message;
+    $("srRows").innerHTML=
+      '<tr><td colspan="5" class="empty">Reports load error: '+safe(e.message)+'</td></tr>';
+  });
+  return;
+}
+  
 
  if(!isEntry && !isSavedReports){
    $("otherPage").textContent=b.dataset.page+
