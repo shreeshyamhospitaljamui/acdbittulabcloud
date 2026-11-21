@@ -684,28 +684,109 @@ async function showCataloguePage(){
  else if(catalogue.length)await openCatalogueTest(catalogue[0].id);
 }
 let chosenSearchTestId=null;
-function renderTestSearchResults(){
- const q=$("testSearch").value.trim().toLowerCase(),box=$("testSearchResults");
- chosenSearchTestId=null;
- if(!q){box.classList.add("hidden");box.innerHTML="";return}
- const matches=catalogue.filter(t=>
-  t.test_name.toLowerCase().includes(q)||
-  t.test_code.toLowerCase().includes(q)||
-  (t.department||"").toLowerCase().includes(q)
- ).slice(0,12);
- box.innerHTML=matches.length?matches.map(t=>'<button type="button" class="test-search-option" data-search-test="'+safe(t.id)+'">'+safe(t.test_name)+'<small>'+safe(t.test_code)+(t.department?" • "+safe(t.department):"")+'</small></button>').join(""):'<div class="test-search-empty">कोई matching test नहीं मिला।</div>';
- box.classList.remove("hidden");
- box.querySelectorAll("[data-search-test]").forEach(b=>b.addEventListener("click",()=>{
-  const t=catalogue.find(x=>x.id===b.dataset.searchTest);if(!t)return;
-  chosenSearchTestId=t.id;$("testSearch").value=t.test_name;box.classList.add("hidden");box.innerHTML="";
-  $("testSearch").focus();
- }));
+
+let searchRequestId = 0;
+
+async function renderTestSearchResults() {
+  const q = $("testSearch").value.trim().toLowerCase();
+  const box = $("testSearchResults");
+  const requestId = ++searchRequestId;
+
+  chosenSearchTestId = null;
+  chosenSearchParameter = null;
+
+  if (!q) {
+    box.classList.add("hidden");
+    box.innerHTML = "";
+    return;
+  }
+
+  const testMatches = catalogue.filter(t =>
+    t.test_name.toLowerCase().includes(q) ||
+    t.test_code.toLowerCase().includes(q) ||
+    (t.department || "").toLowerCase().includes(q)
+  ).slice(0, 8);
+
+  const { data: parameterMatches, error } = await db
+    .from("acd_test_parameters")
+    .select("id,test_id,parameter_name,unit,reference_range,result_type,result_options,sort_order")
+    .ilike("parameter_name", `%${q}%`)
+    .limit(12);
+
+  if (requestId !== searchRequestId) return;
+
+  if (error) {
+    box.innerHTML = '<div class="test-search-empty">Search error: ' +
+      safe(error.message) + '</div>';
+    box.classList.remove("hidden");
+    return;
+  }
+
+  const parameters = (parameterMatches || [])
+    .filter(p => catalogue.some(t => t.id === p.test_id));
+
+  const testHTML = testMatches.map(t =>
+    '<button type="button" class="test-search-option" data-search-test="' +
+    safe(t.id) + '">' +
+    safe(t.test_name) +
+    '<small>पूरा प्रोफाइल • ' + safe(t.test_code) +
+    (t.department ? " • " + safe(t.department) : "") +
+    '</small></button>'
+  ).join("");
+
+  const parameterHTML = parameters.map(p => {
+    const parent = catalogue.find(t => t.id === p.test_id);
+
+    return '<button type="button" class="test-search-option" data-search-parameter="' +
+      safe(p.id) + '">' +
+      safe(p.parameter_name) +
+      '<small>सिर्फ यह टेस्ट • ' + safe(parent.test_name) +
+      '</small></button>';
+  }).join("");
+
+  const html = testHTML + parameterHTML;
+
+  box.innerHTML = html ||
+    '<div class="test-search-empty">कोई matching test नहीं मिला।</div>';
+
+  box.classList.remove("hidden");
+
+  box.querySelectorAll("[data-search-test]").forEach(b => {
+    b.addEventListener("click", () => {
+      const t = catalogue.find(x => x.id === b.dataset.searchTest);
+      if (!t) return;
+
+      chosenSearchTestId = t.id;
+      chosenSearchParameter = null;
+      $("testSearch").value = t.test_name;
+      box.classList.add("hidden");
+      box.innerHTML = "";
+    });
+  });
+
+  box.querySelectorAll("[data-search-parameter]").forEach(b => {
+    b.addEventListener("click", () => {
+      const p = parameters.find(x => x.id === b.dataset.searchParameter);
+      if (!p) return;
+
+      chosenSearchParameter = p;
+      chosenSearchTestId = null;
+      $("testSearch").value = p.parameter_name;
+      box.classList.add("hidden");
+      box.innerHTML = "";
+    });
+  });
 }
-$("testSearch").addEventListener("input",renderTestSearchResults);
-$("testSearch").addEventListener("focus",()=>{if($("testSearch").value.trim())renderTestSearchResults()});
+
+$("testSearch").addEventListener("input", renderTestSearchResults);
+$("testSearch").addEventListener("focus", () => {
+  if ($("testSearch").value.trim()) renderTestSearchResults();
+});
+
+
 document.addEventListener("click",e=>{if(!e.target.closest(".test-search-wrap"))$("testSearchResults").classList.add("hidden")});
 
-let chosenSearchParameter = null;
+
 
 async function addTest() {
   const q = $("testSearch").value.trim().toLowerCase();
