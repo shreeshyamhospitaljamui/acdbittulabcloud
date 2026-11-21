@@ -244,8 +244,19 @@ button:disabled{opacity:.55;cursor:not-allowed}
 <section class="content" id="workspace">
 <div class="select-lab hidden" id="labChooser"><b>Laboratory:</b><select id="labSelect"><option value="">Loading laboratories…</option></select><span id="labStatus">Selected</span></div>
 <div class="print-header" id="printHeader">
+
+  <div id="printLabBranding" class="print-lab-branding">
+    <img id="printLabLogo" alt="Laboratory Logo">
+    <div>
+      <div id="printLabName"></div>
+      <div id="printLabAddress"></div>
+      <div id="printLabContact"></div>
+    </div>
+  </div>
+
   <div class="report-patient-grid" id="printPatientMeta"></div>
   <div class="report-test-title" id="printTestTitle">LABORATORY REPORT</div>
+
 </div>
 <div id="entryPage">
 <div class="cards">
