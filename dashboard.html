@@ -594,13 +594,7 @@ const set = (name, value) => {
   row.result_value = value.toFixed(2);
 };
   
-    const row = rows.find(
-      r => r.parameter_name.toLowerCase() === name.toLowerCase()
-    );
-    if (!row || !Number.isFinite(value)) return;
-
-    row.result_value = value.toFixed(2);
-  };
+    
 
   const hb = get("Haemoglobin");
   const rbc = get("Erythrocytes");
