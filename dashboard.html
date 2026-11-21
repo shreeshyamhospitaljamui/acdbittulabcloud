@@ -536,6 +536,63 @@ function renderRows(){
  body.querySelectorAll("[data-result]").forEach(el=>{el.value=flatRows[+el.dataset.result].result_value||"";el.addEventListener("input",()=>flatRows[+el.dataset.result].result_value=el.value);el.addEventListener("change",()=>flatRows[+el.dataset.result].result_value=el.value);el.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();const controls=[...body.querySelectorAll("[data-result]")];const next=controls[controls.indexOf(el)+1];if(next)next.focus()}})});
  body.querySelectorAll("[data-remove-test]").forEach(b=>b.onclick=()=>{selectedTests=selectedTests.filter(t=>t.id!==b.dataset.removeTest);flatRows=flatRows.filter(r=>r.test_id!==b.dataset.removeTest);renderRows();renderSelected()});
 }
+  
+/* CHANGE 1: CBC automatic calculations */
+function calculateCBCResults(testId) {
+  const rows = flatRows.filter(r => r.test_id === testId);
+  if (!rows.length) return;
+
+  const get = name => {
+    const row = rows.find(
+      r => r.parameter_name.toLowerCase() === name.toLowerCase()
+    );
+    return row ? Number(row.result_value) : NaN;
+  };
+
+  const set = (name, value) => {
+    const row = rows.find(
+      r => r.parameter_name.toLowerCase() === name.toLowerCase()
+    );
+    if (!row || !Number.isFinite(value)) return;
+
+    row.result_value = value.toFixed(2);
+  };
+
+  const hb = get("Haemoglobin");
+  const rbc = get("Erythrocytes");
+  const tlc = get("Leucocytes");
+  const pcv = get("PCV (HCT)");
+
+  if (Number.isFinite(hb)) {
+    set("Haemoglobin Percent", hb / 14.6 * 100);
+  }
+
+  [
+    ["Neutrophils", "Absolute Neutrophil"],
+    ["Lymphocytes", "Absolute Lymphocyte"],
+    ["Monocytes", "Absolute Monocyte"],
+    ["Eosinophils", "Absolute Eosinophil"],
+    ["Basophils", "Absolute Basophil"]
+  ].forEach(([percent, absolute]) => {
+    const value = get(percent);
+    if (Number.isFinite(tlc) && Number.isFinite(value)) {
+      set(absolute, tlc * value / 100);
+    }
+  });
+
+  if (Number.isFinite(pcv) && Number.isFinite(rbc) && rbc > 0) {
+    set("MCV", pcv * 10 / rbc);
+  }
+
+  if (Number.isFinite(hb) && Number.isFinite(rbc) && rbc > 0) {
+    set("MCH", hb * 10 / rbc);
+  }
+
+  if (Number.isFinite(hb) && Number.isFinite(pcv) && pcv > 0) {
+    set("MCHC", hb * 100 / pcv);
+  }
+}
+  
 function renderSelected(){$("selectedTestsLabel").textContent="Selected tests: "+(selectedTests.map(t=>t.test_name).join(", ")||"none")}
 async function loadCatalogue(){
  const {data,error}=await db.from("acd_test_catalogue").select("id,test_code,test_name,department,default_price").eq("is_active",true).order("sort_order");
