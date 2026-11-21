@@ -2360,6 +2360,47 @@ saDashboard.classList.add("hidden");
   let currentLocked = false;
   let currentGlobal = {};
 
+  let currentSignaturePaths = {
+    technician: "",
+    doctor: ""
+  };
+
+  async function uploadLabSignature(file, labId, type) {
+    if (!file) return currentSignaturePaths[type] || "";
+
+    const allowed = [
+      "image/png",
+      "image/jpeg",
+      "image/webp"
+    ];
+
+    if (!allowed.includes(file.type)) {
+      throw new Error("Only PNG, JPG and WebP allowed.");
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      throw new Error("Signature maximum size is 2 MB.");
+    }
+
+    const ext = file.type === "image/png"
+      ? "png"
+      : file.type === "image/webp" ? "webp" : "jpg";
+
+    const path = labId + "/" + type + "-" +
+      Date.now() + "." + ext;
+
+    const { error } = await db.storage
+      .from("lab-report-signatures")
+      .upload(path, file, {
+        upsert: true,
+        contentType: file.type
+      });
+
+    if (error) throw error;
+
+    return path;
+  }
+  
   if (!nav || !panel) return;
 
   function rdStatus(message, error = false) {
