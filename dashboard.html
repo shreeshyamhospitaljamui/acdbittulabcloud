@@ -1209,13 +1209,31 @@ $("save").onclick=async()=>{
    const rows=flatRows.filter(r=>r.test_id===t.id);
    if(rows.length){const payload=rows.map(r=>({lab_id:labId,order_item_id:item.id,parameter_name:r.parameter_name,result_value:r.result_value||null,unit:r.unit||null,reference_range:r.reference_range||null}));const {error:re}=await db.from("lab_test_results").insert(payload);if(re)throw re}
   }
-  $("printPatientMeta").innerHTML=
-   '<div><b>Name:</b> '+safe(patientName)+'</div>'+
-   '<div><b>Sex:</b> '+safe($("gender").value)+'</div>'+
-   '<div><b>Age:</b> '+safe($("age").value?$("age").value+" "+$("ageUnit").value:"-")+'</div>'+
-   '<div><b>Received On:</b> '+safe($("date").value)+'</div>'+
-   '<div><b>Referred By:</b> '+safe($("doctor").value.trim()||"Self")+'</div>'+
-   '<div><b>Reported On:</b> '+safe(new Date().toLocaleDateString("en-GB"))+'</div>';
+  
+const reportGeneratedAt = new Date();
+
+$("printPatientMeta").innerHTML =
+  '<div><b>Patient Name:</b> ' +
+  safe(patientName) + '</div>' +
+
+  '<div><b>Age:</b> ' +
+  safe($("age").value + " " + $("ageUnit").value) +
+  '</div>' +
+
+  '<div><b>Sex:</b> ' +
+  safe($("gender").value) + '</div>' +
+
+  '<div><b>Patient ID:</b> ' +
+  safe(p.id) + '</div>' +
+
+  '<div><b>Referring Doctor:</b> ' +
+  safe($("doctor").value.trim() || "Self") +
+  '</div>' +
+
+  '<div><b>Report Generated:</b> ' +
+  safe(reportGeneratedAt.toLocaleString("en-IN")) +
+  '</div>';
+
   $("printTestTitle").textContent = "LABORATORY REPORT";
 
 const { data: reportCfg, error: cfgErr } =
