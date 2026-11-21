@@ -177,6 +177,51 @@ button:disabled{opacity:.55;cursor:not-allowed}
     padding: 8px 10px;
     font-size: 9pt;
   }
+  
+.report-tracking-row {
+  display: flex !important;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 8px 12px;
+  margin-top: 8px;
+  border-top: 1px solid #c9d3df;
+  border-bottom: 1px solid #c9d3df;
+  break-inside: avoid;
+}
+
+.report-qr-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.report-qr-section canvas,
+.report-qr-section img {
+  width: 85px !important;
+  height: 85px !important;
+}
+
+.report-barcode-section {
+  text-align: right;
+  font-size: 8pt;
+  line-height: 1.7;
+}
+
+.report-barcode-section svg {
+  display: block;
+  width: 190px;
+  max-width: 100%;
+  height: 55px;
+  margin-left: auto;
+}
+
+.report-tracking-row small {
+  font-size: 7pt;
+  color: #444;
+}
+  
 .report-test-title {
   margin-top: var(--rd-gap-between-header, 25pt) !important;
 }
