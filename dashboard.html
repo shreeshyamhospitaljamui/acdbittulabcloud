@@ -879,6 +879,7 @@ document.addEventListener("click",e=>{if(!e.target.closest(".test-search-wrap"))
 
 
 
+
 async function addTest() {
   const q = $("testSearch").value.trim().toLowerCase();
   if (!q) {
@@ -887,36 +888,53 @@ async function addTest() {
   }
 
   const parameter = chosenSearchParameter;
+  const isWidal = chosenSearchWidal;
 
-  const t = parameter
-    ? catalogue.find(x => x.id === parameter.test_id)
-    : catalogue.find(x =>
-        x.test_name.toLowerCase() === q ||
-        x.test_code.toLowerCase() === q
-      ) || catalogue.find(x =>
-        x.test_name.toLowerCase().includes(q) ||
-        x.test_code.toLowerCase().includes(q)
-      );
+  const t = isWidal
+    ? catalogue.find(x => x.id === "a4a9fc07-b26f-4960-a002-4f21acafdd35")
+    : parameter
+      ? catalogue.find(x => x.id === parameter.test_id)
+      : catalogue.find(x =>
+          x.test_name.toLowerCase() === q ||
+          x.test_code.toLowerCase() === q
+        ) || catalogue.find(x =>
+          x.test_name.toLowerCase().includes(q) ||
+          x.test_code.toLowerCase().includes(q)
+        );
 
   if (!t) {
     say("यह टेस्ट catalogue में नहीं मिला।");
     return;
   }
 
-  const selectionId = parameter
-    ? t.id + "::" + parameter.id
-    : t.id;
+  const selectionId = isWidal
+    ? t.id + "::WIDAL"
+    : parameter ? t.id + "::" + parameter.id : t.id;
 
   if (selectedTests.some(x => x.id === selectionId)) {
     say("यह टेस्ट पहले से जोड़ा गया है।");
-    $("testSearch").value = "";
-    chosenSearchParameter = null;
     return;
   }
 
   let params = [];
 
-  if (parameter) {
+  if (isWidal) {
+    const { data, error } = await db
+      .from("acd_test_parameters")
+      .select("id,parameter_name,unit,reference_range,result_type,result_options,sort_order")
+      .eq("test_id", t.id)
+      .order("sort_order");
+
+    if (error) {
+      say("Widal load error: " + error.message);
+      return;
+    }
+
+    params = (data || []).filter(p =>
+      p.parameter_name === "Widal Test (Overall Result)" ||
+      /^(S\. Typhi O|S\. Typhi H|S\. Para Typhi AH|S\. Para Typhi BH) - 1:(20|40|80|160|320|640)$/.test(p.parameter_name)
+    );
+  } else if (parameter) {
     params = [parameter];
   } else {
     const { data, error } = await db
@@ -933,17 +951,25 @@ async function addTest() {
     params = data || [];
   }
 
+  if (isWidal && params.length !== 25) {
+    say("Widal Matrix के 25 Parameters नहीं मिले।");
+    return;
+  }
+
+  const displayName = isWidal ? "Widal Test" :
+    parameter ? parameter.parameter_name : t.test_name;
+
   selectedTests.push({
     ...t,
     id: selectionId,
     source_test_id: t.id,
-    test_name: parameter ? parameter.parameter_name : t.test_name
+    test_name: displayName
   });
 
   params.forEach(p => flatRows.push({
     test_id: selectionId,
-    test_name: parameter ? parameter.parameter_name : t.test_name,
-    test_code: t.test_code,
+    test_name: displayName,
+    test_code: isWidal ? "WIDAL" : t.test_code,
     parameter_id: p.id,
     parameter_name: p.parameter_name,
     unit: p.unit,
@@ -953,20 +979,16 @@ async function addTest() {
     result_value: ""
   }));
 
-  if (!params.length) {
-    flatRows.push({
-      test_id: selectionId,
-      test_name: t.test_name,
-      test_code: t.test_code,
-      parameter_id: null,
-      parameter_name: t.test_name,
-      unit: "",
-      reference_range: "",
-      result_type: "text",
-      result_options: [],
-      result_value: ""
-    });
-  }
+  $("testSearch").value = "";
+  chosenSearchTestId = null;
+  chosenSearchParameter = null;
+  chosenSearchWidal = false;
+  $("testSearchResults").classList.add("hidden");
+
+  renderSelected();
+  renderRows();
+  say(displayName + " जोड़ा गया।");
+}
 
   $("testSearch").value = "";
   chosenSearchTestId = null;
