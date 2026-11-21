@@ -121,6 +121,9 @@
     $("entryPage")?.classList.add("hidden");
     $("cataloguePage")?.classList.add("hidden");
     $("otherPage")?.classList.add("hidden");
+    $("savedReportsPage")?.classList.add("hidden");
+$("reportDesignerPage")?.classList.add("hidden");
+$("superAdminCenter")?.classList.add("hidden");
     panel.style.display = "grid";
     $("pageTitle").textContent = "Super Admin — " + controls.find(x => x.key === tab).label;
     setTab(tab);
