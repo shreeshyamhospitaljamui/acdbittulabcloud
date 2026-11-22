@@ -41,4 +41,19 @@ $("backToLogin").onclick=async()=>{await db.auth.signOut();$("accessPanel").styl
 $("loginForm").onsubmit=async e=>{e.preventDefault();clear();let email=$("username").value.trim(),password=$("password").value;if(!email||!password)return msg("Enter your email and password.");let b=$("submit");b.disabled=true;b.textContent="Signing in…";let signed=false;try{let {data,error}=await db.auth.signInWithPassword({email,password});if(error)throw error;signed=true;await deviceSecurity();let uid=data.user.id;let {data:p,error:pe}=await db.from("profiles").select("platform_role").eq("id",uid).maybeSingle();if(pe)throw new Error("Account role check failed: "+pe.message);if(selectedRole==="Super Admin"){if(p?.platform_role!=="super_admin")throw new Error("This account is not a Super Admin.");sessionStorage.setItem("acd_role","super_admin");sessionStorage.removeItem("acd_lab_id");return dashboard()}if(p?.platform_role==="super_admin")throw new Error("Select Super Admin Login for this account.");await finishOwnerSignup(data.user);let {data:members,error:me}=await db.from("cloud_memberships").select("id,lab_id,role").eq("user_id",uid).eq("is_active",true).eq("role","lab_admin");if(me)throw new Error("Lab access check failed: "+me.message);if(!members?.length)throw new Error("No active laboratory linked. Complete Lab Owner registration.");if(members.length>1)throw new Error("This account is linked to multiple laboratories.");pendingLabId=members[0].lab_id;sessionStorage.setItem("acd_role","lab_admin");sessionStorage.setItem("acd_lab_id",pendingLabId);let {data:mode,error:modeError}=await db.rpc("acd_get_platform_mode");if(modeError)throw new Error("Platform mode check failed: "+modeError.message);if((mode?.mode||"test")==="test")return dashboard();let {data:opts,error:oe}=await db.rpc("acd_owner_access_options");if(oe)throw new Error("Subscription options failed: "+oe.message);let o=Array.isArray(opts)?opts[0]:opts;if(!o||typeof o!=="object")throw new Error("Subscription options not returned.");if(o.lab_id&&o.lab_id!==pendingLabId)throw new Error("Subscription account does not match this laboratory.");accessScreen(o)}catch(e){msg(authError(e));if(signed)await db.auth.signOut()}finally{b.disabled=false;b.textContent=selectedRole==="Super Admin"?"Sign in to Super Admin →":"Sign in to Lab Owner →"}};
 (async()=>{let q=new URLSearchParams(location.search);if(q.has("recover")){try{let {data:{session}}=await db.auth.getSession();if(!session?.user?.id)throw new Error("Recovery link did not create a session.");let {data,error}=await db.rpc("acd_super_admin_recover_device",{p_device_id:deviceId()});if(error||data?.status!=="granted")throw new Error(error?.message||"Emergency recovery denied.");sessionStorage.setItem("acd_role","super_admin");sessionStorage.removeItem("acd_lab_id");history.replaceState(null,"",location.pathname);dashboard()}catch(e){msg(e.message);await db.auth.signOut();history.replaceState(null,"",location.pathname)}}if(q.has("reset")){let {data:{session}}=await db.auth.getSession();if(!session){msg("Open the password recovery link from your email again.","info");return}let f=document.createElement("div");f.className="field";f.innerHTML='<label for="newPassword">New password</label><input id="newPassword" type="password" minlength="8" placeholder="At least 8 characters" required>';$("loginForm").prepend(f);$("submit").textContent="Update password";$("loginForm").onsubmit=async e=>{e.preventDefault();let p=$("newPassword").value;if(p.length<8)return msg("Password must be at least 8 characters.");let {error}=await db.auth.updateUser({password:p});if(error)msg(error.message);else{msg("Password updated. Please sign in again.","info");await db.auth.signOut();history.replaceState(null,"",location.pathname);location.reload()}}}})();
 $("year").textContent=new Date().getFullYear();
-</script></body></html>
+
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js", {
+      scope: "./"
+    }).catch(error => {
+      console.error("Offline registration failed:", error);
+    });
+  });
+}
+</script>
+</body>
+</html>
+
