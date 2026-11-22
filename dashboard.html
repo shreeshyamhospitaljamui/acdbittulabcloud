@@ -361,7 +361,10 @@ html.acd-lab-admin #nav [data-sa-nav] {
   </div>
 
   <div class="report-patient-grid" id="printPatientMeta"></div>
-  
+  <div class="report-referring-doctor">
+  <b>Referring Doctor:</b>
+  <span id="printReferringDoctor"></span>
+  </div>
 <div class="report-tracking-row">
   <div class="report-qr-section">
     <div id="printPatientQR"></div>
@@ -1525,6 +1528,7 @@ const reportGeneratedAt = new Date();
 $("printReportGeneratedTime").textContent =
   reportGeneratedAt.toLocaleString("en-IN");
    
+
 $("printPatientMeta").innerHTML =
   '<div><b>Patient Name:</b> ' +
   safe(patientName) + '</div>' +
@@ -1539,9 +1543,13 @@ $("printPatientMeta").innerHTML =
   '<div><b>Patient ID:</b> ' +
   safe(p.id) + '</div>' +
 
-  '<div><b>Referring Doctor:</b> ' +
-  safe($("doctor").value.trim() || "Self") +
-    '</div>';
+  '<div><b>Address:</b> ' +
+  safe($("patientAddress").value.trim() || "-") +
+  '</div>';
+
+$("printReferringDoctor").textContent =
+  $("doctor").value.trim() || "Self";
+
   
 
   $("printTestTitle").textContent = "LABORATORY REPORT";
