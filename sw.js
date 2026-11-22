@@ -8,6 +8,7 @@ const CORE_FILES = [
   "./index.html",
   "./dashboard.html",
   "./platform-mode.js",
+    "./offline-db.js",
   "./subscription.html"
 ];
 
