@@ -1632,8 +1632,17 @@ function setupEnterFlow(){
  const ids=["patient","mobile","age","ageUnit","gender","doctor","testSearch"];
  ids.forEach((id,i)=>$(id).addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();if(id==="testSearch"){addTest();return}$(ids[i+1])?.focus()}}));
 }
+
 async function init(){
+ try {
+   await window.ACDOfflineDB.open();
+   console.log("ACD Offline Database: Ready");
+ } catch (offlineError) {
+   console.warn("Offline database unavailable:", offlineError);
+ }
+
  const {data:{session}}=await db.auth.getSession();if(!session){location.replace("index.html");return}
+
  user=session.user;
  await deviceHeartbeat();setInterval(deviceHeartbeat,12000);
  document.addEventListener("visibilitychange",()=>{if(!document.hidden)deviceHeartbeat()});
