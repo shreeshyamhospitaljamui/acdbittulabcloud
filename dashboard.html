@@ -1854,16 +1854,19 @@ function srCloseDialog() {
 
 function srReportHtml(r) {
   const patient = r.patient || {};
-  const rows = (r.items || []).flatMap(item =>
-    (item.results || []).map(x => `
+  
+const rows = (r.items || []).flatMap(item =>
+  (item.results || [])
+    .filter(x => String(x.result_value ?? "").trim() !== "")
+    .map(x => `
       <tr>
         <td>${safe(item.test_name)}</td>
         <td>${safe(x.parameter_name)}</td>
-        <td>${safe(x.result_value || "Pending")}</td>
+        <td>${safe(x.result_value)}</td>
         <td>${safe(x.unit || "-")}</td>
         <td>${safe(x.reference_range || "-")}</td>
       </tr>`)
-  ).join("");
+).join("");
 
   return `
     <h2 style="text-align:center">LABORATORY REPORT</h2>
