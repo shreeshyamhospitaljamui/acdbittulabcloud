@@ -3181,8 +3181,10 @@ if (meta) {
             '</b></td>' +
             '<td><input data-result readonly value="' +
             safe(x.result_value) + '"></td>' +
-            '<td>' + safe(x.reference_range || "") + '</td>' +
-            '<td>' + safe(x.unit || "") + '</td>' +
+           
+'<td>' + safe(x.unit || "") + '</td>' +
+'<td>' + safe(x.reference_range || "") + '</td>' +
+
             '<td class="result-status">' +
             safe(status) + '</td>' +
             '<td class="no-print"></td>' +
