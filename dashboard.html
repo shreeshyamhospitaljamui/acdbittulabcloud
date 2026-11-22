@@ -1672,55 +1672,141 @@ if (footer) {
 say("Patient, order और सभी test results save हो गए।");
 
 
+
 if (printing.print_after_save !== false) {
   const reportCopy = document.documentElement.cloneNode(true);
 
+  // 1. Copy live input values into print document
   reportCopy.querySelectorAll("script").forEach(s => s.remove());
 
-  // Print में केवल भरे हुए Result Rows रखें
-  const printResults = reportCopy.querySelector(".results tbody");
+  const liveControls = document.querySelectorAll(
+    "input, select, textarea"
+  );
+  const printControls = reportCopy.querySelectorAll(
+    "input, select, textarea"
+  );
 
-  if (printResults) {
-    printResults.querySelectorAll("tr").forEach(row => {
-      const resultInput = row.querySelector("[data-result]");
+  liveControls.forEach((live, index) => {
+    const copy = printControls[index];
+    if (!copy) return;
 
-      // जिन rows में result input है और value खाली है, उन्हें हटाएँ
-      if (resultInput && !String(resultInput.value || "").trim()) {
-        row.remove();
+    if (live.tagName === "SELECT") {
+      [...copy.options].forEach((option, i) => {
+        const selected = live.options[i]?.selected === true;
+        option.selected = selected;
+        if (selected) option.setAttribute("selected", "");
+        else option.removeAttribute("selected");
+      });
+    } else if (live.type === "checkbox" || live.type === "radio") {
+      copy.checked = live.checked;
+      if (live.checked) copy.setAttribute("checked", "");
+      else copy.removeAttribute("checked");
+    } else {
+      copy.value = live.value;
+      copy.setAttribute("value", live.value);
+      if (live.tagName === "TEXTAREA") {
+        copy.textContent = live.value;
       }
+    }
+  });
+
+  // 2. Preserve QR canvas as an image
+  const liveQR = document.querySelector("#printPatientQR");
+  const copiedQR = reportCopy.querySelector("#printPatientQR");
+
+  if (liveQR && copiedQR) {
+    const qrCanvases = liveQR.querySelectorAll("canvas");
+    const qrImages = liveQR.querySelectorAll("img");
+
+    copiedQR.innerHTML = "";
+
+    qrImages.forEach(img => {
+      if (img.src) {
+        const newImg = document.createElement("img");
+        newImg.src = img.src;
+        newImg.alt = "Patient QR Code";
+        newImg.style.width = "100px";
+        newImg.style.height = "100px";
+        copiedQR.appendChild(newImg);
+      }
+    });
+
+    qrCanvases.forEach(canvas => {
+      const qrImage = document.createElement("img");
+      qrImage.src = canvas.toDataURL("image/png");
+      qrImage.alt = "Patient QR Code";
+      qrImage.style.width = "100px";
+      qrImage.style.height = "100px";
+      copiedQR.appendChild(qrImage);
     });
   }
 
-  // Print से Remove/Test action वाले कॉलम हटाएँ
+  // 3. Preserve barcode SVG
+  const liveBarcode = document.querySelector("#printOrderBarcode");
+  const copiedBarcode = reportCopy.querySelector("#printOrderBarcode");
+
+  if (liveBarcode && copiedBarcode) {
+    copiedBarcode.innerHTML = liveBarcode.innerHTML;
+
+    [...liveBarcode.attributes].forEach(attr => {
+      copiedBarcode.setAttribute(attr.name, attr.value);
+    });
+  }
+
+  // 4. Remove empty result rows
+  const printResults = reportCopy.querySelector("#testRows");
+
+  if (printResults) {
+    printResults.querySelectorAll("tr").forEach(row => {
+      const control = row.querySelector("[data-result]");
+
+      if (control && !String(control.value || "").trim()) {
+        row.remove();
+      }
+    });
+
+    // Remove test headings with no entered results
+    [...printResults.querySelectorAll(".test-heading-row")]
+      .forEach(heading => {
+        let next = heading.nextElementSibling;
+        let found = false;
+
+        while (next && !next.classList.contains("test-heading-row")) {
+          if (next.querySelector("[data-result]")) {
+            found = true;
+            break;
+          }
+          next = next.nextElementSibling;
+        }
+
+        if (!found) heading.remove();
+      });
+  }
+
+  // 5. Remove action buttons
   reportCopy.querySelectorAll(".no-print").forEach(el => el.remove());
-  
-  
-printWindow.onload = () => {
-  setTimeout(() => {
-    try {
-      if (printWindow.closed) {
-        say("Print Window बंद हो गई। दोबारा प्रयास करें।");
-        return;
-      }
 
-      printWindow.focus();
-
-      if (printWindow.document.readyState === "complete") {
+  // 6. Open A4 print
+  printWindow.onload = () => {
+    setTimeout(() => {
+      try {
+        if (printWindow.closed) return;
+        printWindow.focus();
         printWindow.print();
-      } else {
-        say("Report अभी तैयार हो रही है। थोड़ी देर बाद Print खुलेगा।");
+      } catch (error) {
+        say("Print error: " + error.message);
       }
-    } catch (printError) {
-      say("Print error: " + printError.message);
-    }
-  }, 1000);
-};
+    }, 1000);
+  };
 
-printWindow.document.open();
-printWindow.document.write(
-  "<!doctype html>" + reportCopy.outerHTML
-);
-printWindow.document.close();
+  printWindow.document.open();
+  printWindow.document.write(
+    "<!doctype html>" + reportCopy.outerHTML
+  );
+  printWindow.document.close();
+
+} else {
+
 
 } else {
   printWindow.close();
