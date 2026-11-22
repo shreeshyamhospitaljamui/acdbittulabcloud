@@ -5,8 +5,7 @@
 
 (function () {
   const DB_NAME = "acd_bittu_lab_offline_v1";
-  const DB_VERSION = 1;
-
+ const DB_VERSION = 2;
   const STORES = [
     "meta",
     "patients",
@@ -15,8 +14,9 @@
     "results",
     "catalogue",
     "parameters",
-    "report_settings",
-    "sync_queue"
+"report_settings",
+"signature_assets",
+"sync_queue"
   ];
 
   let dbPromise = null;
