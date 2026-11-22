@@ -2336,9 +2336,9 @@ const html = `<!doctype html>
 body {
   font-family: Arial, Helvetica, sans-serif;
   color: #111;
-  font-size: 10pt;
+  font-size: 9pt;
   margin: 0;
-  padding-bottom: 24mm;
+  padding: 0;
 }
 
 .report-header {
@@ -2670,7 +2670,18 @@ ${showHeader ? `
 
 </div>
 
-<div class="report-footer">
+.report-footer {
+  position: static;
+  margin-top: 18px;
+  border-top: 4px solid #0863ad;
+  padding-top: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #123c78;
+  font-size: 8pt;
+  background: white;
+}
   <div>${showLabName ? safe(branding.lab_name || "") : ""}</div>
   <div>${showLabAddress ? safe(branding.address || "") : ""}</div>
   <div>${showLabPhone ? safe(branding.phone || "") : ""}</div>
