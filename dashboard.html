@@ -1365,11 +1365,46 @@ $("labSelect").onchange = async () => {
   await updateFeatureNavigation();
 };
 
+let savePrintInProgress = false;
+
 $("save").onclick=async()=>{
- if(!labId){say("पहले laboratory चुनें।");return}
- const patientName=$("patient").value.trim();if(!patientName){say("Patient name भरें।");$("patient").focus();return}
- if(!selectedTests.length){say("कम से कम एक test जोड़ें।");return}
- const btn=$("save");btn.disabled=true;btn.textContent="Saving…";
+ if(savePrintInProgress) return;
+
+ if(!labId){
+   say("पहले laboratory चुनें।");
+   return;
+ }
+
+ const patientName=$("patient").value.trim();
+
+ if(!patientName){
+   say("Patient name भरें।");
+   $("patient").focus();
+   return;
+ }
+
+ if(!selectedTests.length){
+   say("कम से कम एक test जोड़ें।");
+   return;
+ }
+
+ const printWindow = window.open("", "_blank");
+
+ if(!printWindow){
+   say("Chrome में Pop-ups allow करें और फिर कोशिश करें।");
+   return;
+ }
+
+ printWindow.document.write(
+   "<html><body style='font:16px Arial;padding:20px'>Report preparing...</body></html>"
+ );
+
+ savePrintInProgress = true;
+
+ const btn=$("save");
+ btn.disabled=true;
+ btn.textContent="Saving…";
+
  try{
   const {data:p,error:pe}=await db.from("lab_patients").insert({lab_id:labId,patient_name:patientName,mobile:$("mobile").value.trim()||null,age:$("age").value?Number($("age").value):null,age_unit:$("ageUnit").value,gender:$("gender").value}).select().single();if(pe)throw pe;
   const {data:o,error:oe}=await db.from("lab_orders").insert({lab_id:labId,patient_id:p.id,ref_doctor:$("doctor").value.trim()||"Self",order_date:$("date").value,total_amount:+$("total").value||0,discount_amount:+$("discount").value||0,paid_amount:+$("paid").value||0,payment_mode:$("payment").value}).select().single();if(oe)throw oe;
