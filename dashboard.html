@@ -1655,7 +1655,12 @@ $("printLabName").textContent = branding.lab_name || "";
 $("printLabAddress").textContent = branding.address || "";
 $("printLabPhone").textContent = branding.phone || "";
 $("printLabEmail").textContent = branding.email || "";
+$("printLabTagline").textContent = branding.tagline || "";
 
+$("printLabTagline").style.display =
+  showHeader && printing.show_lab_tagline !== false
+    ? ""
+    : "none";
 $("printLabName").style.display =
   showHeader && printing.show_lab_name !== false ? "" : "none";
 
@@ -1690,7 +1695,8 @@ const hasVisibleBranding = [
   $("printLabName"),
   $("printLabAddress"),
   $("printLabPhone"),
-  $("printLabEmail")
+  $("printLabEmail"),
+  $("printLabTagline")
 ].some(el => el.style.display !== "none" && el.textContent.trim());
 
 brandBox.style.display =
