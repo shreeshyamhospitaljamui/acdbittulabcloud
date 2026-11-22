@@ -2958,27 +2958,7 @@ $("nav").querySelectorAll("button[data-page]").forEach(b => b.onclick = () => {
   }
 });
 
-      reports.classList.remove("hidden");
-      reports.style.display = "block";
-
-      loadSavedReports().catch(e => {
-        $("srMessage").textContent = "Error: " + e.message;
-      });
-      return;
-    }
-
-    if (page === "Subscription (Razorpay)") {
-      location.href = "subscription.html";
-      return;
-    }
-
-    if (other) {
-      other.classList.remove("hidden");
-      other.style.display = "block";
-      other.textContent = "";
-    }
-  };
-});
+     
 
 setupEnterFlow();function tick(){$("clock").textContent=new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false})}tick();setInterval(tick,1000);
 init().catch(e=>say("Session/setup error: "+e.message));
