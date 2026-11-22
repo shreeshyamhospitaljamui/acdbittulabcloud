@@ -1587,6 +1587,7 @@ out.push(
 
   
 
+
 const update = () => {
   flatRows[index].result_value = el.value;
   flatRows[index].manual_override = el.value.trim() !== "";
@@ -1602,13 +1603,19 @@ const update = () => {
   }
 
   body.querySelectorAll("[data-result]").forEach(input => {
-    const i = +input.dataset.result;
+    const i = Number(input.dataset.result);
+    const calculatedValue = flatRows[i]?.result_value ?? "";
+
+    if (input.value !== calculatedValue) {
+      input.value = calculatedValue;
+    }
+
     const resultRow = input.closest("tr");
     const statusCell = resultRow?.querySelector(".result-status");
 
     if (statusCell) {
       const status = getResultStatus(
-        flatRows[i].result_value,
+        calculatedValue,
         flatRows[i].reference_range
       );
 
@@ -1620,6 +1627,7 @@ const update = () => {
     }
   });
 };
+
 
 
   el.addEventListener("input",update);
