@@ -2227,10 +2227,16 @@ async function srPrint(id) {
     });
 
     
-const rows = (r.items || []).flatMap(item =>
-  (item.results || [])
-    .filter(x => String(x.result_value ?? "").trim() !== "")
-    .map(x => {
+
+const rows = (r.items || []).flatMap(item => {
+  const results = (item.results || [])
+    .filter(x => String(x.result_value ?? "").trim() !== "");
+
+  if (!results.length) return [];
+
+  return [
+    `<tr class="test-heading"><td colspan="5">${safe(item.test_name)}</td></tr>`,
+    ...results.map(x => {
       const status = getResultStatus(
         x.result_value,
         x.reference_range
@@ -2238,7 +2244,6 @@ const rows = (r.items || []).flatMap(item =>
 
       return `
         <tr>
-          <td>${safe(item.test_name)}</td>
           <td>${safe(x.parameter_name)}</td>
           <td>${safe(x.result_value)}</td>
           <td class="status-${status.toLowerCase()}">
@@ -2249,7 +2254,9 @@ const rows = (r.items || []).flatMap(item =>
         </tr>
       `;
     })
-).join("");
+  ];
+}).join("");
+
 
 
     async function signatureUrl(kind) {
@@ -2288,7 +2295,32 @@ const rows = (r.items || []).flatMap(item =>
     const orientation = layout.orientation === "landscape"
       ? "landscape" : "portrait";
 
-    const html = `<!doctype html>
+    
+const showHeader = printing.default_printing !== "preprinted";
+const showWatermark =
+  printing.show_watermark === true &&
+  String(printing.watermark_text || "").trim() !== "";
+
+const watermarkText = String(
+  printing.watermark_text || ""
+).trim();
+
+const watermarkOpacity = Math.max(
+  0.02,
+  Math.min(0.20, Number(printing.watermark_opacity) || 0.08)
+);
+
+const showLabName = showHeader && printing.show_lab_name !== false;
+const showLabLogo = showHeader && printing.show_lab_logo !== false;
+const showLabAddress = showHeader && printing.show_lab_address !== false;
+const showLabPhone = showHeader && printing.show_lab_phone !== false;
+const showLabEmail = showHeader && printing.show_lab_email !== false;
+const showLabTagline = showHeader && printing.show_lab_tagline !== false;
+
+const patientAddress = patient.address || "-";
+const referringDoctor = r.ref_doctor || "Self";
+
+const html = `<!doctype html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -2298,106 +2330,356 @@ const rows = (r.items || []).flatMap(item =>
   size: A4 ${orientation};
   margin: ${marginTop}mm ${marginRight}mm ${marginBottom}mm ${marginLeft}mm;
 }
-* { box-sizing:border-box; }
+
+* { box-sizing: border-box; }
+
 body {
-  font-family:Arial,Helvetica,sans-serif;
-  color:#111;
-  font-size:10pt;
-  margin:0;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #111;
+  font-size: 10pt;
+  margin: 0;
+  padding-bottom: 24mm;
 }
-.brand {
-  display:flex;align-items:center;gap:14px;
-  border-bottom:1px solid #333;padding:8px 10px;
+
+.report-header {
+  display: ${showHeader ? "flex" : "none"};
+  align-items: center;
+  gap: 12px;
+  border-bottom: 4px solid #0863ad;
+  padding: 5px 0 10px;
+  margin-bottom: 12px;
 }
-.brand img { width:58px;height:58px;object-fit:contain; }
-.brand-name {font-size:16pt;font-weight:bold;}
-.meta {
-  display:grid;grid-template-columns:1fr 1fr 1fr;
-  gap:8px 12px;padding:12px 10px;
-  border-bottom:1px solid #ccd3dd;
+
+.report-logo {
+  width: 65px;
+  height: 65px;
+  object-fit: contain;
 }
-.tracking {
-  display:flex;justify-content:space-between;
-  align-items:center;padding:10px;
-  border-bottom:1px solid #ccd3dd;
+
+.brand-content {
+  flex: 1;
+  min-width: 0;
 }
-.qr img {width:85px;height:85px;}
-.barcode {text-align:right;font-size:8pt;}
-.barcode svg {width:190px;height:55px;}
-.title {text-align:center;font-weight:bold;font-size:15pt;margin:18px 0 8px;}
-.generated {text-align:right;font-size:8pt;margin:8px;}
-table {width:100%;border-collapse:collapse;margin-top:12px;font-size:9pt;}
-th,td {border:1px solid #555;padding:7px;text-align:left;}
-th {background:#edf1f6;}
+
+.brand-name {
+  color: #123c78;
+  font-size: 20pt;
+  font-weight: bold;
+}
+
+.brand-contact {
+  text-align: right;
+  line-height: 1.5;
+  font-size: 9pt;
+}
+
+.brand-tagline {
+  color: #174b86;
+  margin-top: 4px;
+  font-weight: bold;
+}
+
+.patient-tracking {
+  display: grid;
+  grid-template-columns: 1.25fr 0.8fr 1fr 1.1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #cbd5df;
+}
+
+.patient-details div {
+  margin: 4px 0;
+  overflow-wrap: anywhere;
+}
+
+.qr-section {
+  text-align: center;
+  border-left: 1px solid #9aa9b8;
+  border-right: 1px solid #9aa9b8;
+  padding: 4px;
+}
+
+.qr-section img {
+  width: 90px;
+  height: 90px;
+}
+
+.doctor-section {
+  padding: 5px;
+  overflow-wrap: anywhere;
+}
+
+.doctor-section b {
+  display: block;
+  color: #123c78;
+  margin-bottom: 6px;
+}
+
+.barcode-section {
+  text-align: center;
+  font-size: 8pt;
+  overflow-wrap: anywhere;
+}
+
+.barcode-section svg {
+  width: 100%;
+  max-width: 190px;
+  height: 48px;
+}
+
+.report-title {
+  text-align: center;
+  color: #123c78;
+  font-weight: bold;
+  font-size: 17pt;
+  margin: 16px 0 10px;
+  padding: 8px;
+  background: #e6f3fc;
+  border-left: 5px solid #0863ad;
+  border-right: 5px solid #0863ad;
+}
+
+.generated {
+  text-align: right;
+  font-size: 9pt;
+  margin: 8px 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 9pt;
+}
+
+th, td {
+  border: 1px solid #687786;
+  padding: 7px;
+  text-align: left;
+}
+
+th {
+  background: #07569b;
+  color: white;
+}
+
+.test-heading td {
+  background: #e6f3fc;
+  color: #123c78;
+  font-weight: bold;
+}
+
+.status-normal {
+  color: #087a32;
+  font-weight: bold;
+}
+
+.status-low,
+.status-high {
+  color: #c52222;
+  font-weight: bold;
+}
+
+.end-report {
+  text-align: center;
+  font-weight: bold;
+  color: #123c78;
+  margin: 18px 0;
+  padding: 8px 0;
+  border-top: 1px solid #9aa9b8;
+  border-bottom: 1px solid #9aa9b8;
+}
+
 .signatures {
-  display:flex;justify-content:space-between;
-  align-items:flex-end;margin-top:55px;
-  break-inside:avoid;
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  gap: 35px;
+  margin-top: 35px;
+  break-inside: avoid;
 }
-.signature {width:42%;text-align:center;min-height:70px;}
-.signature img {display:block;max-width:150px;max-height:55px;object-fit:contain;margin:auto;}
-.signature b,.signature small {display:block;}
-@media print {tr {break-inside:avoid;} }
+
+.signature {
+  width: 42%;
+  text-align: center;
+  min-height: 85px;
+}
+
+.signature img {
+  display: block;
+  max-width: 150px;
+  max-height: 55px;
+  object-fit: contain;
+  margin: auto;
+}
+
+.signature-line {
+  border-top: 1px solid #333;
+  margin-top: 8px;
+  padding-top: 5px;
+}
+
+.signature b,
+.signature small {
+  display: block;
+  margin-top: 3px;
+}
+
+.report-footer {
+  position: fixed;
+  bottom: -18mm;
+  left: 0;
+  right: 0;
+  border-top: 4px solid #0863ad;
+  padding-top: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #123c78;
+  font-size: 8pt;
+  background: white;
+}
+
+.page-number:after {
+  content: "Page " counter(page) " of " counter(pages);
+}
+
+.watermark {
+  display: ${showWatermark ? "block" : "none"};
+  position: fixed;
+  top: 42%;
+  left: 10%;
+  width: 80%;
+  text-align: center;
+  transform: rotate(-30deg);
+  color: rgba(20, 70, 130, ${watermarkOpacity});
+  font-size: 38pt;
+  font-weight: bold;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.report-content {
+  position: relative;
+  z-index: 1;
+}
+
+@media print {
+  tr { break-inside: avoid; }
+  .report-footer { position: fixed; }
+}
 </style>
 </head>
+
 <body>
-${printing.default_printing === "preprinted" ? "" : `
-<div class="brand">
-  ${logo ? `<img src="${safe(logo)}">` : ""}
-  <div>
-    <div class="brand-name">${safe(branding.lab_name || "")}</div>
-    <div>${safe(branding.address || "")}</div>
-    <div>${safe([branding.phone,branding.email].filter(Boolean).join(" | "))}</div>
+
+${showWatermark ? `<div class="watermark">${safe(watermarkText)}</div>` : ""}
+
+<div class="report-content">
+
+${showHeader ? `
+<div class="report-header">
+  ${showLabLogo && logo ? `<img class="report-logo" src="${safe(logo)}" alt="Lab Logo">` : ""}
+
+  <div class="brand-content">
+    ${showLabName && branding.lab_name ? `<div class="brand-name">${safe(branding.lab_name)}</div>` : ""}
+    ${showLabTagline && branding.tagline ? `<div class="brand-tagline">${safe(branding.tagline)}</div>` : ""}
   </div>
-</div>`}
-<div class="meta">
-  <div><b>Patient Name:</b> ${safe(patient.patient_name || "-")}</div>
-  <div><b>Age:</b> ${safe(patient.age ?? "-")} ${safe(patient.age_unit || "")}</div>
-  <div><b>Sex:</b> ${safe(patient.gender || "-")}</div>
-  <div><b>Patient ID:</b> ${safe(patientId || "-")}</div>
-  <div><b>Referring Doctor:</b> ${safe(r.ref_doctor || "Self")}</div>
-  <div><b>Order ID:</b> ${safe(orderId)}</div>
-</div>
-<div class="tracking">
-  <div class="qr">
+
+  <div class="brand-contact">
+    ${showLabPhone && branding.phone ? `<div>${safe(branding.phone)}</div>` : ""}
+    ${showLabEmail && branding.email ? `<div>${safe(branding.email)}</div>` : ""}
+    ${showLabAddress && branding.address ? `<div>${safe(branding.address)}</div>` : ""}
+  </div>
+</div>` : ""}
+
+<div class="patient-tracking">
+
+  <div class="patient-details">
+    <div><b>Patient Name:</b> ${safe(patient.patient_name || "-")}</div>
+    <div><b>Age / Sex:</b> ${safe(patient.age ?? "-")} ${safe(patient.age_unit || "")} / ${safe(patient.gender || "-")}</div>
+    <div><b>Patient ID:</b> ${safe(patientId || "-")}</div>
+    <div><b>Address:</b> ${safe(patientAddress)}</div>
+  </div>
+
+  <div class="qr-section">
     ${qrData ? `<img src="${qrData}" alt="Patient QR Code">` : ""}
-    <small>Patient QR Code</small>
+    <div>Patient QR Code</div>
   </div>
-  <div class="barcode">
+
+  <div class="doctor-section">
+    <b>Referring Doctor:</b>
+    ${safe(referringDoctor)}
+  </div>
+
+  <div class="barcode-section">
     ${barcodeSvg.outerHTML}
     <div>${safe(orderId)}</div>
-    <div>Registered: ${safe(registeredAt)}</div>
+    <b>Reg. Date &amp; Time:</b>
+    <div>${safe(registeredAt)}</div>
   </div>
+
 </div>
-<div class="title">LABORATORY REPORT</div>
-<div class="generated">Report Generated: ${safe(generatedAt)}</div>
+
+<div class="report-title">LABORATORY REPORT</div>
+
+<div class="generated">
+  <b>Report Generated:</b> ${safe(generatedAt)}
+</div>
+
 <table>
 <thead>
 <tr>
   <th>Investigation</th>
-  <th>Parameter</th>
   <th>Result</th>
   <th>Status</th>
   <th>Reference Value</th>
   <th>Unit</th>
 </tr>
 </thead>
-<tbody>${rows || '<tr><td colspan="6">No result entries</td></tr>'}</tbody>
+<tbody>
+  ${rows || '<tr><td colspan="5">No result entries</td></tr>'}
+</tbody>
 </table>
+
+<div class="end-report">
+  Thank you for your reference &nbsp; ***** END OF REPORT *****
+</div>
+
 <div class="signatures">
   ${signatures.technician === false ? "" : `
   <div class="signature">
-    ${technicianUrl ? `<img src="${safe(technicianUrl)}">` : ""}
-    <b>${safe(signatures.technician_name || "Technician")}</b>
+    ${technicianUrl ? `<img src="${safe(technicianUrl)}" alt="Technician Signature">` : ""}
+    <div class="signature-line">
+      <b>Technician</b>
+      ${safe(signatures.technician_name || "")}
+    </div>
   </div>`}
+
   ${signatures.doctor === false ? "" : `
   <div class="signature">
-    ${doctorUrl ? `<img src="${safe(doctorUrl)}">` : ""}
-    <b>${safe(signatures.doctor_name || "Doctor")}</b>
-    <small>${safe(signatures.doctor_qualification || "")}</small>
+    ${doctorUrl ? `<img src="${safe(doctorUrl)}" alt="Doctor Signature">` : ""}
+    <div class="signature-line">
+      <b>Doctor</b>
+      ${safe(signatures.doctor_name || "")}
+      <small>${safe(signatures.doctor_qualification || "")}</small>
+    </div>
   </div>`}
 </div>
-</body></html>`;
+
+</div>
+
+<div class="report-footer">
+  <div>${showLabName ? safe(branding.lab_name || "") : ""}</div>
+  <div>${showLabAddress ? safe(branding.address || "") : ""}</div>
+  <div>${showLabPhone ? safe(branding.phone || "") : ""}</div>
+  <div class="page-number"></div>
+</div>
+
+</body>
+</html>`;
+
 
     w.document.open();
     w.document.write(html);
