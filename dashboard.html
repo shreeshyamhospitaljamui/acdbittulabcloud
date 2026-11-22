@@ -33,26 +33,11 @@ input,select{width:100%;height:27px;border:1px solid #d8dee7;border-radius:5px;p
 .amounts{display:grid;grid-template-columns:1fr 1fr;gap:6px}.paid input{color:#07934a;font-weight:bold}.due input{color:#c42f35;font-weight:bold}
 .results{flex:1;min-height:260px}.results-head{display:flex;justify-content:space-between;align-items:center;padding:7px 9px;gap:8px}.results-title{font-weight:700;font-size:11px}.actions{display:flex;gap:5px}.table-wrap{padding:0 5px 8px;overflow:auto}table{border-collapse:collapse;width:100%;font-size:10px}th{background:#173f83;color:white;text-align:left;padding:7px 6px;white-space:nowrap}td{border:1px solid #e2e7ee;padding:5px 6px}td input,td select{height:25px;min-width:70px}td.empty{text-align:center;color:#98a2b3;font-style:italic;height:30px}
 #notice{font-size:10px;color:#067647;padding:0 10px 8px;min-height:15px}
-/* Dashboard page visibility fix */
-#entryPage:not(.hidden),
-#cataloguePage:not(.hidden),
-#savedReportsPage:not(.hidden),
-#otherPage:not(.hidden),
-#reportDesignerPage:not(.hidden),
-#superAdminCenter:not(.hidden) {
-  display: block !important;
-}
 
-#workspace {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  min-width: 0;
-}
+#notice{font-size:10px;color:#067647;padding:0 10px 8px;min-height:15px}
+.hidden{display:none!important}
+.placeholder-panel{background:#fff;border:1px solid var(--line);border-radius:8px;padding:18px;color:#667085;min-height:120px}
 
-#workspace > .hidden {
-  display: none !important;
-}
 
 .catalogue-layout{display:grid;grid-template-columns:minmax(190px,260px) 1fr;gap:10px;min-height:420px}
 .catalogue-list{background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px}
@@ -2918,49 +2903,61 @@ $("srNext").onclick=()=>{srPage++;srRender()};
   
 $("logout").onclick=async()=>{try{await db.rpc("acd_device_release",{p_device_id:deviceId()})}catch(e){}await db.auth.signOut();location.replace("index.html")};
 
-$("nav").querySelectorAll("button[data-page]").forEach(b => {
-  b.onclick = () => {
-    const page = b.dataset.page;
 
-    $("nav").querySelectorAll("button").forEach(btn => {
-      btn.classList.toggle("active", btn === b);
+$("nav").querySelectorAll("button[data-page]").forEach(b => b.onclick = () => {
+  const page = b.dataset.page;
+  const isEntry = page === "New Patient Entry";
+  const isCatalogue = page === "Test Catalogue";
+  const isSavedReports = page === "Saved Reports";
+
+  $("nav").querySelectorAll("button").forEach(btn => {
+    btn.classList.toggle("active", btn === b);
+  });
+
+  $("pageTitle").textContent = page;
+
+  ["reportDesignerPage", "superAdminCenter"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add("hidden");
+  });
+
+  $("entryPage").classList.toggle("hidden", !isEntry);
+  $("cataloguePage").classList.toggle("hidden", !isCatalogue);
+  $("savedReportsPage").classList.toggle("hidden", !isSavedReports);
+  $("otherPage").classList.toggle(
+    "hidden",
+    isEntry || isCatalogue || isSavedReports
+  );
+
+  if (page === "Subscription (Razorpay)") {
+    location.href = "subscription.html";
+    return;
+  }
+
+  if (isCatalogue) {
+    showCataloguePage().catch(e => {
+      $("catalogueParameterRows").innerHTML =
+        '<tr><td class="catalogue-empty" colspan="4">' +
+        safe(e.message) + '</td></tr>';
     });
+    return;
+  }
 
-    $("pageTitle").textContent = page;
+  if (isSavedReports) {
+    loadSavedReports().catch(e => {
+      $("srMessage").textContent = "Error: " + e.message;
+      $("srRows").innerHTML =
+        '<tr><td colspan="5" class="empty">Reports load error: ' +
+        safe(e.message) + '</td></tr>';
+    });
+    return;
+  }
 
-    const entry = $("entryPage");
-    const catalogue = $("cataloguePage");
-    const reports = $("savedReportsPage");
-    const other = $("otherPage");
-    const designer = $("reportDesignerPage");
-    const superAdmin = $("superAdminCenter");
+  if (!isEntry && !isSavedReports && !isCatalogue) {
+    $("otherPage").textContent = "";
+  }
+});
 
-    [entry, catalogue, reports, other, designer, superAdmin]
-      .forEach(el => {
-        if (el) {
-          el.classList.add("hidden");
-          el.style.display = "none";
-        }
-      });
-
-    if (page === "New Patient Entry") {
-      entry.classList.remove("hidden");
-      entry.style.display = "block";
-      return;
-    }
-
-    if (page === "Test Catalogue") {
-      catalogue.classList.remove("hidden");
-      catalogue.style.display = "block";
-
-      showCataloguePage().catch(e => {
-        $("catalogueParameterRows").innerHTML =
-          '<tr><td colspan="4">Error: ' + safe(e.message) + '</td></tr>';
-      });
-      return;
-    }
-
-    if (page === "Saved Reports") {
       reports.classList.remove("hidden");
       reports.style.display = "block";
 
