@@ -1631,6 +1631,46 @@ document.addEventListener("click",e=>{if(!e.target.closest(".test-search-wrap"))
 
 
 
+async function getTestParametersOfflineSafe(testId) {
+  try {
+    const { data, error } = await db
+      .from("acd_test_parameters")
+      .select("id,test_id,parameter_name,unit,reference_range,result_type,result_options,sort_order")
+      .eq("test_id", testId)
+      .order("sort_order");
+
+    if (error) throw error;
+
+    const params = data || [];
+
+    await Promise.all(
+      params.map(parameter =>
+        window.ACDOfflineDB.putRecord(
+          "parameters",
+          labId,
+          parameter
+        )
+      )
+    );
+
+    return params;
+
+  } catch (error) {
+    console.warn("Using cached test parameters:", error.message);
+
+    const cached = await window.ACDOfflineDB.getRecords(
+      "parameters",
+      labId
+    );
+
+    return cached
+      .filter(parameter => parameter.test_id === testId)
+      .sort((a, b) =>
+        (a.sort_order || 100) - (b.sort_order || 100)
+      );
+  }
+}
+
 async function addTest() {
   const q = $("testSearch").value.trim().toLowerCase();
   if (!q) {
@@ -1669,39 +1709,18 @@ async function addTest() {
 
   let params = [];
 
-  if (isWidal) {
-    const { data, error } = await db
-      .from("acd_test_parameters")
-      .select("id,parameter_name,unit,reference_range,result_type,result_options,sort_order")
-      .eq("test_id", t.id)
-      .order("sort_order");
+ if (isWidal) {
+    const allParams = await getTestParametersOfflineSafe(t.id);
 
-    if (error) {
-      say("Widal load error: " + error.message);
-      return;
-    }
-
-    params = (data || []).filter(p =>
+    params = allParams.filter(p =>
       p.parameter_name === "Widal Test (Overall Result)" ||
       /^(S\. Typhi O|S\. Typhi H|S\. Para Typhi AH|S\. Para Typhi BH) - 1:(20|40|80|160|320|640)$/.test(p.parameter_name)
     );
   } else if (parameter) {
     params = [parameter];
-  } else {
-    const { data, error } = await db
-      .from("acd_test_parameters")
-      .select("id,parameter_name,unit,reference_range,result_type,result_options,sort_order")
-      .eq("test_id", t.id)
-      .order("sort_order");
-
-    if (error) {
-      say("Parameter load error: " + error.message);
-      return;
-    }
-
-    params = data || [];
+} else {
+    params = await getTestParametersOfflineSafe(t.id);
   }
-
   if (isWidal && params.length !== 25) {
     say("Widal Matrix के 25 Parameters नहीं मिले।");
     return;
