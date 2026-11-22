@@ -2526,6 +2526,7 @@ async function srPrint(id) {
     const patient = r.patient || {};
 
     
+
 if (meta) {
   meta.innerHTML =
     '<div><b>Patient Name:</b> ' +
@@ -2550,16 +2551,6 @@ if (meta) {
   );
 }
 
-
-      meta.classList.toggle(
-        "rd-patient-rectangle",
-        layout.rectangle_patient === true
-      );
-      meta.classList.toggle(
-        "rd-patient-lines",
-        layout.lines_patient === true
-      );
-    }
 
     setText("#printReferringDoctor", r.ref_doctor || "Self");
     setText("#printTestTitle", "LABORATORY REPORT");
