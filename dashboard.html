@@ -351,14 +351,16 @@ html.acd-lab-admin #nav [data-sa-nav] {
 <div class="select-lab hidden" id="labChooser"><b>Laboratory:</b><select id="labSelect"><option value="">Loading laboratories…</option></select><span id="labStatus">Selected</span></div>
 <div class="print-header" id="printHeader">
 
-  <div id="printLabBranding" class="print-lab-branding">
-    <img id="printLabLogo" alt="Laboratory Logo">
-    <div>
-      <div id="printLabName"></div>
-      <div id="printLabAddress"></div>
-      <div id="printLabContact"></div>
-    </div>
+  
+<div id="printLabBranding" class="print-lab-branding">
+  <img id="printLabLogo" alt="Laboratory Logo">
+  <div>
+    <div id="printLabName"></div>
+    <div id="printLabAddress"></div>
+    <div id="printLabPhone"></div>
+    <div id="printLabEmail"></div>
   </div>
+</div>
 
   <div class="report-patient-grid" id="printPatientMeta"></div>
   <div class="report-referring-doctor">
@@ -1635,8 +1637,60 @@ await loadPrintSignature(
 $("printDoctorQualification").textContent =
   signatures.doctor_qualification || "";
    
+
 const brandBox = $("printLabBranding");
 const brandLogo = $("printLabLogo");
+
+const showHeader =
+  printing.default_printing !== "preprinted";
+
+$("printLabName").textContent = branding.lab_name || "";
+$("printLabAddress").textContent = branding.address || "";
+$("printLabPhone").textContent = branding.phone || "";
+$("printLabEmail").textContent = branding.email || "";
+
+$("printLabName").style.display =
+  showHeader && printing.show_lab_name !== false ? "" : "none";
+
+$("printLabAddress").style.display =
+  showHeader && printing.show_lab_address !== false ? "" : "none";
+
+$("printLabPhone").style.display =
+  showHeader && printing.show_lab_phone !== false ? "" : "none";
+
+$("printLabEmail").style.display =
+  showHeader && printing.show_lab_email !== false ? "" : "none";
+
+const logoUrl = String(branding.logo_url || "").trim();
+const validLogoUrl = /^https?:\/\//i.test(logoUrl);
+
+if (
+  showHeader &&
+  printing.show_lab_logo !== false &&
+  validLogoUrl
+) {
+  brandLogo.src = logoUrl;
+  brandLogo.style.display = "block";
+  brandLogo.onerror = () => {
+    brandLogo.style.display = "none";
+  };
+} else {
+  brandLogo.removeAttribute("src");
+  brandLogo.style.display = "none";
+}
+
+const hasVisibleBranding = [
+  $("printLabName"),
+  $("printLabAddress"),
+  $("printLabPhone"),
+  $("printLabEmail")
+].some(el => el.style.display !== "none" && el.textContent.trim());
+
+brandBox.style.display =
+  showHeader && (hasVisibleBranding || brandLogo.style.display !== "none")
+    ? "flex"
+    : "none";
+
 
 $("printLabName").textContent = branding.lab_name || "";
 $("printLabAddress").textContent = branding.address || "";
