@@ -334,6 +334,196 @@ html.acd-lab-admin #nav [data-page="Super Admin"],
 html.acd-lab-admin #nav [data-sa-nav] {
   display: none !important;
 }
+  
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 6mm;
+  }
+
+  #printHeader {
+    display: block !important;
+    width: 100% !important;
+    color: #102b55 !important;
+  }
+
+  .print-lab-branding {
+    display: grid !important;
+    grid-template-columns: 62px 1fr;
+    gap: 10px;
+    align-items: center;
+    padding: 3px 0 7px;
+    margin: 0 0 6px;
+    border-bottom: 3px solid #0872c9;
+  }
+
+  .print-lab-branding img {
+    width: 58px !important;
+    height: 58px !important;
+    object-fit: contain;
+  }
+
+  .report-brand-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px 12px;
+    align-items: center;
+  }
+
+  #printLabName {
+    grid-column: 1 / -1;
+    font-size: 17pt !important;
+    font-weight: 800;
+    color: #102b55 !important;
+  }
+
+  #printLabTagline {
+    grid-column: 1 / -1;
+    font-size: 9pt;
+  }
+
+  #printLabAddress {
+    grid-column: 1;
+    font-size: 8pt;
+  }
+
+  #printLabPhone,
+  #printLabEmail {
+    grid-column: 2;
+    font-size: 8pt;
+  }
+
+  .report-identification-row {
+    display: grid !important;
+    grid-template-columns: 1.25fr 75px 1fr 1fr;
+    gap: 7px;
+    align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px solid #9aa9bb;
+    break-inside: avoid;
+  }
+
+  .report-patient-grid {
+    display: grid !important;
+    grid-template-columns: 1fr;
+    gap: 3px;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 8pt !important;
+  }
+
+  .report-qr-section {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    font-size: 7pt;
+  }
+
+  .report-qr-section img,
+  .report-qr-section canvas {
+    width: 68px !important;
+    height: 68px !important;
+  }
+
+  .report-referring-doctor {
+    display: block !important;
+    font-size: 8pt;
+    border-left: 1px solid #9aa9bb;
+    padding-left: 6px;
+  }
+
+  .report-barcode-section {
+    font-size: 7pt;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+
+  .report-barcode-section svg {
+    width: 100% !important;
+    height: 38px !important;
+  }
+
+  .report-test-title {
+    text-align: center;
+    color: #102b55 !important;
+    background: #dceeff !important;
+    border-left: 5px solid #0872c9;
+    border-right: 5px solid #0872c9;
+    font-size: 15pt !important;
+    font-weight: 800;
+    margin: 8px 0 5px !important;
+    padding: 5px !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .report-generated-time {
+    text-align: right;
+    font-size: 7pt !important;
+    padding: 2px 0 5px !important;
+  }
+
+  .results {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    break-inside: auto;
+  }
+
+  .results table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    table-layout: fixed;
+    font-size: 7.5pt !important;
+  }
+
+  .results th {
+    background: #07569a !important;
+    color: white !important;
+    padding: 4px 5px !important;
+    border: 1px solid #777 !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .results td {
+    padding: 2px 4px !important;
+    line-height: 1.15 !important;
+    border: 1px solid #999 !important;
+    overflow-wrap: anywhere;
+  }
+
+  .results tr {
+    break-inside: avoid !important;
+  }
+
+  .signature-footer {
+    display: flex !important;
+    justify-content: space-around !important;
+    margin-top: 12px !important;
+    padding-top: 8px !important;
+    border-top: 2px solid #0872c9;
+    break-inside: avoid !important;
+  }
+
+  .signature-footer .signature-slot {
+    width: 42%;
+    text-align: center;
+    font-size: 8pt;
+  }
+
+  .signature-footer img {
+    max-width: 110px;
+    max-height: 45px;
+    object-fit: contain;
+  }
+
+  .page-number {
+    display: block !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -360,29 +550,29 @@ html.acd-lab-admin #nav [data-sa-nav] {
 <div class="print-header" id="printHeader">
 
   
+
 <div id="printLabBranding" class="print-lab-branding">
   <img id="printLabLogo" alt="Laboratory Logo">
-  <div>
+  <div class="report-brand-details">
     <div id="printLabName"></div>
+    <div id="printLabTagline"></div>
     <div id="printLabAddress"></div>
     <div id="printLabPhone"></div>
     <div id="printLabEmail"></div>
-    <div id="printLabTagline"></div>
   </div>
 </div>
 
+<div class="report-identification-row">
   <div class="report-patient-grid" id="printPatientMeta"></div>
-  <div class="report-referring-doctor">
-  <b>Referring Doctor:</b>
-  <span id="printReferringDoctor"></span>
-  </div>
-<div class="report-tracking-row">
+
   <div class="report-qr-section">
     <div id="printPatientQR"></div>
-    
-
-    
     <small>Patient QR Code</small>
+  </div>
+
+  <div class="report-referring-doctor">
+    <b>Referring Doctor:</b>
+    <span id="printReferringDoctor"></span>
   </div>
 
   <div class="report-barcode-section">
@@ -393,14 +583,18 @@ html.acd-lab-admin #nav [data-sa-nav] {
       <span id="printRegisteredTime"></span>
     </div>
   </div>
-
 </div>
-  
-  <div class="report-test-title" id="printTestTitle">LABORATORY REPORT</div>
+
+<div class="report-test-title" id="printTestTitle">
+  LABORATORY REPORT
+</div>
+
 <div class="report-generated-time">
   <b>Report Generated:</b>
   <span id="printReportGeneratedTime"></span>
 </div>
+</div>
+
 </div>
 <div id="entryPage">
 <div class="cards">
@@ -2331,21 +2525,31 @@ async function srPrint(id) {
     // Patient information.
     const patient = r.patient || {};
 
-    if (meta) {
-      meta.innerHTML =
-        '<div><b>Patient Name:</b> ' +
-        safe(patient.patient_name || "-") + '</div>' +
-        '<div><b>Mobile:</b> ' +
-        safe(patient.mobile || "-") + '</div>' +
-        '<div><b>Age:</b> ' +
-        safe(patient.age ?? "-") + " " +
-        safe(patient.age_unit || "") + '</div>' +
-        '<div><b>Gender:</b> ' +
-        safe(patient.gender || "-") + '</div>' +
-        '<div><b>Patient ID:</b> ' +
-        safe(patient.id || "-") + '</div>' +
-        '<div><b>Address:</b> ' +
-        safe(patient.address || "-") + '</div>';
+    
+if (meta) {
+  meta.innerHTML =
+    '<div><b>Patient Name:</b> ' +
+    safe(patient.patient_name || "-") + '</div>' +
+    '<div><b>Age / Sex:</b> ' +
+    safe(patient.age ?? "-") + " " +
+    safe(patient.age_unit || "") + " / " +
+    safe(patient.gender || "-") + '</div>' +
+    '<div><b>Patient ID:</b> ' +
+    safe(patient.id || "-") + '</div>' +
+    '<div><b>Address:</b> ' +
+    safe(patient.address || "-") + '</div>';
+
+  meta.classList.toggle(
+    "rd-patient-rectangle",
+    layout.rectangle_patient === true
+  );
+
+  meta.classList.toggle(
+    "rd-patient-lines",
+    layout.lines_patient === true
+  );
+}
+
 
       meta.classList.toggle(
         "rd-patient-rectangle",
@@ -2408,33 +2612,58 @@ async function srPrint(id) {
     tbody.innerHTML = rows ||
       '<tr><td class="empty" colspan="6">No result entries</td></tr>';
 
-    // Generate QR using the same QR library.
-    const qr = $c("#printPatientQR");
-    if (qr) {
-      qr.innerHTML = "";
+   
+const qr = $c("#printPatientQR");
 
-      if (typeof QRCode === "undefined")
-        throw new Error("QR Code library not loaded.");
+if (qr) {
+  const tempQR = document.createElement("div");
 
-      new QRCode(qr, {
-        text: JSON.stringify({
-          patient_id: patient.id || "",
-          order_id: r.id
-        }),
-        width: 100,
-        height: 100,
-        correctLevel: QRCode.CorrectLevel.M
-      });
+  tempQR.style.position = "fixed";
+  tempQR.style.left = "-10000px";
+  tempQR.style.top = "0";
 
-      qr.querySelectorAll("canvas").forEach(canvas => {
-        const img = document.createElement("img");
-        img.src = canvas.toDataURL("image/png");
-        img.alt = "Patient QR Code";
-        img.style.width = "100px";
-        img.style.height = "100px";
-        canvas.replaceWith(img);
-      });
+  document.body.appendChild(tempQR);
+
+  try {
+    if (typeof QRCode === "undefined") {
+      throw new Error("QR Code library not loaded.");
     }
+
+    new QRCode(tempQR, {
+      text: JSON.stringify({
+        patient_id: patient.id || "",
+        order_id: r.id
+      }),
+      width: 100,
+      height: 100,
+      correctLevel: QRCode.CorrectLevel.M
+    });
+
+    const canvas = tempQR.querySelector("canvas");
+    const image = tempQR.querySelector("img");
+
+    const qrData = canvas
+      ? canvas.toDataURL("image/png")
+      : image?.src;
+
+    if (!qrData) {
+      throw new Error("QR Code image could not be generated.");
+    }
+
+    qr.innerHTML = "";
+
+    const qrImage = document.createElement("img");
+    qrImage.src = qrData;
+    qrImage.alt = "Patient QR Code";
+    qrImage.width = 100;
+    qrImage.height = 100;
+
+    qr.appendChild(qrImage);
+  } finally {
+    tempQR.remove();
+  }
+}
+
 
     // Generate the same barcode.
     const barcode = $c("#printOrderBarcode");
