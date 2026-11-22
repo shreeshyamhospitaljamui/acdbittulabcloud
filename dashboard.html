@@ -1519,6 +1519,7 @@ out.push(
   el.value=flatRows[index].result_value||"";
 
   
+
 const update = () => {
   flatRows[index].result_value = el.value;
   flatRows[index].manual_override = el.value.trim() !== "";
@@ -1526,31 +1527,11 @@ const update = () => {
   const row = flatRows[index];
   const test = selectedTests.find(t => t.id === row.test_id);
 
-  if (test && (test.test_code === "CBC" ||
-      test.test_name.toLowerCase() === "cbc")) {
-
+  if (test && (
+    test.test_code === "CBC" ||
+    test.test_name.toLowerCase() === "cbc"
+  )) {
     calculateCBCResults(test.id);
-
-  
-body.querySelectorAll("[data-result]").forEach(input => {
-  const i = +input.dataset.result;
-  const resultRow = input.closest("tr");
-  const statusCell = resultRow?.querySelector(".result-status");
-
-  if (statusCell) {
-    const status = getResultStatus(
-      flatRows[i].result_value,
-      flatRows[i].reference_range
-    );
-
-    statusCell.innerHTML = status
-      ? '<span class="badge ' +
-        (status === "Normal" ? 'badge-normal' : 'badge-abnormal') +
-        '">' + safe(status) + '</span>'
-      : '';
-  }
-});
-
   }
 
   body.querySelectorAll("[data-result]").forEach(input => {
@@ -1559,10 +1540,16 @@ body.querySelectorAll("[data-result]").forEach(input => {
     const statusCell = resultRow?.querySelector(".result-status");
 
     if (statusCell) {
-      statusCell.textContent = getResultStatus(
+      const status = getResultStatus(
         flatRows[i].result_value,
         flatRows[i].reference_range
       );
+
+      statusCell.innerHTML = status
+        ? '<span class="badge ' +
+          (status === "Normal" ? 'badge-normal' : 'badge-abnormal') +
+          '">' + safe(status) + '</span>'
+        : '';
     }
   });
 };
