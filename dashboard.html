@@ -2319,10 +2319,16 @@ ${printing.default_printing === "preprinted" ? "" : `
 <div class="title">LABORATORY REPORT</div>
 <div class="generated">Report Generated: ${safe(generatedAt)}</div>
 <table>
-<thead><tr>
-<th>Investigation</th><th>Parameter</th><th>Result</th>
-<th>Reference Value</th><th>Unit</th>
-</tr></thead>
+<thead>
+<tr>
+  <th>Investigation</th>
+  <th>Parameter</th>
+  <th>Result</th>
+  <th>Status</th>
+  <th>Reference Value</th>
+  <th>Unit</th>
+</tr>
+</thead>
 <tbody>${rows || '<tr><td colspan="5">No result entries</td></tr>'}</tbody>
 </table>
 <div class="signatures">
