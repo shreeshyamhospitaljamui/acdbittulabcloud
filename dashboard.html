@@ -2779,33 +2779,15 @@ if (printing.print_after_save !== false) {
   }
 
   // 4. Remove empty result rows
+  
+  // 4. Preserve all result rows in the print copy.
+  // Do not remove CBC calculated or manually entered results.
   const printResults = reportCopy.querySelector("#testRows");
 
-  if (printResults) {
-    printResults.querySelectorAll("tr").forEach(row => {
-      const control = row.querySelector("[data-result]");
+  if (!printResults) {
+    throw new Error("Print result table not found.");
+  }
 
-      if (control && !String(control.value || "").trim()) {
-        row.remove();
-      }
-    });
-
-    // Remove test headings with no entered results
-    [...printResults.querySelectorAll(".test-heading-row")]
-      .forEach(heading => {
-        let next = heading.nextElementSibling;
-        let found = false;
-
-        while (next && !next.classList.contains("test-heading-row")) {
-          if (next.querySelector("[data-result]")) {
-            found = true;
-            break;
-          }
-          next = next.nextElementSibling;
-        }
-
-        if (!found) heading.remove();
-      });
   }
 
   // 5. Remove action buttons
