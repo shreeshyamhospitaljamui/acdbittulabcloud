@@ -2552,6 +2552,12 @@ $("printLabPhone").textContent = branding.phone || "";
 $("printLabEmail").textContent = branding.email || "";
 $("printLabTagline").textContent = branding.tagline || "";
 
+$("printFooterAddress").textContent =
+  printing.show_lab_address !== false ? branding.address || "" : "";
+
+$("printFooterPhone").textContent =
+  printing.show_lab_phone !== false ? branding.phone || "" : "";
+
 $("printLabTagline").style.display =
   showHeader && printing.show_lab_tagline !== false
     ? ""
@@ -3172,6 +3178,18 @@ async function srPrint(id) {
 
       if (el.style.display !== "none") hasBrand = true;
     });
+
+const footerAddress = $c("#printFooterAddress");
+if (footerAddress) {
+  footerAddress.textContent =
+    printing.show_lab_address !== false ? branding.address || "" : "";
+}
+
+const footerPhone = $c("#printFooterPhone");
+if (footerPhone) {
+  footerPhone.textContent =
+    printing.show_lab_phone !== false ? branding.phone || "" : "";
+}
 
     const logo = $c("#printLabLogo");
     const logoUrl = String(branding.logo_url || "").trim();
