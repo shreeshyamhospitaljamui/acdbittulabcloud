@@ -1487,7 +1487,16 @@ out.push(
   '<td>' + resultControl(r,i) + '</td>' +
   '<td>' + safe(r.unit || "") + '</td>' +
   '<td>' + safe(r.reference_range || "") + '</td>' +
-  '<td class="result-status">' + getResultStatus(r.result_value, r.reference_range) + '</td>' +
+  
+'<td class="result-status">' +
+  (getResultStatus(r.result_value, r.reference_range)
+    ? '<span class="badge ' +
+      (getResultStatus(r.result_value, r.reference_range) === "Normal"
+        ? 'badge-normal' : 'badge-abnormal') +
+      '">' + getResultStatus(r.result_value, r.reference_range) + '</span>'
+    : '') +
+'</td>' +
+
   '<td class="no-print"><button class="btn danger" data-remove-test="' + safe(r.test_id) + '">×</button></td>' +
   '</tr>'
 );
