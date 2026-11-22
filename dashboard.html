@@ -2024,32 +2024,264 @@ function srView(id) {
   d.showModal();
 }
 
-function srPrint(id) {
-  const r = srFind(id);
-  if(!r) return;
 
-  const w = window.open("","_blank");
-  if(!w) {
-    alert("Print window blocked. Browser में Pop-ups allow करें।");
+async function srPrint(id) {
+  const r = srFind(id);
+  if (!r) return;
+
+  const w = window.open("", "_blank");
+  if (!w) {
+    alert("Chrome में Pop-ups allow करें।");
     return;
   }
 
-  w.document.write(`<!doctype html><html><head>
-    <title>Laboratory Report</title>
-    <style>
-      @page{size:A4;margin:12mm}
-      body{font-family:Arial,sans-serif;color:#111;font-size:13px}
-      h2{text-align:center;margin-bottom:20px}
-      table{width:100%;border-collapse:collapse;margin-top:18px}
-      th{background:#e8eef6}
-      th,td{border:1px solid #777;padding:7px;text-align:left}
-    </style></head><body>
-    ${srReportHtml(r)}
-    <p style="text-align:center;margin-top:35px">***** END OF REPORT *****</p>
-    <script>window.onload=()=>window.print();<\/script>
-    </body></html>`);
+  w.document.write("<html><body style='font:16px Arial;padding:20px'>Report preparing...</body></html>");
   w.document.close();
+
+  try {
+    const { data: cfg, error } = await db.rpc(
+      "acd_get_lab_report_settings",
+      { p_lab_id: labId }
+    );
+    if (error) throw error;
+
+    const globalCfg = cfg?.global_defaults || {};
+    const labCfg = cfg?.lab_settings || {};
+
+    const layout = {
+      ...(globalCfg.layout || {}),
+      ...(labCfg.layout || {})
+    };
+    const printing = {
+      ...(globalCfg.printing || {}),
+      ...(labCfg.printing || {})
+    };
+    const signatures = {
+      ...(globalCfg.signatures || {}),
+      ...(labCfg.signatures || {})
+    };
+    const branding = {
+      ...(globalCfg.branding || {}),
+      ...(labCfg.branding || {})
+    };
+
+    const patient = r.patient || {};
+    const patientId = patient.id || "";
+    const orderId = r.id;
+
+    const qrCanvas = document.createElement("canvas");
+    if (typeof QRCode === "undefined") {
+      throw new Error("QR Code library not loaded.");
+    }
+
+    new QRCode(qrCanvas, {
+      text: JSON.stringify({
+        patient_id: patientId,
+        order_id: orderId
+      }),
+      width: 100,
+      height: 100,
+      correctLevel: QRCode.CorrectLevel.M
+    });
+
+    const qrSource = qrCanvas.querySelector("canvas") ||
+                     qrCanvas.querySelector("img");
+
+    let qrData = "";
+    if (qrSource) {
+      qrData = qrSource.tagName === "CANVAS"
+        ? qrSource.toDataURL("image/png")
+        : qrSource.src;
+    }
+
+    const barcodeSvg = document.createElementNS(
+      "http://www.w3.org/2000/svg", "svg"
+    );
+
+    if (typeof JsBarcode === "undefined") {
+      throw new Error("Barcode library not loaded.");
+    }
+
+    JsBarcode(barcodeSvg, String(orderId), {
+      format: "CODE128",
+      width: 1.5,
+      height: 42,
+      displayValue: false,
+      margin: 2
+    });
+
+    const rows = (r.items || []).flatMap(item =>
+      (item.results || [])
+        .filter(x => String(x.result_value ?? "").trim() !== "")
+        .map(x => `
+          <tr>
+            <td>${safe(item.test_name)}</td>
+            <td>${safe(x.parameter_name)}</td>
+            <td>${safe(x.result_value)}</td>
+            <td>${safe(x.reference_range || "-")}</td>
+            <td>${safe(x.unit || "-")}</td>
+          </tr>
+        `)
+    ).join("");
+
+    async function signatureUrl(kind) {
+      const path = signatures[kind + "_path"];
+      if (!path) return "";
+
+      const { data, error } = await db.storage
+        .from("lab-report-signatures")
+        .createSignedUrl(path, 3600);
+
+      if (error) {
+        console.warn(kind + " signature unavailable:", error);
+        return "";
+      }
+      return data?.signedUrl || "";
+    }
+
+    const technicianUrl = signatures.technician === false
+      ? "" : await signatureUrl("technician");
+
+    const doctorUrl = signatures.doctor === false
+      ? "" : await signatureUrl("doctor");
+
+    const logo = /^https?:\/\//i.test(branding.logo_url || "")
+      ? branding.logo_url : "";
+
+    const generatedAt = new Date().toLocaleString("en-IN");
+    const registeredAt = r.created_at
+      ? new Date(r.created_at).toLocaleString("en-IN")
+      : "-";
+
+    const marginTop = Number(layout.page_margin_top_mm ?? 7);
+    const marginRight = Number(layout.page_margin_right_mm ?? 8);
+    const marginBottom = Number(layout.page_margin_bottom_mm ?? 10);
+    const marginLeft = Number(layout.page_margin_left_mm ?? 8);
+    const orientation = layout.orientation === "landscape"
+      ? "landscape" : "portrait";
+
+    const html = `<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Laboratory Report</title>
+<style>
+@page {
+  size: A4 ${orientation};
+  margin: ${marginTop}mm ${marginRight}mm ${marginBottom}mm ${marginLeft}mm;
 }
+* { box-sizing:border-box; }
+body {
+  font-family:Arial,Helvetica,sans-serif;
+  color:#111;
+  font-size:10pt;
+  margin:0;
+}
+.brand {
+  display:flex;align-items:center;gap:14px;
+  border-bottom:1px solid #333;padding:8px 10px;
+}
+.brand img { width:58px;height:58px;object-fit:contain; }
+.brand-name {font-size:16pt;font-weight:bold;}
+.meta {
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+  gap:8px 12px;padding:12px 10px;
+  border-bottom:1px solid #ccd3dd;
+}
+.tracking {
+  display:flex;justify-content:space-between;
+  align-items:center;padding:10px;
+  border-bottom:1px solid #ccd3dd;
+}
+.qr img {width:85px;height:85px;}
+.barcode {text-align:right;font-size:8pt;}
+.barcode svg {width:190px;height:55px;}
+.title {text-align:center;font-weight:bold;font-size:15pt;margin:18px 0 8px;}
+.generated {text-align:right;font-size:8pt;margin:8px;}
+table {width:100%;border-collapse:collapse;margin-top:12px;font-size:9pt;}
+th,td {border:1px solid #555;padding:7px;text-align:left;}
+th {background:#edf1f6;}
+.signatures {
+  display:flex;justify-content:space-between;
+  align-items:flex-end;margin-top:55px;
+  break-inside:avoid;
+}
+.signature {width:42%;text-align:center;min-height:70px;}
+.signature img {display:block;max-width:150px;max-height:55px;object-fit:contain;margin:auto;}
+.signature b,.signature small {display:block;}
+@media print {tr {break-inside:avoid;} }
+</style>
+</head>
+<body>
+${printing.default_printing === "preprinted" ? "" : `
+<div class="brand">
+  ${logo ? `<img src="${safe(logo)}">` : ""}
+  <div>
+    <div class="brand-name">${safe(branding.lab_name || "")}</div>
+    <div>${safe(branding.address || "")}</div>
+    <div>${safe([branding.phone,branding.email].filter(Boolean).join(" | "))}</div>
+  </div>
+</div>`}
+<div class="meta">
+  <div><b>Patient Name:</b> ${safe(patient.patient_name || "-")}</div>
+  <div><b>Age:</b> ${safe(patient.age ?? "-")} ${safe(patient.age_unit || "")}</div>
+  <div><b>Sex:</b> ${safe(patient.gender || "-")}</div>
+  <div><b>Patient ID:</b> ${safe(patientId || "-")}</div>
+  <div><b>Referring Doctor:</b> ${safe(r.ref_doctor || "Self")}</div>
+  <div><b>Order ID:</b> ${safe(orderId)}</div>
+</div>
+<div class="tracking">
+  <div class="qr">
+    ${qrData ? `<img src="${qrData}" alt="Patient QR Code">` : ""}
+    <small>Patient QR Code</small>
+  </div>
+  <div class="barcode">
+    ${barcodeSvg.outerHTML}
+    <div>${safe(orderId)}</div>
+    <div>Registered: ${safe(registeredAt)}</div>
+  </div>
+</div>
+<div class="title">LABORATORY REPORT</div>
+<div class="generated">Report Generated: ${safe(generatedAt)}</div>
+<table>
+<thead><tr>
+<th>Investigation</th><th>Parameter</th><th>Result</th>
+<th>Reference Value</th><th>Unit</th>
+</tr></thead>
+<tbody>${rows || '<tr><td colspan="5">No result entries</td></tr>'}</tbody>
+</table>
+<div class="signatures">
+  ${signatures.technician === false ? "" : `
+  <div class="signature">
+    ${technicianUrl ? `<img src="${safe(technicianUrl)}">` : ""}
+    <b>${safe(signatures.technician_name || "Technician")}</b>
+  </div>`}
+  ${signatures.doctor === false ? "" : `
+  <div class="signature">
+    ${doctorUrl ? `<img src="${safe(doctorUrl)}">` : ""}
+    <b>${safe(signatures.doctor_name || "Doctor")}</b>
+    <small>${safe(signatures.doctor_qualification || "")}</small>
+  </div>`}
+</div>
+</body></html>`;
+
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+
+    setTimeout(() => {
+      if (!w.closed) {
+        w.focus();
+        w.print();
+      }
+    }, 1200);
+
+  } catch (error) {
+    if (!w.closed) w.close();
+    alert("Saved Report Print Error: " + error.message);
+  }
+}
+
 
 function srEdit(id) {
   const r = srFind(id);
