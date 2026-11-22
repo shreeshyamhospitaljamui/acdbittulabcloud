@@ -1671,11 +1671,43 @@ if (footer) {
 
 say("Patient, order और सभी test results save हो गए।");
 
+
 if (printing.print_after_save !== false) {
-  window.print();
+  const reportCopy = document.documentElement.cloneNode(true);
+
+  reportCopy.querySelectorAll("script").forEach(s => s.remove());
+
+  printWindow.document.open();
+  printWindow.document.write(
+    "<!doctype html>" + reportCopy.outerHTML
+  );
+  printWindow.document.close();
+
+  printWindow.onload = () => {
+    setTimeout(() => {
+      try {
+        printWindow.focus();
+        printWindow.print();
+      } catch (printError) {
+        say("Print error: " + printError.message);
+      }
+    }, 700);
+  };
+} else {
+  printWindow.close();
+  say("Report saved successfully.");
 }
- }catch(e){say("Save error: "+e.message)}finally{btn.disabled=false;btn.textContent="Save & Print (A4)"}
+
+ }catch(e){
+   printWindow.close();
+   say("Save/Print error: "+e.message);
+ }finally{
+   btn.disabled=false;
+   btn.textContent="Save & Print (A4)";
+   savePrintInProgress=false;
+ }
 };
+
   
 
 /* SAVED REPORTS — COMPLETE REPORT MANAGEMENT */
