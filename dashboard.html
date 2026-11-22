@@ -2160,6 +2160,7 @@ const branding = {
   ...(labCfg.branding || {})
 };
 
+
 async function loadPrintSignature(kind, imageId, nameId) {
   const path = signatures[kind + "_path"];
   const img = $(imageId);
@@ -2174,14 +2175,68 @@ async function loadPrintSignature(kind, imageId, nameId) {
 
   if (!path) return;
 
-  const { data, error } = await db.storage
-    .from("lab-report-signatures")
-    .createSignedUrl(path, 3600);
+  try {
+    // Try loading the private image from Supabase.
+    const { data, error } = await db.storage
+      .from("lab-report-signatures")
+      .createSignedUrl(path, 3600);
 
-  if (error) throw error;
-  if (!data?.signedUrl) {
-    throw new Error(kind + " signature URL unavailable.");
+    if (error) throw error;
+    if (!data?.signedUrl) {
+      throw new Error("Signature URL unavailable.");
+    }
+
+    const response = await fetch(data.signedUrl);
+    if (!response.ok) {
+      throw new Error("Signature image download failed.");
+    }
+
+    const imageBlob = await response.blob();
+
+    // Save the image for this laboratory.
+    await window.ACDOfflineDB.putRecord(
+      "signature_assets",
+      labId,
+      {
+        id: path,
+        blob: imageBlob,
+        image_type: imageBlob.type || "image/png"
+      }
+    );
+
+    img.src = URL.createObjectURL(imageBlob);
+
+  } catch (onlineError) {
+    console.warn(
+      "Using cached signature image:",
+      onlineError.message
+    );
+
+    // Use the previously cached image when offline.
+    const cached = await window.ACDOfflineDB.getRecord(
+      "signature_assets",
+      labId,
+      path
+    );
+
+    if (!cached?.blob) {
+      throw new Error(
+        kind + " signature Offline उपलब्ध नहीं है।"
+      );
+    }
+
+    img.src = URL.createObjectURL(cached.blob);
   }
+
+  img.style.display = "block";
+
+  try {
+    if (img.decode) await img.decode();
+  } catch (imageError) {
+    console.warn("Signature image decode failed:", imageError);
+    img.style.display = "none";
+  }
+}
 
   img.src = data.signedUrl;
 img.style.display = "block";
