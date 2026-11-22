@@ -553,6 +553,309 @@ html.acd-lab-admin #nav [data-sa-nav] {
   }
 }
 
+/* ===== ACD FINAL REFERENCE REPORT PRINT OVERRIDE ===== */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm 15mm;
+  }
+
+  html, body {
+    width: 100% !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    color: #111 !important;
+    font-family: Roboto, Arial, sans-serif !important;
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+
+  body > .app,
+  .app, .main, .content, #workspace,
+  #entryPage, .results, .table-wrap {
+    display: block !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+  }
+
+  .sidebar, .topbar, .select-lab,
+  #otherPage, #cataloguePage, #savedReportsPage,
+  #reportDesignerPage, #superAdminCenter,
+  #entryPage > .cards, .results-head,
+  .actions, .no-print, #notice {
+    display: none !important;
+  }
+
+  #workspace > *:not(#entryPage):not(.print-header) {
+    display: none !important;
+  }
+
+  #printHeader {
+    display: block !important;
+    width: 100% !important;
+    color: #102b55 !important;
+  }
+
+  .print-lab-branding {
+    display: grid !important;
+    grid-template-columns: 22mm minmax(0,1fr) 58mm !important;
+    gap: 3mm !important;
+    align-items: center !important;
+    width: 100% !important;
+    margin: 0 0 3mm !important;
+    padding: 0 0 3mm !important;
+    border-bottom: 2mm solid #0b3a7a !important;
+    box-sizing: border-box !important;
+  }
+
+  .print-lab-branding img {
+    width: 21mm !important;
+    height: 21mm !important;
+    object-fit: contain !important;
+  }
+
+  .report-brand-details {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 1mm 2mm !important;
+    min-width: 0 !important;
+  }
+
+  #printLabName {
+    grid-column: 1 / -1 !important;
+    color: #0b3a7a !important;
+    font-size: 17pt !important;
+    line-height: 1.1 !important;
+    font-weight: 900 !important;
+  }
+
+  #printLabTagline {
+    grid-column: 1 / -1 !important;
+    font-size: 8pt !important;
+    letter-spacing: .5px !important;
+  }
+
+  #printLabAddress, #printLabPhone, #printLabEmail {
+    font-size: 7.5pt !important;
+    line-height: 1.3 !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .report-identification-row {
+    display: grid !important;
+    grid-template-columns: 1.35fr 22mm 1.1fr 1.2fr !important;
+    gap: 2mm !important;
+    align-items: center !important;
+    padding: 2mm 0 !important;
+    border-bottom: 1px solid #aebfd4 !important;
+    break-inside: avoid !important;
+  }
+
+  .report-patient-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 1mm !important;
+    margin: 0 !important;
+    padding: 0 1mm !important;
+    font-size: 8pt !important;
+    line-height: 1.35 !important;
+  }
+
+  .report-qr-section {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-left: 1px solid #aebfd4 !important;
+    border-right: 1px solid #aebfd4 !important;
+    font-size: 7pt !important;
+    text-align: center !important;
+  }
+
+  .report-qr-section img,
+  .report-qr-section canvas {
+    width: 22mm !important;
+    height: 22mm !important;
+  }
+
+  .report-referring-doctor {
+    display: block !important;
+    padding: 1mm 2mm !important;
+    border-right: 1px solid #aebfd4 !important;
+    font-size: 8pt !important;
+    line-height: 1.4 !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .report-barcode-section {
+    display: block !important;
+    text-align: center !important;
+    font-size: 7pt !important;
+    line-height: 1.3 !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .report-barcode-section svg {
+    display: block !important;
+    width: 100% !important;
+    height: 12mm !important;
+    margin: auto !important;
+  }
+
+  .report-test-title {
+    display: block !important;
+    width: 100% !important;
+    margin: 4mm 0 3mm !important;
+    padding: 2mm !important;
+    background: #17549c !important;
+    color: #fff !important;
+    text-align: center !important;
+    font-size: 15pt !important;
+    font-weight: 900 !important;
+    border-radius: 1mm !important;
+  }
+
+  .report-generated-time {
+    text-align: right !important;
+    font-size: 7pt !important;
+    padding: 1mm 0 2mm !important;
+  }
+
+  .results {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    break-inside: auto !important;
+  }
+
+  .table-wrap {
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  .results table {
+    width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+    font-size: 8pt !important;
+  }
+
+  .results th {
+    background: #244065 !important;
+    color: #fff !important;
+    border: 1px solid #aebfd4 !important;
+    padding: 2mm 1mm !important;
+    text-align: center !important;
+  }
+
+  .results td {
+    border: 1px solid #aebfd4 !important;
+    padding: 1.2mm 1.5mm !important;
+    line-height: 1.2 !important;
+    vertical-align: middle !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .results td:first-child {
+    text-align: left !important;
+  }
+
+  .results tr.test-heading-row td,
+  .results tr.group-row td {
+    background: #dce4f0 !important;
+    font-weight: bold !important;
+    text-transform: uppercase !important;
+  }
+
+  .results tr {
+    break-inside: avoid !important;
+  }
+
+  .results input, .results select {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #111 !important;
+    font: inherit !important;
+    appearance: none !important;
+  }
+
+  .result-status {
+    text-align: center !important;
+    font-weight: bold !important;
+  }
+
+  .result-status .badge {
+    display: inline-block !important;
+    min-width: 16mm !important;
+    padding: 1mm 2mm !important;
+    border-radius: 5mm !important;
+    font-size: 7pt !important;
+  }
+
+  .badge-normal {
+    background: #dcf2e3 !important;
+    color: #0f5132 !important;
+    border: 1px solid #b5dabb !important;
+  }
+
+  .badge-abnormal {
+    background: #fadadd !important;
+    color: #842029 !important;
+    border: 1px solid #f5c2c7 !important;
+  }
+
+  .text-red {
+    color: #c00000 !important;
+    font-weight: bold !important;
+  }
+
+  .signature-footer {
+    display: flex !important;
+    justify-content: space-around !important;
+    align-items: flex-end !important;
+    gap: 10mm !important;
+    margin: 9mm 0 0 !important;
+    padding: 2mm 8mm 0 !important;
+    border-top: 2px solid #0b3a7a !important;
+    break-inside: avoid !important;
+  }
+
+  .signature-footer .signature-slot {
+    width: 42% !important;
+    text-align: center !important;
+    font-size: 8pt !important;
+  }
+
+  .signature-footer img {
+    max-width: 45mm !important;
+    max-height: 14mm !important;
+    object-fit: contain !important;
+  }
+
+  .signature-footer b {
+    font-size: 9pt !important;
+  }
+
+  .signature-footer small {
+    display: block !important;
+    font-size: 8pt !important;
+  }
+}
+
 </style>
 </head>
 <body>
