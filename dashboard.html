@@ -983,6 +983,8 @@ html.acd-lab-admin #nav [data-sa-nav] {
   </tr>
 </thead>
 
+<tbody id="testRows">
+
 <tr>
 <td class="empty" colspan="6">पहले ऊपर से CBC, KFT, LFT आदि टेस्ट जोड़ें।</td>
 </tr>
@@ -1445,8 +1447,10 @@ function renderRows(){
       '<tr>' +
       '<td><b>WIDAL TEST</b></td>' +
       '<td>' + resultControl(overall,oi) + '</td>' +
-      '<td>Positive / Negative</td>' +
-      '<td>-</td>' +
+      
+'<td>-</td>' +
+'<td>Positive / Negative</td>' +
+
       '<td></td>' +
       '<td class="no-print"></td>' +
       '</tr>'
@@ -1527,10 +1531,26 @@ const update = () => {
 
     calculateCBCResults(test.id);
 
-    body.querySelectorAll("[data-result]").forEach(input => {
-      const i = +input.dataset.result;
-      input.value = flatRows[i].result_value || "";
-    });
+  
+body.querySelectorAll("[data-result]").forEach(input => {
+  const i = +input.dataset.result;
+  const resultRow = input.closest("tr");
+  const statusCell = resultRow?.querySelector(".result-status");
+
+  if (statusCell) {
+    const status = getResultStatus(
+      flatRows[i].result_value,
+      flatRows[i].reference_range
+    );
+
+    statusCell.innerHTML = status
+      ? '<span class="badge ' +
+        (status === "Normal" ? 'badge-normal' : 'badge-abnormal') +
+        '">' + safe(status) + '</span>'
+      : '';
+  }
+});
+
   }
 
   body.querySelectorAll("[data-result]").forEach(input => {
@@ -3194,8 +3214,15 @@ if (meta) {
 '<td>' + safe(x.unit || "") + '</td>' +
 '<td>' + safe(x.reference_range || "") + '</td>' +
 
-            '<td class="result-status">' +
-            safe(status) + '</td>' +
+          
+'<td class="result-status">' +
+  (status
+    ? '<span class="badge ' +
+      (status === "Normal" ? 'badge-normal' : 'badge-abnormal') +
+      '">' + safe(status) + '</span>'
+    : '') +
+'</td>' +
+
             '<td class="no-print"></td>' +
             '</tr>'
           );
