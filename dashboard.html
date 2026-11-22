@@ -2535,7 +2535,7 @@ root.style.setProperty(
 );
 root.style.setProperty(
   "--rd-gap-content",
-  Math.max(0, Number(layout.gap_content ?? 270)) + "pt"
+ Math.max(0, Number(layout.gap_content ?? 8)) + "pt"
 );
 root.style.setProperty(
   "--rd-gap-test",
@@ -2547,7 +2547,7 @@ root.style.setProperty(
 );
 root.style.setProperty(
   "--rd-gap-footer",
-  Math.max(0, Number(layout.gap_footer ?? 1000)) + "pt"
+ Math.max(0, Number(layout.gap_footer ?? 22)) + "pt"
 );
 root.style.setProperty(
   "--rd-gap-doctor",
@@ -3034,13 +3034,13 @@ async function srPrint(id) {
     root.style.setProperty("--rd-gap-between-header",
       Math.max(0, Number(layout.gap_between_header ?? 25)) + "pt");
     root.style.setProperty("--rd-gap-content",
-      Math.max(0, Number(layout.gap_content ?? 270)) + "pt");
+      Math.max(0, Number(layout.gap_content ?? 8)) + "pt");
     root.style.setProperty("--rd-gap-test",
       Math.max(0, Number(layout.gap_test ?? 20)) + "pt");
     root.style.setProperty("--rd-gap-subtest",
       Math.max(0, Number(layout.gap_subtest ?? 20)) + "pt");
     root.style.setProperty("--rd-gap-footer",
-      Math.max(0, Number(layout.gap_footer ?? 1000)) + "pt");
+      Math.max(0, Number(layout.gap_footer ?? 22)) + "pt");
     root.style.setProperty("--rd-gap-doctor",
       Math.max(0, Number(layout.gap_doctor ?? 20)) + "pt");
     root.style.setProperty("--rd-patient-font",
