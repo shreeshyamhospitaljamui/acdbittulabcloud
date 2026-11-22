@@ -971,16 +971,14 @@ html.acd-lab-admin #nav [data-sa-nav] {
 
 <div class="table-wrap">
 <table>
-<thead>
-<tr>
-<th>Investigation</th>
-<th>Result</th>
-<th>Reference Value</th>
-<th>Unit</th>
-<th>Status</th>
+
+<th style="width:30%">Investigation</th>
+<th style="width:15%">Result</th>
+<th style="width:15%">Unit</th>
+<th style="width:25%">Reference Value</th>
+<th style="width:15%">Status</th>
 <th class="no-print"></th>
-</tr>
-</thead>
+
 <tbody id="testRows">
 <tr>
 <td class="empty" colspan="6">पहले ऊपर से CBC, KFT, LFT आदि टेस्ट जोड़ें।</td>
@@ -1479,16 +1477,18 @@ function renderRows(){
   rows.forEach(r=>{
    const i=flatRows.indexOf(r);
    
+
 out.push(
   '<tr>' +
   '<td class="param-name"><b>' + safe(r.parameter_name) + '</b></td>' +
   '<td>' + resultControl(r,i) + '</td>' +
-  '<td>' + safe(r.reference_range || "") + '</td>' +
   '<td>' + safe(r.unit || "") + '</td>' +
+  '<td>' + safe(r.reference_range || "") + '</td>' +
   '<td class="result-status">' + getResultStatus(r.result_value, r.reference_range) + '</td>' +
   '<td class="no-print"><button class="btn danger" data-remove-test="' + safe(r.test_id) + '">×</button></td>' +
   '</tr>'
 );
+
 
 
  });
