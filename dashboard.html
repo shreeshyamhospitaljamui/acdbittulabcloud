@@ -1415,16 +1415,81 @@ function renderCatalogueList(filter=""){
  list.innerHTML=items.length?items.map(t=>'<button class="catalogue-test '+(t.id===activeCatalogueTestId?'active':'')+'" data-catalogue-id="'+safe(t.id)+'">'+safe(t.test_name)+'<small>'+safe(t.department||t.test_code)+'</small></button>').join(""):'<div class="catalogue-empty">कोई टेस्ट नहीं मिला।</div>';
  list.querySelectorAll("[data-catalogue-id]").forEach(b=>b.onclick=()=>openCatalogueTest(b.dataset.catalogueId));
 }
+
 async function openCatalogueTest(id){
- const t=catalogue.find(x=>x.id===id);if(!t)return;
- activeCatalogueTestId=id;renderCatalogueList($("catalogueFilter").value);
- $("catalogueSelectedTitle").textContent=t.test_name;
- $("catalogueSelectedMeta").textContent=(t.department||"")+(t.test_code?" • Code: "+t.test_code:"");
- $("catalogueParameterRows").innerHTML='<tr><td class="catalogue-empty" colspan="4">Loading parameters…</td></tr>';
- const {data,error}=await db.from("acd_test_parameters").select("parameter_name,unit,reference_range,result_type,result_options,sort_order").eq("test_id",id).order("sort_order");
- if(error){$("catalogueParameterRows").innerHTML='<tr><td class="catalogue-empty" colspan="4">Load error: '+safe(error.message)+'</td></tr>';return}
- $("catalogueParameterRows").innerHTML=(data||[]).length?(data||[]).map(p=>'<tr><td><b>'+safe(p.parameter_name)+'</b></td><td>'+safe(p.unit||"-")+'</td><td>'+safe(p.reference_range||"-")+'</td><td>'+safe(p.result_type||"numeric")+(p.result_options?.length?'<br><small>'+safe(p.result_options.join(", "))+'</small>':"")+'</td></tr>').join(""):'<tr><td class="catalogue-empty" colspan="4">इस टेस्ट में कोई parameter नहीं है।</td></tr>';
+  const t = catalogue.find(x => x.id === id);
+  if (!t) return;
+
+  activeCatalogueTestId = id;
+  renderCatalogueList($("catalogueFilter").value);
+
+  $("catalogueSelectedTitle").textContent = t.test_name;
+  $("catalogueSelectedMeta").textContent =
+    (t.department || "") + (t.test_code ? " • Code: " + t.test_code : "");
+
+  $("catalogueParameterRows").innerHTML =
+    '<tr><td class="catalogue-empty" colspan="4">Loading parameters…</td></tr>';
+
+  let params = [];
+
+  try {
+    const { data, error } = await db
+      .from("acd_test_parameters")
+      .select("id,test_id,parameter_name,unit,reference_range,result_type,result_options,sort_order")
+      .eq("test_id", id)
+      .order("sort_order");
+
+    if (error) throw error;
+
+    params = data || [];
+
+    await Promise.all(
+      params.map(parameter =>
+        window.ACDOfflineDB.putRecord(
+          "parameters",
+          labId,
+          parameter
+        )
+      )
+    );
+
+    console.log("Test parameters cached:", t.test_name, params.length);
+
+  } catch (error) {
+    console.warn("Online parameter load failed:", error.message);
+
+    try {
+      const cached = await window.ACDOfflineDB.getRecords(
+        "parameters",
+        labId
+      );
+
+      params = cached
+        .filter(parameter => parameter.test_id === id)
+        .sort((a, b) =>
+          (a.sort_order || 100) - (b.sort_order || 100)
+        );
+
+    } catch (cacheError) {
+      console.error("Offline parameter load failed:", cacheError);
+      params = [];
+    }
+  }
+
+  $("catalogueParameterRows").innerHTML = params.length
+    ? params.map(p =>
+        '<tr><td><b>' + safe(p.parameter_name) +
+        '</b></td><td>' + safe(p.unit || "-") +
+        '</td><td>' + safe(p.reference_range || "-") +
+        '</td><td>' + safe(p.result_type || "numeric") +
+        (p.result_options?.length
+          ? '<br><small>' + safe(p.result_options.join(", ")) + '</small>'
+          : "") +
+        '</td></tr>'
+      ).join("")
+    : '<tr><td class="catalogue-empty" colspan="4">इस टेस्ट के Parameters Offline उपलब्ध नहीं हैं। पहले Internet से इसे लोड करें।</td></tr>';
 }
+
 $("catalogueFilter").addEventListener("input",()=>renderCatalogueList($("catalogueFilter").value));
 async function showCataloguePage(){
  if(!catalogue.length)await loadCatalogue();
