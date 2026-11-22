@@ -3278,8 +3278,7 @@ saDashboard.classList.add("hidden");
       rdLabLogo: b.logo_url,
       rdLabAddress: b.address,
       rdLabPhone: b.phone,
-      rdLabEmail: b.email,
-      rdLabAlias: b.alias,
+      rdLabTagline: b.tagline,
       rdChildAge: p.child_age_limit,
       rdAutoPatient: String(p.auto_patient_id ?? true),
       rdPrintMode: p.default_printing,
@@ -3381,7 +3380,8 @@ $rd("rdWatermarkOpacity").value =
         address: val("rdLabAddress").trim(),
         phone: val("rdLabPhone").trim(),
         email: val("rdLabEmail").trim(),
-        alias: val("rdLabAlias").trim()
+tagline: val("rdLabTagline").trim(),
+alias: val("rdLabAlias").trim()
       },
       layout: {
         paper: val("rdPaper"),
