@@ -1,13 +1,15 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ACD BITTU LAB CLOUD — New Patient Entry</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#07172d">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  
 <style>
 :root{--navy:#07172d;--blue:#0866df;--line:#dce3eb;--bg:#f3f6fa;--text:#1d2939;--muted:#667085;--green:#12a150}
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);font-size:13px}
@@ -33,11 +35,31 @@ input,select{width:100%;height:27px;border:1px solid #d8dee7;border-radius:5px;p
 .amounts{display:grid;grid-template-columns:1fr 1fr;gap:6px}.paid input{color:#07934a;font-weight:bold}.due input{color:#c42f35;font-weight:bold}
 .results{flex:1;min-height:260px}.results-head{display:flex;justify-content:space-between;align-items:center;padding:7px 9px;gap:8px}.results-title{font-weight:700;font-size:11px}.actions{display:flex;gap:5px}.table-wrap{padding:0 5px 8px;overflow:auto}table{border-collapse:collapse;width:100%;font-size:10px}th{background:#173f83;color:white;text-align:left;padding:7px 6px;white-space:nowrap}td{border:1px solid #e2e7ee;padding:5px 6px}td input,td select{height:25px;min-width:70px}td.empty{text-align:center;color:#98a2b3;font-style:italic;height:30px}
 #notice{font-size:10px;color:#067647;padding:0 10px 8px;min-height:15px}
-#entryPage:not(.hidden),#cataloguePage:not(.hidden),#savedReportsPage:not(.hidden),#otherPage:not(.hidden),#reportDesignerPage:not(.hidden),#superAdminCenter:not(.hidden){display:block!important}
-#workspace{display:flex;flex-direction:column;width:100%;min-width:0}
-#workspace>.hidden{display:none!important}
+
+/* Dashboard page visibility fix */
+#entryPage:not(.hidden),
+#cataloguePage:not(.hidden),
+#savedReportsPage:not(.hidden),
+#otherPage:not(.hidden),
+#reportDesignerPage:not(.hidden),
+#superAdminCenter:not(.hidden) {
+  display: block !important;
+}
+
+#workspace {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+}
+
+#workspace > .hidden {
+  display: none !important;
+}
+
 .hidden{display:none!important}
 .placeholder-panel{background:#fff;border:1px solid var(--line);border-radius:8px;padding:18px;color:#667085;min-height:120px}
+
 .catalogue-layout{display:grid;grid-template-columns:minmax(190px,260px) 1fr;gap:10px;min-height:420px}
 .catalogue-list{background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px}
 .catalogue-list h3,.catalogue-detail h3{margin:2px 0 10px;font-size:13px;color:#17427f}
@@ -51,58 +73,829 @@ input,select{width:100%;height:27px;border:1px solid #d8dee7;border-radius:5px;p
 .catalogue-meta{font-size:10px;color:#667085;margin-bottom:10px}
 .catalogue-empty{padding:28px 10px;text-align:center;color:#98a2b3}
 @media(max-width:600px){.catalogue-layout{grid-template-columns:1fr}.catalogue-list{max-height:220px;overflow:auto}.catalogue-detail{overflow:auto}}
+
 button:disabled{opacity:.55;cursor:not-allowed}
 
-.print-header,.signature-footer{display:none!important}
-@media print{
-  @page{size:A4 var(--rd-print-orientation,portrait);margin:var(--rd-margin-top,7mm) var(--rd-margin-right,8mm) var(--rd-margin-bottom,10mm) var(--rd-margin-left,8mm)}
-  html,body{width:100%!important;min-height:0!important;margin:0!important;padding:0!important;background:#fff!important;color:#111!important;font-family:Roboto,Arial,sans-serif!important;print-color-adjust:exact!important;-webkit-print-color-adjust:exact!important}
-  body>.app,.app,.main,.content,#workspace,#entryPage,.results,.table-wrap{display:block!important;width:100%!important;min-height:0!important;height:auto!important;margin:0!important;padding:0!important;overflow:visible!important;box-shadow:none!important}
-  .sidebar,.topbar,.select-lab,#otherPage,#cataloguePage,#savedReportsPage,#reportDesignerPage,#superAdminCenter,#entryPage>.cards,.results-head,.actions,.no-print,#notice{display:none!important}
-  #workspace>*:not(#entryPage):not(.print-header):not(.results){display:none!important}
-  #printHeader{display:block!important;width:100%!important;color:#102b55!important}
-  .print-lab-branding{display:grid!important;grid-template-columns:22mm minmax(0,1fr) 58mm!important;gap:3mm!important;align-items:center!important;width:100%!important;margin:0 0 3mm!important;padding:0 0 3mm!important;border-bottom:2mm solid #0b3a7a!important;box-sizing:border-box!important}
-  .print-lab-branding img{width:21mm!important;height:21mm!important;object-fit:contain!important}
-  .report-brand-details{display:grid!important;grid-template-columns:1fr 1fr!important;gap:1mm 2mm!important;min-width:0!important}
-  #printLabName{grid-column:1/-1!important;color:#0b3a7a!important;font-size:17pt!important;line-height:1.1!important;font-weight:900!important}
-  #printLabTagline{grid-column:1/-1!important;font-size:8pt!important;letter-spacing:.5px!important}
-  #printLabAddress,#printLabPhone,#printLabEmail{font-size:7.5pt!important;line-height:1.3!important;overflow-wrap:anywhere!important}
-  .report-identification-row{display:grid!important;grid-template-columns:1.35fr 22mm 1.1fr 1.2fr!important;gap:2mm!important;align-items:center!important;padding:2mm 0!important;border-bottom:1px solid #aebfd4!important;break-inside:avoid!important}
-  .report-patient-grid{display:grid!important;grid-template-columns:1fr!important;gap:1mm!important;margin:0!important;padding:0 1mm!important;font-size:8pt!important;line-height:1.35!important;margin-top:var(--rd-entry-letterhead-gap,0)!important}
-  .report-qr-section{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;border-left:1px solid #aebfd4!important;border-right:1px solid #aebfd4!important;font-size:7pt!important;text-align:center!important}
-  .report-qr-section img,.report-qr-section canvas{width:22mm!important;height:22mm!important}
-  .report-referring-doctor{display:block!important;padding:1mm 2mm!important;border-right:1px solid #aebfd4!important;font-size:8pt!important;line-height:1.4!important;overflow-wrap:anywhere!important}
-  .report-barcode-section{display:block!important;text-align:center!important;font-size:7pt!important;line-height:1.3!important;overflow-wrap:anywhere!important}
-  .report-barcode-section svg{display:block!important;width:100%!important;height:12mm!important;margin:auto!important}
-  .report-test-title{display:block!important;width:100%!important;margin:4mm 0 3mm!important;padding:2mm!important;background:#17549c!important;color:#fff!important;text-align:center!important;font-size:15pt!important;font-weight:900!important;border-radius:1mm!important;margin-top:var(--rd-gap-between-header,25pt)!important}
-  .report-generated-time{text-align:right!important;font-size:7pt!important;padding:1mm 0 2mm!important}
-  .results{display:block!important;width:100%!important;margin:0!important;margin-top:var(--rd-gap-content,270pt)!important;padding:0!important;border:0!important;break-inside:auto!important}
-  .table-wrap{padding:0!important;overflow:visible!important}
-  .results table{width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;font-size:8pt!important}
-  .results th{background:#244065!important;color:#fff!important;border:1px solid #aebfd4!important;padding:2mm 1mm!important;text-align:center!important}
-  .results td{border:1px solid #aebfd4!important;padding:1.2mm 1.5mm!important;line-height:1.2!important;vertical-align:middle!important;overflow-wrap:anywhere!important}
-  .results td:first-child{text-align:left!important}
-  .results tr.test-heading-row td,.results tr.group-row td{background:#dce4f0!important;font-weight:bold!important;text-transform:uppercase!important;padding-top:var(--rd-gap-test,20pt)!important}
-  .results tr{break-inside:avoid!important}
-  .results input,.results select{width:100%!important;min-width:0!important;height:auto!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;color:#111!important;font:inherit!important;appearance:none!important}
-  .result-status{text-align:center!important;font-weight:bold!important}
-  .result-status .badge{display:inline-block!important;min-width:16mm!important;padding:1mm 2mm!important;border-radius:5mm!important;font-size:7pt!important}
-  .badge-normal{background:#dcf2e3!important;color:#0f5132!important;border:1px solid #b5dabb!important}
-  .badge-abnormal{background:#fadadd!important;color:#842029!important;border:1px solid #f5c2c7!important}
-  .signature-footer{display:flex!important;justify-content:space-around!important;align-items:flex-end!important;gap:10mm!important;margin:9mm 0 0!important;margin-top:var(--rd-gap-footer,22pt)!important;padding:2mm 8mm 0!important;border-top:2px solid #0b3a7a!important;break-inside:avoid!important}
-  .signature-footer .signature-slot{width:42%!important;text-align:center!important;font-size:8pt!important;padding-top:var(--rd-gap-doctor,20pt)}
-  .signature-footer img{max-width:45mm!important;max-height:14mm!important;object-fit:contain!important}
-  .signature-footer b{font-size:9pt!important}
-  .signature-footer small{display:block!important;font-size:8pt!important}
-  .report-footer-message{display:block!important;width:100%!important;margin:5mm 0 7mm!important;text-align:center!important;color:#244065!important;font-size:9pt!important;font-style:italic!important;break-inside:avoid!important}
-  .report-page-footer{display:block!important;width:100%!important;margin-top:5mm!important;background:#fff!important;break-inside:avoid!important}
-  .report-page-footer .footer-line{width:100%!important;height:2px!important;background:#0b3a7a!important}
-  .report-page-footer .footer-content{display:flex!important;justify-content:space-between!important;align-items:center!important;gap:3mm!important;padding:2mm 0!important;color:#0b3a7a!important;font-size:7pt!important;font-weight:bold!important}
-  .report-page-footer .page-num{flex-shrink:0!important;padding:2mm 3mm!important;color:#fff!important;background:#0b3a7a!important;border-radius:2mm 2mm 0 0!important}
+/* Normal dashboard screen */
+.print-header,
+.signature-footer {
+  display: none !important;
 }
+
+/* A4 report only while printing */
+@media print {
+  @page {
+  size: A4 var(--rd-print-orientation, portrait);
+  margin:
+    var(--rd-margin-top, 7mm)
+    var(--rd-margin-right, 8mm)
+    var(--rd-margin-bottom, 10mm)
+    var(--rd-margin-left, 8mm);
+  }
+
+  html, body {
+    width: 100%;
+    height: auto;
+    background: #fff !important;
+    color: #111 !important;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  /* Hide dashboard navigation, keep report workspace */
+  body > .app {
+    display: block !important;
+    min-height: 0 !important;
+  }
+
+  .sidebar,
+  .topbar,
+  .select-lab,
+  #otherPage,
+  #cataloguePage {
+    display: none !important;
+  }
+
+  .main {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  /* Keep only the report workspace */
+  #workspace {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Keep report header and result section only */
+  #workspace > *:not(#entryPage):not(.print-header) {
+    display: none !important;
+  }
+/* Show report header only in print */
+.print-header {
+  display: block !important;
+  visibility: visible !important;
+}
+  .app,
+  .main,
+  .content,
+  #entryPage,
+  .results {
+    min-height: 0 !important;
+    height: auto !important;
+  }
+
+  .content {
+    display: block !important;
+  }
+
+  #entryPage {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  #entryPage > .cards {
+    display: none !important;
+  }
+
+  .print-lab-branding {
+    display: flex !important;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    box-sizing: border-box;
+    border-bottom: 1px solid #333;
+    color: #111 !important;
+  }
+
+  .print-lab-branding img {
+    display: block;
+    width: 58px;
+    height: 58px;
+    object-fit: contain;
+    flex: 0 0 58px;
+  }
+
+  #printLabName {
+    font-size: 16pt;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  #printLabAddress,
+  #printLabContact {
+    font-size: 9pt;
+    line-height: 1.4;
+  }
+
+  .report-patient-grid {
+  display: grid !important;
+  margin-top: var(--rd-entry-letterhead-gap, 113pt) !important;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px 12px;
+  padding: 8px 10px;
+  font-size: 9pt;
+}
+
+.page-number {
+  display: none !important;
+}
+  
+.report-tracking-row {
+  display: flex !important;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 8px 12px;
+  margin-top: 8px;
+  border-top: 1px solid #c9d3df;
+  border-bottom: 1px solid #c9d3df;
+  break-inside: avoid;
+}
+
+.report-qr-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.report-qr-section canvas,
+.report-qr-section img {
+  width: 85px !important;
+  height: 85px !important;
+}
+
+.report-barcode-section {
+  text-align: right;
+  font-size: 8pt;
+  line-height: 1.7;
+}
+
+.report-barcode-section svg {
+  display: block;
+  width: 190px;
+  max-width: 100%;
+  height: 55px;
+  margin-left: auto;
+}
+
+.report-tracking-row small {
+  font-size: 7pt;
+  color: #444;
+}
+  
+.report-generated-time {
+  text-align: right;
+  font-size: 8pt;
+  padding: 6px 10px;
+  color: #333;
+  break-inside: avoid;
+}
+
+.report-test-title {
+  margin-top: var(--rd-gap-between-header, 25pt) !important;
+}
+
+  .results tr.test-heading-row td {
+    padding-top: var(--rd-gap-test, 20pt) !important;
+  }
+
+  .results tr.group-row td {
+    padding-top: var(--rd-gap-subtest, 20pt) !important;
+  }
+  
+  .results {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    margin-top: var(--rd-gap-content, 270pt) !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  .results-head,
+  .actions,
+  .no-print,
+  #notice {
+    display: none !important;
+  }
+
+  .table-wrap {
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  table {
+    width: 100%;
+    font-size: 8pt;
+    table-layout: fixed;
+  }
+
+  th {
+    background: #e8edf3 !important;
+    color: #111 !important;
+    border: 1px solid #555 !important;
+    padding: 4px 5px !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  td {
+    border: 1px solid #888 !important;
+    padding: 3px 5px !important;
+    vertical-align: middle;
+  }
+
+  td input,
+  td select {
+    border: 0 !important;
+    background: transparent !important;
+    height: auto !important;
+    padding: 0 !important;
+    font-size: 8pt !important;
+    appearance: none;
+  }
+
+  .signature-footer {
+    display: flex !important;
+    justify-content: space-between;
+    gap: 20px;
+    margin-top: var(--rd-gap-footer, 22pt) !important;
+    font-size: 9pt !important;
+    break-inside: avoid;
+  }
+
+  .signature-footer div {
+    min-width: 42%;
+    text-align: center;
+    padding-top: var(--rd-gap-doctor, 20pt);
+  }
+
+  .results table tr {
+    break-inside: avoid;
+  }
+}
+
 @media(max-width:700px){.sidebar{width:145px;flex-basis:145px}.brand{padding:7px}.nav button{font-size:10px;padding:9px 6px}.content{padding:8px}.cards{grid-template-columns:1fr 1fr}.panel.billing{grid-column:1/-1}.topbar{height:40px}}
 @media(max-width:480px){.sidebar{width:52px;flex-basis:52px}.brand{justify-content:center;padding:5px}.brand-copy,.nav .txt{display:none}.nav button{text-align:center;padding:12px 2px;font-size:15px}.cards{grid-template-columns:1fr}.panel.billing{grid-column:auto}.content{padding:7px}.topbar{padding:0 8px}.results{min-height:250px}}
-html.acd-lab-admin .nav button.super,html.acd-lab-admin #nav [data-page="Super Admin"],html.acd-lab-admin #nav [data-sa-nav]{display:none!important}
+/* Lab Admin: Super Admin menu ko shuru se hi hatayein */
+html.acd-lab-admin .nav button.super,
+html.acd-lab-admin #nav [data-page="Super Admin"],
+html.acd-lab-admin #nav [data-sa-nav] {
+  display: none !important;
+}
+  
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 6mm;
+  }
+
+  #printHeader {
+    display: block !important;
+    width: 100% !important;
+    color: #102b55 !important;
+  }
+
+  .print-lab-branding {
+    display: grid !important;
+    grid-template-columns: 62px 1fr;
+    gap: 10px;
+    align-items: center;
+    padding: 3px 0 7px;
+    margin: 0 0 6px;
+    border-bottom: 3px solid #0872c9;
+  }
+
+  .print-lab-branding img {
+    width: 58px !important;
+    height: 58px !important;
+    object-fit: contain;
+  }
+
+  .report-brand-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px 12px;
+    align-items: center;
+  }
+
+  #printLabName {
+    grid-column: 1 / -1;
+    font-size: 17pt !important;
+    font-weight: 800;
+    color: #102b55 !important;
+  }
+
+  #printLabTagline {
+    grid-column: 1 / -1;
+    font-size: 9pt;
+  }
+
+  #printLabAddress {
+    grid-column: 1;
+    font-size: 8pt;
+  }
+
+  #printLabPhone,
+  #printLabEmail {
+    grid-column: 2;
+    font-size: 8pt;
+  }
+
+  .report-identification-row {
+    display: grid !important;
+    grid-template-columns: 1.25fr 75px 1fr 1fr;
+    gap: 7px;
+    align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px solid #9aa9bb;
+    break-inside: avoid;
+  }
+
+  .report-patient-grid {
+    display: grid !important;
+    grid-template-columns: 1fr;
+    gap: 3px;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 8pt !important;
+  }
+
+  .report-qr-section {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    font-size: 7pt;
+  }
+
+  .report-qr-section img,
+  .report-qr-section canvas {
+    width: 68px !important;
+    height: 68px !important;
+  }
+
+  .report-referring-doctor {
+    display: block !important;
+    font-size: 8pt;
+    border-left: 1px solid #9aa9bb;
+    padding-left: 6px;
+  }
+
+  .report-barcode-section {
+    font-size: 7pt;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+
+  .report-barcode-section svg {
+    width: 100% !important;
+    height: 38px !important;
+  }
+
+  .report-test-title {
+    text-align: center;
+    color: #102b55 !important;
+    background: #dceeff !important;
+    border-left: 5px solid #0872c9;
+    border-right: 5px solid #0872c9;
+    font-size: 15pt !important;
+    font-weight: 800;
+    margin: 8px 0 5px !important;
+    padding: 5px !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .report-generated-time {
+    text-align: right;
+    font-size: 7pt !important;
+    padding: 2px 0 5px !important;
+  }
+
+  .results {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    break-inside: auto;
+  }
+
+  .results table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    table-layout: fixed;
+    font-size: 7.5pt !important;
+  }
+
+  .results th {
+    background: #07569a !important;
+    color: white !important;
+    padding: 4px 5px !important;
+    border: 1px solid #777 !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .results td {
+    padding: 2px 4px !important;
+    line-height: 1.15 !important;
+    border: 1px solid #999 !important;
+    overflow-wrap: anywhere;
+  }
+
+  .results tr {
+    break-inside: avoid !important;
+  }
+
+  .signature-footer {
+    display: flex !important;
+    justify-content: space-around !important;
+    margin-top: 12px !important;
+    padding-top: 8px !important;
+    border-top: 2px solid #0872c9;
+    break-inside: avoid !important;
+  }
+
+  .signature-footer .signature-slot {
+    width: 42%;
+    text-align: center;
+    font-size: 8pt;
+  }
+
+  .signature-footer img {
+    max-width: 110px;
+    max-height: 45px;
+    object-fit: contain;
+  }
+
+  .page-number {
+    display: block !important;
+  }
+}
+
+/* ===== ACD FINAL REFERENCE REPORT PRINT OVERRIDE ===== */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm 15mm;
+  }
+
+  html, body {
+    width: 100% !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    color: #111 !important;
+    font-family: Roboto, Arial, sans-serif !important;
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+
+  body > .app,
+  .app, .main, .content, #workspace,
+  #entryPage, .results, .table-wrap {
+    display: block !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+  }
+
+  .sidebar, .topbar, .select-lab,
+  #otherPage, #cataloguePage, #savedReportsPage,
+  #reportDesignerPage, #superAdminCenter,
+  #entryPage > .cards, .results-head,
+  .actions, .no-print, #notice {
+    display: none !important;
+  }
+
+#workspace > *:not(#entryPage):not(.print-header):not(.results) {
+  display: none !important;
+}
+
+  #printHeader {
+    display: block !important;
+    width: 100% !important;
+    color: #102b55 !important;
+  }
+
+  .print-lab-branding {
+    display: grid !important;
+    grid-template-columns: 22mm minmax(0,1fr) 58mm !important;
+    gap: 3mm !important;
+    align-items: center !important;
+    width: 100% !important;
+    margin: 0 0 3mm !important;
+    padding: 0 0 3mm !important;
+    border-bottom: 2mm solid #0b3a7a !important;
+    box-sizing: border-box !important;
+  }
+
+  .print-lab-branding img {
+    width: 21mm !important;
+    height: 21mm !important;
+    object-fit: contain !important;
+  }
+
+  .report-brand-details {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 1mm 2mm !important;
+    min-width: 0 !important;
+  }
+
+  #printLabName {
+    grid-column: 1 / -1 !important;
+    color: #0b3a7a !important;
+    font-size: 17pt !important;
+    line-height: 1.1 !important;
+    font-weight: 900 !important;
+  }
+
+  #printLabTagline {
+    grid-column: 1 / -1 !important;
+    font-size: 8pt !important;
+    letter-spacing: .5px !important;
+  }
+
+  #printLabAddress, #printLabPhone, #printLabEmail {
+    font-size: 7.5pt !important;
+    line-height: 1.3 !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .report-identification-row {
+    display: grid !important;
+    grid-template-columns: 1.35fr 22mm 1.1fr 1.2fr !important;
+    gap: 2mm !important;
+    align-items: center !important;
+    padding: 2mm 0 !important;
+    border-bottom: 1px solid #aebfd4 !important;
+    break-inside: avoid !important;
+  }
+
+  .report-patient-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 1mm !important;
+    margin: 0 !important;
+    padding: 0 1mm !important;
+    font-size: 8pt !important;
+    line-height: 1.35 !important;
+  }
+
+  .report-qr-section {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-left: 1px solid #aebfd4 !important;
+    border-right: 1px solid #aebfd4 !important;
+    font-size: 7pt !important;
+    text-align: center !important;
+  }
+
+  .report-qr-section img,
+  .report-qr-section canvas {
+    width: 22mm !important;
+    height: 22mm !important;
+  }
+
+  .report-referring-doctor {
+    display: block !important;
+    padding: 1mm 2mm !important;
+    border-right: 1px solid #aebfd4 !important;
+    font-size: 8pt !important;
+    line-height: 1.4 !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .report-barcode-section {
+    display: block !important;
+    text-align: center !important;
+    font-size: 7pt !important;
+    line-height: 1.3 !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .report-barcode-section svg {
+    display: block !important;
+    width: 100% !important;
+    height: 12mm !important;
+    margin: auto !important;
+  }
+
+  .report-test-title {
+    display: block !important;
+    width: 100% !important;
+    margin: 4mm 0 3mm !important;
+    padding: 2mm !important;
+    background: #17549c !important;
+    color: #fff !important;
+    text-align: center !important;
+    font-size: 15pt !important;
+    font-weight: 900 !important;
+    border-radius: 1mm !important;
+  }
+
+  .report-generated-time {
+    text-align: right !important;
+    font-size: 7pt !important;
+    padding: 1mm 0 2mm !important;
+  }
+
+  .results {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    break-inside: auto !important;
+  }
+
+  .table-wrap {
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  .results table {
+    width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+    font-size: 8pt !important;
+  }
+
+  .results th {
+    background: #244065 !important;
+    color: #fff !important;
+    border: 1px solid #aebfd4 !important;
+    padding: 2mm 1mm !important;
+    text-align: center !important;
+  }
+
+  .results td {
+    border: 1px solid #aebfd4 !important;
+    padding: 1.2mm 1.5mm !important;
+    line-height: 1.2 !important;
+    vertical-align: middle !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .results td:first-child {
+    text-align: left !important;
+  }
+
+  .results tr.test-heading-row td,
+  .results tr.group-row td {
+    background: #dce4f0 !important;
+    font-weight: bold !important;
+    text-transform: uppercase !important;
+  }
+
+  .results tr {
+    break-inside: avoid !important;
+  }
+
+  .results input, .results select {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #111 !important;
+    font: inherit !important;
+    appearance: none !important;
+  }
+
+  .result-status {
+    text-align: center !important;
+    font-weight: bold !important;
+  }
+
+  .result-status .badge {
+    display: inline-block !important;
+    min-width: 16mm !important;
+    padding: 1mm 2mm !important;
+    border-radius: 5mm !important;
+    font-size: 7pt !important;
+  }
+
+  .badge-normal {
+    background: #dcf2e3 !important;
+    color: #0f5132 !important;
+    border: 1px solid #b5dabb !important;
+  }
+
+  .badge-abnormal {
+    background: #fadadd !important;
+    color: #842029 !important;
+    border: 1px solid #f5c2c7 !important;
+  }
+
+  .text-red {
+    color: #c00000 !important;
+    font-weight: bold !important;
+  }
+
+  .signature-footer {
+    display: flex !important;
+    justify-content: space-around !important;
+    align-items: flex-end !important;
+    gap: 10mm !important;
+    margin: 9mm 0 0 !important;
+    padding: 2mm 8mm 0 !important;
+    border-top: 2px solid #0b3a7a !important;
+    break-inside: avoid !important;
+  }
+
+  .signature-footer .signature-slot {
+    width: 42% !important;
+    text-align: center !important;
+    font-size: 8pt !important;
+  }
+
+  .signature-footer img {
+    max-width: 45mm !important;
+    max-height: 14mm !important;
+    object-fit: contain !important;
+  }
+
+  .signature-footer b {
+    font-size: 9pt !important;
+  }
+
+  .signature-footer small {
+    display: block !important;
+    font-size: 8pt !important;
+  }
+}
+
+/* ACD FINAL REPORT FOOTER */
+.report-footer-message,
+.report-page-footer {
+  display: none;
+}
+
+@media print {
+  .report-footer-message {
+    display: block !important;
+    width: 100% !important;
+    margin: 5mm 0 7mm !important;
+    text-align: center !important;
+    color: #244065 !important;
+    font-size: 9pt !important;
+    font-style: italic !important;
+    break-inside: avoid !important;
+  }
+
+  .report-page-footer {
+    display: block !important;
+    width: 100% !important;
+    margin-top: 5mm !important;
+    background: #fff !important;
+    break-inside: avoid !important;
+  }
+
+  .report-page-footer .footer-line {
+    width: 100% !important;
+    height: 2px !important;
+    background: #0b3a7a !important;
+  }
+
+  .report-page-footer .footer-content {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 3mm !important;
+    padding: 2mm 0 !important;
+    color: #0b3a7a !important;
+    font-size: 7pt !important;
+    font-weight: bold !important;
+  }
+
+  .report-page-footer .page-num {
+    flex-shrink: 0 !important;
+    padding: 2mm 3mm !important;
+    color: #fff !important;
+    background: #0b3a7a !important;
+    border-radius: 2mm 2mm 0 0 !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -115,8 +908,10 @@ html.acd-lab-admin .nav button.super,html.acd-lab-admin #nav [data-page="Super A
 <button data-page="Sample Tracking">◆ <span class="txt">Sample Tracking</span></button>
 <button data-page="Accounts & Expenses">▤ <span class="txt">Accounts &amp; Expenses</span></button>
 <button data-page="Inventory & Stock">▣ <span class="txt">Inventory &amp; Stock</span></button>
+
 <button data-page="Lab & Print Setup">⚙ <span class="txt">Lab &amp; Print Setup</span></button>
 <button data-page="Subscription (Razorpay)">▰ <span class="txt">Subscription (Razorpay)</span></button>
+
 <button data-page="Report Designer">▧ <span class="txt">Report Designer</span></button>
 <button class="super" data-page="Super Admin" hidden>⬟ <span class="txt">Super Admin</span></button>
 </nav></aside>
@@ -125,19 +920,78 @@ html.acd-lab-admin .nav button.super,html.acd-lab-admin #nav [data-page="Super A
 <section class="content" id="workspace">
 <div class="select-lab hidden" id="labChooser"><b>Laboratory:</b><select id="labSelect"><option value="">Loading laboratories…</option></select><span id="labStatus">Selected</span></div>
 <div class="print-header" id="printHeader">
-  <div id="printLabBranding" class="print-lab-branding"><img id="printLabLogo" alt="Laboratory Logo"><div class="report-brand-details"><div id="printLabName"></div><div id="printLabTagline"></div><div id="printLabAddress"></div><div id="printLabPhone"></div><div id="printLabEmail"></div></div></div>
-  <div class="report-identification-row"><div class="report-patient-grid" id="printPatientMeta"></div><div class="report-qr-section"><div id="printPatientQR"></div><small>Patient QR Code</small></div><div class="report-referring-doctor"><b>Referring Doctor:</b> <span id="printReferringDoctor"></span></div><div class="report-barcode-section"><svg id="printOrderBarcode"></svg><small id="printOrderBarcodeText"></small><div><b>Registered Time:</b> <span id="printRegisteredTime"></span></div></div></div>
-  <div class="report-test-title" id="printTestTitle">LABORATORY REPORT</div>
-  <div class="report-generated-time"><b>Report Generated:</b> <span id="printReportGeneratedTime"></span></div>
+
+<div id="printLabBranding" class="print-lab-branding">
+  <img id="printLabLogo" alt="Laboratory Logo">
+  <div class="report-brand-details">
+    <div id="printLabName"></div>
+    <div id="printLabTagline"></div>
+    <div id="printLabAddress"></div>
+    <div id="printLabPhone"></div>
+    <div id="printLabEmail"></div>
+  </div>
+</div>
+
+<div class="report-identification-row">
+  <div class="report-patient-grid" id="printPatientMeta"></div>
+
+  <div class="report-qr-section">
+    <div id="printPatientQR"></div>
+    <small>Patient QR Code</small>
+  </div>
+
+  <div class="report-referring-doctor">
+    <b>Referring Doctor:</b>
+    <span id="printReferringDoctor"></span>
+  </div>
+
+  <div class="report-barcode-section">
+    <svg id="printOrderBarcode"></svg>
+    <small id="printOrderBarcodeText"></small>
+    <div>
+      <b>Registered Time:</b>
+      <span id="printRegisteredTime"></span>
+    </div>
+  </div>
+</div>
+
+<div class="report-test-title" id="printTestTitle">
+  LABORATORY REPORT
+</div>
+
+<div class="report-generated-time">
+  <b>Report Generated:</b>
+  <span id="printReportGeneratedTime"></span>
+</div>
 </div>
 <div id="entryPage">
 <div class="cards">
 <section class="panel"><div class="panel-head">▣ &nbsp;1. Patient Details</div><div class="panel-body"><div class="fields">
 <div class="field"><label>Lab ID</label><input id="labId" disabled></div><div class="field"><label>Mobile</label><input id="mobile" inputmode="numeric" maxlength="10" placeholder="10 Digits"></div>
-<div class="field full"><label>Patient Name</label><input id="patient" placeholder="Enter patient name"></div>
-<div class="field full"><label>Patient Address</label><input id="patientAddress" maxlength="300" placeholder="Enter patient address"></div>
-<div class="field"><label>Age</label><input id="age" type="number" min="0" placeholder="Age"></div>
-<div class="field"><label>Unit</label><select id="ageUnit"><option>Y</option><option>M</option><option>D</option></select></div>
+<div class="field full">
+  <label>Patient Name</label>
+  <input id="patient" placeholder="Enter patient name">
+</div>
+
+<div class="field full">
+  <label>Patient Address</label>
+  <input id="patientAddress" maxlength="300"
+    placeholder="Enter patient address">
+</div>
+
+<div class="field">
+  <label>Age</label>
+  <input id="age" type="number" min="0" placeholder="Age">
+</div>
+<div class="field">
+  <label>Unit</label>
+  <select id="ageUnit">
+    <option>Y</option>
+    <option>M</option>
+    <option>D</option>
+  </select>
+</div>
+
 <div class="field full"><label>Gender</label><select id="gender"><option>Male</option><option>Female</option><option>Other</option></select></div>
 </div></div></section>
 <section class="panel doctor"><div class="panel-head">♧ &nbsp;2. Doctor &amp; Tests</div><div class="panel-body"><div class="fields">
@@ -152,46 +1006,408 @@ html.acd-lab-admin .nav button.super,html.acd-lab-admin #nav [data-page="Super A
 </div></div></section>
 </div>
 <section class="panel results"><div class="results-head"><span class="results-title">Investigation / Result Entry — Combined</span><div class="actions"><button class="btn light" id="clear">Clear All</button><button class="btn green" id="save">Save &amp; Print (A4)</button></div></div>
+
 <div class="table-wrap">
 <table>
-<thead><tr><th style="width:30%">Investigation</th><th style="width:15%">Result</th><th style="width:15%">Unit</th><th style="width:25%">Reference Value</th><th style="width:15%">Status</th><th class="no-print"></th></tr></thead>
-<tbody id="testRows"><tr><td class="empty" colspan="6">पहले ऊपर से CBC, KFT, LFT आदि टेस्ट जोड़ें।</td></tr></tbody>
+
+<thead>
+  <tr>
+    <th style="width:30%">Investigation</th>
+    <th style="width:15%">Result</th>
+    <th style="width:15%">Unit</th>
+    <th style="width:25%">Reference Value</th>
+    <th style="width:15%">Status</th>
+    <th class="no-print"></th>
+  </tr>
+</thead>
+
+<tbody id="testRows">
+
+<tr>
+<td class="empty" colspan="6">पहले ऊपर से CBC, KFT, LFT आदि टेस्ट जोड़ें।</td>
+</tr>
+</tbody>
 </table>
 </div>
-<div class="report-footer-message">Thank you for your reference ***** End of Report *****</div>
-<div class="signature-footer">
-  <div class="signature-slot"><img id="printTechnicianSignature" alt="Technician Signature" style="display:none"><b id="printTechnicianName">Technician</b></div>
-  <div class="signature-slot"><img id="printDoctorSignature" alt="Doctor Signature" style="display:none"><b id="printDoctorName">Doctor</b><small id="printDoctorQualification"></small></div>
+<div class="report-footer-message">
+  Thank you for your reference ***** End of Report *****
 </div>
+<div class="signature-footer">
+
+  <div class="signature-slot">
+    <img id="printTechnicianSignature"
+         alt="Technician Signature"
+         style="display:none">
+    <b id="printTechnicianName">Technician</b>
+  </div>
+
+  <div class="signature-slot">
+    <img id="printDoctorSignature"
+         alt="Doctor Signature"
+         style="display:none">
+    <b id="printDoctorName">Doctor</b>
+    <small id="printDoctorQualification"></small>
+  </div>
+
+</div>
+  
 <div class="report-page-footer">
   <div class="footer-line"></div>
-  <div class="footer-content"><strong>ACD BITTU LAB CLOUD</strong><span id="printFooterAddress"></span><span id="printFooterPhone"></span><span class="page-num">Page 1</span></div>
+  <div class="footer-content">
+    <strong>ACD BITTU LAB CLOUD</strong>
+    <span id="printFooterAddress"></span>
+    <span id="printFooterPhone"></span>
+    <span class="page-num">Page 1</span>
+  </div>
 </div>
+
 </section>
 </div>
 
-<!-- बाकि के Pages (Saved Reports, Report Designer, Super Admin) जैसे थे वैसे ही रहेंगे -->
-<!-- चूँकि HTML की लेंथ कम करनी थी, इसलिए उन पेजों का स्ट्रक्चर यहाँ से छुपाया है। आप अपनी पुरानी फाइल से उन पेजों का HTML कोड यहाँ चिपका सकते हैं (ID: savedReportsPage, reportDesignerPage, superAdminCenter) -->
+<div id="otherPage" class="placeholder-panel hidden"></div>
+
+<div id="savedReportsPage" class="hidden">
+  <section class="panel">
+    <div class="panel-head">▣ Saved Reports</div>
+    <div class="panel-body">
+
+      <div class="grid" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px">
+        <div class="panel" style="padding:14px">
+          <small>Total Reports</small>
+          <h2 id="srTotal">—</h2>
+        </div>
+        <div class="panel" style="padding:14px">
+          <small>Today's Reports</small>
+          <h2 id="srToday">—</h2>
+        </div>
+        <div class="panel" style="padding:14px">
+          <small>Pending Reports</small>
+          <h2 id="srPending">—</h2>
+        </div>
+        <div class="panel" style="padding:14px">
+          <small>Completed Reports</small>
+          <h2 id="srCompleted">—</h2>
+        </div>
+      </div>
+
+      <h3>Search Reports</h3>
+      <div class="fields">
+        <div class="field full">
+          <input id="srSearch" placeholder="Patient Name / Mobile / Report ID">
+        </div>
+        <div class="field">
+          <label>From Date</label>
+          <input id="srFromDate" type="date">
+        </div>
+        <div class="field">
+          <label>To Date</label>
+          <input id="srToDate" type="date">
+        </div>
+        <div class="field">
+          <label>Status</label>
+          <select id="srStatus">
+            <option value="all">All Reports</option>
+            <option value="completed">Completed</option>
+            <option value="pending">Pending</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Reports Per Page</label>
+          <select id="srPageSize" disabled>
+            <option value="25" selected>25 Reports</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin:15px 0">
+        <h3 style="margin:0">Report List</h3>
+        <button class="btn light" id="srRefresh">↻ Refresh</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Patient Details</th>
+              <th>Report Date</th>
+              <th>Tests</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="srRows">
+            <tr><td colspan="5" class="empty">Loading reports...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:15px;gap:10px">
+        <small id="srPageInfo">Page 1</small>
+        <div class="actions">
+          <button class="btn light" id="srPrev" disabled>Previous</button>
+          <button class="btn" id="srNext" disabled>Next</button>
+        </div>
+      </div>
+
+      <div id="srMessage" style="margin-top:12px"></div>
+    </div>
+  </section>
+</div>
+  
+<div id="reportDesignerPage" class="hidden">
+  <section class="panel rd-global-card">
+    <div class="panel-head">Report Designer — Super Admin Global Defaults</div>
+    <div class="panel-body">
+      <p>ये Default Settings सभी नई Labs पर लागू होंगी।</p>
+      <label><input type="checkbox" id="rdOwnerCanCustomize" checked> Allow Lab Owner Customization</label>
+      <div class="fields">
+        <div class="field full"><label>Default Heading</label><input id="rdGlobalName" placeholder="Laboratory Name"></div>
+        <div class="field full"><label>Default Logo URL</label><input id="rdGlobalLogo"></div>
+        <div class="field full"><label>Default Address</label><input id="rdGlobalAddress"></div>
+        <div class="field"><label>Phone</label><input id="rdGlobalPhone"></div>
+        <div class="field"><label>Email</label><input id="rdGlobalEmail"></div>
+<div class="field">
+  <label>Default Letterhead Mode</label>
+  <select id="rdGlobalPrintMode">
+    <option value="preprinted">Pre-Printed Letterhead</option>
+    <option value="blank">Software Letterhead</option>
+  </select>
+</div>
+<div class="field">
+  <label>Top Margin (mm)</label>
+  <input id="rdGlobalMarginTop" type="number" min="0" max="80" value="7">
+</div>
+<div class="field">
+  <label>Left Margin (mm)</label>
+  <input id="rdGlobalMarginLeft" type="number" min="0" max="40" value="8">
+</div>
+<div class="field">
+  <label>Right Margin (mm)</label>
+  <input id="rdGlobalMarginRight" type="number" min="0" max="40" value="8">
+</div>
+<div class="field">
+  <label>Bottom Margin (mm)</label>
+  <input id="rdGlobalMarginBottom" type="number" min="0" max="80" value="10">
+</div>
+        
+      </div>
+      <button class="btn green" id="rdSaveGlobal">Save Global Defaults</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">Individual Laboratory Report Design</div>
+    <div class="panel-body">
+      <div id="rdLabStatus">Loading laboratory settings...</div>
+      <div class="fields">
+        <div class="field full"><label>Laboratory Name</label><input id="rdLabName"></div>
+        <div class="field full"><label>Logo URL</label><input id="rdLabLogo"></div>
+        <div class="field full"><label>Address</label><input id="rdLabAddress"></div>
+        <div class="field"><label>Phone</label><input id="rdLabPhone"></div>
+        <div class="field"><label>Email</label><input id="rdLabEmail"></div>
+        <div class="field full">
+  <label>Laboratory Tagline</label>
+  <input id="rdLabTagline"
+    maxlength="150"
+    placeholder="Your laboratory tagline">
+        </div>
+        <div class="field"><label>Heading Font Size</label><input id="rdHeadingSize" type="number" min="14" max="36" value="22"></div>
+        <div class="field"><label>Address Font Size</label><input id="rdAddressSize" type="number" min="8" max="18" value="11"></div>
+        <div class="field"><label>Heading Color</label><input id="rdHeadingColor" type="color" value="#173f83"></div>
+        <div class="field"><label>Paper</label><select id="rdPaper"><option>A4</option></select></div>
+        <div class="field"><label>Orientation</label><select id="rdOrientation"><option value="portrait">Portrait</option><option value="landscape">Landscape</option></select></div>
+        <div class="field"><label>Header Gap (mm)</label><input id="rdHeaderGap" type="number" min="0" max="40" value="5"></div>
+        <div class="field"><label>Footer Gap (mm)</label><input id="rdFooterGap" type="number" min="0" max="60" value="18"></div>
+      </div>
+    
+<div class="panel-head">Report Header Visibility & Watermark</div>
+<div class="fields">
+  <div class="field">
+    <label><input type="checkbox" id="rdShowLabName" checked> Show Lab Name</label>
+  </div>
+  <div class="field">
+    <label><input type="checkbox" id="rdShowLabLogo" checked> Show Lab Logo</label>
+  </div>
+  <div class="field">
+    <label><input type="checkbox" id="rdShowLabPhone" checked> Show Phone</label>
+  </div>
+  <div class="field">
+    <label><input type="checkbox" id="rdShowLabEmail" checked> Show Email</label>
+  </div>
+  <div class="field">
+    <label><input type="checkbox" id="rdShowLabAddress" checked> Show Lab Address</label>
+  </div>
+  <div class="field">
+    <label><input type="checkbox" id="rdShowLabTagline" checked> Show Tagline</label>
+  </div>
+  <div class="field">
+    <label><input type="checkbox" id="rdShowWatermark"> Show Watermark</label>
+  </div>
+  <div class="field">
+    <label>Watermark Text</label>
+    <input id="rdWatermarkText" maxlength="100"
+      value="ACD BITTU LAB CLOUD">
+  </div>
+  <div class="field">
+    <label>Watermark Opacity (0.02–0.20)</label>
+    <input id="rdWatermarkOpacity" type="number"
+      min="0.02" max="0.20" step="0.01" value="0.08">
+  </div>
+</div>
+      
+<div class="panel-head">Patient & Printing Settings</div>
+<div class="fields">
+  <div class="field"><label>Lab Alias</label><input id="rdLabAlias"></div>
+  <div class="field"><label>Child Age Limit</label><input id="rdChildAge" type="number" value="12"></div>
+  <div class="field"><label>Patient ID Generation</label><select id="rdAutoPatient"><option value="true">Automatic</option><option value="false">Manual</option></select></div>
+  
+  <div class="field" id="rdPrintModeWrap" style="display:none">
+  <label>Letterhead Mode (Super Admin Only)</label>
+  <select id="rdPrintMode">
+    <option value="preprinted">Pre-Printed Letterhead</option>
+    <option value="blank">Software Letterhead</option>
+  </select>
+  </div>
+  <div class="field"><label>X-Ray Footer (pt)</label><input id="rdXrayFooter" type="number" value="800"></div>
+  <div class="field"><label>X-Ray Alignment</label><select id="rdXrayAlign"><option>Left</option><option>Middle</option><option>Right</option></select></div>
+</div>
+
+<div class="panel-head">Spacing & Test Layout</div>
+<div class="fields">
+  <div class="field"><label>Gap for Header (pt)</label><input id="rdGapHeader" type="number" value="140"></div>
+  <div class="field"><label>Gap Between Header (pt)</label><input id="rdGapBetweenHeader" type="number" value="25"></div>
+  <div class="field"><label>Gap for Content (pt)</label><input id="rdGapContent" type="number" value="270"></div>
+  <div class="field"><label>Gap Between Test (pt)</label><input id="rdGapTest" type="number" value="20"></div>
+  <div class="field"><label>Gap Between Subtest (pt)</label><input id="rdGapSubtest" type="number" value="20"></div>
+  <div class="field"><label>Gap for Footer (pt)</label><input id="rdGapFooter" type="number" value="1000"></div>
+  <div class="field"><label>Gap for Doctor Name (pt)</label><input id="rdGapDoctor" type="number" value="20"></div>
+  <div class="field"><label>Test Header Font (pt)</label><input id="rdTestHeaderFont" type="number" value="12"></div>
+  <div class="field"><label>Test Name Font (pt)</label><input id="rdTestNameFont" type="number" value="11"></div>
+  <div class="field"><label>Patient Details Font (pt)</label><input id="rdPatientFont" type="number" value="10"></div>
+  <div class="field"><label>Comment & Note Font (pt)</label><input id="rdCommentFont" type="number" value="10"></div>
+</div>
+
+<div class="panel-head">Report Positions</div>
+<div class="fields">
+  <div class="field"><label>Test Name Position</label><input id="rdPosTestName" type="number" value="80"></div>
+  <div class="field"><label>Subtest Position</label><input id="rdPosSubtest" type="number" value="100"></div>
+  <div class="field"><label>Result Position</label><input id="rdPosResult" type="number" value="310"></div>
+  <div class="field"><label>Unit Position</label><input id="rdPosUnit" type="number" value="420"></div>
+  <div class="field"><label>Reference Range Position</label><input id="rdPosRange" type="number" value="540"></div>
+  <div class="field"><label>Result End Position</label><input id="rdPosEnd" type="number" value="750"></div>
+  <div class="field"><label>Hemoglobin Unit</label><input id="rdHbUnit" value="g/dL"></div>
+</div>
+
+<div class="panel-head">Colors & Font Sizes</div>
+<div class="fields">
+  <div class="field"><label>Heading Color</label><input id="rdColorHeading" type="color" value="#000000"></div>
+  <div class="field"><label>Address Color</label><input id="rdColorAddress" type="color" value="#000000"></div>
+  <div class="field"><label>Phone Color</label><input id="rdColorPhone" type="color" value="#000000"></div>
+  <div class="field"><label>Email Color</label><input id="rdColorEmail" type="color" value="#000000"></div>
+  <div class="field"><label>Heading Size</label><input id="rdSizeHeading" type="number" value="30"></div>
+  <div class="field"><label>Address Size</label><input id="rdSizeAddress" type="number" value="16"></div>
+  <div class="field"><label>Phone Size</label><input id="rdSizePhone" type="number" value="16"></div>
+  <div class="field"><label>Email Size</label><input id="rdSizeEmail" type="number" value="16"></div>
+</div>
+
+<p><label><input id="rdRectanglePatient" type="checkbox"> Rectangle Over Patient Details</label></p>
+<p><label><input id="rdLinesPatient" type="checkbox"> Lines Over Patient Details</label></p>
+<p><label><input id="rdPrintAfterSave" type="checkbox" checked> Print Report After Save</label></p>
+      
+      <p><label><input id="rdShowTechnician" type="checkbox" checked> Show Technician Signature</label></p>
+      <p><label><input id="rdShowDoctor" type="checkbox" checked> Show Doctor Signature</label></p>
+      
+<div class="panel-head">Lab-wise Digital Signatures</div>
+
+<div class="fields">
+  <div class="field">
+    <label>Technician Name</label>
+    <input id="rdTechnicianName" maxlength="120">
+  </div>
+
+  <div class="field">
+    <label>Technician Signature</label>
+    <input id="rdTechnicianFile" type="file"
+      accept="image/png,image/jpeg,image/webp">
+  </div>
+
+  <div class="field">
+    <label>Doctor Name</label>
+    <input id="rdDoctorName" maxlength="120">
+  </div>
+
+  <div class="field">
+    <label>Doctor Qualification / Registration</label>
+    <input id="rdDoctorQualification" maxlength="180">
+  </div>
+
+  <div class="field full">
+    <label>Doctor Signature</label>
+    <input id="rdDoctorFile" type="file"
+      accept="image/png,image/jpeg,image/webp">
+  </div>
+</div>
+
+<p>PNG / JPG / WebP — Maximum 2 MB per image.</p>
+      
+      <p><label><input id="rdOwnerLocked" type="checkbox"> Lock Owner Customization (Super Admin only)</label></p>
+      <button class="btn green" id="rdSaveLab">Save Laboratory Design</button>
+      <div id="rdLabMessage"></div>
+    </div>
+  </section>
+</div>
+  <div id="cataloguePage" class="hidden">
+  <div class="catalogue-layout">
+    <aside class="catalogue-list">
+      <h3>Master Test Catalogue</h3>
+      <input id="catalogueFilter" placeholder="Search test name..." style="margin-bottom:8px">
+      <div id="catalogueTestList"></div>
+    </aside>
+    <section class="catalogue-detail">
+      <h3 id="catalogueSelectedTitle">Test Parameters</h3>
+      <div class="catalogue-meta" id="catalogueSelectedMeta">बाईं ओर से कोई टेस्ट चुनें।</div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Parameter</th><th>Unit</th><th>Reference Range</th><th>Result Type</th></tr></thead>
+        <tbody id="catalogueParameterRows"><tr><td class="catalogue-empty" colspan="4">Select a test to view its parameters.</td></tr></tbody></table>
+      </div>
+    </section>
+  </div>
+</div>
 
 </section></main></div>
-
 <script src="./offline-db.js"></script>
 <script>
 const SUPABASE_URL="https://axfvvquhswapiwmvrepe.supabase.co";
 const SUPABASE_ANON_KEY="sb_publishable_n6jRvVDjw2kOF7CS46omqQ_6qGkdR-q";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
-window.db = db;
+ window.db = db;
 const $=id=>document.getElementById(id);
 let user=null,role=null,labId=null,labs=[],catalogue=[],selectedTests=[],flatRows=[];
 
-function say(t){ const notice = $("notice"); if (notice) notice.textContent = t; else console.log("ACD Notice:", t); }
-function safe(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c])); }
+function say(t){
+  const notice = $("notice");
+  if (notice) {
+    notice.textContent = t;
+  } else {
+    console.log("ACD Notice:", t);
+  }
+}
+  
+function safe(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[c]));
+}
+  
 function deviceId(){let id=localStorage.getItem("acd_device_id");if(!id){id=crypto.randomUUID?crypto.randomUUID():"acd-"+Date.now()+"-"+Math.random().toString(36).slice(2);localStorage.setItem("acd_device_id",id)}return id}
 let heartbeatBusy=false;
 async function deviceHeartbeat(){if(heartbeatBusy)return;heartbeatBusy=true;try{const {data,error}=await db.rpc("acd_device_heartbeat",{p_device_id:deviceId()});if(error)throw error;if(data?.status==="takeover"||data?.status==="revoked"){await db.auth.signOut();location.replace("index.html")}}catch(e){console.warn("Device heartbeat:",e.message)}finally{heartbeatBusy=false}}
 function calcDue(){let total=+($("total").value||0),discount=+($("discount").value||0),paid=+($("paid").value||0);$("due").value=Math.max(0,total-discount-paid)}
 ["total","discount","paid"].forEach(id=>$(id).addEventListener("input",calcDue));
-
 function resultControl(p,index){
  const type=(p.result_type||"numeric").toLowerCase(), opts=Array.isArray(p.result_options)?p.result_options:[];
  if(["positive_negative","reactive_nonreactive","present_absent","blood_group"].includes(type)){
@@ -201,167 +1417,3339 @@ function resultControl(p,index){
  }if(type==="titre")return '<input type="text" data-result="'+index+'" data-titre="true" list="titreOptions'+index+'" placeholder="Enter titre"><datalist id="titreOptions'+index+'"><option value="1:20"><option value="1:40"><option value="1:80"><option value="1:160"><option value="1:320"><option value="1:640"></datalist>';
  return '<input data-result="'+index+'" '+(type==="numeric"?'inputmode="decimal"':'')+' placeholder="Enter result">';
 }
+const CBC_GROUPS=[
+ {title:"Haemoglobin",names:["Haemoglobin","Haemoglobin Percent"]},
+ {title:"Total Count",names:["Platelet Count","Erythrocytes","Leucocytes"]},
+ {title:"Differential W.B.C. Count",names:["Neutrophils","Lymphocytes","Monocytes","Eosinophils","Basophils"]},
+ {title:"Absolute Count",names:["Absolute Neutrophil","Absolute Lymphocyte","Absolute Monocyte","Absolute Eosinophil","Absolute Basophil"]},
+ {title:"RBC & Platelet Indices",names:["RDW-CV","PCV (HCT)","MCV","MCH","MCHC","RDW-SD","MPV","PDW","PCT","P-LCR","P-LCC"]},
+ {title:"Other Hematology",names:["ESR (Westergren) - Male","ESR (Westergren) - Female","Bleeding Time (BT)","Clotting Time (CT)","Blood Group & Rh Factor"]}
+];
 
 function getResultStatus(result, referenceRange) {
-  const value = Number(String(result ?? "").replace(/,/g, "").trim());
-  if (!String(result ?? "").trim() || !Number.isFinite(value)) return "";
-  const matches = String(referenceRange ?? "").match(/\d[\d,]*(?:\.\d+)?/g);
+  const value = Number(
+    String(result ?? "").replace(/,/g, "").trim()
+  );
+
+  if (!String(result ?? "").trim() || !Number.isFinite(value)) {
+    return "";
+  }
+
+  const matches = String(referenceRange ?? "")
+    .match(/\d[\d,]*(?:\.\d+)?/g);
+
   if (!matches || matches.length < 2) return "";
+
   const low = Number(matches[0].replace(/,/g, ""));
   const high = Number(matches[1].replace(/,/g, ""));
+
   if (!Number.isFinite(low) || !Number.isFinite(high)) return "";
+
   if (value < low) return "Low";
   if (value > high) return "High";
+
   return "Normal";
 }
-
-function calculateCBCResults(testId) {
-  const rows = flatRows.filter(r => r.test_id === testId);
-  if (!rows.length) return;
-  const get = name => { const row = rows.find(r => r.parameter_name.toLowerCase() === name.toLowerCase()); if (!row || String(row.result_value ?? "").trim() === "") return NaN; const value = Number(row.result_value); return Number.isFinite(value) ? value : NaN; };
-  const set = (name, value) => { const row = rows.find(r => r.parameter_name.toLowerCase() === name.toLowerCase()); if (!row || row.manual_override) return; row.result_value = Number.isFinite(value) ? value.toFixed(2) : ""; };
-  const hb = get("Haemoglobin"), rbc = get("Erythrocytes"), tlc = get("Leucocytes"), pcv = get("PCV (HCT)");
-  set("Haemoglobin Percent", Number.isFinite(hb) ? hb / 14.6 * 100 : NaN);
-  [["Neutrophils", "Absolute Neutrophil"], ["Lymphocytes", "Absolute Lymphocyte"], ["Monocytes", "Absolute Monocyte"], ["Eosinophils", "Absolute Eosinophil"], ["Basophils", "Absolute Basophil"]].forEach(([percent, absolute]) => { const value = get(percent); set(absolute, Number.isFinite(tlc) && Number.isFinite(value) ? tlc * value / 100 : NaN); });
-  set("MCV", Number.isFinite(pcv) && Number.isFinite(rbc) && rbc > 0 ? pcv * 10 / rbc : NaN);
-  set("MCH", Number.isFinite(hb) && Number.isFinite(rbc) && rbc > 0 ? hb * 10 / rbc : NaN);
-  set("MCHC", Number.isFinite(hb) && Number.isFinite(pcv) && pcv > 0 ? hb * 100 / pcv : NaN);
-}
-
+  
 function renderRows(){
  const body=$("testRows");
- if(!flatRows.length){ body.innerHTML='<tr><td class="empty" colspan="6">पहले ऊपर से CBC, KFT, LFT आदि टेस्ट जोड़ें।</td></tr>'; return; }
+ if(!flatRows.length){
+  body.innerHTML='<tr><td class="empty" colspan="6">पहले ऊपर से CBC, KFT, LFT आदि टेस्ट जोड़ें।</td></tr>';
+  return;
+ }
+
  const dilutions=["1:20","1:40","1:80","1:160","1:320","1:640"];
  const antigens=["S. Typhi O","S. Typhi H","S. Para Typhi AH","S. Para Typhi BH"];
  const out=[];
+
  selectedTests.forEach(t=>{
   const rows=flatRows.filter(r=>r.test_id===t.id);
   const overall=rows.find(r=>r.parameter_name==="Widal Test (Overall Result)");
   const isWidal=!!overall && antigens.some(a=>rows.some(r=>r.parameter_name.startsWith(a+" - ")));
+
   out.push('<tr class="test-heading-row"><td colspan="6">'+safe(t.test_name.toUpperCase())+'</td></tr>');
 
   if(isWidal){
    const oi=flatRows.indexOf(overall);
-   out.push('<tr><td><b>WIDAL TEST</b></td><td>' + resultControl(overall,oi) + '</td><td>-</td><td>Positive / Negative</td><td></td><td class="no-print"></td></tr>');
-   let matrix='<tr><td colspan="6"><div style="overflow-x:auto"><table style="width:100%;min-width:560px;border-collapse:collapse"><thead><tr><th>INVESTIGATION</th>'+dilutions.map(d=>'<th style="text-align:center">'+d+'</th>').join('')+'</tr></thead><tbody>';
+   
+    out.push(
+      '<tr>' +
+      '<td><b>WIDAL TEST</b></td>' +
+      '<td>' + resultControl(overall,oi) + '</td>' +
+      
+'<td>-</td>' +
+'<td>Positive / Negative</td>' +
+
+      '<td></td>' +
+      '<td class="no-print"></td>' +
+      '</tr>'
+    );
+
+   let matrix='<tr><td colspan="6"><div style="overflow-x:auto"><table style="width:100%;min-width:560px;border-collapse:collapse"><thead><tr><th>INVESTIGATION</th>'+
+    dilutions.map(d=>'<th style="text-align:center">'+d+'</th>').join('')+
+    '</tr></thead><tbody>';
+
    antigens.forEach(ant=>{
     matrix+='<tr><td><b>'+safe(ant)+'</b></td>';
     dilutions.forEach(d=>{
      const r=rows.find(x=>x.parameter_name===ant+" - "+d);
-     if(!r){ matrix+='<td>-</td>'; return; }
+     if(!r){
+      matrix+='<td>-</td>';
+      return;
+     }
      const idx=flatRows.indexOf(r);
      matrix+='<td><select data-result="'+idx+'" style="min-width:48px"><option value="">Select</option><option value="+">+</option><option value="-">-</option></select></td>';
     });
     matrix+='</tr>';
    });
+
    matrix+='</tbody></table></div></td></tr>';
    out.push(matrix);
    return;
   }
+
   rows.forEach(r=>{
    const i=flatRows.indexOf(r);
-   const status = getResultStatus(r.result_value, r.reference_range);
-   out.push('<tr><td class="param-name"><b>' + safe(r.parameter_name) + '</b></td><td>' + resultControl(r,i) + '</td><td>' + safe(r.unit || "") + '</td><td>' + safe(r.reference_range || "") + '</td><td class="result-status">' + (status ? '<span class="badge ' + (status === "Normal" ? 'badge-normal' : 'badge-abnormal') + '">' + status + '</span>' : '') + '</td><td class="no-print"><button class="btn danger" data-remove-test="' + safe(r.test_id) + '">×</button></td></tr>');
-  });
+   
+
+out.push(
+  '<tr>' +
+  '<td class="param-name"><b>' + safe(r.parameter_name) + '</b></td>' +
+  '<td>' + resultControl(r,i) + '</td>' +
+  '<td>' + safe(r.unit || "") + '</td>' +
+  '<td>' + safe(r.reference_range || "") + '</td>' +
+  
+'<td class="result-status">' +
+  (getResultStatus(r.result_value, r.reference_range)
+    ? '<span class="badge ' +
+      (getResultStatus(r.result_value, r.reference_range) === "Normal"
+        ? 'badge-normal' : 'badge-abnormal') +
+      '">' + getResultStatus(r.result_value, r.reference_range) + '</span>'
+    : '') +
+'</td>' +
+
+  '<td class="no-print"><button class="btn danger" data-remove-test="' + safe(r.test_id) + '">×</button></td>' +
+  '</tr>'
+);
  });
+
+ }); 
+
  body.innerHTML=out.join("");
 
  body.querySelectorAll("[data-result]").forEach(el=>{
+
   const index=+el.dataset.result;
   el.value=flatRows[index].result_value||"";
-  const update = () => {
-    flatRows[index].result_value = el.value;
-    flatRows[index].manual_override = el.value.trim() !== "";
-    const test = selectedTests.find(t => t.id === flatRows[index].test_id);
-    if (test && (test.test_code === "CBC" || test.test_name.toLowerCase() === "cbc")) calculateCBCResults(test.id);
-    body.querySelectorAll("[data-result]").forEach(input => {
-      const i = Number(input.dataset.result);
-      const calculatedValue = flatRows[i]?.result_value ?? "";
-      if (input.value !== calculatedValue) input.value = calculatedValue;
-      const statusCell = input.closest("tr")?.querySelector(".result-status");
-      if (statusCell) {
-        const s = getResultStatus(calculatedValue, flatRows[i].reference_range);
-        statusCell.innerHTML = s ? '<span class="badge ' + (s === "Normal" ? 'badge-normal' : 'badge-abnormal') + '">' + safe(s) + '</span>' : '';
-      }
-    });
-  };
-  el.addEventListener("input",update); el.addEventListener("change",update);
+
+const update = () => {
+  flatRows[index].result_value = el.value;
+  flatRows[index].manual_override = el.value.trim() !== "";
+
+  const row = flatRows[index];
+  const test = selectedTests.find(t => t.id === row.test_id);
+
+  if (test && (
+    test.test_code === "CBC" ||
+    test.test_name.toLowerCase() === "cbc"
+  )) {
+    calculateCBCResults(test.id);
+  }
+
+  body.querySelectorAll("[data-result]").forEach(input => {
+    const i = Number(input.dataset.result);
+    const calculatedValue = flatRows[i]?.result_value ?? "";
+
+    if (input.value !== calculatedValue) {
+      input.value = calculatedValue;
+    }
+
+    const resultRow = input.closest("tr");
+    const statusCell = resultRow?.querySelector(".result-status");
+
+    if (statusCell) {
+      const status = getResultStatus(
+        calculatedValue,
+        flatRows[i].reference_range
+      );
+
+      statusCell.innerHTML = status
+        ? '<span class="badge ' +
+          (status === "Normal" ? 'badge-normal' : 'badge-abnormal') +
+          '">' + safe(status) + '</span>'
+        : '';
+    }
+  });
+};
+
+  el.addEventListener("input",update);
+  el.addEventListener("change",update);
+
   el.addEventListener("keydown",e=>{
    if(e.key==="Enter"){
     e.preventDefault();
-    if(el.dataset.titre==="true"){ const v=el.value.trim(); if(/^\d+$/.test(v)){ el.value="1:"+v; update(); }else if(/^1:\d+$/.test(v)){ update(); } }
-    const controls=[...body.querySelectorAll("[data-result]")], next=controls[controls.indexOf(el)+1]; if(next)next.focus();
+
+    if(el.dataset.titre==="true"){
+     const value=el.value.trim();
+     if(/^\d+$/.test(value)){
+      el.value="1:"+value;
+      update();
+     }else if(/^1:\d+$/.test(value)){
+      update();
+     }
+    }
+
+    const controls=[...body.querySelectorAll("[data-result]")];
+    const next=controls[controls.indexOf(el)+1];
+    if(next)next.focus();
    }
   });
  });
- body.querySelectorAll("[data-remove-test]").forEach(b=>{ b.onclick=()=>{ selectedTests=selectedTests.filter(t=>t.id!==b.dataset.removeTest); flatRows=flatRows.filter(r=>r.test_id!==b.dataset.removeTest); renderRows(); renderSelected(); }; });
+
+ body.querySelectorAll("[data-remove-test]").forEach(b=>{
+  b.onclick=()=>{
+   selectedTests=selectedTests.filter(t=>t.id!==b.dataset.removeTest);
+   flatRows=flatRows.filter(r=>r.test_id!==b.dataset.removeTest);
+   renderRows();
+   renderSelected();
+  };
+ });
 }
+
+/* CBC automatic calculations with manual override */
+function calculateCBCResults(testId) {
+  const rows = flatRows.filter(r => r.test_id === testId);
+  if (!rows.length) return;
+
+  const get = name => {
+    const row = rows.find(
+      r => r.parameter_name.toLowerCase() === name.toLowerCase()
+    );
+
+    if (!row || String(row.result_value ?? "").trim() === "") {
+      return NaN;
+    }
+
+    const value = Number(row.result_value);
+    return Number.isFinite(value) ? value : NaN;
+  };
+
+  const set = (name, value) => {
+    const row = rows.find(
+      r => r.parameter_name.toLowerCase() === name.toLowerCase()
+    );
+
+    if (!row || row.manual_override) return;
+
+    row.result_value = Number.isFinite(value)
+      ? value.toFixed(2)
+      : "";
+  };
+
+  const hb = get("Haemoglobin");
+  const rbc = get("Erythrocytes");
+  const tlc = get("Leucocytes");
+  const pcv = get("PCV (HCT)");
+
+  set(
+    "Haemoglobin Percent",
+    Number.isFinite(hb) ? hb / 14.6 * 100 : NaN
+  );
+
+  [
+    ["Neutrophils", "Absolute Neutrophil"],
+    ["Lymphocytes", "Absolute Lymphocyte"],
+    ["Monocytes", "Absolute Monocyte"],
+    ["Eosinophils", "Absolute Eosinophil"],
+    ["Basophils", "Absolute Basophil"]
+  ].forEach(([percent, absolute]) => {
+    const value = get(percent);
+
+    set(
+      absolute,
+      Number.isFinite(tlc) && Number.isFinite(value)
+        ? tlc * value / 100
+        : NaN
+    );
+  });
+
+  set(
+    "MCV",
+    Number.isFinite(pcv) && Number.isFinite(rbc) && rbc > 0
+      ? pcv * 10 / rbc
+      : NaN
+  );
+
+  set(
+    "MCH",
+    Number.isFinite(hb) && Number.isFinite(rbc) && rbc > 0
+      ? hb * 10 / rbc
+      : NaN
+  );
+
+  set(
+    "MCHC",
+    Number.isFinite(hb) && Number.isFinite(pcv) && pcv > 0
+      ? hb * 100 / pcv
+      : NaN
+  );
+}
+
 function renderSelected(){$("selectedTestsLabel").textContent="Selected tests: "+(selectedTests.map(t=>t.test_name).join(", ")||"none")}
 
-/* SEARCH & WIDAL DYNAMIC ADD FIX */
-let chosenSearchWidal=false, chosenSearchParameter=null, chosenSearchTestId=null, searchRequestId=0;
-async function renderTestSearchResults() {
-  const q = $("testSearch").value.trim().toLowerCase(), box = $("testSearchResults"), requestId = ++searchRequestId;
-  chosenSearchTestId = null; chosenSearchParameter = null; chosenSearchWidal = false;
-  if (!q) { box.classList.add("hidden"); box.innerHTML = ""; return; }
-  let allParameters = [];
-  try {
-    const { data, error } = await db.from("acd_test_parameters").select("*").order("sort_order");
-    if (error) throw error; allParameters = data || [];
-  } catch (error) { try { allParameters = await window.ACDOfflineDB.getRecords("parameters", labId); } catch (e) { allParameters = []; } }
-  
-  if (requestId !== searchRequestId) return;
-  if (q.includes("widal") || q.includes("विडाल") || q.includes("वाइडल")) {
-    const hasWidal = catalogue.some(t => (t.test_code||"").toUpperCase()==="WIDAL" || (t.test_name||"").toLowerCase().includes("widal"));
-    box.innerHTML = hasWidal ? '<button type="button" class="test-search-option" data-search-widal="true">Widal Test<small>पूरा Widal Matrix • Positive/Negative + 4 Antigen Rows</small></button>' : '<div class="test-search-empty">Widal Matrix उपलब्ध नहीं है।</div>';
-    box.querySelectorAll("[data-search-widal]").forEach(b => { b.addEventListener("click", () => { chosenSearchWidal = true; $("testSearch").value = "Widal Test"; box.classList.add("hidden"); box.innerHTML = ""; }); });
-    box.classList.remove("hidden"); return;
+async function loadCatalogue(){
+  if (!labId) {
+    catalogue = [];
+    return;
   }
-  const testMatches = catalogue.filter(t => (t.test_name||"").toLowerCase().includes(q) || (t.test_code||"").toLowerCase().includes(q)).slice(0, 8);
-  const parameters = allParameters.filter(p => (p.parameter_name||"").toLowerCase().includes(q) && catalogue.some(t => t.id === p.test_id)).slice(0, 12);
-  const testHTML = testMatches.map(t => '<button type="button" class="test-search-option" data-search-test="' + safe(t.id) + '">' + safe(t.test_name) + '<small>पूरा प्रोफाइल • ' + safe(t.test_code) + '</small></button>').join("");
-  const parameterHTML = parameters.map(p => { const parent = catalogue.find(t => t.id === p.test_id); return '<button type="button" class="test-search-option" data-search-parameter="' + safe(p.id) + '">' + safe(p.parameter_name) + '<small>सिर्फ यह टेस्ट • ' + safe(parent.test_name) + '</small></button>'; }).join("");
-  box.innerHTML = testHTML + parameterHTML || '<div class="test-search-empty">कोई matching test नहीं मिला।</div>';
+
+  try {
+    const { data, error } = await db
+      .from("acd_test_catalogue")
+      .select("id,test_code,test_name,department,default_price,sort_order")
+      .eq("is_active", true)
+      .order("sort_order");
+
+    if (error) throw error;
+
+    catalogue = data || [];
+
+    // Save latest catalogue for this laboratory.
+    await Promise.all(
+      catalogue.map(test =>
+        window.ACDOfflineDB.putRecord(
+          "catalogue",
+          labId,
+          test
+        )
+      )
+    );
+
+    console.log("Catalogue loaded from Supabase and cached:", catalogue.length);
+  } catch (error) {
+    console.warn("Supabase catalogue unavailable:", error.message);
+
+    try {
+      const cached = await window.ACDOfflineDB.getRecords(
+        "catalogue",
+        labId
+      );
+
+      catalogue = cached
+        .filter(test => test.is_active !== false)
+        .sort((a, b) => (a.sort_order || 100) - (b.sort_order || 100));
+
+      if (catalogue.length) {
+        say("Offline Catalogue loaded: " + catalogue.length + " tests.");
+      } else {
+        catalogue = [];
+        say("Catalogue अभी Offline उपलब्ध नहीं है। पहले Internet से Catalogue लोड करें।");
+      }
+    } catch (cacheError) {
+      catalogue = [];
+      console.error("Offline catalogue error:", cacheError);
+      say("Catalogue load failed: " + cacheError.message);
+    }
+  }
+}
+
+let activeCatalogueTestId=null;
+function renderCatalogueList(filter=""){
+ const list=$("catalogueTestList"),q=filter.trim().toLowerCase();
+ const items=catalogue.filter(t=>!q||t.test_name.toLowerCase().includes(q)||t.test_code.toLowerCase().includes(q)||(t.department||"").toLowerCase().includes(q));
+ list.innerHTML=items.length?items.map(t=>'<button class="catalogue-test '+(t.id===activeCatalogueTestId?'active':'')+'" data-catalogue-id="'+safe(t.id)+'">'+safe(t.test_name)+'<small>'+safe(t.department||t.test_code)+'</small></button>').join(""):'<div class="catalogue-empty">कोई टेस्ट नहीं मिला।</div>';
+ list.querySelectorAll("[data-catalogue-id]").forEach(b=>b.onclick=()=>openCatalogueTest(b.dataset.catalogueId));
+}
+
+async function openCatalogueTest(id){
+  const t = catalogue.find(x => x.id === id);
+  if (!t) return;
+
+  activeCatalogueTestId = id;
+  renderCatalogueList($("catalogueFilter").value);
+
+  $("catalogueSelectedTitle").textContent = t.test_name;
+  $("catalogueSelectedMeta").textContent =
+    (t.department || "") + (t.test_code ? " • Code: " + t.test_code : "");
+
+  $("catalogueParameterRows").innerHTML =
+    '<tr><td class="catalogue-empty" colspan="4">Loading parameters…</td></tr>';
+
+  let params = [];
+
+  try {
+    const { data, error } = await db
+      .from("acd_test_parameters")
+      .select("id,test_id,parameter_name,unit,reference_range,result_type,result_options,sort_order")
+      .eq("test_id", id)
+      .order("sort_order");
+
+    if (error) throw error;
+
+    params = data || [];
+
+    await Promise.all(
+      params.map(parameter =>
+        window.ACDOfflineDB.putRecord(
+          "parameters",
+          labId,
+          parameter
+        )
+      )
+    );
+
+    console.log("Test parameters cached:", t.test_name, params.length);
+
+  } catch (error) {
+    console.warn("Online parameter load failed:", error.message);
+
+    try {
+      const cached = await window.ACDOfflineDB.getRecords(
+        "parameters",
+        labId
+      );
+
+      params = cached
+        .filter(parameter => parameter.test_id === id)
+        .sort((a, b) =>
+          (a.sort_order || 100) - (b.sort_order || 100)
+        );
+
+    } catch (cacheError) {
+      console.error("Offline parameter load failed:", cacheError);
+      params = [];
+    }
+  }
+
+  $("catalogueParameterRows").innerHTML = params.length
+    ? params.map(p =>
+        '<tr><td><b>' + safe(p.parameter_name) +
+        '</b></td><td>' + safe(p.unit || "-") +
+        '</td><td>' + safe(p.reference_range || "-") +
+        '</td><td>' + safe(p.result_type || "numeric") +
+        (p.result_options?.length
+          ? '<br><small>' + safe(p.result_options.join(", ")) + '</small>'
+          : "") +
+        '</td></tr>'
+      ).join("")
+    : '<tr><td class="catalogue-empty" colspan="4">इस टेस्ट के Parameters Offline उपलब्ध नहीं हैं। पहले Internet से इसे लोड करें।</td></tr>';
+}
+
+$("catalogueFilter").addEventListener("input",()=>renderCatalogueList($("catalogueFilter").value));
+async function showCataloguePage(){
+ if(!catalogue.length)await loadCatalogue();
+ renderCatalogueList($("catalogueFilter").value);
+ if(activeCatalogueTestId)await openCatalogueTest(activeCatalogueTestId);
+ else if(catalogue.length)await openCatalogueTest(catalogue[0].id);
+}
+let chosenSearchWidal = false;
+let searchRequestId = 0;
+let chosenSearchParameter = null;
+let chosenSearchTestId = null;
+
+async function renderTestSearchResults() {
+  const q = $("testSearch").value.trim().toLowerCase();
+  const box = $("testSearchResults");
+  const requestId = ++searchRequestId;
+
+  chosenSearchTestId = null;
+  chosenSearchParameter = null;
+  chosenSearchWidal = false;
+
+  if (!q) {
+    box.classList.add("hidden");
+    box.innerHTML = "";
+    return;
+  }
+
+  let allParameters = [];
+
+  try {
+    const { data, error } = await db
+      .from("acd_test_parameters")
+      .select("id,test_id,parameter_name,unit,reference_range,result_type,result_options,sort_order")
+      .order("sort_order");
+
+    if (error) throw error;
+
+    allParameters = data || [];
+
+    await Promise.all(
+      allParameters.map(parameter =>
+        window.ACDOfflineDB.putRecord(
+          "parameters",
+          labId,
+          parameter
+        )
+      )
+    );
+
+  } catch (error) {
+    console.warn("Using offline parameter search:", error.message);
+
+    try {
+      allParameters = await window.ACDOfflineDB.getRecords(
+        "parameters",
+        labId
+      );
+    } catch (cacheError) {
+      console.error("Offline search failed:", cacheError);
+      allParameters = [];
+    }
+  }
+
+  if (requestId !== searchRequestId) return;
+
+  if (
+    q.includes("widal") ||
+    q.includes("विडाल") ||
+    q.includes("वाइडल")
+  ) {
+    const widalTestObj = catalogue.find(t => (t.test_code || "").toUpperCase() === "WIDAL" || (t.test_name || "").toLowerCase().includes("widal"));
+    const widalParams = widalTestObj ? allParameters.filter(p => p.test_id === widalTestObj.id) : [];
+
+    const hasWidal = widalParams.some(
+      p => p.parameter_name === "Widal Test (Overall Result)"
+    );
+
+    box.innerHTML = hasWidal
+      ? '<button type="button" class="test-search-option" data-search-widal="true">Widal Test<small>पूरा Widal Matrix • Overall Positive/Negative + 4 Antigen Rows + 6 Dilutions</small></button>'
+      : '<div class="test-search-empty">Widal Matrix अभी Offline उपलब्ध नहीं है।</div>';
+
+    box.querySelectorAll("[data-search-widal]").forEach(b => {
+      b.addEventListener("click", () => {
+        chosenSearchWidal = true;
+        chosenSearchParameter = null;
+        chosenSearchTestId = null;
+        $("testSearch").value = "Widal Test";
+        box.classList.add("hidden");
+        box.innerHTML = "";
+      });
+    });
+
+    box.classList.remove("hidden");
+    return;
+  }
+
+  const testMatches = catalogue.filter(t =>
+    (t.test_name || "").toLowerCase().includes(q) ||
+    (t.test_code || "").toLowerCase().includes(q) ||
+    (t.department || "").toLowerCase().includes(q)
+  ).slice(0, 8);
+
+  const parameters = allParameters
+    .filter(p =>
+      (p.parameter_name || "").toLowerCase().includes(q) &&
+      catalogue.some(t => t.id === p.test_id)
+    )
+    .slice(0, 12);
+
+  const testHTML = testMatches.map(t =>
+    '<button type="button" class="test-search-option" data-search-test="' +
+    safe(t.id) + '">' + safe(t.test_name) +
+    '<small>पूरा प्रोफाइल • ' + safe(t.test_code) + '</small></button>'
+  ).join("");
+
+  const parameterHTML = parameters.map(p => {
+    const parent = catalogue.find(t => t.id === p.test_id);
+
+    return '<button type="button" class="test-search-option" data-search-parameter="' +
+      safe(p.id) + '">' + safe(p.parameter_name) +
+      '<small>सिर्फ यह टेस्ट • ' + safe(parent.test_name) + '</small></button>';
+  }).join("");
+
+  box.innerHTML = testHTML + parameterHTML ||
+    '<div class="test-search-empty">कोई matching test नहीं मिला। पहले Internet से Catalogue और Parameters लोड करें।</div>';
+
   box.classList.remove("hidden");
-  box.querySelectorAll("[data-search-test]").forEach(b => { b.addEventListener("click", () => { const t = catalogue.find(x => x.id === b.dataset.searchTest); if (t) { chosenSearchTestId = t.id; $("testSearch").value = t.test_name; box.classList.add("hidden"); box.innerHTML = ""; } }); });
-  box.querySelectorAll("[data-search-parameter]").forEach(b => { b.addEventListener("click", () => { const p = parameters.find(x => x.id === b.dataset.searchParameter); if (p) { chosenSearchParameter = p; $("testSearch").value = p.parameter_name; box.classList.add("hidden"); box.innerHTML = ""; } }); });
+
+  box.querySelectorAll("[data-search-test]").forEach(b => {
+    b.addEventListener("click", () => {
+      const t = catalogue.find(x => x.id === b.dataset.searchTest);
+      if (!t) return;
+
+      chosenSearchTestId = t.id;
+      chosenSearchParameter = null;
+      chosenSearchWidal = false;
+      $("testSearch").value = t.test_name;
+      box.classList.add("hidden");
+      box.innerHTML = "";
+    });
+  });
+
+  box.querySelectorAll("[data-search-parameter]").forEach(b => {
+    b.addEventListener("click", () => {
+      const p = parameters.find(x => x.id === b.dataset.searchParameter);
+      if (!p) return;
+
+      chosenSearchParameter = p;
+      chosenSearchTestId = null;
+      chosenSearchWidal = false;
+      $("testSearch").value = p.parameter_name;
+      box.classList.add("hidden");
+      box.innerHTML = "";
+    });
+  });
 }
 
 $("testSearch").addEventListener("input", renderTestSearchResults);
-$("testSearch").addEventListener("focus", () => { if ($("testSearch").value.trim()) renderTestSearchResults(); });
+$("testSearch").addEventListener("focus", () => {
+  if ($("testSearch").value.trim()) renderTestSearchResults();
+});
+
+
 document.addEventListener("click",e=>{if(!e.target.closest(".test-search-wrap"))$("testSearchResults").classList.add("hidden")});
+
+
+async function getTestParametersOfflineSafe(testId) {
+  try {
+    const { data, error } = await db
+      .from("acd_test_parameters")
+      .select("id,test_id,parameter_name,unit,reference_range,result_type,result_options,sort_order")
+      .eq("test_id", testId)
+      .order("sort_order");
+
+    if (error) throw error;
+
+    const params = data || [];
+
+    await Promise.all(
+      params.map(parameter =>
+        window.ACDOfflineDB.putRecord(
+          "parameters",
+          labId,
+          parameter
+        )
+      )
+    );
+
+    return params;
+
+  } catch (error) {
+    console.warn("Using cached test parameters:", error.message);
+
+    const cached = await window.ACDOfflineDB.getRecords(
+      "parameters",
+      labId
+    );
+
+    return cached
+      .filter(parameter => parameter.test_id === testId)
+      .sort((a, b) =>
+        (a.sort_order || 100) - (b.sort_order || 100)
+      );
+  }
+}
 
 async function addTest() {
   const q = $("testSearch").value.trim().toLowerCase();
-  if (!q) { say("Test का नाम लिखें।"); return; }
-  const parameter = chosenSearchParameter, isWidal = chosenSearchWidal;
-  const t = isWidal ? catalogue.find(x => (x.test_code||"").toUpperCase()==="WIDAL" || (x.test_name||"").toLowerCase().includes("widal")) : parameter ? catalogue.find(x => x.id === parameter.test_id) : catalogue.find(x => x.test_name.toLowerCase() === q || x.test_code.toLowerCase() === q) || catalogue.find(x => x.test_name.toLowerCase().includes(q));
-  if (!t) { say("यह टेस्ट catalogue में नहीं मिला।"); return; }
-  const selectionId = isWidal ? t.id + "::WIDAL" : parameter ? t.id + "::" + parameter.id : t.id;
-  if (selectedTests.some(x => x.id === selectionId)) { say("यह टेस्ट पहले से जोड़ा गया है।"); return; }
+  if (!q) {
+    say("Test का नाम लिखें।");
+    return;
+  }
+
+  const parameter = chosenSearchParameter;
+  const isWidal = chosenSearchWidal;
+
+  const t = isWidal
+    ? catalogue.find(x => (x.test_code || "").toUpperCase() === "WIDAL" || (x.test_name || "").toLowerCase().includes("widal"))
+    : parameter
+      ? catalogue.find(x => x.id === parameter.test_id)
+      : catalogue.find(x =>
+          x.test_name.toLowerCase() === q ||
+          x.test_code.toLowerCase() === q
+        ) || catalogue.find(x =>
+          x.test_name.toLowerCase().includes(q) ||
+          x.test_code.toLowerCase().includes(q)
+        );
+
+  if (!t) {
+    say("यह टेस्ट catalogue में नहीं मिला।");
+    return;
+  }
+
+  const selectionId = isWidal
+    ? t.id + "::WIDAL"
+    : parameter ? t.id + "::" + parameter.id : t.id;
+
+  if (selectedTests.some(x => x.id === selectionId)) {
+    say("यह टेस्ट पहले से जोड़ा गया है।");
+    return;
+  }
+
   let params = [];
-  try {
-    const { data } = await db.from("acd_test_parameters").select("*").eq("test_id", t.id).order("sort_order");
-    params = data || [];
-  } catch (e) { params = await window.ACDOfflineDB.getRecords("parameters", labId); params = params.filter(p=>p.test_id===t.id); }
+
+ if (isWidal) {
+    const allParams = await getTestParametersOfflineSafe(t.id);
+
+    params = allParams.filter(p =>
+      p.parameter_name === "Widal Test (Overall Result)" ||
+      /^(S\. Typhi O|S\. Typhi H|S\. Para Typhi AH|S\. Para Typhi BH) - 1:(20|40|80|160|320|640)$/.test(p.parameter_name)
+    );
+  } else if (parameter) {
+    params = [parameter];
+} else {
+    params = await getTestParametersOfflineSafe(t.id);
+  }
   
-  if (isWidal) { params = params.filter(p => p.parameter_name === "Widal Test (Overall Result)" || /^(S\. Typhi O|S\. Typhi H|S\. Para Typhi AH|S\. Para Typhi BH) - 1:(20|40|80|160|320|640)$/.test(p.parameter_name)); } 
-  else if (parameter) { params = [parameter]; }
-  
-  const displayName = isWidal ? "Widal Test" : parameter ? parameter.parameter_name : t.test_name;
-  selectedTests.push({ ...t, id: selectionId, source_test_id: t.id, test_name: displayName });
-  params.forEach(p => flatRows.push({ test_id: selectionId, test_name: displayName, test_code: isWidal ? "WIDAL" : t.test_code, parameter_id: p.id, parameter_name: p.parameter_name, unit: p.unit, reference_range: p.reference_range, result_type: p.result_type, result_options: p.result_options, result_value: "" }));
-  $("testSearch").value = ""; chosenSearchTestId = null; chosenSearchParameter = null; chosenSearchWidal = false; $("testSearchResults").classList.add("hidden");
-  renderSelected(); renderRows(); say(displayName + " जोड़ा गया।");
+  const displayName = isWidal ? "Widal Test" :
+    parameter ? parameter.parameter_name : t.test_name;
+
+  selectedTests.push({
+    ...t,
+    id: selectionId,
+    source_test_id: t.id,
+    test_name: displayName
+  });
+
+  params.forEach(p => flatRows.push({
+    test_id: selectionId,
+    test_name: displayName,
+    test_code: isWidal ? "WIDAL" : t.test_code,
+    parameter_id: p.id,
+    parameter_name: p.parameter_name,
+    unit: p.unit,
+    reference_range: p.reference_range,
+    result_type: p.result_type,
+    result_options: p.result_options,
+    result_value: ""
+  }));
+
+  $("testSearch").value = "";
+  chosenSearchTestId = null;
+  chosenSearchParameter = null;
+  chosenSearchWidal = false;
+  $("testSearchResults").classList.add("hidden");
+
+  renderSelected();
+  renderRows();
+  say(displayName + " जोड़ा गया।");
 }
+
 $("addTest").onclick=addTest;
 $("clear").onclick=()=>{selectedTests=[];flatRows=[];renderRows();renderSelected();say("चुने हुए टेस्ट हटाए गए।")};
-function setupEnterFlow(){ const ids=["patient","mobile","age","ageUnit","gender","doctor","testSearch"]; ids.forEach((id,i)=>$(id).addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();if(id==="testSearch"){addTest();return}$(ids[i+1])?.focus()}})); }
-setupEnterFlow();
+function setupEnterFlow(){
+ const ids=["patient","mobile","age","ageUnit","gender","doctor","testSearch"];
+ ids.forEach((id,i)=>$(id).addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();if(id==="testSearch"){addTest();return}$(ids[i+1])?.focus()}}));
+}
 
-// बाकी आपका Save, Print और Initialization लॉजिक पुरानी फाइल से वैसा ही रहेगा।
-// चूँकि आपने कहा कि बाकी चीज़ें सही हैं, इसलिए मैंने उन्हें नहीं छेड़ा है।
+async function init(){
+ try {
+   await window.ACDOfflineDB.open();
+   console.log("ACD Offline Database: Ready");
+ } catch (offlineError) {
+   console.warn("Offline database unavailable:", offlineError);
+ }
+
+ const {data:{session}}=await db.auth.getSession();if(!session){location.replace("index.html");return}
+
+ user=session.user;
+ await deviceHeartbeat();setInterval(deviceHeartbeat,12000);
+ document.addEventListener("visibilitychange",()=>{if(!document.hidden)deviceHeartbeat()});
+ const {data:profile,error:pe}=await db.from("profiles").select("platform_role,full_name").eq("id",user.id).maybeSingle();if(pe)throw pe;
+ role=profile?.platform_role==="super_admin"?"super_admin":"lab_admin";$("account").textContent=profile?.full_name||user.email;
+ document.documentElement.classList.toggle(
+  "acd-lab-admin",
+  role !== "super_admin"
+);
+ if(role === "super_admin"){
+  $("nav").querySelector('[data-page="Super Admin"]')?.removeAttribute("hidden");
+} 
+  if(role !== "super_admin"){
+  $("nav").querySelector('[data-page="Super Admin"]')?.remove();
+  document.getElementById("superAdminCenter")?.remove();
+  document.querySelector("#reportDesignerPage .rd-global-card")?.remove();
+  document.getElementById("rdPrintModeWrap")?.remove();
+  document.getElementById("rdOwnerLocked")?.closest("p")?.remove();
+ }
+ if(role==="super_admin"){
+  const {data,error}=await db.from("cloud_labs").select("id,name,address,phone").order("name");if(error)throw error;labs=data||[];
+  $("labChooser").classList.remove("hidden");$("labSelect").innerHTML='<option value="">Choose laboratory</option>'+labs.map(l=>'<option value="'+safe(l.id)+'">'+safe(l.name)+'</option>').join("");
+  const saved=sessionStorage.getItem("acd_lab_id");if(saved&&labs.some(l=>l.id===saved))$("labSelect").value=saved;else if(labs.length===1)$("labSelect").value=labs[0].id;
+  setLab($("labSelect").value);
+ }else{
+  const {data:members,error}=await db.from("cloud_memberships").select("lab_id,cloud_labs(id,name,address,phone)").eq("user_id",user.id).eq("is_active",true);if(error)throw error;
+  if(!members?.length)throw new Error("No active laboratory membership found.");
+  labs=members.map(m=>({id:m.lab_id,name:m.cloud_labs?.name||"Laboratory",address:m.cloud_labs?.address||"",phone:m.cloud_labs?.phone||""}));
+  $("labChooser").classList.remove("hidden");$("labSelect").innerHTML=labs.map(l=>'<option value="'+safe(l.id)+'">'+safe(l.name)+'</option>').join("");
+  $("labSelect").disabled=labs.length===1;const saved=sessionStorage.getItem("acd_lab_id");setLab(labs.some(l=>l.id===saved)?saved:labs[0].id);$("labSelect").value=labId;
+ }
+ 
+await loadCatalogue();
+await updateFeatureNavigation();
+$("date").value = new Date().toISOString().slice(0, 10);
+say("Supabase से connected। Catalogue loaded: " + catalogue.length + " tests.");
+}
+
+function setLab(id){labId=id||null;const l=labs.find(x=>x.id===labId);$("labId").value=l?l.name:"Select a lab";$("labStatus").textContent=l?"Selected":"No laboratory selected";if(role==="lab_admin"&&id)sessionStorage.setItem("acd_lab_id",id)}
+
+$("labSelect").onchange = async () => {
+  setLab($("labSelect").value);
+  await updateFeatureNavigation();
+};
+
+let savePrintInProgress = false;
+
+$("save").onclick=async()=>{
+ if(savePrintInProgress) return;
+
+ if(!labId){
+   say("पहले laboratory चुनें।");
+   return;
+ }
+
+ const patientName=$("patient").value.trim();
+
+ if(!patientName){
+   say("Patient name भरें।");
+   $("patient").focus();
+   return;
+ }
+
+ if(!selectedTests.length){
+   say("कम से कम एक test जोड़ें।");
+   return;
+ }
+
+ const printWindow = window.open("", "_blank");
+
+ if(!printWindow){
+   say("Chrome में Pop-ups allow करें और फिर कोशिश करें।");
+   return;
+ }
+
+ printWindow.document.write(
+   "<html><body style='font:16px Arial;padding:20px'>Report preparing...</body></html>"
+ );
+
+ savePrintInProgress = true;
+
+ const btn=$("save");
+ btn.disabled=true;
+ btn.textContent="Saving…";
+
+ try{
+  const {data:p,error:pe}=await db.from("lab_patients").insert({
+  lab_id: labId,
+  patient_name: patientName,
+  mobile: $("mobile").value.trim() || null,
+  address: $("patientAddress").value.trim() || null,
+  age: $("age").value ? Number($("age").value) : null,
+  age_unit: $("ageUnit").value,
+  gender: $("gender").value
+}).select().single();
+
+if (pe) throw pe;
+  const {data:o,error:oe}=await db.from("lab_orders").insert({lab_id:labId,patient_id:p.id,ref_doctor:$("doctor").value.trim()||"Self",order_date:$("date").value,total_amount:+$("total").value||0,discount_amount:+$("discount").value||0,paid_amount:+$("paid").value||0,payment_mode:$("payment").value}).select().single();if(oe)throw oe;
+  for(const t of selectedTests){
+   const {data:item,error:ie}=await db.from("lab_order_items").insert({lab_id:labId,order_id:o.id,test_name:t.test_name}).select().single();if(ie)throw ie;
+   const rows=flatRows.filter(r=>r.test_id===t.id);
+   if(rows.length){const payload=rows.map(r=>({lab_id:labId,order_item_id:item.id,parameter_name:r.parameter_name,result_value:r.result_value||null,unit:r.unit||null,reference_range:r.reference_range||null}));const {error:re}=await db.from("lab_test_results").insert(payload);if(re)throw re}
+  }
+  
+const qrBox = $("printPatientQR");
+qrBox.innerHTML = "";
+
+if (typeof QRCode === "undefined") {
+  throw new Error("QR Code library not loaded.");
+}
+
+new QRCode(qrBox, {
+  text: JSON.stringify({
+    patient_id: p.id,
+    order_id: o.id
+  }),
+  width: 100,
+  height: 100,
+  correctLevel: QRCode.CorrectLevel.M
+});
+
+if (typeof JsBarcode === "undefined") {
+  throw new Error("Barcode library not loaded.");
+}
+
+JsBarcode("#printOrderBarcode", o.id, {
+  format: "CODE128",
+  width: 1.5,
+  height: 42,
+  displayValue: false,
+  margin: 2
+});
+
+$("printOrderBarcodeText").textContent = o.id;
+
+$("printRegisteredTime").textContent =
+  o.created_at
+    ? new Date(o.created_at).toLocaleString("en-IN")
+    : "-";
+   
+const reportGeneratedAt = new Date();
+
+$("printReportGeneratedTime").textContent =
+  reportGeneratedAt.toLocaleString("en-IN");
+   
+
+$("printPatientMeta").innerHTML =
+  '<div><b>Patient Name:</b> ' +
+  safe(patientName) + '</div>' +
+
+  '<div><b>Age:</b> ' +
+  safe($("age").value + " " + $("ageUnit").value) +
+  '</div>' +
+
+  '<div><b>Sex:</b> ' +
+  safe($("gender").value) + '</div>' +
+
+  '<div><b>Patient ID:</b> ' +
+  safe(p.id) + '</div>' +
+
+  '<div><b>Address:</b> ' +
+  safe($("patientAddress").value.trim() || "-") +
+  '</div>';
+
+$("printReferringDoctor").textContent =
+  $("doctor").value.trim() || "Self";
+
+  $("printTestTitle").textContent = "LABORATORY REPORT";
+
+
+let reportCfg;
+
+try {
+  const { data, error } = await db.rpc(
+    "acd_get_lab_report_settings",
+    {
+      p_lab_id: labId
+    }
+  );
+
+  if (error) throw error;
+  if (!data) throw new Error("Report settings not found.");
+
+  reportCfg = data;
+
+  await window.ACDOfflineDB.putRecord(
+    "report_settings",
+    labId,
+    {
+      id: labId,
+      settings: reportCfg
+    }
+  );
+
+  console.log("Report Designer settings cached.");
+
+} catch (settingsError) {
+  console.warn(
+    "Using cached Report Designer settings:",
+    settingsError.message
+  );
+
+  const cachedSettings = await window.ACDOfflineDB.getRecord(
+    "report_settings",
+    labId,
+    labId
+  );
+
+  if (!cachedSettings || !cachedSettings.settings) {
+    throw new Error(
+      "Report Designer settings Offline उपलब्ध नहीं हैं। पहले Internet से एक बार रिपोर्ट तैयार करें।"
+    );
+  }
+
+  reportCfg = cachedSettings.settings;
+}
+
+const globalCfg = reportCfg?.global_defaults || {};
+const labCfg = reportCfg?.lab_settings || {};
+
+const layout = {
+  ...(globalCfg.layout || {}),
+  ...(labCfg.layout || {})
+};
+
+const printing = {
+  ...(globalCfg.printing || {}),
+  ...(labCfg.printing || {})
+};
+
+const signatures = {
+  ...(globalCfg.signatures || {}),
+  ...(labCfg.signatures || {})
+};
+
+const branding = {
+  ...(globalCfg.branding || {}),
+  ...(labCfg.branding || {})
+};
+
+
+async function loadPrintSignature(kind, imageId, nameId) {
+  const path = signatures[kind + "_path"];
+  const img = $(imageId);
+  const name = $(nameId);
+
+  name.textContent =
+    signatures[kind + "_name"] ||
+    (kind === "technician" ? "Technician" : "Doctor");
+
+  img.style.display = "none";
+  img.removeAttribute("src");
+
+  if (!path) return;
+
+  try {
+    const { data, error } = await db.storage
+      .from("lab-report-signatures")
+      .createSignedUrl(path, 3600);
+
+    if (error) throw error;
+    if (!data?.signedUrl) {
+      throw new Error("Signature URL unavailable.");
+    }
+
+    const response = await fetch(data.signedUrl);
+    if (!response.ok) {
+      throw new Error("Signature image download failed.");
+    }
+
+    const imageBlob = await response.blob();
+
+    await window.ACDOfflineDB.putRecord(
+      "signature_assets",
+      labId,
+      {
+        id: path,
+        blob: imageBlob,
+        image_type: imageBlob.type || "image/png"
+      }
+    );
+
+    img.src = URL.createObjectURL(imageBlob);
+
+  } catch (onlineError) {
+    console.warn(
+      "Using cached signature image:",
+      onlineError.message
+    );
+
+    const cached = await window.ACDOfflineDB.getRecord(
+      "signature_assets",
+      labId,
+      path
+    );
+
+    if (!cached?.blob) {
+      throw new Error(
+        kind + " signature Offline उपलब्ध नहीं है।"
+      );
+    }
+
+    img.src = URL.createObjectURL(cached.blob);
+  }
+
+  img.style.display = "block";
+
+  try {
+    if (img.decode) await img.decode();
+  } catch (imageError) {
+    console.warn("Signature image decode failed:", imageError);
+    img.style.display = "none";
+  }
+}
+
+await loadPrintSignature(
+  "technician",
+  "printTechnicianSignature",
+  "printTechnicianName"
+);
+
+await loadPrintSignature(
+  "doctor",
+  "printDoctorSignature",
+  "printDoctorName"
+);
+
+$("printDoctorQualification").textContent =
+  signatures.doctor_qualification || "";
+   
+
+const brandBox = $("printLabBranding");
+const brandLogo = $("printLabLogo");
+
+const showHeader =
+  printing.default_printing !== "preprinted";
+
+$("printLabName").textContent = branding.lab_name || "";
+$("printLabAddress").textContent = branding.address || "";
+$("printLabPhone").textContent = branding.phone || "";
+$("printLabEmail").textContent = branding.email || "";
+$("printLabTagline").textContent = branding.tagline || "";
+
+$("printFooterAddress").textContent =
+  printing.show_lab_address !== false ? branding.address || "" : "";
+
+$("printFooterPhone").textContent =
+  printing.show_lab_phone !== false ? branding.phone || "" : "";
+
+$("printLabTagline").style.display =
+  showHeader && printing.show_lab_tagline !== false
+    ? ""
+    : "none";
+$("printLabName").style.display =
+  showHeader && printing.show_lab_name !== false ? "" : "none";
+
+$("printLabAddress").style.display =
+  showHeader && printing.show_lab_address !== false ? "" : "none";
+
+$("printLabPhone").style.display =
+  showHeader && printing.show_lab_phone !== false ? "" : "none";
+
+$("printLabEmail").style.display =
+  showHeader && printing.show_lab_email !== false ? "" : "none";
+
+const logoUrl = String(branding.logo_url || "").trim();
+const validLogoUrl = /^https?:\/\//i.test(logoUrl);
+
+if (
+  showHeader &&
+  printing.show_lab_logo !== false &&
+  validLogoUrl
+) {
+  brandLogo.src = logoUrl;
+  brandLogo.style.display = "block";
+  brandLogo.onerror = () => {
+    brandLogo.style.display = "none";
+  };
+} else {
+  brandLogo.removeAttribute("src");
+  brandLogo.style.display = "none";
+}
+
+const hasVisibleBranding = [
+  $("printLabName"),
+  $("printLabAddress"),
+  $("printLabPhone"),
+  $("printLabEmail"),
+  $("printLabTagline")
+].some(el => el.style.display !== "none" && el.textContent.trim());
+
+brandBox.style.display =
+  showHeader && (hasVisibleBranding || brandLogo.style.display !== "none")
+    ? "flex"
+    : "none";
+
+
+
+const root = document.documentElement;
+const mm = (v, d) => Math.max(0, Number(v ?? d)) + "mm";
+
+root.style.setProperty("--rd-margin-top", mm(layout.page_margin_top_mm, 7));
+root.style.setProperty("--rd-margin-left", mm(layout.page_margin_left_mm, 8));
+root.style.setProperty("--rd-margin-right", mm(layout.page_margin_right_mm, 8));
+root.style.setProperty("--rd-margin-bottom", mm(layout.page_margin_bottom_mm, 10));
+root.style.setProperty(
+  "--rd-gap-header",
+  printing.default_printing === "preprinted"
+    ? Math.max(0, Number(layout.gap_header ?? 140)) + "pt"
+    : "0pt"
+);
+   
+root.style.setProperty(
+  "--rd-gap-between-header",
+  Math.max(0, Number(layout.gap_between_header ?? 25)) + "pt"
+);
+root.style.setProperty(
+  "--rd-gap-content",
+ Math.max(0, Number(layout.gap_content ?? 8)) + "pt"
+);
+root.style.setProperty(
+  "--rd-gap-test",
+  Math.max(0, Number(layout.gap_test ?? 20)) + "pt"
+);
+root.style.setProperty(
+  "--rd-gap-subtest",
+  Math.max(0, Number(layout.gap_subtest ?? 20)) + "pt"
+);
+root.style.setProperty(
+  "--rd-gap-footer",
+ Math.max(0, Number(layout.gap_footer ?? 22)) + "pt"
+);
+root.style.setProperty(
+  "--rd-gap-doctor",
+  Math.max(0, Number(layout.gap_doctor ?? 20)) + "pt"
+);
+   
+
+  root.style.setProperty(
+  "--rd-patient-font",
+  Math.max(6, Math.min(24, Number(layout.patient_font ?? 10))) + "pt"
+);
+
+const patientMeta = $("printPatientMeta");
+
+patientMeta.classList.toggle(
+  "rd-patient-rectangle",
+  layout.rectangle_patient === true
+);
+
+patientMeta.classList.toggle(
+  "rd-patient-lines",
+  layout.lines_patient === true
+);
+   root.style.setProperty(
+  "--rd-print-orientation",
+  layout.orientation === "landscape" ? "landscape" : "portrait"
+);
+
+const footer = document.querySelector(".signature-footer");
+
+if (footer) {
+  footer.style.display =
+    signatures.technician === false && signatures.doctor === false
+      ? "none" : "flex";
+
+  if (footer.children[0]) {
+    footer.children[0].style.display =
+      signatures.technician === false ? "none" : "";
+  }
+
+  if (footer.children[1]) {
+    footer.children[1].style.display =
+      signatures.doctor === false ? "none" : "";
+  }
+}
+
+say("Patient, order और सभी test results save हो गए।");
+
+
+
+if (printing.print_after_save !== false) {
+  const reportCopy = document.documentElement.cloneNode(true);
+
+  reportCopy.querySelectorAll("script").forEach(s => s.remove());
+
+  const liveControls = document.querySelectorAll(
+    "input, select, textarea"
+  );
+  const printControls = reportCopy.querySelectorAll(
+    "input, select, textarea"
+  );
+
+  liveControls.forEach((live, index) => {
+    const copy = printControls[index];
+    if (!copy) return;
+
+    if (live.tagName === "SELECT") {
+      [...copy.options].forEach((option, i) => {
+        const selected = live.options[i]?.selected === true;
+        option.selected = selected;
+        if (selected) option.setAttribute("selected", "");
+        else option.removeAttribute("selected");
+      });
+    } else if (live.type === "checkbox" || live.type === "radio") {
+      copy.checked = live.checked;
+      if (live.checked) copy.setAttribute("checked", "");
+      else copy.removeAttribute("checked");
+    } else {
+      copy.value = live.value;
+      copy.setAttribute("value", live.value);
+      if (live.tagName === "TEXTAREA") {
+        copy.textContent = live.value;
+      }
+    }
+  });
+
+  const liveQR = document.querySelector("#printPatientQR");
+  const copiedQR = reportCopy.querySelector("#printPatientQR");
+
+  if (liveQR && copiedQR) {
+    const qrCanvases = liveQR.querySelectorAll("canvas");
+    const qrImages = liveQR.querySelectorAll("img");
+
+    copiedQR.innerHTML = "";
+
+    qrImages.forEach(img => {
+      if (img.src) {
+        const newImg = document.createElement("img");
+        newImg.src = img.src;
+        newImg.alt = "Patient QR Code";
+        newImg.style.width = "100px";
+        newImg.style.height = "100px";
+        copiedQR.appendChild(newImg);
+      }
+    });
+
+    qrCanvases.forEach(canvas => {
+      const qrImage = document.createElement("img");
+      qrImage.src = canvas.toDataURL("image/png");
+      qrImage.alt = "Patient QR Code";
+      qrImage.style.width = "100px";
+      qrImage.style.height = "100px";
+      copiedQR.appendChild(qrImage);
+    });
+  }
+
+  const liveBarcode = document.querySelector("#printOrderBarcode");
+  const copiedBarcode = reportCopy.querySelector("#printOrderBarcode");
+
+  if (liveBarcode && copiedBarcode) {
+    copiedBarcode.innerHTML = liveBarcode.innerHTML;
+
+    [...liveBarcode.attributes].forEach(attr => {
+      copiedBarcode.setAttribute(attr.name, attr.value);
+    });
+  }
+
+  const printResults = reportCopy.querySelector("#testRows");
+
+  if (!printResults) {
+    throw new Error("Print result table not found.");
+  }
+
+  reportCopy.querySelectorAll(".no-print").forEach(el => el.remove());
+
+  printWindow.document.open();
+  printWindow.document.write(
+    "<!doctype html>" + reportCopy.outerHTML
+  );
+  printWindow.document.close();
+
+  setTimeout(async () => {
+    try {
+      if (printWindow.closed) return;
+
+      const images = [...printWindow.document.images];
+
+      await Promise.race([
+        Promise.all(images.map(img => {
+          if (img.complete) return Promise.resolve();
+          return new Promise(resolve => {
+            img.onload = resolve;
+            img.onerror = resolve;
+          });
+        })),
+        new Promise(resolve => setTimeout(resolve, 2500))
+      ]);
+
+      printWindow.focus();
+      printWindow.print();
+    } catch (error) {
+      say("Print error: " + error.message);
+    }
+  }, 1200);
+
+
+} else {
+  printWindow.close();
+  say("Report saved successfully.");
+}
+
+ }catch(e){
+  console.error("Save/Print error:", e);
+
+  try {
+    printWindow.document.open();
+    printWindow.document.write(`
+      <!doctype html>
+      <html>
+      <body style="font-family:Arial;padding:24px">
+        <h3>Print Error</h3>
+        <pre style="white-space:pre-wrap;color:#b42318">${safe(e.message)}</pre>
+        <p>इस Error का Screenshot भेजें।</p>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+  } catch (_) {}
+
+  say("Save/Print error: " + e.message);
+}finally{
+   btn.disabled=false;
+   btn.textContent="Save & Print (A4)";
+   savePrintInProgress=false;
+ }
+};
+
+/* SAVED REPORTS — COMPLETE REPORT MANAGEMENT */
+let srAllReports = [];
+let srPage = 1;
+const srPageSize = 25;
+let srDialog = null;
+
+function srStatus(report) {
+  const results = (report.items || []).flatMap(item => item.results || []);
+  return results.length && results.every(r =>
+    String(r.result_value || "").trim() !== ""
+  ) ? "completed" : "pending";
+}
+
+function srVisibleReports() {
+  return srAllReports.filter(r => !r.report_deleted_at);
+}
+
+function srRender() {
+  const q = $("srSearch").value.trim().toLowerCase();
+  const from = $("srFromDate").value;
+  const to = $("srToDate").value;
+  const status = $("srStatus").value;
+  const all = srVisibleReports();
+
+  const filtered = all.filter(r => {
+    const name = r.patient?.patient_name || "";
+    const mobile = r.patient?.mobile || "";
+    const id = r.id || "";
+    const tests = (r.items || []).map(x => x.test_name).join(" ");
+    const date = r.order_date || "";
+    const state = srStatus(r);
+
+    return (!q || [name,mobile,id,tests].join(" ").toLowerCase().includes(q)) &&
+      (!from || date >= from) &&
+      (!to || date <= to) &&
+      (status === "all" || state === status);
+  });
+
+  const today = new Date().toLocaleDateString("en-CA");
+  $("srTotal").textContent = all.length;
+  $("srToday").textContent = all.filter(r => r.order_date === today).length;
+  $("srPending").textContent = all.filter(r => srStatus(r) === "pending").length;
+  $("srCompleted").textContent = all.filter(r => srStatus(r) === "completed").length;
+
+  const pages = Math.max(1, Math.ceil(filtered.length / srPageSize));
+  srPage = Math.min(srPage, pages);
+  const visible = filtered.slice((srPage-1)*srPageSize, srPage*srPageSize);
+
+  $("srRows").innerHTML = visible.length ? visible.map(r => {
+    const state = srStatus(r);
+    return `<tr>
+      <td><b>${safe(r.patient?.patient_name || "Unknown")}</b>
+        <br><small>${safe(r.patient?.mobile || "")}</small>
+        <br><small>${safe(r.id)}</small></td>
+      <td>${safe(r.order_date || "")}</td>
+      <td>${safe((r.items || []).map(x=>x.test_name).join(", "))}</td>
+      <td><span class="badge">${state === "completed" ? "Completed" : "Pending"}</span></td>
+      <td>
+        <div class="actions">
+          <button class="btn light" data-sr-view="${safe(r.id)}">View</button>
+          <button class="btn" data-sr-print="${safe(r.id)}">Print</button>
+          <button class="btn light" data-sr-edit="${safe(r.id)}">Edit</button>
+          <button class="btn danger" data-sr-delete="${safe(r.id)}">Delete</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join("") : '<tr><td colspan="5" class="empty">कोई रिपोर्ट नहीं मिली।</td></tr>';
+
+  $("srPageInfo").textContent =
+    `Page ${srPage} of ${pages} • ${filtered.length} reports`;
+  $("srPrev").disabled = srPage <= 1;
+  $("srNext").disabled = srPage >= pages;
+}
+
+async function loadSavedReports() {
+  if (!labId) {
+    $("srMessage").textContent = "पहले Laboratory चुनें।";
+    return;
+  }
+
+  $("srRows").innerHTML =
+    '<tr><td colspan="5" class="empty">Loading reports...</td></tr>';
+
+  const {data,error} = await db.from("lab_orders").select(`
+    id,order_date,status,created_at,ref_doctor,
+    total_amount,discount_amount,paid_amount,payment_mode,
+    patient:lab_patients(id,patient_name,mobile,address,age,age_unit,gender),
+    items:lab_order_items(
+      id,test_name,
+      results:lab_test_results(id,parameter_name,result_value,unit,reference_range)
+    )
+  `)
+.eq("lab_id",labId)
+.is("report_deleted_at", null)
+.order("created_at",{ascending:false})
+  .limit(1000);
+
+  if(error) {
+    $("srRows").innerHTML =
+      '<tr><td colspan="5" class="empty">Load error: '+safe(error.message)+'</td></tr>';
+    $("srMessage").textContent = error.message;
+    return;
+  }
+
+  srAllReports = data || [];
+  srPage = 1;
+  srRender();
+  $("srMessage").textContent =
+    srAllReports.length + " reports loaded successfully.";
+}
+
+function srFind(id) {
+  return srAllReports.find(r => r.id === id && !r.report_deleted_at);
+}
+
+function srEnsureDialog() {
+  if(srDialog) return srDialog;
+
+  srDialog = document.createElement("dialog");
+  srDialog.style.cssText =
+    "width:min(900px,95vw);max-height:90vh;border:1px solid #dce3eb;border-radius:10px;padding:18px;color:#1d2939";
+
+  document.body.appendChild(srDialog);
+  return srDialog;
+}
+
+function srCloseDialog() {
+  if(srDialog?.open) srDialog.close();
+}
+
+function srReportHtml(r) {
+  const patient = r.patient || {};
+  
+const rows = (r.items || []).flatMap(item =>
+  (item.results || [])
+    .filter(x => String(x.result_value ?? "").trim() !== "")
+    .map(x => `
+      <tr>
+        <td>${safe(item.test_name)}</td>
+        <td>${safe(x.parameter_name)}</td>
+        <td>${safe(x.result_value)}</td>
+        <td>${safe(x.unit || "-")}</td>
+        <td>${safe(x.reference_range || "-")}</td>
+      </tr>`)
+).join("");
+
+  return `
+    <h2 style="text-align:center">LABORATORY REPORT</h2>
+    <hr>
+    <p><b>Patient:</b> ${safe(patient.patient_name || "-")}
+       &nbsp; <b>Mobile:</b> ${safe(patient.mobile || "-")}</p>
+    <p><b>Age:</b> ${safe(patient.age ?? "-")} ${safe(patient.age_unit || "")}
+       &nbsp; <b>Gender:</b> ${safe(patient.gender || "-")}</p>
+    <p><b>Report ID:</b> ${safe(r.id)}
+       &nbsp; <b>Date:</b> ${safe(r.order_date || "-")}</p>
+    <p><b>Ref. Doctor:</b> ${safe(r.ref_doctor || "Self")}</p>
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead><tr>
+        <th>Test</th><th>Parameter</th><th>Result</th>
+        <th>Unit</th><th>Reference Range</th>
+      </tr></thead>
+      <tbody>${rows || '<tr><td colspan="5">No result entries</td></tr>'}</tbody>
+    </table>
+  `;
+}
+
+function srView(id) {
+  const r = srFind(id);
+  if(!r) return;
+
+  const d = srEnsureDialog();
+  d.innerHTML = `
+    <div style="display:flex;justify-content:space-between;gap:10px">
+      <h2>Report Details</h2>
+      <button class="btn light" onclick="this.closest('dialog').close()">Close</button>
+    </div>
+    ${srReportHtml(r)}
+    <hr>
+    <div class="actions">
+      <button class="btn" data-dialog-print="${safe(id)}">Print A4</button>
+      <button class="btn light" data-dialog-edit="${safe(id)}">Edit Results</button>
+    </div>`;
+  d.showModal();
+}
+
+async function srPrint(id) {
+  const r = srFind(id);
+  if (!r) return;
+
+  const w = window.open("", "_blank");
+  if (!w) {
+    alert("Chrome में Pop-ups allow करें।");
+    return;
+  }
+
+  w.document.write("<html><body>Report preparing...</body></html>");
+  w.document.close();
+
+  try {
+    const { data: cfg, error } = await db.rpc(
+      "acd_get_lab_report_settings",
+      { p_lab_id: labId }
+    );
+    if (error) throw error;
+
+    const globalCfg = cfg?.global_defaults || {};
+    const labCfg = cfg?.lab_settings || {};
+
+    const layout = {
+      ...(globalCfg.layout || {}),
+      ...(labCfg.layout || {})
+    };
+    const printing = {
+      ...(globalCfg.printing || {}),
+      ...(labCfg.printing || {})
+    };
+    const signatures = {
+      ...(globalCfg.signatures || {}),
+      ...(labCfg.signatures || {})
+    };
+    const branding = {
+      ...(globalCfg.branding || {}),
+      ...(labCfg.branding || {})
+    };
+
+    const reportCopy = document.documentElement.cloneNode(true);
+    const $c = selector => reportCopy.querySelector(selector);
+
+    const setText = (selector, value) => {
+      const el = $c(selector);
+      if (el) el.textContent = value ?? "";
+    };
+
+    const root = reportCopy;
+    const mm = (v, d) => Math.max(0, Number(v ?? d)) + "mm";
+
+    root.style.setProperty("--rd-margin-top", mm(layout.page_margin_top_mm, 7));
+    root.style.setProperty("--rd-margin-left", mm(layout.page_margin_left_mm, 8));
+    root.style.setProperty("--rd-margin-right", mm(layout.page_margin_right_mm, 8));
+    root.style.setProperty("--rd-margin-bottom", mm(layout.page_margin_bottom_mm, 10));
+
+    root.style.setProperty(
+      "--rd-gap-header",
+      printing.default_printing === "preprinted"
+        ? Math.max(0, Number(layout.gap_header ?? 140)) + "pt"
+        : "0pt"
+    );
+    root.style.setProperty("--rd-gap-between-header",
+      Math.max(0, Number(layout.gap_between_header ?? 25)) + "pt");
+    root.style.setProperty("--rd-gap-content",
+      Math.max(0, Number(layout.gap_content ?? 8)) + "pt");
+    root.style.setProperty("--rd-gap-test",
+      Math.max(0, Number(layout.gap_test ?? 20)) + "pt");
+    root.style.setProperty("--rd-gap-subtest",
+      Math.max(0, Number(layout.gap_subtest ?? 20)) + "pt");
+    root.style.setProperty("--rd-gap-footer",
+      Math.max(0, Number(layout.gap_footer ?? 22)) + "pt");
+    root.style.setProperty("--rd-gap-doctor",
+      Math.max(0, Number(layout.gap_doctor ?? 20)) + "pt");
+    root.style.setProperty("--rd-patient-font",
+      Math.max(6, Math.min(24, Number(layout.patient_font ?? 10))) + "pt");
+    root.style.setProperty(
+      "--rd-print-orientation",
+      layout.orientation === "landscape" ? "landscape" : "portrait"
+    );
+
+    const meta = $c("#printPatientMeta");
+    if (meta) {
+      meta.classList.toggle(
+        "rd-patient-rectangle",
+        layout.rectangle_patient === true
+      );
+      meta.classList.toggle(
+        "rd-patient-lines",
+        layout.lines_patient === true
+      );
+    }
+
+    const showHeader = printing.default_printing !== "preprinted";
+    const brandFields = [
+      ["#printLabName", branding.lab_name, printing.show_lab_name],
+      ["#printLabAddress", branding.address, printing.show_lab_address],
+      ["#printLabPhone", branding.phone, printing.show_lab_phone],
+      ["#printLabEmail", branding.email, printing.show_lab_email],
+      ["#printLabTagline", branding.tagline, printing.show_lab_tagline]
+    ];
+
+    let hasBrand = false;
+
+    brandFields.forEach(([selector, value, visible]) => {
+      const el = $c(selector);
+      if (!el) return;
+
+      el.textContent = value || "";
+      el.style.display =
+        showHeader && visible !== false && !!String(value || "").trim()
+          ? "" : "none";
+
+      if (el.style.display !== "none") hasBrand = true;
+    });
+
+const footerAddress = $c("#printFooterAddress");
+if (footerAddress) {
+  footerAddress.textContent =
+    printing.show_lab_address !== false ? branding.address || "" : "";
+}
+
+const footerPhone = $c("#printFooterPhone");
+if (footerPhone) {
+  footerPhone.textContent =
+    printing.show_lab_phone !== false ? branding.phone || "" : "";
+}
+
+    const logo = $c("#printLabLogo");
+    const logoUrl = String(branding.logo_url || "").trim();
+
+    if (logo) {
+      if (
+        showHeader &&
+        printing.show_lab_logo !== false &&
+        /^https?:\/\//i.test(logoUrl)
+      ) {
+        logo.src = logoUrl;
+        logo.style.display = "block";
+      } else {
+        logo.removeAttribute("src");
+        logo.style.display = "none";
+      }
+    }
+
+    const brandBox = $c("#printLabBranding");
+    if (brandBox) {
+      brandBox.style.display =
+        showHeader && (hasBrand || logo?.style.display !== "none")
+          ? "flex" : "none";
+    }
+
+    const patient = r.patient || {};
+
+if (meta) {
+  meta.innerHTML =
+    '<div><b>Patient Name:</b> ' +
+    safe(patient.patient_name || "-") + '</div>' +
+    '<div><b>Age / Sex:</b> ' +
+    safe(patient.age ?? "-") + " " +
+    safe(patient.age_unit || "") + " / " +
+    safe(patient.gender || "-") + '</div>' +
+    '<div><b>Patient ID:</b> ' +
+    safe(patient.id || "-") + '</div>' +
+    '<div><b>Address:</b> ' +
+    safe(patient.address || "-") + '</div>';
+
+  meta.classList.toggle(
+    "rd-patient-rectangle",
+    layout.rectangle_patient === true
+  );
+
+  meta.classList.toggle(
+    "rd-patient-lines",
+    layout.lines_patient === true
+  );
+}
+
+    setText("#printReferringDoctor", r.ref_doctor || "Self");
+    setText("#printTestTitle", "LABORATORY REPORT");
+    setText(
+      "#printRegisteredTime",
+      r.created_at ? new Date(r.created_at).toLocaleString("en-IN") : "-"
+    );
+    setText("#printReportGeneratedTime",
+      new Date().toLocaleString("en-IN"));
+
+    const tbody = $c("#testRows");
+    if (!tbody) throw new Error("Report result table not found.");
+
+    const rows = (r.items || []).map(item => {
+      const results = (item.results || []).filter(x =>
+        String(x.result_value ?? "").trim() !== ""
+      );
+
+      if (!results.length) return "";
+
+      return (
+        '<tr class="test-heading-row"><td colspan="6">' +
+        safe(String(item.test_name || "").toUpperCase()) +
+        '</td></tr>' +
+        results.map(x => {
+          const status = getResultStatus(
+            x.result_value,
+            x.reference_range
+          );
+
+          return (
+            '<tr>' +
+            '<td class="param-name"><b>' +
+            safe(x.parameter_name || "") +
+            '</b></td>' +
+            '<td><input data-result readonly value="' +
+            safe(x.result_value) + '"></td>' +
+           
+'<td>' + safe(x.unit || "") + '</td>' +
+'<td>' + safe(x.reference_range || "") + '</td>' +
+
+          
+'<td class="result-status">' +
+  (status
+    ? '<span class="badge ' +
+      (status === "Normal" ? 'badge-normal' : 'badge-abnormal') +
+      '">' + safe(status) + '</span>'
+    : '') +
+'</td>' +
+
+            '<td class="no-print"></td>' +
+            '</tr>'
+          );
+        }).join("")
+      );
+    }).join("");
+
+    tbody.innerHTML = rows ||
+      '<tr><td class="empty" colspan="6">No result entries</td></tr>';
+
+   
+const qr = $c("#printPatientQR");
+
+if (qr) {
+  const tempQR = document.createElement("div");
+
+  tempQR.style.position = "fixed";
+  tempQR.style.left = "-10000px";
+  tempQR.style.top = "0";
+
+  document.body.appendChild(tempQR);
+
+  try {
+    if (typeof QRCode === "undefined") {
+      throw new Error("QR Code library not loaded.");
+    }
+
+    new QRCode(tempQR, {
+      text: JSON.stringify({
+        patient_id: patient.id || "",
+        order_id: r.id
+      }),
+      width: 100,
+      height: 100,
+      correctLevel: QRCode.CorrectLevel.M
+    });
+
+    const canvas = tempQR.querySelector("canvas");
+    const image = tempQR.querySelector("img");
+
+    const qrData = canvas
+      ? canvas.toDataURL("image/png")
+      : image?.src;
+
+    if (!qrData) {
+      throw new Error("QR Code image could not be generated.");
+    }
+
+    qr.innerHTML = "";
+
+    const qrImage = document.createElement("img");
+    qrImage.src = qrData;
+    qrImage.alt = "Patient QR Code";
+    qrImage.width = 100;
+    qrImage.height = 100;
+
+    qr.appendChild(qrImage);
+  } finally {
+    tempQR.remove();
+  }
+}
+
+    const barcode = $c("#printOrderBarcode");
+    if (barcode) {
+      if (typeof JsBarcode === "undefined")
+        throw new Error("Barcode library not loaded.");
+
+      JsBarcode(barcode, String(r.id), {
+        format: "CODE128",
+        width: 1.5,
+        height: 42,
+        displayValue: false,
+        margin: 2
+      });
+    }
+
+    setText("#printOrderBarcodeText", r.id);
+
+    async function signatureUrl(kind) {
+      if (signatures[kind] === false || !signatures[kind + "_path"])
+        return "";
+
+      const { data, error } = await db.storage
+        .from("lab-report-signatures")
+        .createSignedUrl(signatures[kind + "_path"], 3600);
+
+      if (error) throw error;
+      return data?.signedUrl || "";
+    }
+
+    setText("#printTechnicianName",
+      signatures.technician_name || "Technician");
+    setText("#printDoctorName",
+      signatures.doctor_name || "Doctor");
+    setText("#printDoctorQualification",
+      signatures.doctor_qualification || "");
+
+    const tech = $c("#printTechnicianSignature");
+    const doctor = $c("#printDoctorSignature");
+
+    if (tech) {
+      const url = await signatureUrl("technician");
+      tech.style.display = url ? "block" : "none";
+      if (url) tech.src = url;
+    }
+
+    if (doctor) {
+      const url = await signatureUrl("doctor");
+      doctor.style.display = url ? "block" : "none";
+      if (url) doctor.src = url;
+    }
+
+    const footer = $c(".signature-footer");
+    if (footer) {
+      footer.style.display =
+        signatures.technician === false &&
+        signatures.doctor === false
+          ? "none" : "flex";
+
+      if (footer.children[0]) {
+        footer.children[0].style.display =
+          signatures.technician === false ? "none" : "";
+      }
+
+      if (footer.children[1]) {
+        footer.children[1].style.display =
+          signatures.doctor === false ? "none" : "";
+      }
+    }
+
+    const header = $c("#printHeader");
+    if (header) header.style.display = "block";
+
+    const entry = $c("#entryPage");
+    if (entry) entry.style.display = "block";
+
+    const cards = $c("#entryPage > .cards");
+    if (cards) cards.style.display = "none";
+
+    reportCopy.querySelectorAll("script").forEach(s => s.remove());
+    reportCopy.querySelectorAll(".no-print").forEach(el => el.remove());
+
+    w.document.open();
+    w.document.write("<!doctype html>" + reportCopy.outerHTML);
+    w.document.close();
+
+    setTimeout(async () => {
+      try {
+        if (w.closed) return;
+
+        const images = [...w.document.images];
+
+        await Promise.race([
+          Promise.all(images.map(img => {
+            if (img.complete) return Promise.resolve();
+
+            return new Promise(resolve => {
+              img.onload = resolve;
+              img.onerror = resolve;
+            });
+          })),
+          new Promise(resolve => setTimeout(resolve, 3000))
+        ]);
+
+        w.focus();
+        w.print();
+      } catch (error) {
+        alert("Print Error: " + error.message);
+      }
+    }, 1000);
+
+  } catch (error) {
+    if (!w.closed) w.close();
+    alert("Saved Report Print Error: " + error.message);
+  }
+}
+
+function srEdit(id) {
+  const r = srFind(id);
+  if(!r) return;
+
+  const results = (r.items || []).flatMap(item =>
+    (item.results || []).map(x => ({...x,test_name:item.test_name}))
+  );
+
+  if(!results.length) {
+    alert("इस रिपोर्ट में Edit करने के लिए Result Entry नहीं है।");
+    return;
+  }
+
+  const d = srEnsureDialog();
+  d.innerHTML = `
+    <h2>Edit Report Results</h2>
+    <p><b>${safe(r.patient?.patient_name || "")}</b> · ${safe(r.order_date || "")}</p>
+    <div style="max-height:60vh;overflow:auto">
+      <table style="width:100%">
+        <thead><tr><th>Test / Parameter</th><th>Result</th><th>Unit</th></tr></thead>
+        <tbody>
+          ${results.map(x=>`
+            <tr>
+              <td>${safe(x.test_name)}<br>${safe(x.parameter_name)}</td>
+              <td><input data-sr-result="${safe(x.id)}"
+                value="${safe(x.result_value || "")}"></td>
+              <td>${safe(x.unit || "-")}</td>
+            </tr>`).join("")}
+        </tbody>
+      </table>
+    </div>
+    <div class="actions" style="margin-top:15px">
+      <button class="btn green" id="srSaveEdit">Save Changes</button>
+      <button class="btn light" id="srCancelEdit">Cancel</button>
+    </div>`;
+
+  d.showModal();
+
+  $("srCancelEdit").onclick = srCloseDialog;
+  $("srSaveEdit").onclick = async () => {
+    const btn = $("srSaveEdit");
+    btn.disabled = true;
+    btn.textContent = "Saving...";
+
+    try {
+      const inputs = [...d.querySelectorAll("[data-sr-result]")];
+      for(const input of inputs) {
+        const {error} = await db.from("lab_test_results")
+          .update({result_value:input.value.trim() || null})
+          .eq("id",input.dataset.srResult)
+          .eq("lab_id",labId);
+        if(error) throw error;
+      }
+
+      srCloseDialog();
+      await loadSavedReports();
+      alert("Report results updated successfully.");
+    } catch(e) {
+      alert("Edit error: " + e.message);
+      btn.disabled = false;
+      btn.textContent = "Save Changes";
+    }
+  };
+}
+
+async function srDelete(id) {
+  const r = srFind(id);
+  if(!r) return;
+
+  const patient = r.patient?.patient_name || "this patient";
+  if(!confirm(
+    "PERMANENT DELETE\n\n" +
+    "Patient: " + patient + "\n\n" +
+    "इस रिपोर्ट के Test Items और Results हमेशा के लिए हटेंगे।\n" +
+    "Patient और Payment records सुरक्षित रहेंगे।\n\n" +
+    "क्या आप निश्चित हैं?"
+  )) return;
+
+  try {
+    const {data,error} = await db.rpc(
+      "acd_saved_report_permanent_delete",
+      {p_lab_id:labId,p_order_id:id}
+    );
+    if(error) throw error;
+    if(!data?.success) throw new Error("Delete confirmation missing.");
+
+    await loadSavedReports();
+    alert("Report permanently deleted. Payment record preserved.");
+  } catch(e) {
+    alert("Delete error: " + e.message);
+  }
+}
+
+$("srRows").addEventListener("click",e=>{
+  const b=e.target.closest("button");
+  if(!b) return;
+  if(b.dataset.srView) srView(b.dataset.srView);
+  if(b.dataset.srPrint) srPrint(b.dataset.srPrint);
+  if(b.dataset.srEdit) srEdit(b.dataset.srEdit);
+  if(b.dataset.srDelete) srDelete(b.dataset.srDelete);
+});
+
+document.addEventListener("click",e=>{
+  const b=e.target.closest("button");
+  if(!b) return;
+  if(b.dataset.dialogPrint) srPrint(b.dataset.dialogPrint);
+  if(b.dataset.dialogEdit) srEdit(b.dataset.dialogEdit);
+});
+
+["srSearch","srFromDate","srToDate","srStatus"].forEach(id=>{
+  $(id).addEventListener("input",()=>{srPage=1;srRender()});
+  $(id).addEventListener("change",()=>{srPage=1;srRender()});
+});
+
+$("srRefresh").onclick=loadSavedReports;
+$("srPrev").onclick=()=>{if(srPage>1){srPage--;srRender()}};
+$("srNext").onclick=()=>{srPage++;srRender()};
+
+$("logout").onclick=async()=>{try{await db.rpc("acd_device_release",{p_device_id:deviceId()})}catch(e){}await db.auth.signOut();location.replace("index.html")};
+
+
+$("nav").querySelectorAll("button[data-page]").forEach(b => b.onclick = () => {
+  const page = b.dataset.page;
+  const isEntry = page === "New Patient Entry";
+  const isCatalogue = page === "Test Catalogue";
+  const isSavedReports = page === "Saved Reports";
+
+  $("nav").querySelectorAll("button").forEach(btn => {
+    btn.classList.toggle("active", btn === b);
+  });
+
+  $("pageTitle").textContent = page;
+
+  ["reportDesignerPage", "superAdminCenter"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add("hidden");
+  });
+
+  $("entryPage").classList.toggle("hidden", !isEntry);
+  $("cataloguePage").classList.toggle("hidden", !isCatalogue);
+  $("savedReportsPage").classList.toggle("hidden", !isSavedReports);
+  $("otherPage").classList.toggle(
+    "hidden",
+    isEntry || isCatalogue || isSavedReports
+  );
+
+  if (page === "Subscription (Razorpay)") {
+    location.href = "subscription.html";
+    return;
+  }
+
+  if (isCatalogue) {
+    showCataloguePage().catch(e => {
+      $("catalogueParameterRows").innerHTML =
+        '<tr><td class="catalogue-empty" colspan="4">' +
+        safe(e.message) + '</td></tr>';
+    });
+    return;
+  }
+
+  if (isSavedReports) {
+    loadSavedReports().catch(e => {
+      $("srMessage").textContent = "Error: " + e.message;
+      $("srRows").innerHTML =
+        '<tr><td colspan="5" class="empty">Reports load error: ' +
+        safe(e.message) + '</td></tr>';
+    });
+    return;
+  }
+
+  if (!isEntry && !isSavedReports && !isCatalogue) {
+    $("otherPage").textContent = "";
+  }
+});
+
+setupEnterFlow();function tick(){$("clock").textContent=new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false})}tick();setInterval(tick,1000);
+init().catch(e=>say("Session/setup error: "+e.message));
 </script>
+
+<script>
+/* ACD BITTU LAB CLOUD — SUPER ADMIN CONTROL CENTER */
+(function () {
+  if (role !== "super_admin") return;
+
+  const modules = [
+    "Lab Setup",
+    
+    "Test Orders",
+    "Sample Tracking",
+    "Results & Reports",
+    "Accounts",
+    "Inventory",
+    
+    "Retention & Backup",
+    "Permission Manager",
+    "Cloud Setup",
+    "Modification Settings"
+  ];
+
+  const nav = document.getElementById("nav");
+  const workspace = document.getElementById("workspace");
+
+  if (!nav || !workspace) return;
+
+  const page = document.createElement("section");
+  page.id = "superAdminCenter";
+  page.className = "hidden";
+  page.innerHTML = `
+    <style>
+      #superAdminCenter .sa-card {
+        background:#fff;border:1px solid #dce3eb;
+        border-radius:9px;padding:13px;margin-bottom:12px;
+      }
+      #superAdminCenter h2 {font-size:17px;color:#123c75;margin:0 0 8px}
+      #superAdminCenter h3 {font-size:13px;margin:0 0 10px;color:#1759a6}
+      #superAdminCenter .sa-grid {
+        display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;
+      }
+      #superAdminCenter .sa-module {
+        border:1px solid #e1e7ef;border-radius:7px;padding:9px;
+        font-size:11px;display:flex;flex-direction:column;gap:7px;
+      }
+      #superAdminCenter .sa-module label {display:flex;gap:6px;align-items:center}
+      #superAdminCenter .sa-module input {width:15px;height:15px}
+      #superAdminCenter .sa-actions {display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+      #superAdminCenter .sa-status {font-size:11px;color:#087f48;margin-top:8px}
+      #superAdminCenter .sa-error {color:#b42318}
+      #superAdminCenter .sa-log {border-bottom:1px solid #edf0f4;padding:8px 0;font-size:10px}
+      #superAdminCenter select {max-width:100%;height:34px}
+      @media(max-width:480px){#superAdminCenter .sa-grid{grid-template-columns:1fr}}
+    </style>
+
+    <div class="sa-card">
+      <h2>⬟ Super Admin Control Center</h2>
+      <div style="font-size:11px;color:#667085">
+        Platform Owner • All Laboratory Controls
+      </div>
+      <div class="sa-status" id="saStatus">Loading...</div>
+    </div>
+
+    <div class="sa-card">
+      <h3>Laboratory Selection</h3>
+      <select id="saLab" style="width:100%">
+        <option value="">Select Laboratory</option>
+      </select>
+      <div class="sa-actions">
+        <button class="btn" id="saLoad">Load Lab Settings</button>
+        <button class="btn light" id="saRefresh">Refresh Audit Logs</button>
+      </div>
+    </div>
+
+    <div class="sa-card">
+      <h3>Global Control — All Laboratories</h3>
+      <div style="font-size:10px;color:#667085;margin-bottom:9px">
+        Global settings apply by default. Individual lab settings can override them.
+      </div>
+      <div class="sa-grid" id="saGlobalModules"></div>
+      <div class="sa-actions">
+        <button class="btn green" id="saSaveGlobal">Save Global Settings</button>
+      </div>
+    </div>
+
+    <div class="sa-card">
+      <h3>Individual Laboratory Control</h3>
+      <div style="font-size:10px;color:#667085;margin-bottom:9px">
+        These settings apply only to the selected laboratory.
+      </div>
+      <div class="sa-grid" id="saLabModules"></div>
+      <div class="sa-actions">
+        <button class="btn green" id="saSaveLab">Save Selected Lab</button>
+      </div>
+    </div>
+
+    <div class="sa-card">
+      <h3>Recent Platform Audit History</h3>
+      <div id="saAudit">Click Refresh Audit Logs.</div>
+    </div>
+  `;
+
+  workspace.appendChild(page);
+const el = id => document.getElementById(id);
+  
+  const saDashboard = document.createElement("div");
+  saDashboard.id = "saLabDashboard";
+  saDashboard.className = "sa-card hidden";
+  saDashboard.innerHTML = `
+    <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap">
+      <div>
+        <h2 id="saDashLabName">Laboratory Dashboard</h2>
+        <small id="saDashLabInfo">Selected laboratory overview</small>
+      </div>
+      <button class="btn light" id="saBackToControl">← Back to Super Admin</button>
+    </div>
+    <hr style="border:0;border-top:1px solid #e5eaf0;margin:12px 0">
+    <h3>Laboratory Overview</h3>
+    <div id="saDashMetrics" class="sa-grid"></div>
+    <h3 style="margin-top:18px">Owner & Subscription</h3>
+    <div id="saDashDetails"></div>
+    <h3 style="margin-top:18px">Recent Orders</h3>
+    <div id="saDashOrders"></div>
+    <div class="sa-status" id="saDashStatus"></div>
+  `;
+  page.appendChild(saDashboard);
+
+  const saOpenButton = document.createElement("button");
+  saOpenButton.className = "btn green";
+  saOpenButton.textContent = "Open Lab Dashboard";
+  saOpenButton.style.marginTop = "10px";
+  page.querySelectorAll(".sa-card")[1].appendChild(saOpenButton);
+
+  const saCards = [...page.querySelectorAll(".sa-card")];
+
+  function saText(value) {
+    return String(value ?? "").replace(/[&<>"']/g, c => ({
+      "&":"&amp;", "<":"&lt;", ">":"&gt;",
+      '"':"&quot;", "'":"&#39;"
+    }[c]));
+  }
+
+  function saMoney(value) {
+    return "₹" + Number(value || 0).toLocaleString("en-IN", {
+      maximumFractionDigits: 2
+    });
+  }
+
+  function saMetric(label, value) {
+    return `
+      <div class="sa-module">
+        <span>${saText(label)}</span>
+        <strong style="font-size:19px;color:#123c75">
+          ${saText(value)}
+        </strong>
+      </div>`;
+  }
+
+  async function saOpenLabDashboard() {
+    const selectedLab = el("saLab").value;
+
+    if (!selectedLab) {
+      status("पहले Laboratory चुनें।", true);
+      return;
+    }
+
+    saOpenButton.disabled = true;
+    saOpenButton.textContent = "Loading...";
+    el("saDashStatus").textContent = "Loading laboratory data...";
+
+    try {
+      const { data, error } = await db.rpc(
+        "acd_superadmin_get_lab_dashboard",
+        { p_lab_id: selectedLab }
+      );
+
+      if (error) throw error;
+      if (!data || !data.lab) {
+        throw new Error("Laboratory dashboard data not found.");
+      }
+
+      const lab = data.lab;
+      const m = data.metrics || {};
+      const sub = data.subscription || {};
+
+      el("saDashLabName").textContent = lab.name || "Laboratory";
+      el("saDashLabInfo").textContent =
+        (lab.address || "Address not added") +
+        " • " + (lab.is_active ? "Active" : "Inactive");
+
+      el("saDashMetrics").innerHTML = [
+        saMetric("Total Patients", m.patients),
+        saMetric("Total Orders", m.orders),
+        saMetric("Today's Orders", m.orders_today),
+        saMetric("Total Results", m.results),
+        
+        saMetric("Enabled Tests", m.tests_enabled),
+        saMetric("Total Collection", saMoney(m.collected_total)),
+        saMetric("Total Due", saMoney(m.due_total)),
+        saMetric("Total Billing", saMoney(m.revenue_total))
+      ].join("");
+
+      el("saDashDetails").innerHTML = `
+  <div class="sa-module">
+    <b>Owner Subscription</b><br>
+    Plan: ${saText(sub.plan_code || "Not available")}<br>
+    Status: ${saText(sub.status || "Not available")}<br>
+    Trial Ends: ${saText(sub.trial_ends_at || "Not available")}<br>
+    Subscription Ends: ${saText(sub.current_period_end || "Not available")}
+  </div>
+`;
+
+      const orders = Array.isArray(data.recent_orders)
+        ? data.recent_orders : [];
+
+      el("saDashOrders").innerHTML = orders.length
+        ? orders.map(order => `
+          <div class="sa-log">
+            <b>${saText(order.order_date || "")}</b>
+            — ${saText(order.status || "Pending")}
+            <br>
+            Total: ${saMoney(order.total_amount)}
+            • Paid: ${saMoney(order.paid_amount)}
+          </div>
+        `).join("")
+        : "No recent orders found.";
+
+      saCards.forEach(card => {
+        card.classList.toggle(card === saDashboard ? "hidden" : "hidden", card !== saDashboard);
+      });
+
+      saDashboard.classList.remove("hidden");
+      el("saDashStatus").textContent =
+        "Lab overview loaded. Data is limited to the selected laboratory.";
+
+    } catch (error) {
+      el("saDashStatus").textContent = "Dashboard error: " + error.message;
+      status("Lab Dashboard load failed.", true);
+    } finally {
+      saOpenButton.disabled = false;
+      saOpenButton.textContent = "Open Lab Dashboard";
+    }
+  }
+
+  saOpenButton.addEventListener("click", saOpenLabDashboard);
+
+  el("saBackToControl").addEventListener("click", () => {
+    saDashboard.classList.add("hidden");
+    saCards.forEach(card => {
+  if (card !== saDashboard) card.classList.remove("hidden");
+});
+saDashboard.classList.add("hidden");
+    status("Returned to Super Admin Control Center.");
+  });
+ 
+  
+  const status = (message, error = false) => {
+    el("saStatus").textContent = message;
+    el("saStatus").className = error ? "sa-status sa-error" : "sa-status";
+  };
+
+  const saWorkspace = document.createElement("section");
+  saWorkspace.innerHTML = `
+    <hr style="margin:20px 0;border:0;border-top:1px solid #ddd">
+    <h3>Laboratory Management</h3>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0">
+      <button class="btn green" id="saPatientsTab">Patients</button>
+      <button class="btn light" id="saOrdersTab">Orders</button>
+    </div>
+
+    <input id="saWorkspaceSearch"
+      placeholder="Search patient name, mobile or order ID"
+      style="width:100%;padding:12px;margin-bottom:10px">
+
+    <div id="saWorkspaceStatus" class="sa-status"></div>
+    <div id="saWorkspaceTable"></div>
+  `;
+  saDashboard.appendChild(saWorkspace);
+
+  let saWorkspaceSection = "patients";
+
+  async function saLoadWorkspace(section = saWorkspaceSection) {
+    saWorkspaceSection = section;
+
+    const labId = el("saLab").value;
+    const search = el("saWorkspaceSearch").value.trim();
+
+    if (!labId) {
+      el("saWorkspaceStatus").textContent = "पहले Laboratory चुनें।";
+      return;
+    }
+
+    el("saWorkspaceStatus").textContent = "Loading...";
+    el("saWorkspaceTable").innerHTML = "";
+
+    try {
+      const { data, error } = await db.rpc(
+        "acd_superadmin_get_lab_workspace",
+        {
+          p_lab_id: labId,
+          p_section: section,
+          p_search: search || null,
+          p_limit: 50,
+          p_offset: 0
+        }
+      );
+
+      if (error) throw error;
+
+      const rows = data?.rows || [];
+
+      if (!rows.length) {
+        el("saWorkspaceTable").textContent = "कोई रिकॉर्ड नहीं मिला।";
+      } else if (section === "patients") {
+        el("saWorkspaceTable").innerHTML = `
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse">
+              <thead>
+                <tr>
+                  <th>Patient</th><th>Mobile</th>
+                  <th>Age</th><th>Gender</th><th>Orders</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows.map(p => `
+                  <tr>
+                    <td>${saText(p.patient_name)}</td>
+                    <td>${saText(p.mobile || "-")}</td>
+                    <td>${saText(p.age ?? "-")} ${saText(p.age_unit || "")}</td>
+                    <td>${saText(p.gender || "-")}</td>
+                    <td>${saText(p.total_orders)}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>`;
+      } else {
+        el("saWorkspaceTable").innerHTML = `
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse">
+              <thead>
+                <tr>
+                  <th>Patient</th><th>Date</th>
+                  <th>Tests</th><th>Total</th>
+                  <th>Paid</th><th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows.map(o => `
+                  <tr>
+                    <td>${saText(o.patient_name || "-")}</td>
+                    <td>${saText(o.order_date || "-")}</td>
+                    <td>${saText(o.test_count)}</td>
+                    <td>${saMoney(o.total_amount)}</td>
+                    <td>${saMoney(o.paid_amount)}</td>
+                    <td>${saText(o.status || "Pending")}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>`;
+      }
+
+      el("saWorkspaceStatus").textContent =
+        `Showing ${rows.length} of ${data.total} records. Read-only view.`;
+
+    } catch (error) {
+      el("saWorkspaceStatus").textContent =
+        "Error: " + error.message;
+    }
+  }
+
+  el("saPatientsTab").addEventListener("click", () => {
+    saLoadWorkspace("patients");
+  });
+
+  el("saOrdersTab").addEventListener("click", () => {
+    saLoadWorkspace("orders");
+  });
+
+  el("saWorkspaceSearch").addEventListener("input", () => {
+    saLoadWorkspace(saWorkspaceSection);
+  });
+ 
+  function moduleControls(container, prefix, config = {}) {
+    const allowed = config.allowed || {};
+    const visible = config.visible || {};
+
+    el(container).innerHTML = modules.map((name, i) => `
+      <div class="sa-module">
+        <b>${name}</b>
+        <label>
+          <input type="checkbox" id="${prefix}a${i}"
+            ${allowed[name] !== false ? "checked" : ""}>
+          Allowed
+        </label>
+        <label>
+          <input type="checkbox" id="${prefix}v${i}"
+            ${visible[name] !== false ? "checked" : ""}>
+          Visible
+        </label>
+      </div>
+    `).join("");
+  }
+
+  function readControls(prefix) {
+    const allowed = {};
+    const visible = {};
+
+    modules.forEach((name, i) => {
+      allowed[name] = el(prefix + "a" + i).checked;
+      visible[name] = el(prefix + "v" + i).checked;
+    });
+
+    return { allowed, visible };
+  }
+
+  function configFromResponse(data, key) {
+    const value = data?.[key]?.uiVisibility || {};
+    return {
+      allowed: value.allowed || {},
+      visible: value.visible || {}
+    };
+  }
+
+  async function loadLabSettings() {
+    const id = el("saLab").value;
+    if (!id) {
+      status("पहले Laboratory चुनें।", true);
+      return;
+    }
+
+    status("Loading laboratory settings...");
+
+    try {
+      const { data, error } = await db.rpc(
+        "acd_superadmin_get_lab_ui_config",
+        { p_lab_id: id }
+      );
+
+      if (error) throw error;
+
+      moduleControls(
+        "saGlobalModules",
+        "sag",
+        configFromResponse(data, "global")
+      );
+
+      moduleControls(
+        "saLabModules",
+        "sal",
+        configFromResponse(data, "lab_override")
+      );
+
+      status("Settings loaded successfully.");
+    } catch (error) {
+      status("Load error: " + error.message, true);
+    }
+  }
+
+  async function saveGlobal() {
+    status("Saving global settings...");
+
+    try {
+      const config = {
+        uiVisibility: readControls("sag")
+      };
+
+      const { error } = await db.rpc(
+        "acd_superadmin_save_global_ui_config",
+        { p_config: config }
+      );
+
+      if (error) throw error;
+
+      status("Global settings saved successfully.");
+      await loadAudit();
+    } catch (error) {
+      status("Save error: " + error.message, true);
+    }
+  }
+
+  async function saveLab() {
+    const id = el("saLab").value;
+
+    if (!id) {
+      status("पहले Laboratory चुनें।", true);
+      return;
+    }
+
+    status("Saving individual lab settings...");
+
+    try {
+      const { error } = await db.rpc(
+        "acd_superadmin_save_lab_ui_config",
+        {
+          p_lab_id: id,
+          p_config: readControls("sal")
+        }
+      );
+
+      if (error) throw error;
+
+      status("Selected lab settings saved successfully.");
+      await loadAudit();
+    } catch (error) {
+      status("Save error: " + error.message, true);
+    }
+  }
+
+  async function loadAudit() {
+    el("saAudit").textContent = "Loading audit history...";
+
+    try {
+      const { data, error } = await db.rpc(
+        "acd_superadmin_recent_audit_logs",
+        { p_limit: 30 }
+      );
+
+      if (error) throw error;
+
+      const rows = Array.isArray(data) ? data : [];
+
+      
+      el("saAudit").innerHTML = rows.length
+        ? rows.map(item => {
+            const fields =
+              item.after_state?.changed_fields ||
+              item.before_state?.changed_fields ||
+              [];
+
+            return `
+              <div class="sa-log">
+                <b>${saText(item.action || "Activity")}</b>
+                — ${saText(item.entity_type || "Record")}
+                <br>
+                Laboratory ID: ${saText(item.lab_id || "Global")}
+                <br>
+                User ID: ${saText(item.actor_user_id || "System")}
+                <br>
+                Changed Fields: ${saText(fields.join(", ") || "Not specified")}
+                <br>
+                Time: ${item.created_at
+                  ? new Date(item.created_at).toLocaleString("en-IN")
+                  : "Not available"}
+              </div>
+            `;
+          }).join("")
+        : "No audit records found.";
+
+    } catch (error) {
+      el("saAudit").textContent = "Audit error: " + error.message;
+    }
+  }
+
+  let saAuditRefreshTimer = null;
+
+  function startSaAuditAutoRefresh() {
+    if (saAuditRefreshTimer) return;
+
+    saAuditRefreshTimer = setInterval(() => {
+      if (!page.classList.contains("hidden")) {
+        loadAudit();
+      }
+    }, 30000);
+  }
+ 
+  
+  async function fillLabs() {
+    const select = el("saLab");
+    const previousLab = select.value || labId || "";
+
+    status("Refreshing laboratory list...");
+
+    try {
+      const { data, error } = await db
+        .from("cloud_labs")
+        .select("id,name,address,phone")
+        .order("name");
+
+      if (error) throw error;
+
+      labs = data || [];
+
+      select.innerHTML =
+        '<option value="">Select Laboratory</option>';
+
+      labs.forEach(lab => {
+        const option = document.createElement("option");
+        option.value = lab.id;
+        option.textContent = lab.name;
+        select.appendChild(option);
+      });
+
+      select.value = labs.some(lab => lab.id === previousLab)
+        ? previousLab
+        : "";
+
+      status(`Laboratories loaded: ${labs.length}`);
+    } catch (error) {
+      status("Laboratory refresh error: " + error.message, true);
+    }
+  }
+
+
+  el("saLoad").onclick = loadLabSettings;
+  el("saRefresh").onclick = loadAudit;
+  el("saSaveGlobal").onclick = saveGlobal;
+  el("saSaveLab").onclick = saveLab;
+
+  el("saLab").addEventListener("change", loadLabSettings);
+
+  
+
+  el("labSelect")?.addEventListener("change", () => {
+    if (el("saLab")) el("saLab").value = el("labSelect").value;
+  });
+
+  moduleControls("saGlobalModules", "sag");
+  moduleControls("saLabModules", "sal");
+})();
+   </script>
+  <script>
+/* ACD BITTU LAB CLOUD — REPORT DESIGNER */
+(function () {
+  const $rd = id => document.getElementById(id);
+  const nav = document.getElementById("nav");
+  const panel = $rd("reportDesignerPage");
+  let currentLocked = false;
+  let currentGlobal = {};
+
+  let currentSignaturePaths = {
+    technician: "",
+    doctor: ""
+  };
+
+  async function uploadLabSignature(file, labId, type) {
+    if (!file) return currentSignaturePaths[type] || "";
+
+    const allowed = [
+      "image/png",
+      "image/jpeg",
+      "image/webp"
+    ];
+
+    if (!allowed.includes(file.type)) {
+      throw new Error("Only PNG, JPG and WebP allowed.");
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      throw new Error("Signature maximum size is 2 MB.");
+    }
+
+    const ext = file.type === "image/png"
+      ? "png"
+      : file.type === "image/webp" ? "webp" : "jpg";
+
+    const path = labId + "/" + type + "-" +
+      Date.now() + "." + ext;
+
+    const { error } = await db.storage
+      .from("lab-report-signatures")
+      .upload(path, file, {
+        upsert: true,
+        contentType: file.type
+      });
+
+    if (error) throw error;
+
+    return path;
+  }
+  
+  if (!nav || !panel) return;
+
+  function rdStatus(message, error = false) {
+    $rd("rdLabStatus").textContent = message;
+    $rd("rdLabMessage").textContent = error ? message : "";
+  }
+
+  function getLabId() {
+    if (role === "super_admin") {
+      return $rd("saLab")?.value || $rd("labSelect")?.value || labId;
+    }
+    return labId;
+  }
+
+  
+  function setFields(prefix, settings) {
+    const b = settings?.branding || {};
+    const l = settings?.layout || {};
+    const sig = settings?.signatures || {};
+    const p = settings?.printing || {};
+    const pos = settings?.positions || {};
+    const colors = settings?.colors || {};
+    const sizes = settings?.font_sizes || {};
+
+    const values = {
+      rdLabName: b.lab_name,
+      rdLabLogo: b.logo_url,
+      rdLabAddress: b.address,
+      rdLabPhone: b.phone,
+      rdLabTagline: b.tagline,
+      rdChildAge: p.child_age_limit,
+      rdAutoPatient: String(p.auto_patient_id ?? true),
+      rdPrintMode: p.default_printing,
+      rdXrayHeader: p.xray_header,
+      rdXrayFooter: p.xray_footer,
+      rdXrayAlign: p.xray_alignment,
+      rdPaper: l.paper,
+      rdOrientation: l.orientation,
+      rdHeadingSize: l.heading_size,
+      rdAddressSize: l.address_size,
+      rdHeadingColor: l.heading_color,
+      rdHeaderGap: l.header_gap_mm,
+      rdFooterGap: l.footer_gap_mm,
+      rdGapHeader: l.gap_header,
+      rdGapBetweenHeader: l.gap_between_header,
+      rdGapContent: l.gap_content,
+      rdGapTest: l.gap_test,
+      rdGapSubtest: l.gap_subtest,
+      rdGapFooter: l.gap_footer,
+      rdGapDoctor: l.gap_doctor,
+      rdTestHeaderFont: l.test_header_font,
+      rdTestNameFont: l.test_name_font,
+      rdPatientFont: l.patient_font,
+      rdCommentFont: l.comment_font,
+      rdPosTestName: pos.test_name,
+      rdPosSubtest: pos.subtest,
+      rdPosResult: pos.result,
+      rdPosUnit: pos.unit,
+      rdPosRange: pos.reference_range,
+      rdPosEnd: pos.result_end,
+      rdHbUnit: p.hemoglobin_unit,
+      rdColorHeading: colors.heading,
+      rdColorAddress: colors.address,
+      rdColorPhone: colors.phone,
+      rdColorEmail: colors.email,
+      rdSizeHeading: sizes.heading,
+      rdSizeAddress: sizes.address,
+      rdSizePhone: sizes.phone,
+      rdSizeEmail: sizes.email
+    };
+
+    Object.entries(values).forEach(([id, value]) => {
+      const el = $rd(id);
+      if (el && value !== undefined && value !== null) el.value = value;
+    });
+
+    
+const valuesSignature = {
+  rdTechnicianName: sig.technician_name || "",
+  rdDoctorName: sig.doctor_name || "",
+  rdDoctorQualification: sig.doctor_qualification || ""
+};
+
+Object.entries(valuesSignature).forEach(([id, value]) => {
+  const el = $rd(id);
+  if (el) el.value = value;
+});
+
+
+const checks = {
+  rdShowTechnician: sig.technician,
+  rdShowDoctor: sig.doctor,
+  rdRectanglePatient: l.rectangle_patient,
+  rdLinesPatient: l.lines_patient,
+  rdPrintAfterSave: p.print_after_save,
+
+  rdShowLabName: p.show_lab_name,
+  rdShowLabLogo: p.show_lab_logo,
+  rdShowLabPhone: p.show_lab_phone,
+  rdShowLabEmail: p.show_lab_email,
+  rdShowLabAddress: p.show_lab_address,
+  rdShowLabTagline: p.show_lab_tagline,
+  rdShowWatermark: p.show_watermark
+};
+
+Object.entries(checks).forEach(([id, value]) => {
+  const el = $rd(id);
+  if (el && value !== undefined) el.checked = value;
+});
+
+$rd("rdWatermarkText").value =
+  p.watermark_text || "ACD BITTU LAB CLOUD";
+
+$rd("rdWatermarkOpacity").value =
+  p.watermark_opacity ?? 0.08;
+
+
+    
+  }
+
+  function readLabSettings() {
+    const num = id => Number($rd(id).value) || 0;
+    const val = id => $rd(id).value;
+
+    return {
+      branding: {
+        lab_name: val("rdLabName").trim(),
+        logo_url: val("rdLabLogo").trim(),
+        address: val("rdLabAddress").trim(),
+        phone: val("rdLabPhone").trim(),
+        email: val("rdLabEmail").trim(),
+tagline: val("rdLabTagline").trim(),
+alias: val("rdLabAlias").trim()
+      },
+      layout: {
+        paper: val("rdPaper"),
+        orientation: val("rdOrientation"),
+        heading_size: num("rdHeadingSize"),
+        address_size: num("rdAddressSize"),
+        heading_color: val("rdHeadingColor"),
+        header_gap_mm: num("rdHeaderGap"),
+        footer_gap_mm: num("rdFooterGap"),
+        gap_header: num("rdGapHeader"),
+        gap_between_header: num("rdGapBetweenHeader"),
+        gap_content: num("rdGapContent"),
+        gap_test: num("rdGapTest"),
+        gap_subtest: num("rdGapSubtest"),
+        gap_footer: num("rdGapFooter"),
+        gap_doctor: num("rdGapDoctor"),
+        test_header_font: num("rdTestHeaderFont"),
+        test_name_font: num("rdTestNameFont"),
+        patient_font: num("rdPatientFont"),
+        comment_font: num("rdCommentFont"),
+        rectangle_patient: $rd("rdRectanglePatient").checked,
+        lines_patient: $rd("rdLinesPatient").checked
+      },
+      printing: {
+        child_age_limit: num("rdChildAge"),
+        auto_patient_id: val("rdAutoPatient") === "true",
+        default_printing: val("rdPrintMode"),
+        xray_header: num("rdXrayHeader"),
+        xray_footer: num("rdXrayFooter"),
+        xray_alignment: val("rdXrayAlign"),
+        hemoglobin_unit: val("rdHbUnit").trim(),
+                print_after_save: $rd("rdPrintAfterSave").checked,
+
+        show_lab_name: $rd("rdShowLabName").checked,
+        show_lab_logo: $rd("rdShowLabLogo").checked,
+        show_lab_phone: $rd("rdShowLabPhone").checked,
+        show_lab_email: $rd("rdShowLabEmail").checked,
+        show_lab_address: $rd("rdShowLabAddress").checked,
+        show_lab_tagline: $rd("rdShowLabTagline").checked,
+
+        show_watermark: $rd("rdShowWatermark").checked,
+        watermark_text: $rd("rdWatermarkText").value.trim(),
+        watermark_opacity: Math.max(
+          0.02,
+          Math.min(
+            0.20,
+            Number($rd("rdWatermarkOpacity").value) || 0.08
+          )
+        )
+      },
+      positions: {
+        test_name: num("rdPosTestName"),
+        subtest: num("rdPosSubtest"),
+        result: num("rdPosResult"),
+        unit: num("rdPosUnit"),
+        reference_range: num("rdPosRange"),
+        result_end: num("rdPosEnd")
+      },
+      colors: {
+        heading: val("rdColorHeading"),
+        address: val("rdColorAddress"),
+        phone: val("rdColorPhone"),
+        email: val("rdColorEmail")
+      },
+      font_sizes: {
+        heading: num("rdSizeHeading"),
+        address: num("rdSizeAddress"),
+        phone: num("rdSizePhone"),
+        email: num("rdSizeEmail")
+      },
+      
+signatures: {
+  technician: $rd("rdShowTechnician").checked,
+  doctor: $rd("rdShowDoctor").checked,
+  technician_name: $rd("rdTechnicianName").value.trim(),
+  doctor_name: $rd("rdDoctorName").value.trim(),
+  doctor_qualification: $rd("rdDoctorQualification").value.trim(),
+  technician_path: currentSignaturePaths.technician,
+  doctor_path: currentSignaturePaths.doctor
+},
+owner_locked: currentLocked
+
+    };
+  }
+
+
+  async function loadDesigner() {
+    const id = getLabId();
+    if (!id) {
+      rdStatus("पहले Laboratory चुनें।", true);
+      return;
+    }
+
+    rdStatus("Loading Report Design...");
+
+    try {
+      const { data, error } = await db.rpc(
+        "acd_get_lab_report_settings",
+        { p_lab_id: id }
+      );
+      if (error) throw error;
+
+      const globalSettings = data?.global_defaults || {};
+      const labSettings = data?.lab_settings || {};
+
+      currentGlobal = globalSettings;
+      currentLocked = data?.owner_locked === true;
+
+      
+const merged = {
+  branding: {
+    ...(globalSettings.branding || {}),
+    ...(labSettings.branding || {})
+  },
+  layout: {
+    ...(globalSettings.layout || {}),
+    ...(labSettings.layout || {})
+  },
+  printing: {
+    ...(globalSettings.printing || {}),
+    ...(labSettings.printing || {})
+  },
+  positions: {
+    ...(globalSettings.positions || {}),
+    ...(labSettings.positions || {})
+  },
+  colors: {
+    ...(globalSettings.colors || {}),
+    ...(labSettings.colors || {})
+  },
+  font_sizes: {
+    ...(globalSettings.font_sizes || {}),
+    ...(labSettings.font_sizes || {})
+  },
+  signatures: {
+    ...(globalSettings.signatures || {}),
+    ...(labSettings.signatures || {})
+  }
+};
+
+
+currentSignaturePaths = {
+  technician: merged.signatures?.technician_path || "",
+  doctor: merged.signatures?.doctor_path || ""
+};
+      
+      setFields("rd", merged);
+
+      const isSuper = role === "super_admin";
+      $rd("rdOwnerCanCustomize").checked =
+        data?.owner_can_customize !== false;
+
+      $rd("rdOwnerCanCustomize").disabled = !isSuper;
+      $rd("rdOwnerLocked").checked = currentLocked;
+      $rd("rdOwnerLocked").disabled = !isSuper;
+
+      $rd("rdGlobalName").value = globalSettings.branding?.lab_name || "";
+      $rd("rdGlobalLogo").value = globalSettings.branding?.logo_url || "";
+      $rd("rdGlobalAddress").value = globalSettings.branding?.address || "";
+      $rd("rdGlobalPhone").value = globalSettings.branding?.phone || "";
+      $rd("rdGlobalEmail").value = globalSettings.branding?.email || "";
+$rd("rdGlobalPrintMode").value =
+  globalSettings.printing?.default_printing || "preprinted";
+
+$rd("rdGlobalMarginTop").value =
+  globalSettings.layout?.page_margin_top_mm ?? 7;
+
+$rd("rdGlobalMarginLeft").value =
+  globalSettings.layout?.page_margin_left_mm ?? 8;
+
+$rd("rdGlobalMarginRight").value =
+  globalSettings.layout?.page_margin_right_mm ?? 8;
+
+$rd("rdGlobalMarginBottom").value =
+  globalSettings.layout?.page_margin_bottom_mm ?? 10;
+
+$rd("rdPrintModeWrap").style.display = isSuper ? "" : "none";
+$rd("rdPrintMode").disabled = !isSuper;
+      panel.querySelector(".rd-global-card").style.display =
+        isSuper ? "" : "none";
+
+      rdStatus(
+        data?.owner_can_customize === false && !isSuper
+          ? "Report Design Super Admin द्वारा locked है।"
+          : "Report Design loaded successfully."
+      );
+    } catch (error) {
+      rdStatus("Load error: " + error.message, true);
+    }
+  }
+
+  async function saveGlobalDefaults() {
+    if (role !== "super_admin") {
+      rdStatus("Super Admin access required.", true);
+      return;
+    }
+
+    try {
+      const settings = {
+  branding: {
+    lab_name: $rd("rdGlobalName").value.trim(),
+    logo_url: $rd("rdGlobalLogo").value.trim(),
+    address: $rd("rdGlobalAddress").value.trim(),
+    phone: $rd("rdGlobalPhone").value.trim(),
+    email: $rd("rdGlobalEmail").value.trim()
+  },
+  layout: {
+    ...(currentGlobal.layout || {}),
+    page_margin_top_mm: Number($rd("rdGlobalMarginTop").value) || 7,
+    page_margin_left_mm: Number($rd("rdGlobalMarginLeft").value) || 8,
+    page_margin_right_mm: Number($rd("rdGlobalMarginRight").value) || 8,
+    page_margin_bottom_mm: Number($rd("rdGlobalMarginBottom").value) || 10
+  },
+  printing: {
+    ...(currentGlobal.printing || {}),
+    default_printing: $rd("rdGlobalPrintMode").value
+  },
+  signatures: currentGlobal.signatures || {}
+};
+
+      const { error } = await db.rpc(
+        "acd_save_global_report_defaults",
+        {
+          p_settings: settings,
+          p_owner_can_customize: $rd("rdOwnerCanCustomize").checked
+        }
+      );
+      if (error) throw error;
+
+      currentGlobal = settings;
+      rdStatus("Global Report Defaults saved.");
+      await loadDesigner();
+    } catch (error) {
+      rdStatus("Global save error: " + error.message, true);
+    }
+  }
+
+  async function saveLabDesign() {
+    const id = getLabId();
+    if (!id) {
+      rdStatus("Laboratory select करें।", true);
+      return;
+    }
+
+    try {
+      currentLocked = role === "super_admin"
+        ? $rd("rdOwnerLocked").checked
+        : currentLocked;
+
+      
+      currentSignaturePaths.technician =
+        await uploadLabSignature(
+          $rd("rdTechnicianFile").files[0],
+          id,
+          "technician"
+        );
+
+      currentSignaturePaths.doctor =
+        await uploadLabSignature(
+          $rd("rdDoctorFile").files[0],
+          id,
+          "doctor"
+        );
+
+      const settings = readLabSettings();
+
+      settings.signatures.technician_path =
+        currentSignaturePaths.technician;
+
+      settings.signatures.doctor_path =
+        currentSignaturePaths.doctor;
+
+      const { error } = await db.rpc(
+        "acd_save_lab_report_settings",
+        {
+          p_lab_id: id,
+          p_settings: settings
+        }
+      );
+
+      if (error) throw error;
+
+      $rd("rdTechnicianFile").value = "";
+      $rd("rdDoctorFile").value = "";
+
+      
+
+      rdStatus("Laboratory Report Design saved successfully.");
+    } catch (error) {
+      rdStatus("Save error: " + error.message, true);
+    }
+  }
+
+  nav.addEventListener("click", event => {
+    const button = event.target.closest('[data-page="Report Designer"]');
+    if (!button) return;
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    document.querySelectorAll(".nav button").forEach(b =>
+      b.classList.toggle("active", b === button)
+    );
+
+    document.getElementById("pageTitle").textContent = "Report Designer";
+
+    [
+  "entryPage",
+  "cataloguePage",
+  "savedReportsPage",
+  "otherPage",
+  "superAdminCenter"
+]
+      .forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add("hidden");
+      });
+
+    panel.classList.remove("hidden");
+    loadDesigner();
+  }, true);
+
+  $rd("rdSaveGlobal").onclick = saveGlobalDefaults;
+  $rd("rdSaveLab").onclick = saveLabDesign;
+
+  if (role !== "super_admin") {
+    $rd("rdSaveGlobal").disabled = true;
+  }
+})();
+    
+const FEATURE_MENU_MAP = {
+  "New Patient Entry": "patient_entry",
+  "Saved Reports": "saved_reports",
+  "Test Catalogue": "test_catalogue",
+  "Sample Tracking": "sample_tracking",
+  "Accounts & Expenses": "accounts_expenses",
+  "Inventory & Stock": "inventory_stock",
+  "Lab & Print Setup": "lab_print_setup",
+  "Subscription (Razorpay)": "subscription",
+  "Report Designer": "lab_print_setup"
+};
+    
+async function updateFeatureNavigation() {
+  
+if (!labId) {
+  const buttons = [
+    ...$("nav").querySelectorAll("button[data-page]")
+  ];
+
+  buttons.forEach(button => {
+    if (FEATURE_MENU_MAP[button.dataset.page]) {
+      button.style.display = "none";
+    }
+  });
+
+  return;
+}
+  
+
+  const buttons = [
+    ...$("nav").querySelectorAll("button[data-page]")
+  ];
+
+  await Promise.all(buttons.map(async button => {
+    const featureKey = FEATURE_MENU_MAP[button.dataset.page];
+    if (!featureKey) return;
+
+    try {
+      const { data, error } = await db.rpc(
+        "acd_lab_feature_is_visible",
+        {
+          p_lab_id: labId,
+          p_feature_key: featureKey
+        }
+      );
+
+      if (error) throw error;
+
+      button.style.display = data === true ? "" : "none";
+
+    } catch (error) {
+      button.style.display = "none";
+      console.error(
+        "Feature visibility check failed:",
+        featureKey,
+        error
+      );
+    }
+  }));
+}
+  
+
+    
+  </script>
 <script src="platform-mode.js"></script> 
+
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js", {
+      scope: "./"
+    }).catch(error => {
+      console.error("Offline registration failed:", error);
+    });
+  });
+}
+</script>
 </body>
 </html>
