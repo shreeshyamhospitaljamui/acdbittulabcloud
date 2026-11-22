@@ -1677,22 +1677,34 @@ if (printing.print_after_save !== false) {
 
   reportCopy.querySelectorAll("script").forEach(s => s.remove());
 
-  printWindow.document.open();
-  printWindow.document.write(
-    "<!doctype html>" + reportCopy.outerHTML
-  );
-  printWindow.document.close();
-
-  printWindow.onload = () => {
-    setTimeout(() => {
-      try {
-        printWindow.focus();
-        printWindow.print();
-      } catch (printError) {
-        say("Print error: " + printError.message);
+  
+printWindow.onload = () => {
+  setTimeout(() => {
+    try {
+      if (printWindow.closed) {
+        say("Print Window बंद हो गई। दोबारा प्रयास करें।");
+        return;
       }
-    }, 700);
-  };
+
+      printWindow.focus();
+
+      if (printWindow.document.readyState === "complete") {
+        printWindow.print();
+      } else {
+        say("Report अभी तैयार हो रही है। थोड़ी देर बाद Print खुलेगा।");
+      }
+    } catch (printError) {
+      say("Print error: " + printError.message);
+    }
+  }, 1000);
+};
+
+printWindow.document.open();
+printWindow.document.write(
+  "<!doctype html>" + reportCopy.outerHTML
+);
+printWindow.document.close();
+
 } else {
   printWindow.close();
   say("Report saved successfully.");
