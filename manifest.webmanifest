@@ -1,0 +1,12 @@
+
+{
+  "name": "ACD BITTU LAB CLOUD",
+  "short_name": "ACD BITTU",
+  "description": "Offline and Cloud Pathology Laboratory Management System",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f4f7fb",
+  "theme_color": "#0b1b33"
+}
