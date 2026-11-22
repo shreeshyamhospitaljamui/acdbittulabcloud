@@ -856,6 +856,58 @@ html.acd-lab-admin #nav [data-sa-nav] {
   }
 }
 
+/* ACD FINAL REPORT FOOTER */
+.report-footer-message,
+.report-page-footer {
+  display: none;
+}
+
+@media print {
+  .report-footer-message {
+    display: block !important;
+    width: 100% !important;
+    margin: 5mm 0 7mm !important;
+    text-align: center !important;
+    color: #244065 !important;
+    font-size: 9pt !important;
+    font-style: italic !important;
+    break-inside: avoid !important;
+  }
+
+  .report-page-footer {
+    display: block !important;
+    width: 100% !important;
+    margin-top: 5mm !important;
+    background: #fff !important;
+    break-inside: avoid !important;
+  }
+
+  .report-page-footer .footer-line {
+    width: 100% !important;
+    height: 2px !important;
+    background: #0b3a7a !important;
+  }
+
+  .report-page-footer .footer-content {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 3mm !important;
+    padding: 2mm 0 !important;
+    color: #0b3a7a !important;
+    font-size: 7pt !important;
+    font-weight: bold !important;
+  }
+
+  .report-page-footer .page-num {
+    flex-shrink: 0 !important;
+    padding: 2mm 3mm !important;
+    color: #fff !important;
+    background: #0b3a7a !important;
+    border-radius: 2mm 2mm 0 0 !important;
+  }
+}
+
 </style>
 </head>
 <body>
