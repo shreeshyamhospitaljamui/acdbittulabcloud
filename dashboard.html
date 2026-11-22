@@ -1925,7 +1925,7 @@ async function loadSavedReports() {
   const {data,error} = await db.from("lab_orders").select(`
     id,order_date,status,created_at,ref_doctor,
     total_amount,discount_amount,paid_amount,payment_mode,
-    patient:lab_patients(patient_name,mobile,age,age_unit,gender),
+    patient:lab_patients(id,patient_name,mobile,age,age_unit,gender),
     items:lab_order_items(
       id,test_name,
       results:lab_test_results(id,parameter_name,result_value,unit,reference_range)
