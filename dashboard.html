@@ -598,6 +598,41 @@ html.acd-lab-admin #nav [data-sa-nav] {
         <div class="field"><label>Header Gap (mm)</label><input id="rdHeaderGap" type="number" min="0" max="40" value="5"></div>
         <div class="field"><label>Footer Gap (mm)</label><input id="rdFooterGap" type="number" min="0" max="60" value="18"></div>
       </div>
+    
+<div class="panel-head">Report Header Visibility & Watermark</div>
+<div class="fields">
+  <div class="field">
+    <label><input type="checkbox" id="rdShowLabName" checked> Show Lab Name</label>
+  </div>
+  <div class="field">
+    <label><input type="checkbox" id="rdShowLabLogo" checked> Show Lab Logo</label>
+  </div>
+  <div class="field">
+    <label><input type="checkbox" id="rdShowLabPhone" checked> Show Phone</label>
+  </div>
+  <div class="field">
+    <label><input type="checkbox" id="rdShowLabEmail" checked> Show Email</label>
+  </div>
+  <div class="field">
+    <label><input type="checkbox" id="rdShowLabAddress" checked> Show Lab Address</label>
+  </div>
+  <div class="field">
+    <label><input type="checkbox" id="rdShowLabTagline" checked> Show Tagline</label>
+  </div>
+  <div class="field">
+    <label><input type="checkbox" id="rdShowWatermark"> Show Watermark</label>
+  </div>
+  <div class="field">
+    <label>Watermark Text</label>
+    <input id="rdWatermarkText" maxlength="100"
+      value="ACD BITTU LAB CLOUD">
+  </div>
+  <div class="field">
+    <label>Watermark Opacity (0.02–0.20)</label>
+    <input id="rdWatermarkOpacity" type="number"
+      min="0.02" max="0.20" step="0.01" value="0.08">
+  </div>
+</div>
       
 <div class="panel-head">Patient & Printing Settings</div>
 <div class="fields">
@@ -3217,13 +3252,33 @@ Object.entries(valuesSignature).forEach(([id, value]) => {
   if (el) el.value = value;
 });
 
+
 const checks = {
   rdShowTechnician: sig.technician,
   rdShowDoctor: sig.doctor,
   rdRectanglePatient: l.rectangle_patient,
   rdLinesPatient: l.lines_patient,
-  rdPrintAfterSave: p.print_after_save
+  rdPrintAfterSave: p.print_after_save,
+
+  rdShowLabName: p.show_lab_name,
+  rdShowLabLogo: p.show_lab_logo,
+  rdShowLabPhone: p.show_lab_phone,
+  rdShowLabEmail: p.show_lab_email,
+  rdShowLabAddress: p.show_lab_address,
+  rdShowLabTagline: p.show_lab_tagline,
+  rdShowWatermark: p.show_watermark
 };
+
+Object.entries(checks).forEach(([id, value]) => {
+  const el = $rd(id);
+  if (el && value !== undefined) el.checked = value;
+});
+
+$rd("rdWatermarkText").value =
+  p.watermark_text || "ACD BITTU LAB CLOUD";
+
+$rd("rdWatermarkOpacity").value =
+  p.watermark_opacity ?? 0.08;
 
 
     Object.entries(checks).forEach(([id, value]) => {
