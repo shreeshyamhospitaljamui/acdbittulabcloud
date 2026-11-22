@@ -1805,10 +1805,12 @@ if (printing.print_after_save !== false) {
   );
   printWindow.document.close();
 
-} else {
-
 
 } else {
+  printWindow.close();
+  say("Report saved successfully.");
+}
+
   printWindow.close();
   say("Report saved successfully.");
 }
