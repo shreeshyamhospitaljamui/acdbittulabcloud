@@ -2185,19 +2185,31 @@ async function srPrint(id) {
       margin: 2
     });
 
-    const rows = (r.items || []).flatMap(item =>
-      (item.results || [])
-        .filter(x => String(x.result_value ?? "").trim() !== "")
-        .map(x => `
-          <tr>
-            <td>${safe(item.test_name)}</td>
-            <td>${safe(x.parameter_name)}</td>
-            <td>${safe(x.result_value)}</td>
-            <td>${safe(x.reference_range || "-")}</td>
-            <td>${safe(x.unit || "-")}</td>
-          </tr>
-        `)
-    ).join("");
+    
+const rows = (r.items || []).flatMap(item =>
+  (item.results || [])
+    .filter(x => String(x.result_value ?? "").trim() !== "")
+    .map(x => {
+      const status = getResultStatus(
+        x.result_value,
+        x.reference_range
+      );
+
+      return `
+        <tr>
+          <td>${safe(item.test_name)}</td>
+          <td>${safe(x.parameter_name)}</td>
+          <td>${safe(x.result_value)}</td>
+          <td class="status-${status.toLowerCase()}">
+            ${safe(status)}
+          </td>
+          <td>${safe(x.reference_range || "-")}</td>
+          <td>${safe(x.unit || "-")}</td>
+        </tr>
+      `;
+    })
+).join("");
+
 
     async function signatureUrl(kind) {
       const path = signatures[kind + "_path"];
@@ -2329,7 +2341,7 @@ ${printing.default_printing === "preprinted" ? "" : `
   <th>Unit</th>
 </tr>
 </thead>
-<tbody>${rows || '<tr><td colspan="5">No result entries</td></tr>'}</tbody>
+<tbody>${rows || '<tr><td colspan="6">No result entries</td></tr>'}</tbody>
 </table>
 <div class="signatures">
   ${signatures.technician === false ? "" : `
