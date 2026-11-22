@@ -2089,12 +2089,53 @@ $("printReferringDoctor").textContent =
 
   $("printTestTitle").textContent = "LABORATORY REPORT";
 
-const { data: reportCfg, error: cfgErr } =
-  await db.rpc("acd_get_lab_report_settings", {
-    p_lab_id: labId
-  });
 
-if (cfgErr) throw cfgErr;
+let reportCfg;
+
+try {
+  const { data, error } = await db.rpc(
+    "acd_get_lab_report_settings",
+    {
+      p_lab_id: labId
+    }
+  );
+
+  if (error) throw error;
+  if (!data) throw new Error("Report settings not found.");
+
+  reportCfg = data;
+
+  await window.ACDOfflineDB.putRecord(
+    "report_settings",
+    labId,
+    {
+      id: labId,
+      settings: reportCfg
+    }
+  );
+
+  console.log("Report Designer settings cached.");
+
+} catch (settingsError) {
+  console.warn(
+    "Using cached Report Designer settings:",
+    settingsError.message
+  );
+
+  const cachedSettings = await window.ACDOfflineDB.getRecord(
+    "report_settings",
+    labId,
+    labId
+  );
+
+  if (!cachedSettings || !cachedSettings.settings) {
+    throw new Error(
+      "Report Designer settings Offline उपलब्ध नहीं हैं। पहले Internet से एक बार रिपोर्ट तैयार करें।"
+    );
+  }
+
+  reportCfg = cachedSettings.settings;
+}
 
 const globalCfg = reportCfg?.global_defaults || {};
 const labCfg = reportCfg?.lab_settings || {};
