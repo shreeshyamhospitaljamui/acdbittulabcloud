@@ -2950,7 +2950,9 @@ init().catch(e=>say("Session/setup error: "+e.message));
 <script>
 /* ACD BITTU LAB CLOUD — SUPER ADMIN CONTROL CENTER */
 (function () {
+  if (role !== "super_admin") return;
 
+  const modules = [
 
   const modules = [
     "Lab Setup",
