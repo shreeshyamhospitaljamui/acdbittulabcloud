@@ -803,7 +803,7 @@ const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
  window.db = db;
 const $=id=>document.getElementById(id);
 let user=null,role=null,labId=null,labs=[],catalogue=[],selectedTests=[],flatRows=[];
-function say(t){$("notice").textContent=t}
+
 function say(t){
   const notice = $("notice");
   if (notice) {
