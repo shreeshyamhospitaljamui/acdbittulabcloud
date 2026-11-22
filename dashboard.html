@@ -2896,53 +2896,72 @@ $("srNext").onclick=()=>{srPage++;srRender()};
 
   
 $("logout").onclick=async()=>{try{await db.rpc("acd_device_release",{p_device_id:deviceId()})}catch(e){}await db.auth.signOut();location.replace("index.html")};
-$("nav").querySelectorAll("button").forEach(b=>b.onclick=()=>{
- 
- const isEntry=b.dataset.page==="New Patient Entry";
- const isCatalogue=b.dataset.page==="Test Catalogue";
- const isSavedReports=b.dataset.page==="Saved Reports";
-  
-$("nav").querySelectorAll("button").forEach(btn=>{
-  btn.classList.toggle("active", btn === b);
+
+$("nav").querySelectorAll("button[data-page]").forEach(b => {
+  b.onclick = () => {
+    const page = b.dataset.page;
+
+    $("nav").querySelectorAll("button").forEach(btn => {
+      btn.classList.toggle("active", btn === b);
+    });
+
+    $("pageTitle").textContent = page;
+
+    const entry = $("entryPage");
+    const catalogue = $("cataloguePage");
+    const reports = $("savedReportsPage");
+    const other = $("otherPage");
+    const designer = $("reportDesignerPage");
+    const superAdmin = $("superAdminCenter");
+
+    [entry, catalogue, reports, other, designer, superAdmin]
+      .forEach(el => {
+        if (el) {
+          el.classList.add("hidden");
+          el.style.display = "none";
+        }
+      });
+
+    if (page === "New Patient Entry") {
+      entry.classList.remove("hidden");
+      entry.style.display = "block";
+      return;
+    }
+
+    if (page === "Test Catalogue") {
+      catalogue.classList.remove("hidden");
+      catalogue.style.display = "block";
+
+      showCataloguePage().catch(e => {
+        $("catalogueParameterRows").innerHTML =
+          '<tr><td colspan="4">Error: ' + safe(e.message) + '</td></tr>';
+      });
+      return;
+    }
+
+    if (page === "Saved Reports") {
+      reports.classList.remove("hidden");
+      reports.style.display = "block";
+
+      loadSavedReports().catch(e => {
+        $("srMessage").textContent = "Error: " + e.message;
+      });
+      return;
+    }
+
+    if (page === "Subscription (Razorpay)") {
+      location.href = "subscription.html";
+      return;
+    }
+
+    if (other) {
+      other.classList.remove("hidden");
+      other.style.display = "block";
+      other.textContent = "";
+    }
+  };
 });
-  
-$("pageTitle").textContent = b.dataset.page;
 
-["reportDesignerPage","superAdminCenter"].forEach(id=>{
-  const el=document.getElementById(id);
-  if(el) el.classList.add("hidden");
-});
- $("entryPage").classList.toggle("hidden",!isEntry);
- $("cataloguePage").classList.toggle("hidden",!isCatalogue);
- $("savedReportsPage").classList.toggle("hidden",!isSavedReports);
- $("otherPage").classList.toggle("hidden",isEntry||isCatalogue||isSavedReports);
-
- if(b.dataset.page==="Subscription (Razorpay)"){
-   location.href="subscription.html";
-   return;
- }
-
- if(isCatalogue){
-   showCataloguePage().catch(e=>{
-     $("catalogueParameterRows").innerHTML=
-       '<tr><td class="catalogue-empty" colspan="4">'+safe(e.message)+'</td></tr>';
-   });
-   return;
- }
-if(isSavedReports){
-  loadSavedReports().catch(e=>{
-    $("srMessage").textContent="Error: "+e.message;
-    $("srRows").innerHTML=
-      '<tr><td colspan="5" class="empty">Reports load error: '+safe(e.message)+'</td></tr>';
-  });
-  return;
-}
-  
-
- if(!isEntry && !isSavedReports && !isCatalogue){
-  $("otherPage").textContent="";
- }
-});
 setupEnterFlow();function tick(){$("clock").textContent=new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false})}tick();setInterval(tick,1000);
 init().catch(e=>say("Session/setup error: "+e.message));
 </script>
