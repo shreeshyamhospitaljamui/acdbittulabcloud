@@ -812,6 +812,17 @@ function say(t){
     console.log("ACD Notice:", t);
   }
 }
+  
+function safe(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[c]));
+}
+  
 function deviceId(){let id=localStorage.getItem("acd_device_id");if(!id){id=crypto.randomUUID?crypto.randomUUID():"acd-"+Date.now()+"-"+Math.random().toString(36).slice(2);localStorage.setItem("acd_device_id",id)}return id}
 let heartbeatBusy=false;
 async function deviceHeartbeat(){if(heartbeatBusy)return;heartbeatBusy=true;try{const {data,error}=await db.rpc("acd_device_heartbeat",{p_device_id:deviceId()});if(error)throw error;if(data?.status==="takeover"||data?.status==="revoked"){await db.auth.signOut();location.replace("index.html")}}catch(e){console.warn("Device heartbeat:",e.message)}finally{heartbeatBusy=false}}
