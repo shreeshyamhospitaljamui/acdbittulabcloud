@@ -2288,7 +2288,9 @@ const rows = (r.items || []).flatMap(item => {
       ? new Date(r.created_at).toLocaleString("en-IN")
       : "-";
 
-    const marginTop = Number(layout.page_margin_top_mm ?? 7);
+   const marginTop = printing.default_printing === "preprinted"
+  ? Math.max(40, Number(layout.page_margin_top_mm ?? 7))
+  : Number(layout.page_margin_top_mm ?? 7);
     const marginRight = Number(layout.page_margin_right_mm ?? 8);
     const marginBottom = Number(layout.page_margin_bottom_mm ?? 10);
     const marginLeft = Number(layout.page_margin_left_mm ?? 8);
