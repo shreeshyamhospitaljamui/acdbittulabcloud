@@ -2526,11 +2526,10 @@ th {
   margin-top: 3px;
 }
 
-.report-footer {
-  position: fixed;
-  bottom: -18mm;
-  left: 0;
-  right: 0;
+..report-footer {
+  position: static;
+  width: 100%;
+  margin-top: 16px;
   border-top: 4px solid #0863ad;
   padding-top: 6px;
   display: flex;
@@ -2567,7 +2566,7 @@ th {
 
 @media print {
   tr { break-inside: avoid; }
-  .report-footer { position: fixed; }
+  
 }
 </style>
 </head>
