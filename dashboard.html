@@ -174,16 +174,17 @@ button:disabled{opacity:.55;cursor:not-allowed}
 
 
   .report-patient-grid {
-    display: grid !important;
-    margin-top: var(--rd-entry-letterhead-gap, 113pt) !important;
-   .page-number {
+  display: grid !important;
+  margin-top: var(--rd-entry-letterhead-gap, 113pt) !important;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px 12px;
+  padding: 8px 10px;
+  font-size: 9pt;
+}
+
+.page-number {
   display: none !important;
 }
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 6px 12px;
-    padding: 8px 10px;
-    font-size: 9pt;
-  }
   
 .report-tracking-row {
   display: flex !important;
@@ -1951,9 +1952,25 @@ if (printing.print_after_save !== false) {
   
 
  }catch(e){
-   printWindow.close();
-   say("Save/Print error: "+e.message);
- }finally{
+  console.error("Save/Print error:", e);
+
+  try {
+    printWindow.document.open();
+    printWindow.document.write(`
+      <!doctype html>
+      <html>
+      <body style="font-family:Arial;padding:24px">
+        <h3>Print Error</h3>
+        <pre style="white-space:pre-wrap;color:#b42318">${safe(e.message)}</pre>
+        <p>इस Error का Screenshot भेजें।</p>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+  } catch (_) {}
+
+  say("Save/Print error: " + e.message);
+}finally{
    btn.disabled=false;
    btn.textContent="Save & Print (A4)";
    savePrintInProgress=false;
