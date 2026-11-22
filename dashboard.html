@@ -392,7 +392,29 @@ html.acd-lab-admin #nav [data-sa-nav] {
 <div class="cards">
 <section class="panel"><div class="panel-head">▣ &nbsp;1. Patient Details</div><div class="panel-body"><div class="fields">
 <div class="field"><label>Lab ID</label><input id="labId" disabled></div><div class="field"><label>Mobile</label><input id="mobile" inputmode="numeric" maxlength="10" placeholder="10 Digits"></div>
-<div class="field full"><label>Patient Name</label><input id="patient" placeholder="Enter patient name"></div>
+<div class="field full">
+  <label>Patient Name</label>
+  <input id="patient" placeholder="Enter patient name">
+</div>
+
+<div class="field full">
+  <label>Patient Address</label>
+  <input id="patientAddress" maxlength="300"
+    placeholder="Enter patient address">
+</div>
+
+<div class="field">
+  <label>Age</label>
+  <input id="age" type="number" min="0" placeholder="Age">
+</div>
+<div class="field">
+  <label>Unit</label>
+  <select id="ageUnit">
+    <option>Y</option>
+    <option>M</option>
+    <option>D</option>
+  </select>
+</div>
 <div class="field"><label>Age</label><input id="age" type="number" min="0" placeholder="Age"></div><div class="field"><label>Unit</label><select id="ageUnit"><option>Y</option><option>M</option><option>D</option></select></div>
 <div class="field full"><label>Gender</label><select id="gender"><option>Male</option><option>Female</option><option>Other</option></select></div>
 </div></div></section>
@@ -1441,7 +1463,17 @@ $("save").onclick=async()=>{
  btn.textContent="Saving…";
 
  try{
-  const {data:p,error:pe}=await db.from("lab_patients").insert({lab_id:labId,patient_name:patientName,mobile:$("mobile").value.trim()||null,age:$("age").value?Number($("age").value):null,age_unit:$("ageUnit").value,gender:$("gender").value}).select().single();if(pe)throw pe;
+  const {data:p,error:pe}=await db.from("lab_patients").insert({
+  lab_id: labId,
+  patient_name: patientName,
+  mobile: $("mobile").value.trim() || null,
+  address: $("patientAddress").value.trim() || null,
+  age: $("age").value ? Number($("age").value) : null,
+  age_unit: $("ageUnit").value,
+  gender: $("gender").value
+}).select().single();
+
+if (pe) throw pe;
   const {data:o,error:oe}=await db.from("lab_orders").insert({lab_id:labId,patient_id:p.id,ref_doctor:$("doctor").value.trim()||"Self",order_date:$("date").value,total_amount:+$("total").value||0,discount_amount:+$("discount").value||0,paid_amount:+$("paid").value||0,payment_mode:$("payment").value}).select().single();if(oe)throw oe;
   for(const t of selectedTests){
    const {data:item,error:ie}=await db.from("lab_order_items").insert({lab_id:labId,order_id:o.id,test_name:t.test_name}).select().single();if(ie)throw ie;
@@ -1960,7 +1992,7 @@ async function loadSavedReports() {
   const {data,error} = await db.from("lab_orders").select(`
     id,order_date,status,created_at,ref_doctor,
     total_amount,discount_amount,paid_amount,payment_mode,
-    patient:lab_patients(id,patient_name,mobile,age,age_unit,gender),
+    patient:lab_patients(id,patient_name,mobile,address,age,age_unit,gender),
     items:lab_order_items(
       id,test_name,
       results:lab_test_results(id,parameter_name,result_value,unit,reference_range)
@@ -3281,10 +3313,7 @@ $rd("rdWatermarkOpacity").value =
   p.watermark_opacity ?? 0.08;
 
 
-    Object.entries(checks).forEach(([id, value]) => {
-      const el = $rd(id);
-      if (el && value !== undefined) el.checked = value;
-    });
+    
   }
 
   function readLabSettings() {
@@ -3330,7 +3359,24 @@ $rd("rdWatermarkOpacity").value =
         xray_footer: num("rdXrayFooter"),
         xray_alignment: val("rdXrayAlign"),
         hemoglobin_unit: val("rdHbUnit").trim(),
-        print_after_save: $rd("rdPrintAfterSave").checked
+                print_after_save: $rd("rdPrintAfterSave").checked,
+
+        show_lab_name: $rd("rdShowLabName").checked,
+        show_lab_logo: $rd("rdShowLabLogo").checked,
+        show_lab_phone: $rd("rdShowLabPhone").checked,
+        show_lab_email: $rd("rdShowLabEmail").checked,
+        show_lab_address: $rd("rdShowLabAddress").checked,
+        show_lab_tagline: $rd("rdShowLabTagline").checked,
+
+        show_watermark: $rd("rdShowWatermark").checked,
+        watermark_text: $rd("rdWatermarkText").value.trim(),
+        watermark_opacity: Math.max(
+          0.02,
+          Math.min(
+            0.20,
+            Number($rd("rdWatermarkOpacity").value) || 0.08
+          )
+        )
       },
       positions: {
         test_name: num("rdPosTestName"),
