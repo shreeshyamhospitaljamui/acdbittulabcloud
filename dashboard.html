@@ -2135,19 +2135,6 @@ async function loadPrintSignature(kind, imageId, nameId) {
   }
 }
 
-  img.src = data.signedUrl;
-img.style.display = "block";
-
-try {
-  if (img.decode) {
-    await img.decode();
-  }
-} catch (imageError) {
-  console.warn("Signature image load failed:", imageError);
-  img.style.display = "none";
-}
-}
-
 await loadPrintSignature(
   "technician",
   "printTechnicianSignature",
