@@ -1502,6 +1502,7 @@ let chosenSearchWidal = false;
 let searchRequestId = 0;
 
 
+
 async function renderTestSearchResults() {
   const q = $("testSearch").value.trim().toLowerCase();
   const box = $("testSearchResults");
@@ -1516,6 +1517,137 @@ async function renderTestSearchResults() {
     box.innerHTML = "";
     return;
   }
+
+  let allParameters = [];
+
+  try {
+    const { data, error } = await db
+      .from("acd_test_parameters")
+      .select("id,test_id,parameter_name,unit,reference_range,result_type,result_options,sort_order")
+      .order("sort_order");
+
+    if (error) throw error;
+
+    allParameters = data || [];
+
+    await Promise.all(
+      allParameters.map(parameter =>
+        window.ACDOfflineDB.putRecord(
+          "parameters",
+          labId,
+          parameter
+        )
+      )
+    );
+
+  } catch (error) {
+    console.warn("Using offline parameter search:", error.message);
+
+    try {
+      allParameters = await window.ACDOfflineDB.getRecords(
+        "parameters",
+        labId
+      );
+    } catch (cacheError) {
+      console.error("Offline search failed:", cacheError);
+      allParameters = [];
+    }
+  }
+
+  if (requestId !== searchRequestId) return;
+
+  if (
+    q.includes("widal") ||
+    q.includes("विडाल") ||
+    q.includes("वाइडल")
+  ) {
+    const widalParams = allParameters.filter(p =>
+      p.test_id === "a4a9fc07-b26f-4960-a002-4f21acafdd35"
+    );
+
+    const hasWidal = widalParams.some(
+      p => p.parameter_name === "Widal Test (Overall Result)"
+    );
+
+    box.innerHTML = hasWidal
+      ? '<button type="button" class="test-search-option" data-search-widal="true">Widal Test<small>पूरा Widal Matrix • Overall Positive/Negative + 4 Antigen Rows + 6 Dilutions</small></button>'
+      : '<div class="test-search-empty">Widal Matrix अभी Offline उपलब्ध नहीं है।</div>';
+
+    box.querySelectorAll("[data-search-widal]").forEach(b => {
+      b.addEventListener("click", () => {
+        chosenSearchWidal = true;
+        chosenSearchParameter = null;
+        chosenSearchTestId = null;
+        $("testSearch").value = "Widal Test";
+        box.classList.add("hidden");
+        box.innerHTML = "";
+      });
+    });
+
+    box.classList.remove("hidden");
+    return;
+  }
+
+  const testMatches = catalogue.filter(t =>
+    (t.test_name || "").toLowerCase().includes(q) ||
+    (t.test_code || "").toLowerCase().includes(q) ||
+    (t.department || "").toLowerCase().includes(q)
+  ).slice(0, 8);
+
+  const parameters = allParameters
+    .filter(p =>
+      (p.parameter_name || "").toLowerCase().includes(q) &&
+      catalogue.some(t => t.id === p.test_id)
+    )
+    .slice(0, 12);
+
+  const testHTML = testMatches.map(t =>
+    '<button type="button" class="test-search-option" data-search-test="' +
+    safe(t.id) + '">' + safe(t.test_name) +
+    '<small>पूरा प्रोफाइल • ' + safe(t.test_code) + '</small></button>'
+  ).join("");
+
+  const parameterHTML = parameters.map(p => {
+    const parent = catalogue.find(t => t.id === p.test_id);
+
+    return '<button type="button" class="test-search-option" data-search-parameter="' +
+      safe(p.id) + '">' + safe(p.parameter_name) +
+      '<small>सिर्फ यह टेस्ट • ' + safe(parent.test_name) + '</small></button>';
+  }).join("");
+
+  box.innerHTML = testHTML + parameterHTML ||
+    '<div class="test-search-empty">कोई matching test नहीं मिला। पहले Internet से Catalogue और Parameters लोड करें।</div>';
+
+  box.classList.remove("hidden");
+
+  box.querySelectorAll("[data-search-test]").forEach(b => {
+    b.addEventListener("click", () => {
+      const t = catalogue.find(x => x.id === b.dataset.searchTest);
+      if (!t) return;
+
+      chosenSearchTestId = t.id;
+      chosenSearchParameter = null;
+      chosenSearchWidal = false;
+      $("testSearch").value = t.test_name;
+      box.classList.add("hidden");
+      box.innerHTML = "";
+    });
+  });
+
+  box.querySelectorAll("[data-search-parameter]").forEach(b => {
+    b.addEventListener("click", () => {
+      const p = parameters.find(x => x.id === b.dataset.searchParameter);
+      if (!p) return;
+
+      chosenSearchParameter = p;
+      chosenSearchTestId = null;
+      chosenSearchWidal = false;
+      $("testSearch").value = p.parameter_name;
+      box.classList.add("hidden");
+      box.innerHTML = "";
+    });
+  });
+}
 
   if (q.includes("widal") || q.includes("विडाल") || q.includes("वाइडल")) {
     const { data, error } = await db
