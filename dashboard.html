@@ -2624,126 +2624,25 @@ say("Patient, order और सभी test results save हो गए।");
 
 
 
+
 if (printing.print_after_save !== false) {
-  const reportCopy = document.documentElement.cloneNode(true);
+  await loadSavedReports();
 
-  reportCopy.querySelectorAll("script").forEach(s => s.remove());
+  const savedReport = srFind(o.id);
 
-  const liveControls = document.querySelectorAll(
-    "input, select, textarea"
-  );
-  const printControls = reportCopy.querySelectorAll(
-    "input, select, textarea"
-  );
-
-  liveControls.forEach((live, index) => {
-    const copy = printControls[index];
-    if (!copy) return;
-
-    if (live.tagName === "SELECT") {
-      [...copy.options].forEach((option, i) => {
-        const selected = live.options[i]?.selected === true;
-        option.selected = selected;
-        if (selected) option.setAttribute("selected", "");
-        else option.removeAttribute("selected");
-      });
-    } else if (live.type === "checkbox" || live.type === "radio") {
-      copy.checked = live.checked;
-      if (live.checked) copy.setAttribute("checked", "");
-      else copy.removeAttribute("checked");
-    } else {
-      copy.value = live.value;
-      copy.setAttribute("value", live.value);
-      if (live.tagName === "TEXTAREA") {
-        copy.textContent = live.value;
-      }
-    }
-  });
-
-  const liveQR = document.querySelector("#printPatientQR");
-  const copiedQR = reportCopy.querySelector("#printPatientQR");
-
-  if (liveQR && copiedQR) {
-    const qrCanvases = liveQR.querySelectorAll("canvas");
-    const qrImages = liveQR.querySelectorAll("img");
-
-    copiedQR.innerHTML = "";
-
-    qrImages.forEach(img => {
-      if (img.src) {
-        const newImg = document.createElement("img");
-        newImg.src = img.src;
-        newImg.alt = "Patient QR Code";
-        newImg.style.width = "100px";
-        newImg.style.height = "100px";
-        copiedQR.appendChild(newImg);
-      }
-    });
-
-    qrCanvases.forEach(canvas => {
-      const qrImage = document.createElement("img");
-      qrImage.src = canvas.toDataURL("image/png");
-      qrImage.alt = "Patient QR Code";
-      qrImage.style.width = "100px";
-      qrImage.style.height = "100px";
-      copiedQR.appendChild(qrImage);
-    });
+  if (!savedReport) {
+    throw new Error(
+      "Report saved, but it could not be loaded for printing."
+    );
   }
 
-  const liveBarcode = document.querySelector("#printOrderBarcode");
-  const copiedBarcode = reportCopy.querySelector("#printOrderBarcode");
-
-  if (liveBarcode && copiedBarcode) {
-    copiedBarcode.innerHTML = liveBarcode.innerHTML;
-
-    [...liveBarcode.attributes].forEach(attr => {
-      copiedBarcode.setAttribute(attr.name, attr.value);
-    });
-  }
-
-  const printResults = reportCopy.querySelector("#testRows");
-
-  if (!printResults) {
-    throw new Error("Print result table not found.");
-  }
-
-  reportCopy.querySelectorAll(".no-print").forEach(el => el.remove());
-
-  printWindow.document.open();
-  printWindow.document.write(
-    "<!doctype html>" + reportCopy.outerHTML
-  );
-  printWindow.document.close();
-
-  setTimeout(async () => {
-    try {
-      if (printWindow.closed) return;
-
-      const images = [...printWindow.document.images];
-
-      await Promise.race([
-        Promise.all(images.map(img => {
-          if (img.complete) return Promise.resolve();
-          return new Promise(resolve => {
-            img.onload = resolve;
-            img.onerror = resolve;
-          });
-        })),
-        new Promise(resolve => setTimeout(resolve, 2500))
-      ]);
-
-      printWindow.focus();
-      printWindow.print();
-    } catch (error) {
-      say("Print error: " + error.message);
-    }
-  }, 1200);
-
+  await srPrint(o.id, printWindow);
 
 } else {
   printWindow.close();
   say("Report saved successfully.");
 }
+
 
  }catch(e){
   console.error("Save/Print error:", e);
