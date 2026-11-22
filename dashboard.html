@@ -109,7 +109,11 @@ button:disabled{opacity:.55;cursor:not-allowed}
   #workspace > *:not(#entryPage):not(.print-header) {
     display: none !important;
   }
-
+/* Show report header only in print */
+.print-header {
+  display: block !important;
+  visibility: visible !important;
+}
   .app,
   .main,
   .content,
@@ -171,7 +175,10 @@ button:disabled{opacity:.55;cursor:not-allowed}
 
   .report-patient-grid {
     display: grid !important;
-    margin-top: var(--rd-gap-header, 140pt) !important;
+    margin-top: var(--rd-entry-letterhead-gap, 113pt) !important;
+   .page-number {
+  display: none !important;
+}
     grid-template-columns: 1fr 1fr 1fr;
     gap: 6px 12px;
     padding: 8px 10px;
@@ -2542,8 +2549,8 @@ th {
   background: white;
 }
 
-.page-number:after {
-  content: "Page " counter(page) " of " counter(pages);
+.page-number {
+  display: none !important;
 }
 
 .watermark {
