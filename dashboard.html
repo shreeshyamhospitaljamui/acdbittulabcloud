@@ -1677,6 +1677,23 @@ if (printing.print_after_save !== false) {
 
   reportCopy.querySelectorAll("script").forEach(s => s.remove());
 
+  // Print में केवल भरे हुए Result Rows रखें
+  const printResults = reportCopy.querySelector(".results tbody");
+
+  if (printResults) {
+    printResults.querySelectorAll("tr").forEach(row => {
+      const resultInput = row.querySelector("[data-result]");
+
+      // जिन rows में result input है और value खाली है, उन्हें हटाएँ
+      if (resultInput && !String(resultInput.value || "").trim()) {
+        row.remove();
+      }
+    });
+  }
+
+  // Print से Remove/Test action वाले कॉलम हटाएँ
+  reportCopy.querySelectorAll(".no-print").forEach(el => el.remove());
+  
   
 printWindow.onload = () => {
   setTimeout(() => {
