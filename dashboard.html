@@ -2956,11 +2956,19 @@ function srView(id) {
   d.showModal();
 }
 
-async function srPrint(id) {
-  const r = srFind(id);
-  if (!r) return;
 
-  const w = window.open("", "_blank");
+async function srPrint(id, targetWindow) {
+  const r = srFind(id);
+
+  if (!r) {
+    if (targetWindow && !targetWindow.closed) {
+      targetWindow.close();
+    }
+    return;
+  }
+
+  const w = targetWindow || window.open("", "_blank");
+
   if (!w) {
     alert("Chrome में Pop-ups allow करें।");
     return;
