@@ -2526,7 +2526,7 @@ th {
   margin-top: 3px;
 }
 
-..report-footer {
+.report-footer {
   position: static;
   width: 100%;
   margin-top: 16px;
@@ -2669,23 +2669,14 @@ ${showHeader ? `
 
 </div>
 
-.report-footer {
-  position: static;
-  margin-top: 18px;
-  border-top: 4px solid #0863ad;
-  padding-top: 6px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: #123c78;
-  font-size: 8pt;
-  background: white;
-}
+
+<div class="report-footer">
   <div>${showLabName ? safe(branding.lab_name || "") : ""}</div>
   <div>${showLabAddress ? safe(branding.address || "") : ""}</div>
   <div>${showLabPhone ? safe(branding.phone || "") : ""}</div>
   <div class="page-number"></div>
 </div>
+
 
 </body>
 </html>`;
