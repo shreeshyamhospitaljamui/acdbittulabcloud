@@ -1351,11 +1351,63 @@ function calculateCBCResults(testId) {
 
   
 function renderSelected(){$("selectedTestsLabel").textContent="Selected tests: "+(selectedTests.map(t=>t.test_name).join(", ")||"none")}
-async function loadCatalogue(){
- const {data,error}=await db.from("acd_test_catalogue").select("id,test_code,test_name,department,default_price").eq("is_active",true).order("sort_order");
- if(error)throw error;catalogue=data||[];
 
+async function loadCatalogue(){
+  if (!labId) {
+    catalogue = [];
+    return;
+  }
+
+  try {
+    const { data, error } = await db
+      .from("acd_test_catalogue")
+      .select("id,test_code,test_name,department,default_price,sort_order")
+      .eq("is_active", true)
+      .order("sort_order");
+
+    if (error) throw error;
+
+    catalogue = data || [];
+
+    // Save latest catalogue for this laboratory.
+    await Promise.all(
+      catalogue.map(test =>
+        window.ACDOfflineDB.putRecord(
+          "catalogue",
+          labId,
+          test
+        )
+      )
+    );
+
+    console.log("Catalogue loaded from Supabase and cached:", catalogue.length);
+  } catch (error) {
+    console.warn("Supabase catalogue unavailable:", error.message);
+
+    try {
+      const cached = await window.ACDOfflineDB.getRecords(
+        "catalogue",
+        labId
+      );
+
+      catalogue = cached
+        .filter(test => test.is_active !== false)
+        .sort((a, b) => (a.sort_order || 100) - (b.sort_order || 100));
+
+      if (catalogue.length) {
+        say("Offline Catalogue loaded: " + catalogue.length + " tests.");
+      } else {
+        catalogue = [];
+        say("Catalogue अभी Offline उपलब्ध नहीं है। पहले Internet से Catalogue लोड करें।");
+      }
+    } catch (cacheError) {
+      catalogue = [];
+      console.error("Offline catalogue error:", cacheError);
+      say("Catalogue load failed: " + cacheError.message);
+    }
+  }
 }
+
 let activeCatalogueTestId=null;
 function renderCatalogueList(filter=""){
  const list=$("catalogueTestList"),q=filter.trim().toLowerCase();
