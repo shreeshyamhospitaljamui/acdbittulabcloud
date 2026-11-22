@@ -1786,24 +1786,38 @@ if (printing.print_after_save !== false) {
   // 5. Remove action buttons
   reportCopy.querySelectorAll(".no-print").forEach(el => el.remove());
 
-  // 6. Open A4 print
-  printWindow.onload = () => {
-    setTimeout(() => {
-      try {
-        if (printWindow.closed) return;
-        printWindow.focus();
-        printWindow.print();
-      } catch (error) {
-        say("Print error: " + error.message);
-      }
-    }, 1000);
-  };
-
+  
+  // 6. Open A4 print after the report document is written
   printWindow.document.open();
   printWindow.document.write(
     "<!doctype html>" + reportCopy.outerHTML
   );
   printWindow.document.close();
+
+  // Wait for report images (QR, logo, signatures) to load
+  setTimeout(async () => {
+    try {
+      if (printWindow.closed) return;
+
+      const images = [...printWindow.document.images];
+
+      await Promise.race([
+        Promise.all(images.map(img => {
+          if (img.complete) return Promise.resolve();
+          return new Promise(resolve => {
+            img.onload = resolve;
+            img.onerror = resolve;
+          });
+        })),
+        new Promise(resolve => setTimeout(resolve, 2500))
+      ]);
+
+      printWindow.focus();
+      printWindow.print();
+    } catch (error) {
+      say("Print error: " + error.message);
+    }
+  }, 1200);
 
 
 } else {
