@@ -2346,5 +2346,36 @@ if ("serviceWorker" in navigator) {
   });
 }
 </script>
+  
+/* Global Keyboard Navigation */
+document.addEventListener("keydown", function(e) {
+  const el = e.target;
+
+  if (el.matches("textarea, input") &&
+      !["checkbox", "radio"].includes(el.type)) return;
+
+  const fields = [...document.querySelectorAll(
+    'input:not([disabled]), select:not([disabled]), button:not([disabled]), textarea:not([disabled])'
+  )].filter(x => x.offsetParent !== null);
+
+  const i = fields.indexOf(el);
+  if (i < 0) return;
+
+  if (e.key === "Enter") {
+    e.preventDefault();
+    fields[i + 1]?.focus();
+  }
+
+  if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+    e.preventDefault();
+    fields[i + 1]?.focus();
+  }
+
+  if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+    e.preventDefault();
+    fields[i - 1]?.focus();
+  }
+});
+
 </body>
 </html>
