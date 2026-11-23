@@ -2426,17 +2426,9 @@ if ("serviceWorker" in navigator) {
     const typing = el.matches(
       'textarea, input:not([type="button"]):not([type="submit"]):not([type="checkbox"]):not([type="radio"])'
     );
-
-   
-            if ((typing && !el.matches('[data-result]')) ||
+     if ((typing && !el.matches('[data-result]')) ||
         el.matches('select')) return;
 
-    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-      e.preventDefault();
-      move(el, e.key);
-    }
-
-  if ((typing && !el.matches('[data-result]')) || el.matches('select')) return;
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
       e.preventDefault();
       move(el, e.key);
