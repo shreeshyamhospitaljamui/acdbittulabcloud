@@ -1205,16 +1205,7 @@ $("save").onclick=async()=>{
    return;
  }
 
- const printWindow = window.open("", "_blank");
 
- if(!printWindow){
-   say("Chrome में Pop-ups allow करें और फिर कोशिश करें।");
-   return;
- }
-
- printWindow.document.write(
-   "<html><body style='font:16px Arial;padding:20px'>Report preparing...</body></html>"
- );
 
  savePrintInProgress = true;
 
