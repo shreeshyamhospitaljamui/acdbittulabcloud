@@ -81,16 +81,30 @@
     return "Normal";
   }
 
-  function buildQrText(report, design) {
+  function patientId(report) {
     const p = report.patient || {};
-    const testNames = (report.tests || []).map(t => t.test_name).join(", ");
-    return [
-      design.labName || "ACD BITTU LAB CLOUD",
-      "Report ID: " + (report.id || "DRAFT"),
-      "Patient: " + (p.patient_name || "-"),
-      "Date: " + (report.order_date || "-"),
-      "Tests: " + (testNames || "-")
-    ].join("\n");
+    return p.patient_code || p.patient_uid || p.id || "NOT ASSIGNED";
+  }
+
+  function buildQrText(report, design) {
+    // Until a secured public-report endpoint exists, QR carries only Patient ID.
+    return "ACD BITTU LAB CLOUD | PATIENT ID: " + patientId(report);
+  }
+
+  function renderBarcodeInto(container, value) {
+    if (!container) return;
+    container.innerHTML = "";
+    const text = String(value || "").trim();
+    if (!text || text === "NOT ASSIGNED") return;
+    if (typeof window.JsBarcode === "function") {
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      container.appendChild(svg);
+      try { window.JsBarcode(svg, text, { format: "CODE128", displayValue: true, fontSize: 9, height: 28, margin: 0 }); }
+      catch (e) { container.textContent = text; }
+    } else {
+      container.textContent = text;
+      container.classList.add("acd-barcode-fallback");
+    }
   }
 
   function renderQrInto(container, text) {
@@ -158,8 +172,9 @@
           ${design.showAddress && p.address ? `<div class="acd-patient-row"><b>Address:</b><span>${esc(p.address)}</span></div>` : ""}
         </div>
         <div class="acd-patient-col">
-          <div class="acd-patient-row"><b>Report ID:</b><span>${esc(report.id || "DRAFT")}</span></div>
+          <div class="acd-patient-row"><b>Patient ID:</b><span>${esc(patientId(report))}</span></div>
           <div class="acd-patient-row"><b>Report Date:</b><span>${esc(report.order_date || "-")}</span></div>
+          <div class="acd-barcode-box" data-acd-barcode="${pageIndex}"></div>
           <div class="acd-patient-row"><b>Ref. Doctor:</b><span>${esc(report.ref_doctor || "Self")}</span></div>
           ${design.showSampleType && p.sample_type ? `<div class="acd-patient-row"><b>Sample Type:</b><span>${esc(p.sample_type)}</span></div>` : ""}
         </div>
@@ -222,6 +237,21 @@
     `;
   }
 
+  function fullTestName(name) {
+    const raw = String(name || "").trim();
+    const key = raw.toUpperCase().replace(/\s+/g, " ").trim();
+    const names = {
+      CBC: "COMPLETE BLOOD COUNT (CBC)", KFT: "KIDNEY FUNCTION TEST (KFT)",
+      LFT: "LIVER FUNCTION TEST (LFT)", RFT: "RENAL FUNCTION TEST (RFT)",
+      TFT: "THYROID FUNCTION TEST (TFT)", ESR: "ERYTHROCYTE SEDIMENTATION RATE (ESR)",
+      CRP: "C-REACTIVE PROTEIN (CRP)", HBA1C: "GLYCATED HAEMOGLOBIN (HbA1c)",
+      FBS: "FASTING BLOOD SUGAR (FBS)", PPBS: "POST PRANDIAL BLOOD SUGAR (PPBS)",
+      RBS: "RANDOM BLOOD SUGAR (RBS)", WIDAL: "WIDAL TEST",
+      "URINE R/M": "URINE ROUTINE AND MICROSCOPY", "URINE RE": "URINE ROUTINE EXAMINATION"
+    };
+    return names[key] || raw.toUpperCase();
+  }
+
   function buildTestGroupRowsHTML(testGroup, design) {
     const colSpan = 2 + (design.showUnit ? 1 : 0) + (design.showRef ? 1 : 0) + (design.showStatus ? 1 : 0);
     const rows = testGroup.rows || [];
@@ -230,7 +260,7 @@
     const overall = rows.find(r => r.parameter_name === "Widal Test (Overall Result)");
     const isWidal = !!overall && antigens.some(a => rows.some(r => r.parameter_name.startsWith(a + " - ")));
 
-    let html = `<tr class="acd-test-group-header"><td colspan="${colSpan}">${esc((testGroup.test_name || "").toUpperCase())}</td></tr>`;
+    let html = `<tr class="acd-test-group-header"><td colspan="${colSpan}">${esc(fullTestName(testGroup.test_name))}</td></tr>`;
 
     if (isWidal) {
       html += `
@@ -287,15 +317,13 @@
     return html;
   }
 
-  function createPageShell(report, design, isFirstPage) {
+  function createPageShell(report, design, pageIndex) {
     const page = document.createElement("div");
     page.className = "acd-a4-page";
     page.style.setProperty("--report-accent", design.accentColor || "#0b4fa8");
     page.style.setProperty("--report-font-size", design.fontSize || "11px");
 
-    const topHtml = isFirstPage
-      ? buildFullHeaderHTML(design) + buildPatientBoxHTML(report, design, 1)
-      : buildContHeaderHTML(report, design);
+    const topHtml = buildFullHeaderHTML(design) + buildPatientBoxHTML(report, design, pageIndex);
 
     page.innerHTML = `
       <div class="acd-a4-top">${topHtml}</div>
@@ -336,7 +364,7 @@
       `*${design.labName || "PATHOLOGY LABORATORY"}*`,
       `📋 *Pathology Investigation Report*`,
       `👤 *Patient:* ${fullName} (${p.age || "-"} ${p.age_unit || "Y"} / ${p.gender || "-"})`,
-      `🆔 *Report ID:* ${report.id || "DRAFT"}`,
+      `🆔 *Patient ID:* ${patientId(report)}`,
       `📅 *Date:* ${report.order_date || "-"}`,
       `🩺 *Ref. Doctor:* ${report.ref_doctor || "Self"}`,
       `------------------------`
@@ -437,7 +465,7 @@
     };
 
     const pages = [];
-    let currentPage = createPageShell(report, design, true);
+    let currentPage = createPageShell(report, design, 1);
     currentPage.querySelector(".acd-a4-footer-slot").innerHTML = buildFooterHTML(design, 1, 1);
     viewport.appendChild(currentPage);
     pages.push(currentPage);
@@ -459,7 +487,7 @@
 
       if (tableHeight > maxH && beforeHtml.trim() !== "") {
         tbody.innerHTML = beforeHtml;
-        currentPage = createPageShell(report, design, false);
+        currentPage = createPageShell(report, design, pages.length + 1);
         currentPage.querySelector(".acd-a4-footer-slot").innerHTML = buildFooterHTML(design, pages.length + 1, pages.length + 1);
         viewport.appendChild(currentPage);
         pages.push(currentPage);
@@ -485,7 +513,7 @@
 
         if (!overflowRows.length) break;
 
-        currentPage = createPageShell(report, design, false);
+        currentPage = createPageShell(report, design, pages.length + 1);
         currentPage.querySelector(".acd-a4-footer-slot").innerHTML = buildFooterHTML(design, pages.length + 1, pages.length + 1);
         viewport.appendChild(currentPage);
         pages.push(currentPage);
@@ -493,7 +521,7 @@
         const colSpan = 2 + (design.showUnit ? 1 : 0) + (design.showRef ? 1 : 0) + (design.showStatus ? 1 : 0);
         const contTbody = currentPage.querySelector("tbody");
         contTbody.innerHTML =
-          `<tr class="acd-test-group-header"><td colspan="${colSpan}">${esc(group.test_name.toUpperCase())} (Contd.)</td></tr>` +
+          `<tr class="acd-test-group-header"><td colspan="${colSpan}">${esc(fullTestName(group.test_name))} (Contd.)</td></tr>` +
           overflowRows.join("");
       }
     });
@@ -503,10 +531,10 @@
       pg.querySelector(".acd-a4-footer-slot").innerHTML = buildFooterHTML(design, idx + 1, totalPages);
     });
 
-    if (design.showQr) {
-      const qrEl = pages[0].querySelector("[data-acd-qr]");
-      renderQrInto(qrEl, buildQrText(report, design));
-    }
+    pages.forEach(pg => {
+      if (design.showQr) renderQrInto(pg.querySelector("[data-acd-qr]"), buildQrText(report, design));
+      renderBarcodeInto(pg.querySelector("[data-acd-barcode]"), patientId(report));
+    });
 
     document.getElementById("acdPrintPageCount").textContent = `(${totalPages} A4 Page${totalPages > 1 ? "s" : ""})`;
     applyMobileViewportScale(viewport);
