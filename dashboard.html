@@ -114,51 +114,7 @@ html.acd-lab-admin #nav [data-sa-nav] {
 <header class="topbar"><span id="pageTitle">New Patient Entry</span><div class="topright"><span id="clock">00:00</span><span id="account"></span><button class="btn light" id="logout">Logout</button><span class="avatar">♟</span></div></header>
 <section class="content" id="workspace">
 <div class="select-lab hidden" id="labChooser"><b>Laboratory:</b><select id="labSelect"><option value="">Loading laboratories…</option></select><span id="labStatus">Selected</span></div>
-<div class="print-header" id="printHeader">
 
-<div id="printLabBranding" class="print-lab-branding">
-  <img id="printLabLogo" alt="Laboratory Logo">
-  <div class="report-brand-details">
-    <div id="printLabName"></div>
-    <div id="printLabTagline"></div>
-    <div id="printLabAddress"></div>
-    <div id="printLabPhone"></div>
-    <div id="printLabEmail"></div>
-  </div>
-</div>
-
-<div class="report-identification-row">
-  <div class="report-patient-grid" id="printPatientMeta"></div>
-
-  <div class="report-qr-section">
-    <div id="printPatientQR"></div>
-    <small>Patient QR Code</small>
-  </div>
-
-  <div class="report-referring-doctor">
-    <b>Referring Doctor:</b>
-    <span id="printReferringDoctor"></span>
-  </div>
-
-  <div class="report-barcode-section">
-    <svg id="printOrderBarcode"></svg>
-    <small id="printOrderBarcodeText"></small>
-    <div>
-      <b>Registered Time:</b>
-      <span id="printRegisteredTime"></span>
-    </div>
-  </div>
-</div>
-
-<div class="report-test-title" id="printTestTitle">
-  LABORATORY REPORT
-</div>
-
-<div class="report-generated-time">
-  <b>Report Generated:</b>
-  <span id="printReportGeneratedTime"></span>
-</div>
-</div>
 <div id="entryPage">
 <div class="cards">
 <section class="panel"><div class="panel-head">▣ &nbsp;1. Patient Details</div><div class="panel-body"><div class="fields">
@@ -224,37 +180,7 @@ html.acd-lab-admin #nav [data-sa-nav] {
 </tbody>
 </table>
 </div>
-<div class="report-footer-message">
-  Thank you for your reference ***** End of Report *****
-</div>
-<div class="signature-footer">
 
-  <div class="signature-slot">
-    <img id="printTechnicianSignature"
-         alt="Technician Signature"
-         style="display:none">
-    <b id="printTechnicianName">Technician</b>
-  </div>
-
-  <div class="signature-slot">
-    <img id="printDoctorSignature"
-         alt="Doctor Signature"
-         style="display:none">
-    <b id="printDoctorName">Doctor</b>
-    <small id="printDoctorQualification"></small>
-  </div>
-
-</div>
-  
-<div class="report-page-footer">
-  <div class="footer-line"></div>
-  <div class="footer-content">
-    <strong>ACD BITTU LAB CLOUD</strong>
-    <span id="printFooterAddress"></span>
-    <span id="printFooterPhone"></span>
-    <span class="page-num">Page 1</span>
-  </div>
-</div>
 
 </section>
 </div>
