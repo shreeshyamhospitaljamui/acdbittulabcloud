@@ -1047,10 +1047,7 @@ async function addTest() {
 
 $("addTest").onclick=addTest;
 $("clear").onclick=()=>{selectedTests=[];flatRows=[];renderRows();renderSelected();say("चुने हुए टेस्ट हटाए गए।")};
-function setupEnterFlow(){
- const ids=["patient","mobile","age","ageUnit","gender","doctor","testSearch"];
- ids.forEach((id,i)=>$(id).addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();if(id==="testSearch"){addTest();return}$(ids[i+1])?.focus()}}));
-}
+
 
 async function init(){
  try {
