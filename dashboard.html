@@ -3854,31 +3854,29 @@ init().catch(e=>say("Session/setup error: "+e.message));
     padding-top: 0 !important;
   }
 
-  html.acd-cbc-onepage .results table {
-    font-size: 6.5pt !important;
-    line-height: 1 !important;
-  }
+ 
+html.acd-cbc-onepage .results table {
+  width: 100% !important;
+  font-size: 5.8pt !important;
+  line-height: 0.95 !important;
+  table-layout: fixed !important;
+}
 
-  html.acd-cbc-onepage .results th {
-    padding: 1mm !important;
-    line-height: 1.05 !important;
-  }
+html.acd-cbc-onepage .results th {
+  padding: 0.6mm 0.8mm !important;
+  line-height: 1 !important;
+}
 
-  html.acd-cbc-onepage .results td {
-    padding: 0.55mm 1mm !important;
-    line-height: 1.05 !important;
-  }
+html.acd-cbc-onepage .results td {
+  padding: 0.25mm 0.8mm !important;
+  line-height: 0.95 !important;
+}
 
-  html.acd-cbc-onepage .results tr {
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
-  }
+html.acd-cbc-onepage .results tr {
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
 
-  html.acd-cbc-onepage .signature-footer {
-    margin-top: 3mm !important;
-    padding-top: 1mm !important;
-    break-inside: avoid !important;
-  }
 }
 
 </style>
