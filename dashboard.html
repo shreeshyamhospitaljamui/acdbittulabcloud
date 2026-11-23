@@ -3206,8 +3206,47 @@ if (meta) {
       );
     }).join("");
 
-    tbody.innerHTML = rows ||
-      '<tr><td class="empty" colspan="6">No result entries</td></tr>';
+   
+tbody.innerHTML = rows ||
+  '<tr><td class="empty" colspan="6">No result entries</td></tr>';
+
+// FORCE REPORT TABLE TO REMAIN VISIBLE IN PRINT
+const resultsSection = $c(".results");
+const tableWrap = $c(".table-wrap");
+const reportTable = tableWrap?.querySelector("table");
+const tableHead = reportTable?.querySelector("thead");
+
+if (resultsSection) {
+  resultsSection.style.setProperty("display", "block", "important");
+  resultsSection.style.setProperty("visibility", "visible", "important");
+  resultsSection.style.setProperty("height", "auto", "important");
+  resultsSection.style.setProperty("overflow", "visible", "important");
+}
+
+if (tableWrap) {
+  tableWrap.style.setProperty("display", "block", "important");
+  tableWrap.style.setProperty("visibility", "visible", "important");
+  tableWrap.style.setProperty("height", "auto", "important");
+  tableWrap.style.setProperty("overflow", "visible", "important");
+}
+
+if (reportTable) {
+  reportTable.style.setProperty("display", "table", "important");
+  reportTable.style.setProperty("visibility", "visible", "important");
+  reportTable.style.setProperty("width", "100%", "important");
+}
+
+if (tableHead) {
+  tableHead.style.setProperty("display", "table-header-group", "important");
+}
+
+tbody.style.setProperty("display", "table-row-group", "important");
+tbody.style.setProperty("visibility", "visible", "important");
+
+[...tbody.querySelectorAll("tr")].forEach(row => {
+  row.style.setProperty("display", "table-row", "important");
+  row.style.setProperty("visibility", "visible", "important");
+});
 
    
 const qr = $c("#printPatientQR");
