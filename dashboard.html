@@ -2408,13 +2408,26 @@ if ("serviceWorker" in navigator) {
                     : r.right <= current.left + 2;
       });
 
+    
     candidates.sort((a, b) => {
-      const distance = x => vertical
+      const gap = x => vertical
+        ? (forward
+            ? x.r.top - current.bottom
+            : current.top - x.r.bottom)
+        : (forward
+            ? x.r.left - current.right
+            : current.left - x.r.right);
+
+      const primary = gap(a) - gap(b);
+      if (Math.abs(primary) > 2) return primary;
+
+      const cross = x => vertical
         ? Math.abs(x.r.left - current.left)
         : Math.abs(x.r.top - current.top);
 
-      return distance(a) - distance(b);
+      return cross(a) - cross(b);
     });
+
 
     candidates[0]?.el.focus();
   }
