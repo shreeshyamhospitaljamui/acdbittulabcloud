@@ -3298,7 +3298,12 @@ const rows = (printItems || []).map(item => {
     }).join("")
   );
 }).join("");
-
+// Keep original report design; compact layout only for CBC
+if ((printItems || []).some(item =>
+  String(item.test_name || "").trim().toLowerCase() === "cbc"
+)) {
+  root.classList.add("acd-cbc-onepage");
+}
     if (!rows.trim()) {
       throw new Error(
         "No filled results found. Items: " +
@@ -3810,6 +3815,64 @@ init().catch(e=>say("Session/setup error: "+e.message));
   }
 }
 /* --- END OF PRINT FIX --- */
+
+/* ACD CBC SINGLE A4 PAGE - KEEP ORIGINAL REPORT DESIGN */
+@media print {
+
+  html.acd-cbc-onepage,
+  html.acd-cbc-onepage body {
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  html.acd-cbc-onepage .report-identification-row {
+    padding-top: 1mm !important;
+    padding-bottom: 1mm !important;
+  }
+
+  html.acd-cbc-onepage .report-test-title {
+    margin-top: 2mm !important;
+    margin-bottom: 1.5mm !important;
+    padding: 1.5mm !important;
+    font-size: 13pt !important;
+  }
+
+  html.acd-cbc-onepage .report-generated-time {
+    padding: 0.5mm 0 1mm !important;
+    font-size: 6.5pt !important;
+  }
+
+  html.acd-cbc-onepage .results {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  html.acd-cbc-onepage .results table {
+    font-size: 6.5pt !important;
+    line-height: 1 !important;
+  }
+
+  html.acd-cbc-onepage .results th {
+    padding: 1mm !important;
+    line-height: 1.05 !important;
+  }
+
+  html.acd-cbc-onepage .results td {
+    padding: 0.55mm 1mm !important;
+    line-height: 1.05 !important;
+  }
+
+  html.acd-cbc-onepage .results tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  html.acd-cbc-onepage .signature-footer {
+    margin-top: 3mm !important;
+    padding-top: 1mm !important;
+    break-inside: avoid !important;
+  }
+}
 
 </style>
 
