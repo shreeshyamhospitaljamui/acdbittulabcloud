@@ -2428,14 +2428,12 @@ if ("serviceWorker" in navigator) {
     );
 
    
-          el.closest('form') ||
-          el.closest('.panel') ||
-          el.closest('#workspace') ||
-          document
-        );
-        fields[fields.indexOf(el) + 1]?.focus();
-      }
-      return;
+            if ((typing && !el.matches('[data-result]')) ||
+        el.matches('select')) return;
+
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+      e.preventDefault();
+      move(el, e.key);
     }
 
   if ((typing && !el.matches('[data-result]')) || el.matches('select')) return;
