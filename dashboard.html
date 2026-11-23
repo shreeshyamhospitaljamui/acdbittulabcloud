@@ -2427,10 +2427,7 @@ if ("serviceWorker" in navigator) {
       'textarea, input:not([type="button"]):not([type="submit"]):not([type="checkbox"]):not([type="radio"])'
     );
 
-    if (e.key === 'Enter') {
-      if (typing && el.tagName !== 'TEXTAREA') {
-        e.preventDefault();
-        const fields = getFields(
+   
           el.closest('form') ||
           el.closest('.panel') ||
           el.closest('#workspace') ||
@@ -2441,8 +2438,7 @@ if ("serviceWorker" in navigator) {
       return;
     }
 
-    if (typing || el.matches('select')) return;
-
+  if ((typing && !el.matches('[data-result]')) || el.matches('select')) return;
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
       e.preventDefault();
       move(el, e.key);
