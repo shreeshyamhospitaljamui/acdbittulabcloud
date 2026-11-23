@@ -3818,7 +3818,14 @@ init().catch(e=>say("Session/setup error: "+e.message));
 
 /* ACD CBC SINGLE A4 PAGE - KEEP ORIGINAL REPORT DESIGN */
 @media print {
+  @page {
+    size: A4 portrait !important;
+    margin: 6mm !important;
+  }
 
+  html.acd-cbc-onepage body {
+    zoom: 85% !important;
+  }
   html.acd-cbc-onepage,
   html.acd-cbc-onepage body {
     width: 100% !important;
