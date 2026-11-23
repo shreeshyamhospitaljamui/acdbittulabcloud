@@ -952,7 +952,14 @@ $("catSaveParamsBtn").onclick = async () => {
       } else {
         const { error } = await db
           .from("acd_lab_test_parameters")
-          .update({.eq("id", p.id)
+         .update({
+  parameter_name: p.parameter_name.trim(),
+  unit: p.unit || null,
+  reference_range: p.reference_range || null,
+  result_type: p.result_type || "numeric",
+  sort_order: (i + 1) * 10
+})
+.eq("id", p.id)
 .eq("lab_id", labId);
             parameter_name: p.parameter_name.trim(),
             unit: p.unit || null,
