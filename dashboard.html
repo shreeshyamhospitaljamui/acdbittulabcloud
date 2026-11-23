@@ -1238,47 +1238,14 @@ say("Patient, order और सभी test results save हो गए।");
 
 
 
-if (printing.print_after_save !== false) {
-  await loadSavedReports();
-
-  const savedReport = srFind(o.id);
-
-  if (!savedReport) {
-    throw new Error(
-      "Report saved, but it could not be loaded for printing."
-    );
-  }
-
-  await srPrint(o.id, printWindow);
-
-} else {
-  printWindow.close();
-  say("Report saved successfully.");
-}
 
 
- }catch(e){
-  console.error("Save/Print error:", e);
-
-  try {
-    printWindow.document.open();
-    printWindow.document.write(`
-      <!doctype html>
-      <html>
-      <body style="font-family:Arial;padding:24px">
-        <h3>Print Error</h3>
-        <pre style="white-space:pre-wrap;color:#b42318">${safe(e.message)}</pre>
-        <p>इस Error का Screenshot भेजें।</p>
-      </body>
-      </html>
-    `);
-    printWindow.document.close();
-  } catch (_) {}
-
-  say("Save/Print error: " + e.message);
+}catch(e){
+  console.error("Patient Save error:", e);
+  say("Save error: " + e.message);
 }finally{
    btn.disabled=false;
-   btn.textContent="Save & Print (A4)";
+ btn.textContent="Save Patient & Results";
    savePrintInProgress=false;
  }
 };
