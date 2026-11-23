@@ -852,11 +852,16 @@ function renderEditableCatalogueParams() {
       const item = activeCatalogueParams[idx];
       if (!confirm("क्या इस Parameter को हटाना है?")) return;
       if (item.id && !String(item.id).startsWith("local-")) {
-        try {
-          await db.from("acd_test_parameters").delete().eq("id", item.id);
-        } catch (e) {
-          console.warn("DB delete parameter:", e.message);
-        }
+        const { error: deleteError } = await db
+  .from("acd_lab_test_parameters")
+  .delete()
+  .eq("id", item.id)
+  .eq("lab_id", labId);
+
+if (deleteError) {
+  alert("Delete error: " + deleteError.message);
+  return;
+}
       }
       activeCatalogueParams.splice(idx, 1);
       renderEditableCatalogueParams();
@@ -878,11 +883,12 @@ async function openCatalogueTest(id) {
 
   let params = [];
   try {
-    const { data, error } = await db
-      .from("acd_test_parameters")
-      .select("id,test_id,parameter_name,unit,reference_range,result_type,result_options,sort_order")
-      .eq("test_id", id)
-      .order("sort_order");
+   const { data, error } = await db
+  .from("acd_lab_test_parameters")
+  .select("id,lab_id,test_id,parameter_name,unit,reference_range,result_type,result_options,sort_order")
+  .eq("lab_id", labId)
+  .eq("test_id", id)
+  .order("sort_order");
 
     if (error) throw error;
     params = data || [];
@@ -928,8 +934,9 @@ $("catSaveParamsBtn").onclick = async () => {
 
       if (isNew) {
         const { data, error } = await db
-          .from("acd_test_parameters")
+         .from("acd_lab_test_parameters")
           .insert({
+            lab_id: labId,
             test_id: activeCatalogueTestId,
             parameter_name: p.parameter_name.trim(),
             unit: p.unit || null,
@@ -944,8 +951,9 @@ $("catSaveParamsBtn").onclick = async () => {
         await window.ACDOfflineDB.putRecord("parameters", labId, data);
       } else {
         const { error } = await db
-          .from("acd_test_parameters")
-          .update({
+          .from("acd_lab_test_parameters")
+          .update({.eq("id", p.id)
+.eq("lab_id", labId);
             parameter_name: p.parameter_name.trim(),
             unit: p.unit || null,
             reference_range: p.reference_range || null,
@@ -1030,9 +1038,10 @@ async function renderTestSearchResults() {
   let allParameters = [];
   try {
     const { data, error } = await db
-      .from("acd_test_parameters")
-      .select("id,test_id,parameter_name,unit,reference_range,result_type,result_options,sort_order")
-      .order("sort_order");
+  .from("acd_lab_test_parameters")
+  .select("id,lab_id,test_id,parameter_name,unit,reference_range,result_type,result_options,sort_order")
+  .eq("lab_id", labId)
+  .order("sort_order");
 
     if (error) throw error;
     allParameters = data || [];
@@ -1157,11 +1166,12 @@ document.addEventListener("click", e => {
 
 async function getTestParametersOfflineSafe(testId) {
   try {
-    const { data, error } = await db
-      .from("acd_test_parameters")
-      .select("id,test_id,parameter_name,unit,reference_range,result_type,result_options,sort_order")
-      .eq("test_id", testId)
-      .order("sort_order");
+   const { data, error } = await db
+  .from("acd_lab_test_parameters")
+  .select("id,lab_id,test_id,parameter_name,unit,reference_range,result_type,result_options,sort_order")
+  .eq("lab_id", labId)
+  .eq("test_id", testId)
+  .order("sort_order");
 
     if (error) throw error;
     const params = data || [];
