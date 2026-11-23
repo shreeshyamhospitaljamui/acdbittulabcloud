@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#07172d">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 <link rel="stylesheet" href="./print-report.css">
 <script src="./print-report.js"></script>
 
@@ -236,7 +237,7 @@ html.acd-lab-admin #nav [data-sa-nav] {
       <h3>Search Reports</h3>
       <div class="fields">
         <div class="field full">
-          <input id="srSearch" placeholder="Patient Name / Mobile / Report ID">
+          <input id="srSearch" placeholder="Patient Name / Mobile / Patient ID">
         </div>
         <div class="field">
           <label>From Date</label>
@@ -604,10 +605,10 @@ function renderRows() {
       const st = getResultStatus(r.result_value, r.reference_range);
       out.push(
         '<tr>' +
-        '<td class="param-name"><input data-edit-param="' + i + '" value="' + safe(r.parameter_name) + '" style="font-weight:700"></td>' +
+        '<td class="param-name"><strong>' + safe(r.parameter_name) + '</strong></td>' +
         '<td>' + resultControl(r, i) + '</td>' +
-        '<td><input data-edit-unit="' + i + '" value="' + safe(r.unit || "") + '" placeholder="Unit"></td>' +
-        '<td><input data-edit-ref="' + i + '" value="' + safe(r.reference_range || "") + '" placeholder="Reference Range"></td>' +
+        '<td>' + safe(r.unit || "-") + '</td>' +
+        '<td>' + safe(r.reference_range || "-") + '</td>' +
         '<td class="result-status">' +
         (st ? '<span class="badge ' + (st === "Normal" ? 'badge-normal' : 'badge-abnormal') + '">' + st + '</span>' : '') +
         '</td>' +
@@ -618,35 +619,6 @@ function renderRows() {
   });
 
   body.innerHTML = out.join("");
-
-  body.querySelectorAll("[data-edit-param]").forEach(inp => {
-    const idx = +inp.dataset.editParam;
-    inp.addEventListener("input", () => {
-      flatRows[idx].parameter_name = inp.value;
-    });
-  });
-
-  body.querySelectorAll("[data-edit-unit]").forEach(inp => {
-    const idx = +inp.dataset.editUnit;
-    inp.addEventListener("input", () => {
-      flatRows[idx].unit = inp.value;
-    });
-  });
-
-  body.querySelectorAll("[data-edit-ref]").forEach(inp => {
-    const idx = +inp.dataset.editRef;
-    inp.addEventListener("input", () => {
-      flatRows[idx].reference_range = inp.value;
-      const tr = inp.closest("tr");
-      const statusCell = tr?.querySelector(".result-status");
-      if (statusCell) {
-        const st = getResultStatus(flatRows[idx].result_value, flatRows[idx].reference_range);
-        statusCell.innerHTML = st
-          ? '<span class="badge ' + (st === "Normal" ? 'badge-normal' : 'badge-abnormal') + '">' + safe(st) + '</span>'
-          : '';
-      }
-    });
-  });
 
   body.querySelectorAll("[data-result]").forEach(el => {
     const index = +el.dataset.result;
@@ -1336,6 +1308,7 @@ function buildCurrentEntryReportObject(orderIdOverride = null) {
     order_date: $("date").value || new Date().toISOString().slice(0, 10),
     ref_doctor: $("doctor").value.trim() || "Self",
     patient: {
+      id: patientRecordId || editingPatientId || null,
       title: $("patientTitle").value,
       patient_name: $("patient").value.trim() || "Walk-in Patient",
       mobile: $("mobile").value.trim(),
@@ -1841,6 +1814,7 @@ function buildReportPayloadFromSaved(r) {
     order_date: r.order_date,
     ref_doctor: r.ref_doctor || "Self",
     patient: {
+      id: p.id || null,
       title: meta.title || "",
       patient_name: p.patient_name || "Unknown",
       mobile: p.mobile || "",
@@ -2163,7 +2137,7 @@ function srReportHtml(r) {
     <p><b>Age:</b> ${safe(patient.age ?? "-")} ${safe(patient.age_unit || "")}
        &nbsp; <b>Gender:</b> ${safe(patient.gender || "-")}
        &nbsp; <b>Address:</b> ${safe(patient.address || "-")}</p>
-    <p><b>Report ID:</b> ${safe(r.id)}
+    <p><b>Patient ID:</b> ${safe(patient.id || "-")}
        &nbsp; <b>Date:</b> ${safe(r.order_date || "-")}</p>
     <p><b>Ref. Doctor:</b> ${safe(r.ref_doctor || "Self")}</p>
     <table style="width:100%;border-collapse:collapse;font-size:12px">
@@ -2290,12 +2264,15 @@ function srEdit(id) {
     try {
       const inputs = [...d.querySelectorAll("[data-sr-result]")];
       for (const input of inputs) {
-        const { error } = await db
+        const { data: updatedRow, error } = await db
           .from("lab_test_results")
           .update({ result_value: input.value.trim() || null })
           .eq("id", input.dataset.srResult)
-          .eq("lab_id", labId);
+          .eq("lab_id", labId)
+          .select("id,result_value")
+          .maybeSingle();
         if (error) throw error;
+        if (!updatedRow?.id) throw new Error("कोई रिकॉर्ड अपडेट नहीं हुआ। Lab ID / RLS permission / Result ID जाँचें।");
       }
 
       srCloseDialog();
