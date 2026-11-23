@@ -1636,7 +1636,7 @@ $("nav").querySelectorAll("button[data-page]").forEach(b => b.onclick = () => {
   }
 });
 
-setupEnterFlow();function tick(){$("clock").textContent=new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false})}tick();setInterval(tick,1000);
+function tick(){$("clock").textContent=new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false})}tick();setInterval(tick,1000);
 init().catch(e=>say("Session/setup error: "+e.message));
 </script>
 
