@@ -2744,6 +2744,7 @@ function srRender() {
   $("srNext").disabled = srPage >= pages;
 }
 
+
 async function loadSavedReports() {
   if (!labId) {
     $("srMessage").textContent = "पहले Laboratory चुनें।";
@@ -2753,33 +2754,141 @@ async function loadSavedReports() {
   $("srRows").innerHTML =
     '<tr><td colspan="5" class="empty">Loading reports...</td></tr>';
 
-  const {data,error} = await db.from("lab_orders").select(`
-    id,order_date,status,created_at,ref_doctor,
-    total_amount,discount_amount,paid_amount,payment_mode,
-    patient:lab_patients(id,patient_name,mobile,address,age,age_unit,gender),
-    items:lab_order_items(
-      id,test_name,
-      results:lab_test_results(id,parameter_name,result_value,unit,reference_range)
-    )
-  `)
-.eq("lab_id",labId)
-.is("report_deleted_at", null)
-.order("created_at",{ascending:false})
-  .limit(1000);
+  try {
+    // STEP 1: Load orders and patient details
+    const { data: orders, error: orderError } = await db
+      .from("lab_orders")
+      .select(`
+        id,
+        order_date,
+        status,
+        created_at,
+        ref_doctor,
+        total_amount,
+        discount_amount,
+        paid_amount,
+        payment_mode,
+        report_deleted_at,
+        patient:lab_patients(
+          id,
+          patient_name,
+          mobile,
+          address,
+          age,
+          age_unit,
+          gender
+        )
+      `)
+      .eq("lab_id", labId)
+      .is("report_deleted_at", null)
+      .order("created_at", { ascending: false })
+      .limit(1000);
 
-  if(error) {
+    if (orderError) throw orderError;
+
+    const reportOrders = orders || [];
+    const orderIds = reportOrders.map(o => o.id);
+
+    // STEP 2: Load test items separately
+    let reportItems = [];
+
+    if (orderIds.length) {
+      const { data, error } = await db
+        .from("lab_order_items")
+        .select("id, order_id, lab_id, test_name, created_at")
+        .eq("lab_id", labId)
+        .in("order_id", orderIds);
+
+      if (error) throw error;
+      reportItems = data || [];
+    }
+
+    // STEP 3: Load test results separately
+    const itemIds = reportItems.map(item => item.id);
+    let reportResults = [];
+
+    if (itemIds.length) {
+      const { data, error } = await db
+        .from("lab_test_results")
+        .select(`
+          id,
+          lab_id,
+          order_item_id,
+          parameter_name,
+          result_value,
+          unit,
+          reference_range,
+          created_at,
+          updated_at
+        `)
+        .eq("lab_id", labId)
+        .in("order_item_id", itemIds);
+
+      if (error) throw error;
+      reportResults = data || [];
+    }
+
+    // STEP 4: Attach results to their correct test item
+    const resultsByItem = new Map();
+
+    reportResults.forEach(result => {
+      const key = result.order_item_id;
+
+      if (!resultsByItem.has(key)) {
+        resultsByItem.set(key, []);
+      }
+
+      resultsByItem.get(key).push(result);
+    });
+
+    reportItems.forEach(item => {
+      item.results = resultsByItem.get(item.id) || [];
+    });
+
+    // STEP 5: Attach test items to their correct order
+    const itemsByOrder = new Map();
+
+    reportItems.forEach(item => {
+      const key = item.order_id;
+
+      if (!itemsByOrder.has(key)) {
+        itemsByOrder.set(key, []);
+      }
+
+      itemsByOrder.get(key).push(item);
+    });
+
+    reportOrders.forEach(order => {
+      order.items = itemsByOrder.get(order.id) || [];
+    });
+
+    // Final report data
+    srAllReports = reportOrders;
+    srPage = 1;
+    srRender();
+
+    const totalItems = reportItems.length;
+    const totalResults = reportResults.filter(
+      r => String(r.result_value ?? "").trim() !== ""
+    ).length;
+
+    $("srMessage").textContent =
+      reportOrders.length + " reports loaded • " +
+      totalItems + " tests • " +
+      totalResults + " filled results.";
+
+  } catch (error) {
+    console.error("Saved Reports loading error:", error);
+
     $("srRows").innerHTML =
-      '<tr><td colspan="5" class="empty">Load error: '+safe(error.message)+'</td></tr>';
-    $("srMessage").textContent = error.message;
-    return;
-  }
+      '<tr><td colspan="5" class="empty">Load error: ' +
+      safe(error.message) + '</td></tr>';
 
-  srAllReports = data || [];
-  srPage = 1;
-  srRender();
-  $("srMessage").textContent =
-    srAllReports.length + " reports loaded successfully.";
+    $("srMessage").textContent =
+      "Saved Reports Error: " + error.message;
+  }
 }
+
 
 function srFind(id) {
   return srAllReports.find(r => r.id === id && !r.report_deleted_at);
