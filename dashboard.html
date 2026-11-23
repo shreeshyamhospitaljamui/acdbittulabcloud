@@ -3163,7 +3163,41 @@ if (meta) {
     if (!tbody) throw new Error("Report result table not found.");
 
     const rows = (r.items || []).map(item => {
-      const results = (item.results || []).filter(x =>
+     
+    // Fetch selected report items directly from Supabase
+    const { data: printItems, error: itemsError } = await db
+      .from("lab_order_items")
+      .select("id, order_id, lab_id, test_name, created_at")
+      .eq("lab_id", labId)
+      .eq("order_id", r.id);
+
+    if (itemsError) throw itemsError;
+
+    const itemIds = (printItems || []).map(item => item.id);
+    let printResults = [];
+
+    if (itemIds.length) {
+      const { data, error } = await db
+        .from("lab_test_results")
+        .select("id, lab_id, order_item_id, parameter_name, result_value, unit, reference_range")
+        .eq("lab_id", labId)
+        .in("order_item_id", itemIds);
+
+      if (error) throw error;
+      printResults = data || [];
+    }
+
+    const resultMap = new Map();
+
+    printResults.forEach(result => {
+      if (!resultMap.has(result.order_item_id)) {
+        resultMap.set(result.order_item_id, []);
+      }
+      resultMap.get(result.order_item_id).push(result);
+    });
+
+    const rows = (printItems || []).map(item => {
+      const results = (resultMap.get(item.id) || []).filter(x =>
         String(x.result_value ?? "").trim() !== ""
       );
 
@@ -3186,25 +3220,30 @@ if (meta) {
             '</b></td>' +
             '<td><input data-result readonly value="' +
             safe(x.result_value) + '"></td>' +
-           
-'<td>' + safe(x.unit || "") + '</td>' +
-'<td>' + safe(x.reference_range || "") + '</td>' +
-
-          
-'<td class="result-status">' +
-  (status
-    ? '<span class="badge ' +
-      (status === "Normal" ? 'badge-normal' : 'badge-abnormal') +
-      '">' + safe(status) + '</span>'
-    : '') +
-'</td>' +
-
+            '<td>' + safe(x.unit || "") + '</td>' +
+            '<td>' + safe(x.reference_range || "") + '</td>' +
+            '<td class="result-status">' +
+            (status
+              ? '<span class="badge ' +
+                (status === "Normal" ? "badge-normal" : "badge-abnormal") +
+                '">' + safe(status) + '</span>'
+              : "") +
+            '</td>' +
             '<td class="no-print"></td>' +
             '</tr>'
           );
         }).join("")
       );
     }).join("");
+
+    if (!rows.trim()) {
+      throw new Error(
+        "No filled results found. Items: " +
+        (printItems || []).length +
+        ", Results: " + printResults.length
+      );
+    }
+
 
    
 tbody.innerHTML = rows ||
