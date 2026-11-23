@@ -2347,35 +2347,91 @@ if ("serviceWorker" in navigator) {
 }
 </script>
   
-/* Global Keyboard Navigation */
-document.addEventListener("keydown", function(e) {
-  const el = e.target;
 
-  if (el.matches("textarea, input") &&
-      !["checkbox", "radio"].includes(el.type)) return;
+<script>
+/* ACD Global Keyboard Navigation */
+(() => {
+  const selector = [
+    'input:not([type="hidden"]):not([disabled]):not([readonly])',
+    'select:not([disabled])',
+    'textarea:not([disabled])',
+    'button:not([disabled])',
+    '[tabindex]:not([tabindex="-1"])'
+  ].join(',');
 
-  const fields = [...document.querySelectorAll(
-    'input:not([disabled]), select:not([disabled]), button:not([disabled]), textarea:not([disabled])'
-  )].filter(x => x.offsetParent !== null);
+  const visible = el =>
+    el.getClientRects().length &&
+    getComputedStyle(el).visibility !== 'hidden';
 
-  const i = fields.indexOf(el);
-  if (i < 0) return;
+  const getFields = root =>
+    [...root.querySelectorAll(selector)].filter(visible);
 
-  if (e.key === "Enter") {
-    e.preventDefault();
-    fields[i + 1]?.focus();
+  function move(el, key) {
+    const fields = getFields(
+      el.closest('form') ||
+      el.closest('.panel') ||
+      el.closest('#workspace') ||
+      document
+    );
+
+    const current = el.getBoundingClientRect();
+    const vertical = key === 'ArrowUp' || key === 'ArrowDown';
+    const forward = key === 'ArrowDown' || key === 'ArrowRight';
+
+    const candidates = fields
+      .filter(x => x !== el)
+      .map(x => ({ el: x, r: x.getBoundingClientRect() }))
+      .filter(x => {
+        const r = x.r;
+        return vertical
+          ? forward ? r.top >= current.bottom - 2
+                    : r.bottom <= current.top + 2
+          : forward ? r.left >= current.right - 2
+                    : r.right <= current.left + 2;
+      });
+
+    candidates.sort((a, b) => {
+      const distance = x => vertical
+        ? Math.abs(x.r.left - current.left)
+        : Math.abs(x.r.top - current.top);
+
+      return distance(a) - distance(b);
+    });
+
+    candidates[0]?.el.focus();
   }
 
-  if (e.key === "ArrowDown" || e.key === "ArrowRight") {
-    e.preventDefault();
-    fields[i + 1]?.focus();
-  }
+  document.addEventListener('keydown', e => {
+    const el = e.target;
+    if (!(el instanceof HTMLElement) || el.isContentEditable) return;
 
-  if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
-    e.preventDefault();
-    fields[i - 1]?.focus();
-  }
-});
+    const typing = el.matches(
+      'textarea, input:not([type="button"]):not([type="submit"]):not([type="checkbox"]):not([type="radio"])'
+    );
+
+    if (e.key === 'Enter') {
+      if (typing && el.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        const fields = getFields(
+          el.closest('form') ||
+          el.closest('.panel') ||
+          el.closest('#workspace') ||
+          document
+        );
+        fields[fields.indexOf(el) + 1]?.focus();
+      }
+      return;
+    }
+
+    if (typing || el.matches('select')) return;
+
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+      e.preventDefault();
+      move(el, e.key);
+    }
+  });
+})();
+</script>
 
 </body>
 </html>
