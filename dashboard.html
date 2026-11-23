@@ -1308,7 +1308,7 @@ function buildCurrentEntryReportObject(orderIdOverride = null) {
     order_date: $("date").value || new Date().toISOString().slice(0, 10),
     ref_doctor: $("doctor").value.trim() || "Self",
     patient: {
-      id: patientRecordId || editingPatientId || null,
+      id: editingPatientId || null,
       title: $("patientTitle").value,
       patient_name: $("patient").value.trim() || "Walk-in Patient",
       mobile: $("mobile").value.trim(),
@@ -1699,15 +1699,44 @@ $("save").onclick = async () => {
         .eq("lab_id", labId);
       if (ouErr) throw ouErr;
 
-      const { data: oldItems } = await db
+      const { data: oldItems, error: oldItemsError } = await db
         .from("lab_order_items")
         .select("id")
         .eq("order_id", editingOrderId)
         .eq("lab_id", labId);
-      const oldItemIds = (oldItems || []).map(x => x.id);
+      if (oldItemsError) throw new Error("पुराने Test Items लोड नहीं हुए: " + oldItemsError.message);
+
+      const oldItemIds = (oldItems || []).map(x => x.id).filter(Boolean);
       if (oldItemIds.length) {
-        await db.from("lab_test_results").delete().in("order_item_id", oldItemIds).eq("lab_id", labId);
-        await db.from("lab_order_items").delete().eq("order_id", editingOrderId).eq("lab_id", labId);
+        const { error: deleteResultsError } = await db
+          .from("lab_test_results")
+          .delete()
+          .in("order_item_id", oldItemIds)
+          .eq("lab_id", labId);
+        if (deleteResultsError) {
+          throw new Error("पुराने Results हट नहीं पाए; Duplicate रोकने के लिए Update रोक दिया गया: " + deleteResultsError.message);
+        }
+
+        const { error: deleteItemsError } = await db
+          .from("lab_order_items")
+          .delete()
+          .in("id", oldItemIds)
+          .eq("order_id", editingOrderId)
+          .eq("lab_id", labId);
+        if (deleteItemsError) {
+          throw new Error("पुराने Test Items हट नहीं पाए; Duplicate रोकने के लिए Update रोक दिया गया: " + deleteItemsError.message);
+        }
+
+        const { data: remainingItems, error: verifyDeleteError } = await db
+          .from("lab_order_items")
+          .select("id")
+          .eq("order_id", editingOrderId)
+          .eq("lab_id", labId)
+          .in("id", oldItemIds);
+        if (verifyDeleteError) throw verifyDeleteError;
+        if ((remainingItems || []).length) {
+          throw new Error("पुराने Test Items अभी भी मौजूद हैं; Duplicate रोकने के लिए नया डेटा नहीं जोड़ा गया।");
+        }
       }
     } else {
       const { data: p, error: pe } = await db
@@ -2264,15 +2293,21 @@ function srEdit(id) {
     try {
       const inputs = [...d.querySelectorAll("[data-sr-result]")];
       for (const input of inputs) {
+        const resultId = input.dataset.srResult;
+        if (!resultId || resultId === "undefined") {
+          throw new Error("इस Result का Database ID उपलब्ध नहीं है। Refresh करके फिर कोशिश करें।");
+        }
         const { data: updatedRow, error } = await db
           .from("lab_test_results")
           .update({ result_value: input.value.trim() || null })
-          .eq("id", input.dataset.srResult)
+          .eq("id", resultId)
           .eq("lab_id", labId)
           .select("id,result_value")
           .maybeSingle();
         if (error) throw error;
-        if (!updatedRow?.id) throw new Error("कोई रिकॉर्ड अपडेट नहीं हुआ। Lab ID / RLS permission / Result ID जाँचें।");
+        if (!updatedRow?.id) {
+          throw new Error("Result ID " + resultId + " अपडेट नहीं हुआ। यह रिपोर्ट जिस Lab में बनी थी, वही Lab चुनें; फिर Refresh करें। RLS UPDATE policy भी जाँचें।");
+        }
       }
 
       srCloseDialog();
