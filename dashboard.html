@@ -896,6 +896,70 @@ html.acd-lab-admin #nav [data-sa-nav] {
   }
 }
 
+
+/* --- BITTU BHAI SPECIAL A4 PRINT FIX --- */
+@media print {
+  @page {
+    size: A4 portrait !important;
+    margin: 10mm !important;
+  }
+  html, body {
+    background-color: #ffffff !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+  * {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+  
+  .no-print, .sidebar, .topbar, .select-lab, #otherPage, #cataloguePage, .actions, .results-head, .cards {
+    display: none !important;
+  }
+  
+  .app, .main, .content, #workspace, #entryPage, .results, .table-wrap, .panel, .panel-body {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: transparent !important;
+  }
+  
+  dialog {
+    position: relative !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+  
+  table {
+    page-break-inside: auto;
+    width: 100% !important;
+  }
+  
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+  
+  td, th {
+    page-break-inside: avoid;
+  }
+}
+/* --- END OF PRINT FIX --- */
+
 </style>
 </head>
 <body>
@@ -3684,7 +3748,71 @@ init().catch(e=>say("Session/setup error: "+e.message));
       #superAdminCenter .sa-log {border-bottom:1px solid #edf0f4;padding:8px 0;font-size:10px}
       #superAdminCenter select {max-width:100%;height:34px}
       @media(max-width:480px){#superAdminCenter .sa-grid{grid-template-columns:1fr}}
-    </style>
+    
+/* --- BITTU BHAI SPECIAL A4 PRINT FIX --- */
+@media print {
+  @page {
+    size: A4 portrait !important;
+    margin: 10mm !important;
+  }
+  html, body {
+    background-color: #ffffff !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+  * {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+  
+  .no-print, .sidebar, .topbar, .select-lab, #otherPage, #cataloguePage, .actions, .results-head, .cards {
+    display: none !important;
+  }
+  
+  .app, .main, .content, #workspace, #entryPage, .results, .table-wrap, .panel, .panel-body {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: transparent !important;
+  }
+  
+  dialog {
+    position: relative !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+  
+  table {
+    page-break-inside: auto;
+    width: 100% !important;
+  }
+  
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+  
+  td, th {
+    page-break-inside: avoid;
+  }
+}
+/* --- END OF PRINT FIX --- */
+
+</style>
 
     <div class="sa-card">
       <h2>⬟ Super Admin Control Center</h2>
