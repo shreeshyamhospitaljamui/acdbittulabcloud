@@ -950,24 +950,17 @@ $("catSaveParamsBtn").onclick = async () => {
         activeCatalogueParams[i] = data;
         await window.ACDOfflineDB.putRecord("parameters", labId, data);
       } else {
-        const { error } = await db
-          .from("acd_lab_test_parameters")
-         .update({
-  parameter_name: p.parameter_name.trim(),
-  unit: p.unit || null,
-  reference_range: p.reference_range || null,
-  result_type: p.result_type || "numeric",
-  sort_order: (i + 1) * 10
-})
-.eq("id", p.id)
-.eq("lab_id", labId);
-            parameter_name: p.parameter_name.trim(),
-            unit: p.unit || null,
-            reference_range: p.reference_range || null,
-            result_type: p.result_type || "numeric",
-            sort_order: (i + 1) * 10
-          })
-          .eq("id", p.id);
+       const { error } = await db
+  .from("acd_lab_test_parameters")
+  .update({
+    parameter_name: p.parameter_name.trim(),
+    unit: p.unit || null,
+    reference_range: p.reference_range || null,
+    result_type: p.result_type || "numeric",
+    sort_order: (i + 1) * 10
+  })
+  .eq("id", p.id)
+  .eq("lab_id", labId);
         if (error) throw error;
         await window.ACDOfflineDB.putRecord("parameters", labId, p);
       }
