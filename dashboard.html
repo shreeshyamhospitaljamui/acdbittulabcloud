@@ -1447,6 +1447,27 @@ const rows = (r.items || []).flatMap(item =>
   `;
 }
 
+function setupEnterFlow() {
+  const ids = [
+    "patient", "mobile", "age",
+    "ageUnit", "gender", "doctor", "testSearch"
+  ];
+
+  ids.forEach((id, i) =>
+    $(id).addEventListener("keydown", e => {
+      if (e.key !== "Enter") return;
+      e.preventDefault();
+
+      if (id === "testSearch") {
+        addTest();
+        return;
+      }
+
+      $(ids[i + 1])?.focus();
+    })
+  );
+}
+
 function srView(id) {
   const r = srFind(id);
   if(!r) return;
@@ -1636,7 +1657,7 @@ $("nav").querySelectorAll("button[data-page]").forEach(b => b.onclick = () => {
   }
 });
 
-function tick(){$("clock").textContent=new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false})}tick();setInterval(tick,1000);
+setupEnterFlow();function tick(){$("clock").textContent=new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false})}tick();setInterval(tick,1000);
 init().catch(e=>say("Session/setup error: "+e.message));
 </script>
 
