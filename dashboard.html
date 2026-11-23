@@ -722,8 +722,26 @@ function calculateCBCResults(testId) {
   const tlc = get("Leucocytes");
   const pcv = get("PCV (HCT)");
 
-  set("Haemoglobin Percent", Number.isFinite(hb) ? (hb / 14.6) * 100 : NaN);
+ const hbRow = rows.find(
+  r => r.parameter_name.toLowerCase() === "haemoglobin"
+);
 
+const hbRangeNumbers = String(hbRow?.reference_range ?? "")
+  .match(/\d[\d,]*(?:\.\d+)?/g);
+
+const hbUpperLimit =
+  hbRangeNumbers?.length >= 2
+    ? Number(hbRangeNumbers[1].replace(/,/g, ""))
+    : NaN;
+
+set(
+  "Haemoglobin Percent",
+  Number.isFinite(hb) &&
+  Number.isFinite(hbUpperLimit) &&
+  hbUpperLimit > 0
+    ? (hb / hbUpperLimit) * 100
+    : NaN
+);
   [
     ["Neutrophils", "Absolute Neutrophil"],
     ["Lymphocytes", "Absolute Lymphocyte"],
