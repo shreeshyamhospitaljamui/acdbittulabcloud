@@ -432,3 +432,7 @@
     break-after: auto !important;
   }
 }
+
+.acd-barcode-box { min-height:30px; max-width:150px; overflow:hidden; margin-top:3px; color:#111827; font-size:8px; text-align:center; }
+.acd-barcode-box svg { width:100%; height:34px; }
+.acd-barcode-fallback { letter-spacing:1px; overflow-wrap:anywhere; }
