@@ -47,7 +47,19 @@
   </form>
   <div id="emergencyRecovery" style="margin-top:15px;border-top:1px solid #dfe6ef;padding-top:12px">
     <button type="button" id="toggleRecovery" class="link" style="font-size:12px">Lost your Super Admin device? Emergency Recovery</button>
-    <div id="recoveryPanel" style="display:none;margin-top:12px"><p style="font-size:11px;color:#64748b;line-height:1.5">A secure, one-time sign-in link will be sent to the registered Super Admin email. Open that link on this device to revoke the lost device session and restore access.</p><button class="submit" type="button" id="sendRecoveryLink">Send secure recovery link</button></div>
+    
+<div id="recoveryPanel" style="display:none;margin-top:12px">
+  <p style="font-size:11px;color:#64748b;line-height:1.5">
+    A secure, one-time sign-in link will be sent to the registered Super Admin email.
+    Open that link on this device to restore access.
+  </p>
+  <button class="submit" type="button" id="sendRecoveryLink">
+    Send secure recovery link
+  </button>
+  <div class="message" id="recoveryMessage"
+       role="status" aria-live="polite"></div>
+</div>
+    
   </div>
   <div class="security">🔒 Secure access for authorized users only</div><div class="foot">© <span id="year"></span> ACD Bittu Lab Cloud. All rights reserved.</div>
 </div>
@@ -99,8 +111,60 @@ function signupMode(){chooseRole("Lab Admin");$("loginForm").style.display="none
 $("superRole").onclick=()=>{chooseRole("Super Admin");loginMode()};
 $("labRole").onclick=()=>{chooseRole("Lab Admin");loginMode()};
 $("showSignup").onclick=signupMode; $("showLogin").onclick=loginMode;
-$("toggleRecovery").onclick=()=>$("recoveryPanel").style.display=$("recoveryPanel").style.display==="none"?"block":"none";
 
+$("toggleRecovery").onclick=()=>{
+  $("recoveryPanel").style.display =
+    $("recoveryPanel").style.display==="none"
+      ? "block" : "none";
+  clear("recoveryMessage");
+};
+
+$("sendRecoveryLink").onclick=async()=>{
+  const b=$("sendRecoveryLink");
+  const email=$("username").value.trim();
+
+  clear("recoveryMessage");
+
+  if(selectedRole!=="Super Admin"){
+    return msg("Select Super Admin login first.","error","recoveryMessage");
+  }
+
+  if(!email){
+    return msg("Enter your registered Super Admin email.","error","recoveryMessage");
+  }
+
+  b.disabled=true;
+  b.textContent="Sending secure link...";
+
+  try{
+    const redirectTo=window.location.origin+
+      window.location.pathname+"?acd_recovery=1";
+
+    const {error}=await db.auth.signInWithOtp({
+      email,
+      options:{
+        emailRedirectTo:redirectTo,
+        shouldCreateUser:false
+      }
+    });
+
+    if(error) throw error;
+
+    msg(
+      "Recovery link sent. Check your email and open the link on this same device.",
+      "success",
+      "recoveryMessage"
+    );
+
+  }catch(e){
+    msg(e.message,"error","recoveryMessage");
+  }finally{
+    b.disabled=false;
+    b.textContent="Send secure recovery link";
+  }
+};
+  
+  
 // DEVICE LOCK LOGIC (UNTOUCHED)
 async function deviceSecurity(){
   let {data,error}=await db.rpc("acd_device_claim",{p_device_id:deviceId()});
