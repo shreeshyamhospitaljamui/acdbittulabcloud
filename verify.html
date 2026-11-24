@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#07172d">
+<title>Verified Laboratory Report | ACD BITTU LAB CLOUD</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+:root{--navy:#07172d;--blue:#0866df;--ink:#18263a;--muted:#667085;--line:#dce3eb;--bg:#f3f6fa;--green:#078447;--red:#b42318}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:13.5px Arial,Helvetica,sans-serif}
+.topbar{background:var(--navy);color:#fff;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.brand{font-weight:800;font-size:14px;letter-spacing:.3px}
+.verified-badge{background:#dcfce7;color:#15803d;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:800}
+.wrap{max-width:860px;margin:20px auto;padding:0 14px 40px}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.btn{border:0;border-radius:8px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn.primary{background:var(--blue);color:#fff}
+.btn.green{background:var(--green);color:#fff}
+.btn:disabled{opacity:.6;cursor:wait}
+.status-box{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px;text-align:center;color:var(--muted)}
+.status-box.error{border-color:#fecaca;background:#fef2f2;color:var(--red)}
+.sheet{background:#fff;border:1px solid #cbd5e1;border-radius:10px;padding:22px 24px;box-shadow:0 4px 18px rgba(15,23,42,.06)}
+.lab-head{border-bottom:2.5px solid #0b4fa8;padding-bottom:10px;margin-bottom:12px}
+.lab-head h1{margin:0;font-size:20px;color:#0b4fa8;text-transform:uppercase}
+.lab-head p{margin:4px 0 0;font-size:11.5px;color:#475569}
+.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:10px 12px;font-size:12px;margin-bottom:14px}
+.meta-row{display:flex;gap:6px}.meta-row b{min-width:95px;color:#1e293b}
+.banner{background:#0b4fa8;color:#fff;text-align:center;font-weight:800;font-size:12px;letter-spacing:1px;padding:5px;border-radius:4px;margin-bottom:10px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:#e2e8f0;color:#0f172a;text-align:left;padding:7px 8px;border-top:1.5px solid #64748b;border-bottom:1.5px solid #64748b;font-size:11px;text-transform:uppercase}
+td{padding:6px 8px;border-bottom:1px solid #e2e8f0}
+.grp td{background:#f1f5f9;color:#0b4fa8;font-weight:800;border-top:1px solid #94a3b8}
+.abn{color:#b91c1c;font-weight:800}
+.foot{margin-top:18px;padding-top:10px;border-top:1px solid #cbd5e1;display:flex;justify-content:space-between;font-size:10.5px;color:#64748b;flex-wrap:wrap;gap:8px}
+@media(max-width:600px){.meta-grid{grid-template-columns:1fr}.sheet{padding:14px}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">✚ ACD BITTU LAB CLOUD — Digital Report Verification</div>
+  <span class="verified-badge" id="verifyBadge">Checking QR Token…</span>
+</header>
+
+<main class="wrap">
+  <div class="toolbar hidden" id="actionToolbar">
+    <div style="font-size:12px;color:#475569">Authentic Pathology Report • Verified Digital Copy</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button type="button" class="btn green" id="downloadPdfBtn">📄 Download PDF Report</button>
+      <button type="button" class="btn primary" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+
+  <div id="loadingBox" class="status-box">Verifying report QR code with laboratory server…</div>
+  <div id="reportSheet" class="sheet hidden"></div>
+</main>
+
+<script>
+"use strict";
+const SUPABASE_URL = "https://axfvvquhswapiwmvrepe.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_n6jRvVDjw2kOF7CS46omqQ_6qGkdR-q";
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({
+  "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+}[c]));
+
+function evalFlag(val, ref) {
+  const num = Number(String(val ?? "").replace(/,/g, "").trim());
+  if (!String(val ?? "").trim() || !Number.isFinite(num)) return "";
+  const nums = String(ref ?? "").match(/\d[\d,]*(?:\.\d+)?/g);
+  if (!nums || nums.length < 2) return "";
+  const lo = Number(nums[0].replace(/,/g, ""));
+  const hi = Number(nums[1].replace(/,/g, ""));
+  if (!Number.isFinite(lo) || !Number.isFinite(hi)) return "";
+  if (num < lo) return "Low";
+  if (num > hi) return "High";
+  return "Normal";
+}
+
+function renderReport(data) {
+  const lab = data.lab || {};
+  const order = data.order || data;
+  const patient = data.patient || order.patient || {};
+  const items = Array.isArray(data.items) ? data.items : (Array.isArray(order.items) ? order.items : []);
+
+  let rowsHtml = "";
+  items.forEach(item => {
+    const resList = Array.isArray(item.results) ? item.results : [];
+    const filled = resList.filter(r => String(r.result_value ?? "").trim() !== "");
+    if (!filled.length) return;
+    rowsHtml += `<tr class="grp"><td colspan="5">${esc((item.test_name || "").toUpperCase())}</td></tr>`;
+    filled.forEach(r => {
+      const fl = evalFlag(r.result_value, r.reference_range);
+      const isAbn = fl === "Low" || fl === "High";
+      rowsHtml += `
+        <tr>
+          <td>${esc(r.parameter_name)}</td>
+          <td class="${isAbn ? "abn" : ""}"><strong>${esc(r.result_value)}</strong></td>
+          <td>${esc(r.unit || "-")}</td>
+          <td>${esc(r.reference_range || "-")}</td>
+          <td class="${isAbn ? "abn" : ""}">${esc(fl || "-")}</td>
+        </tr>
+      `;
+    });
+  });
+
+  const sheet = document.getElementById("reportSheet");
+  sheet.innerHTML = `
+    <div class="lab-head">
+      <h1>${esc(lab.name || "PATHOLOGY LABORATORY")}</h1>
+      <p>${esc([lab.address, lab.phone ? "Mob: " + lab.phone : ""].filter(Boolean).join(" | "))}</p>
+    </div>
+    <div class="meta-grid">
+      <div>
+        <div class="meta-row"><b>Patient Name:</b><span><strong>${esc(patient.patient_name || "-")}</strong></span></div>
+        <div class="meta-row"><b>Age / Gender:</b><span>${esc((patient.age ?? "-") + " " + (patient.age_unit || "Y") + " / " + (patient.gender || "-"))}</span></div>
+        ${patient.mobile ? `<div class="meta-row"><b>Mobile:</b><span>${esc(patient.mobile)}</span></div>` : ""}
+      </div>
+      <div>
+        <div class="meta-row"><b>Report ID:</b><span>${esc(String(order.id || "").slice(0, 12).toUpperCase())}</span></div>
+        <div class="meta-row"><b>Report Date:</b><span>${esc(order.order_date || "-")}</span></div>
+        <div class="meta-row"><b>Ref. Doctor:</b><span>${esc(order.ref_doctor || "Self")}</span></div>
+      </div>
+    </div>
+    <div class="banner">LABORATORY INVESTIGATION REPORT</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Investigation / Parameter</th>
+          <th>Result</th>
+          <th>Unit</th>
+          <th>Reference Range</th>
+          <th>Flag</th>
+        </tr>
+      </thead>
+      <tbody>${rowsHtml || '<tr><td colspan="5" style="text-align:center;color:#94a3b8">No results recorded.</td></tr>'}</tbody>
+    </table>
+    <div class="foot">
+      <span>Digitally Verified via ACD BITTU LAB CLOUD</span>
+      <span>Note: Clinical correlation is essential.</span>
+    </div>
+  `;
+
+  document.getElementById("loadingBox").classList.add("hidden");
+  sheet.classList.remove("hidden");
+  document.getElementById("actionToolbar").classList.remove("hidden");
+  document.getElementById("verifyBadge").textContent = "✓ Verified Authentic Report";
+
+  document.getElementById("downloadPdfBtn").onclick = async () => {
+    const btn = document.getElementById("downloadPdfBtn");
+    btn.disabled = true;
+    btn.textContent = "⏳ Generating PDF...";
+    try {
+      const safeName = String(patient.patient_name || "Patient").replace(/[^a-zA-Z0-9_-]+/g, "_");
+      await window.html2pdf()
+        .set({
+          margin: 8,
+          filename: `${safeName}_Verified_Report.pdf`,
+          image: { type: "jpeg", quality: 0.96 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+        })
+        .from(sheet)
+        .save();
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "📄 Download PDF Report";
+    }
+  };
+}
+
+(async () => {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("token");
+  const loading = document.getElementById("loadingBox");
+  const badge = document.getElementById("verifyBadge");
+
+  if (!token) {
+    badge.textContent = "Missing Token";
+    badge.style.background = "#fee2e2";
+    badge.style.color = "#b91c1c";
+    loading.className = "status-box error";
+    loading.textContent = "Invalid QR link: Report verification token is missing. Please scan the QR code printed on the official laboratory report.";
+    return;
+  }
+
+  try {
+    const { data, error } = await db.rpc("acd_public_verify_report", { p_token: token });
+    if (error) throw error;
+    if (!data || data.valid === false) {
+      throw new Error(data?.error || "This report QR token is invalid, revoked, or expired.");
+    }
+    renderReport(data);
+  } catch (err) {
+    badge.textContent = "Verification Failed";
+    badge.style.background = "#fee2e2";
+    badge.style.color = "#b91c1c";
+    loading.className = "status-box error";
+    loading.textContent = "Could not verify report: " + err.message;
+  }
+})();
+</script>
+</body>
+</html>
