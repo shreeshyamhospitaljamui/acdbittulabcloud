@@ -1,5 +1,6 @@
 /* =========================================================
-   ACD BITTU LAB CLOUD — COMBINED A4 PRINT, DESIGN & WHATSAPP MODULE
+   ACD BITTU LAB CLOUD — CUSTOMIZABLE A4 PRINT, DIRECT PDF,
+   QR VERIFICATION & WHATSAPP MODULE
    ========================================================= */
 (function () {
   "use strict";
@@ -12,7 +13,17 @@
     email: "",
     regNo: "",
     accentColor: "#0b4fa8",
+    fontFamily: "Arial, Helvetica, sans-serif",
     fontSize: "11px",
+    headerFontSize: "20px",
+    patientFontSize: "11px",
+    rowSpacing: "4.5px",
+    marginTopMm: 10,
+    marginBottomMm: 9,
+    marginSideMm: 12,
+    showHeader: true,
+    showLabName: true,
+    showReportBanner: true,
     headerLogo: "",
     headerBanner: "",
     leftSigName: "Lab Technician",
@@ -60,12 +71,46 @@
     return merged;
   }
 
-  async function saveReportDesign(currentLabId, designData) {
-    // Keep report-only preferences separate from the canonical cloud_labs record.
-    // This prevents a print-layout edit from silently changing lab master details.
+  async function saveReportDesign(currentLabId, designData, supabaseClient) {
     const key = getDesignStorageKey(currentLabId);
     localStorage.setItem(key, JSON.stringify(designData));
+
+    // Also sync to Supabase acd_lab_report_settings if online & available
+    const client = supabaseClient || window.db;
+    if (client && currentLabId) {
+      try {
+        await client.rpc("acd_save_lab_report_settings", {
+          p_lab_id: currentLabId,
+          p_settings: designData
+        });
+      } catch (err) {
+        console.warn("Cloud report settings sync warning:", err.message);
+      }
+    }
     return designData;
+  }
+
+  async function syncReportDesignFromCloud(currentLabId, labObj, supabaseClient) {
+    const client = supabaseClient || window.db;
+    const localDesign = loadReportDesign(currentLabId, labObj);
+    if (!client || !currentLabId) return localDesign;
+    try {
+      const { data, error } = await client.rpc("acd_get_lab_report_settings", {
+        p_lab_id: currentLabId
+      });
+      if (!error && data && typeof data === "object") {
+        const cloudSettings = data.settings && typeof data.settings === "object" ? data.settings : data;
+        if (Object.keys(cloudSettings).length) {
+          const merged = Object.assign({}, localDesign, cloudSettings);
+          if (!merged.labName && labObj?.name) merged.labName = labObj.name;
+          localStorage.setItem(getDesignStorageKey(currentLabId), JSON.stringify(merged));
+          return merged;
+        }
+      }
+    } catch (e) {
+      console.warn("Cloud report design fetch skipped:", e.message);
+    }
+    return localDesign;
   }
 
   function evaluateFlag(resultVal, refRange) {
@@ -86,9 +131,34 @@
     return p.patient_code || p.patient_uid || p.id || "NOT ASSIGNED";
   }
 
-  function buildQrText(report, design) {
-    // Until a secured public-report endpoint exists, QR carries only Patient ID.
-    return "ACD BITTU LAB CLOUD | PATIENT ID: " + patientId(report);
+  async function resolveQrVerificationUrl(report, currentLabId) {
+    const base = window.location.origin + window.location.pathname.replace(/[^/]*$/, "verify.html");
+    const orderId = String(report.id || "").trim();
+    const client = window.db;
+
+    if (client && currentLabId && orderId && !orderId.startsWith("DRAFT") && !orderId.startsWith("SAMPLE")) {
+      try {
+        const { data, error } = await client.rpc("acd_issue_report_qr_token", {
+          p_lab_id: currentLabId,
+          p_order_id: orderId
+        });
+        if (!error && data) {
+          const token = data.token || data.qr_token || (typeof data === "string" ? data : "");
+          if (token) {
+            return `${base}?token=${encodeURIComponent(token)}`;
+          }
+        }
+      } catch (e) {
+        console.warn("QR token issue fallback:", e.message);
+      }
+    }
+
+    // Fallback URL carrying order & patient reference
+    const params = new URLSearchParams();
+    if (orderId) params.set("order", orderId);
+    if (currentLabId) params.set("lab", currentLabId);
+    params.set("pid", patientId(report));
+    return `${base}?${params.toString()}`;
   }
 
   function renderBarcodeInto(container, value) {
@@ -99,8 +169,11 @@
     if (typeof window.JsBarcode === "function") {
       const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       container.appendChild(svg);
-      try { window.JsBarcode(svg, text, { format: "CODE128", displayValue: true, fontSize: 9, height: 28, margin: 0 }); }
-      catch (e) { container.textContent = text; }
+      try {
+        window.JsBarcode(svg, text, { format: "CODE128", displayValue: true, fontSize: 9, height: 26, margin: 0 });
+      } catch (e) {
+        container.textContent = text;
+      }
     } else {
       container.textContent = text;
       container.classList.add("acd-barcode-fallback");
@@ -125,10 +198,14 @@
     } catch (e) {
       console.warn("QRCode library fallback:", e);
     }
-    container.innerHTML = '<div style="font-size:8px;text-align:center;color:#334155">VERIFIED<br>REPORT</div>';
+    container.innerHTML = '<div style="font-size:8px;text-align:center;color:#334155">SCAN<br>REPORT</div>';
   }
 
   function buildFullHeaderHTML(design) {
+    if (design.showHeader === false) {
+      return "";
+    }
+
     const banner = design.headerBanner
       ? `<img src="${design.headerBanner}" class="acd-lab-header-banner" alt="Lab Banner">`
       : "";
@@ -142,12 +219,16 @@
       design.email ? "Email: " + esc(design.email) : ""
     ].filter(Boolean).join(" | ");
 
+    const labNameHtml = design.showLabName !== false
+      ? `<h1 class="acd-lab-name">${esc(design.labName || "PATHOLOGY LABORATORY")}</h1>`
+      : "";
+
     return `
       ${banner}
       <div class="acd-lab-header">
         ${logo}
         <div class="acd-lab-info">
-          <h1 class="acd-lab-name">${esc(design.labName || "PATHOLOGY LABORATORY")}</h1>
+          ${labNameHtml}
           ${design.tagline ? `<div class="acd-lab-tagline">${esc(design.tagline)}${regHtml}</div>` : ""}
           ${contactParts ? `<div class="acd-lab-contact">${contactParts}</div>` : ""}
         </div>
@@ -162,6 +243,10 @@
       p.age !== null && p.age !== undefined && p.age !== "" ? `${p.age} ${p.age_unit || "Y"}` : "",
       p.gender || ""
     ].filter(Boolean).join(" / ") || "-";
+
+    const bannerTitle = design.showReportBanner !== false
+      ? `<div class="acd-report-banner-title">LABORATORY INVESTIGATION REPORT</div>`
+      : "";
 
     return `
       <div class="acd-patient-box">
@@ -180,18 +265,7 @@
         </div>
         ${design.showQr ? `<div class="acd-qr-box" data-acd-qr="${pageIndex}"></div>` : ""}
       </div>
-      <div class="acd-report-banner-title">LABORATORY INVESTIGATION REPORT</div>
-    `;
-  }
-
-  function buildContHeaderHTML(report, design) {
-    const p = report.patient || {};
-    const fullName = [p.title, p.patient_name].filter(Boolean).join(" ").trim() || "-";
-    return `
-      <div class="acd-cont-header">
-        <div><strong>${esc(design.labName || "LABORATORY")}</strong> — Pathology Report (Continued)</div>
-        <div>Patient: <strong>${esc(fullName)}</strong> | ID: ${esc(report.id || "DRAFT")} | Date: ${esc(report.order_date || "-")}</div>
-      </div>
+      ${bannerTitle}
     `;
   }
 
@@ -241,13 +315,21 @@
     const raw = String(name || "").trim();
     const key = raw.toUpperCase().replace(/\s+/g, " ").trim();
     const names = {
-      CBC: "COMPLETE BLOOD COUNT (CBC)", KFT: "KIDNEY FUNCTION TEST (KFT)",
-      LFT: "LIVER FUNCTION TEST (LFT)", RFT: "RENAL FUNCTION TEST (RFT)",
-      TFT: "THYROID FUNCTION TEST (TFT)", ESR: "ERYTHROCYTE SEDIMENTATION RATE (ESR)",
-      CRP: "C-REACTIVE PROTEIN (CRP)", HBA1C: "GLYCATED HAEMOGLOBIN (HbA1c)",
-      FBS: "FASTING BLOOD SUGAR (FBS)", PPBS: "POST PRANDIAL BLOOD SUGAR (PPBS)",
-      RBS: "RANDOM BLOOD SUGAR (RBS)", WIDAL: "WIDAL TEST",
-      "URINE R/M": "URINE ROUTINE AND MICROSCOPY", "URINE RE": "URINE ROUTINE EXAMINATION"
+      CBC: "COMPLETE BLOOD COUNT (CBC)",
+      KFT: "KIDNEY FUNCTION TEST (KFT)",
+      LFT: "LIVER FUNCTION TEST (LFT)",
+      RFT: "RENAL FUNCTION TEST (RFT)",
+      TFT: "THYROID FUNCTION TEST (TFT)",
+      ESR: "ERYTHROCYTE SEDIMENTATION RATE (ESR)",
+      CRP: "C-REACTIVE PROTEIN (CRP)",
+      HBA1C: "GLYCATED HAEMOGLOBIN (HbA1c)",
+      FBS: "FASTING BLOOD SUGAR (FBS)",
+      PPBS: "POST PRANDIAL BLOOD SUGAR (PPBS)",
+      RBS: "RANDOM BLOOD SUGAR (RBS)",
+      WIDAL: "WIDAL TEST",
+      "BT & CT": "BLEEDING TIME & CLOTTING TIME (BT & CT)",
+      "URINE R/M": "URINE ROUTINE AND MICROSCOPY",
+      "URINE RE": "URINE ROUTINE EXAMINATION"
     };
     return names[key] || raw.toUpperCase();
   }
@@ -295,24 +377,27 @@
           </td>
         </tr>
       `;
-      return html;
+    } else {
+      rows.forEach(r => {
+        const val = String(r.result_value ?? "").trim();
+        if (!val) return;
+        const flag = r.status_flag || evaluateFlag(val, r.reference_range);
+        const isAbnormal = flag === "Low" || flag === "High";
+        html += `
+          <tr>
+            <td>${esc(r.parameter_name)}</td>
+            <td class="${isAbnormal ? "acd-res-abnormal" : "acd-res-normal"}">${esc(val)}</td>
+            ${design.showUnit ? `<td>${esc(r.unit || "-")}</td>` : ""}
+            ${design.showRef ? `<td>${esc(r.reference_range || "-")}</td>` : ""}
+            ${design.showStatus ? `<td class="${isAbnormal ? "acd-res-abnormal" : ""}">${esc(flag || "-")}</td>` : ""}
+          </tr>
+        `;
+      });
     }
 
-    rows.forEach(r => {
-      const val = String(r.result_value ?? "").trim();
-      if (!val) return;
-      const flag = r.status_flag || evaluateFlag(val, r.reference_range);
-      const isAbnormal = flag === "Low" || flag === "High";
-      html += `
-        <tr>
-          <td>${esc(r.parameter_name)}</td>
-          <td class="${isAbnormal ? "acd-res-abnormal" : "acd-res-normal"}">${esc(val)}</td>
-          ${design.showUnit ? `<td>${esc(r.unit || "-")}</td>` : ""}
-          ${design.showRef ? `<td>${esc(r.reference_range || "-")}</td>` : ""}
-          ${design.showStatus ? `<td class="${isAbnormal ? "acd-res-abnormal" : ""}">${esc(flag || "-")}</td>` : ""}
-        </tr>
-      `;
-    });
+    if (testGroup.clinical_note && String(testGroup.clinical_note).trim()) {
+      html += `<tr class="acd-clinical-note-row"><td colspan="${colSpan}"><strong>Note / Interpretation:</strong> ${esc(testGroup.clinical_note)}</td></tr>`;
+    }
 
     return html;
   }
@@ -321,7 +406,14 @@
     const page = document.createElement("div");
     page.className = "acd-a4-page";
     page.style.setProperty("--report-accent", design.accentColor || "#0b4fa8");
+    page.style.setProperty("--report-font-family", design.fontFamily || "Arial, Helvetica, sans-serif");
     page.style.setProperty("--report-font-size", design.fontSize || "11px");
+    page.style.setProperty("--report-header-size", design.headerFontSize || "20px");
+    page.style.setProperty("--report-patient-size", design.patientFontSize || "11px");
+    page.style.setProperty("--report-row-pad", design.rowSpacing || "4.5px");
+    page.style.setProperty("--report-margin-top", (Number(design.marginTopMm ?? 10)) + "mm");
+    page.style.setProperty("--report-margin-bottom", (Number(design.marginBottomMm ?? 9)) + "mm");
+    page.style.setProperty("--report-margin-side", (Number(design.marginSideMm ?? 12)) + "mm");
 
     const topHtml = buildFullHeaderHTML(design) + buildPatientBoxHTML(report, design, pageIndex);
 
@@ -357,7 +449,7 @@
     }
   }
 
-  function buildWhatsAppMessage(report, design) {
+  function buildWhatsAppMessage(report, design, verifyUrl = "") {
     const p = report.patient || {};
     const fullName = [p.title, p.patient_name].filter(Boolean).join(" ").trim() || "Patient";
     const lines = [
@@ -365,109 +457,43 @@
       `📋 *Pathology Investigation Report*`,
       `👤 *Patient:* ${fullName} (${p.age || "-"} ${p.age_unit || "Y"} / ${p.gender || "-"})`,
       `🆔 *Patient ID:* ${patientId(report)}`,
-      `📅 *Date:* ${report.order_date || "-"}`,
-      `🩺 *Ref. Doctor:* ${report.ref_doctor || "Self"}`,
-      `------------------------`
+      `📅 *Date:* ${report.order_date || "-"}`
     ];
-
-    (report.tests || []).forEach(t => {
-      const filled = (t.rows || []).filter(r => String(r.result_value ?? "").trim() !== "");
-      if (!filled.length) return;
-      lines.push(`*${t.test_name.toUpperCase()}*`);
-      filled.slice(0, 12).forEach(r => {
-        const flag = r.status_flag || evaluateFlag(r.result_value, r.reference_range);
-        const flagTag = flag && flag !== "Normal" ? ` [${flag}]` : "";
-        lines.push(`• ${r.parameter_name}: *${r.result_value}* ${r.unit || ""}${flagTag}`.trim());
-      });
-      if (filled.length > 12) {
-        lines.push(`... (+${filled.length - 12} more parameters in A4 PDF report)`);
-      }
-    });
-
-    lines.push(`------------------------`);
-    lines.push(`Please collect/print full signed A4 report from the laboratory.`);
+    if (verifyUrl) {
+      lines.push(`🔗 *View & Download Verified Report PDF:* ${verifyUrl}`);
+    }
+    lines.push(`Please find your attached A4 PDF Pathology Report.`);
     return lines.join("\n");
   }
 
-  function shareReportOnWhatsApp(report, currentLabId, labObj) {
-    const design = loadReportDesign(currentLabId, labObj);
-    const text = buildWhatsAppMessage(report, design);
-    const rawMobile = String(report.patient?.mobile || "").replace(/\D/g, "");
-    const phone = rawMobile.length === 10 ? "91" + rawMobile : rawMobile;
-    const url = phone
-      ? `https://wa.me/${phone}?text=${encodeURIComponent(text)}`
-      : `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
-    window.open(url, "_blank", "noopener");
-  }
-
-  function ensureOverlay() {
-    let overlay = document.getElementById("acdPrintOverlay");
-    if (overlay) return overlay;
-
-    overlay = document.createElement("div");
-    overlay.id = "acdPrintOverlay";
-    overlay.className = "hidden";
-    overlay.innerHTML = `
-      <div class="acd-print-toolbar">
-        <div class="acd-print-toolbar-title">
-          <span>🖨️ Combined A4 Report Preview</span>
-          <small id="acdPrintPageCount" style="color:#93c5fd"></small>
-        </div>
-        <div class="acd-print-toolbar-actions">
-          <button type="button" class="acd-btn-print primary" id="acdDoPrintBtn">🖨️ Print / Save PDF</button>
-          <button type="button" class="acd-btn-print whatsapp" id="acdDoWhatsappBtn">📲 Send WhatsApp</button>
-          <button type="button" class="acd-btn-print close" id="acdClosePrintBtn">✕ Close</button>
-        </div>
-      </div>
-      <div class="acd-print-viewport" id="acdPrintViewport"></div>
-    `;
-    document.body.appendChild(overlay);
-
-    document.getElementById("acdClosePrintBtn").onclick = () => {
-      overlay.classList.add("hidden");
-    };
-    document.getElementById("acdDoPrintBtn").onclick = () => {
-      window.print();
-    };
-    window.addEventListener("resize", () => {
-      if (!overlay.classList.contains("hidden")) {
-        applyMobileViewportScale(document.getElementById("acdPrintViewport"));
-      }
+  async function ensureHtml2Pdf() {
+    if (typeof window.html2pdf === "function") return window.html2pdf;
+    await new Promise((resolve, reject) => {
+      const s = document.createElement("script");
+      s.src = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
+      s.onload = resolve;
+      s.onerror = () => reject(new Error("PDF generator library could not load."));
+      document.head.appendChild(s);
     });
-
-    return overlay;
+    return window.html2pdf;
   }
 
-  function openCombinedA4Print(report, options = {}) {
-    const currentLabId = options.labId || window.labId || null;
-    const labObj = options.lab || null;
-    const design = loadReportDesign(currentLabId, labObj);
-
+  async function renderPagesIntoContainer(container, report, design, currentLabId) {
+    container.innerHTML = "";
     const validGroups = (report.tests || [])
       .map(t => ({
         test_name: t.test_name,
+        clinical_note: t.clinical_note || "",
         rows: (t.rows || []).filter(r => String(r.result_value ?? "").trim() !== "")
       }))
       .filter(t => t.rows.length > 0);
 
-    if (!validGroups.length) {
-      alert("Print करने के लिए कम से कम एक Test Result भरें।");
-      return;
-    }
-
-    const overlay = ensureOverlay();
-    const viewport = document.getElementById("acdPrintViewport");
-    viewport.innerHTML = "";
-    overlay.classList.remove("hidden");
-
-    document.getElementById("acdDoWhatsappBtn").onclick = () => {
-      shareReportOnWhatsApp(report, currentLabId, labObj);
-    };
+    if (!validGroups.length) return [];
 
     const pages = [];
     let currentPage = createPageShell(report, design, 1);
     currentPage.querySelector(".acd-a4-footer-slot").innerHTML = buildFooterHTML(design, 1, 1);
-    viewport.appendChild(currentPage);
+    container.appendChild(currentPage);
     pages.push(currentPage);
 
     const getMaxBodyHeight = pageEl => {
@@ -489,7 +515,7 @@
         tbody.innerHTML = beforeHtml;
         currentPage = createPageShell(report, design, pages.length + 1);
         currentPage.querySelector(".acd-a4-footer-slot").innerHTML = buildFooterHTML(design, pages.length + 1, pages.length + 1);
-        viewport.appendChild(currentPage);
+        container.appendChild(currentPage);
         pages.push(currentPage);
 
         const nextTbody = currentPage.querySelector("tbody");
@@ -515,7 +541,7 @@
 
         currentPage = createPageShell(report, design, pages.length + 1);
         currentPage.querySelector(".acd-a4-footer-slot").innerHTML = buildFooterHTML(design, pages.length + 1, pages.length + 1);
-        viewport.appendChild(currentPage);
+        container.appendChild(currentPage);
         pages.push(currentPage);
 
         const colSpan = 2 + (design.showUnit ? 1 : 0) + (design.showRef ? 1 : 0) + (design.showStatus ? 1 : 0);
@@ -531,10 +557,216 @@
       pg.querySelector(".acd-a4-footer-slot").innerHTML = buildFooterHTML(design, idx + 1, totalPages);
     });
 
+    const qrUrl = await resolveQrVerificationUrl(report, currentLabId);
     pages.forEach(pg => {
-      if (design.showQr) renderQrInto(pg.querySelector("[data-acd-qr]"), buildQrText(report, design));
+      if (design.showQr) renderQrInto(pg.querySelector("[data-acd-qr]"), qrUrl);
       renderBarcodeInto(pg.querySelector("[data-acd-barcode]"), patientId(report));
     });
+
+    return { pages, qrUrl };
+  }
+
+  async function generateReportPdfBlob(report, currentLabId, labObj) {
+    const design = loadReportDesign(currentLabId, labObj);
+    const html2pdf = await ensureHtml2Pdf();
+
+    // Render off-screen unscaled A4 sheets for crisp PDF output
+    const host = document.createElement("div");
+    host.style.cssText = "position:fixed;left:-9999px;top:0;width:210mm;background:#fff;z-index:-1;";
+    document.body.appendChild(host);
+
+    try {
+      const rendered = await renderPagesIntoContainer(host, report, design, currentLabId);
+      const pages = rendered.pages || [];
+      if (!pages.length) throw new Error("No test results available for PDF generation.");
+
+      const wrapper = document.createElement("div");
+      wrapper.style.width = "210mm";
+      pages.forEach((pg, idx) => {
+        pg.style.boxShadow = "none";
+        pg.style.margin = "0";
+        pg.style.transform = "none";
+        if (idx < pages.length - 1) {
+          pg.style.pageBreakAfter = "always";
+        }
+        wrapper.appendChild(pg);
+      });
+      host.innerHTML = "";
+      host.appendChild(wrapper);
+
+      const safeName = String(report.patient?.patient_name || "Patient")
+        .replace(/[^a-zA-Z0-9_-]+/g, "_")
+        .replace(/^_+|_+$/g, "") || "Patient";
+      const fileName = `${safeName}_Lab_Report.pdf`;
+
+      const worker = html2pdf()
+        .set({
+          margin: 0,
+          filename: fileName,
+          image: { type: "jpeg", quality: 0.96 },
+          html2canvas: { scale: 2, useCORS: true, logging: false },
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+        })
+        .from(wrapper);
+
+      const blob = await worker.outputPdf("blob");
+      return { blob, fileName, qrUrl: rendered.qrUrl };
+    } finally {
+      host.remove();
+    }
+  }
+
+  async function downloadReportAsPdf(report, currentLabId, labObj) {
+    const { blob, fileName } = await generateReportPdfBlob(report, currentLabId, labObj);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+    return fileName;
+  }
+
+  async function shareReportOnWhatsApp(report, currentLabId, labObj, triggerBtn = null) {
+    const design = loadReportDesign(currentLabId, labObj);
+    const originalLabel = triggerBtn ? triggerBtn.textContent : "";
+    if (triggerBtn) {
+      triggerBtn.disabled = true;
+      triggerBtn.textContent = "⏳ Generating PDF...";
+    }
+
+    try {
+      const { blob, fileName, qrUrl } = await generateReportPdfBlob(report, currentLabId, labObj);
+      const pdfFile = new File([blob], fileName, { type: "application/pdf" });
+      const msgText = buildWhatsAppMessage(report, design, qrUrl);
+
+      // 1. Mobile / Tablet Web Share API (Attaches real PDF file directly into WhatsApp!)
+      if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+        await navigator.share({
+          files: [pdfFile],
+          title: fileName,
+          text: msgText
+        });
+        return;
+      }
+
+      // 2. Desktop / Browser Fallback: Download PDF + Open WhatsApp chat with verified link & message
+      const dlUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = dlUrl;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(dlUrl), 15000);
+
+      const rawMobile = String(report.patient?.mobile || "").replace(/\D/g, "");
+      const phone = rawMobile.length === 10 ? "91" + rawMobile : rawMobile;
+      const waUrl = phone
+        ? `https://wa.me/${phone}?text=${encodeURIComponent(msgText)}`
+        : `https://api.whatsapp.com/send?text=${encodeURIComponent(msgText)}`;
+      window.open(waUrl, "_blank", "noopener");
+    } catch (err) {
+      console.warn("WhatsApp PDF share fallback:", err);
+      const text = buildWhatsAppMessage(report, design, "");
+      const rawMobile = String(report.patient?.mobile || "").replace(/\D/g, "");
+      const phone = rawMobile.length === 10 ? "91" + rawMobile : rawMobile;
+      const url = phone
+        ? `https://wa.me/${phone}?text=${encodeURIComponent(text)}`
+        : `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+      window.open(url, "_blank", "noopener");
+    } finally {
+      if (triggerBtn) {
+        triggerBtn.disabled = false;
+        triggerBtn.textContent = originalLabel;
+      }
+    }
+  }
+
+  function ensureOverlay() {
+    let overlay = document.getElementById("acdPrintOverlay");
+    if (overlay) return overlay;
+
+    overlay = document.createElement("div");
+    overlay.id = "acdPrintOverlay";
+    overlay.className = "hidden";
+    overlay.innerHTML = `
+      <div class="acd-print-toolbar">
+        <div class="acd-print-toolbar-title">
+          <span>🖨️ Combined A4 Report Preview</span>
+          <small id="acdPrintPageCount" style="color:#93c5fd"></small>
+        </div>
+        <div class="acd-print-toolbar-actions">
+          <button type="button" class="acd-btn-print primary" id="acdDoPrintBtn">🖨️ Print A4</button>
+          <button type="button" class="acd-btn-print pdf" id="acdDoPdfBtn">📄 Download PDF</button>
+          <button type="button" class="acd-btn-print whatsapp" id="acdDoWhatsappBtn">📲 Send PDF on WhatsApp</button>
+          <button type="button" class="acd-btn-print close" id="acdClosePrintBtn">✕ Close</button>
+        </div>
+      </div>
+      <div class="acd-print-viewport" id="acdPrintViewport"></div>
+    `;
+    document.body.appendChild(overlay);
+
+    document.getElementById("acdClosePrintBtn").onclick = () => {
+      overlay.classList.add("hidden");
+    };
+    document.getElementById("acdDoPrintBtn").onclick = () => {
+      window.print();
+    };
+    window.addEventListener("resize", () => {
+      if (!overlay.classList.contains("hidden")) {
+        applyMobileViewportScale(document.getElementById("acdPrintViewport"));
+      }
+    });
+
+    return overlay;
+  }
+
+  async function openCombinedA4Print(report, options = {}) {
+    const currentLabId = options.labId || window.labId || null;
+    const labObj = options.lab || null;
+    const design = loadReportDesign(currentLabId, labObj);
+
+    const validGroups = (report.tests || [])
+      .map(t => ({
+        test_name: t.test_name,
+        clinical_note: t.clinical_note || "",
+        rows: (t.rows || []).filter(r => String(r.result_value ?? "").trim() !== "")
+      }))
+      .filter(t => t.rows.length > 0);
+
+    if (!validGroups.length) {
+      if (typeof window.acdNotify === "function") {
+        window.acdNotify("Print करने के लिए कम से कम एक Test Result भरें।");
+      }
+      return;
+    }
+
+    const overlay = ensureOverlay();
+    const viewport = document.getElementById("acdPrintViewport");
+    viewport.innerHTML = "";
+    overlay.classList.remove("hidden");
+
+    const waBtn = document.getElementById("acdDoWhatsappBtn");
+    waBtn.onclick = () => shareReportOnWhatsApp(report, currentLabId, labObj, waBtn);
+
+    const pdfBtn = document.getElementById("acdDoPdfBtn");
+    pdfBtn.onclick = async () => {
+      const orig = pdfBtn.textContent;
+      pdfBtn.disabled = true;
+      pdfBtn.textContent = "⏳ Saving PDF...";
+      try {
+        await downloadReportAsPdf(report, currentLabId, labObj);
+      } finally {
+        pdfBtn.disabled = false;
+        pdfBtn.textContent = orig;
+      }
+    };
+
+    const { pages } = await renderPagesIntoContainer(viewport, report, design, currentLabId);
+    const totalPages = pages.length;
 
     document.getElementById("acdPrintPageCount").textContent = `(${totalPages} A4 Page${totalPages > 1 ? "s" : ""})`;
     applyMobileViewportScale(viewport);
@@ -548,7 +780,9 @@
     DEFAULT_DESIGN,
     loadReportDesign,
     saveReportDesign,
+    syncReportDesignFromCloud,
     openCombinedA4Print,
+    downloadReportAsPdf,
     shareReportOnWhatsApp,
     evaluateFlag
   };
