@@ -1,12 +1,13 @@
 "use strict";
 
-const CACHE_NAME = "acd-bittu-lab-shell-v2";
+const CACHE_NAME = "acd-bittu-lab-shell-v3";
 
 const CORE_FILES = [
   "./",
   "./index.html",
   "./dashboard.html",
   "./subscription.html",
+  "./verify.html",
   "./print-report.js",
   "./print-report.css",
   "./platform-mode.js",
@@ -48,7 +49,6 @@ self.addEventListener("fetch", event => {
 
   const url = new URL(request.url);
 
-  // Supabase API, Edge Functions, and Auth responses are never cached.
   if (
     url.hostname.includes("supabase.co") ||
     url.pathname.includes("/rest/v1/") ||
@@ -58,7 +58,6 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  // Cache external JS, CSS, fonts and images after online loading.
   if (
     url.origin !== self.location.origin &&
     ["script", "style", "font", "image"].includes(request.destination)
@@ -79,7 +78,6 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  // App files: network first, cache fallback.
   if (url.origin === self.location.origin) {
     event.respondWith(
       fetch(request)
