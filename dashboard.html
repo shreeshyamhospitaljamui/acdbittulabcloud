@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ACD BITTU LAB CLOUD — New Patient Entry</title>
+<title>ACD BITTU LAB CLOUD — Dashboard</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#07172d">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -15,15 +15,15 @@
 <style>
 :root{--navy:#07172d;--blue:#0866df;--line:#dce3eb;--bg:#f3f6fa;--text:#1d2939;--muted:#667085;--green:#12a150}
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);font-size:13px}
-.app{min-height:100vh;display:flex}.sidebar{width:182px;flex:0 0 182px;background:var(--navy);color:#e8eef8;display:flex;flex-direction:column;min-height:100vh}
+.app{min-height:100vh;display:flex}.sidebar{width:186px;flex:0 0 186px;background:var(--navy);color:#e8eef8;display:flex;flex-direction:column;min-height:100vh}
 .brand{height:64px;display:flex;align-items:center;gap:9px;padding:10px;border-bottom:1px solid #1c304b}.brand-mark{width:27px;height:27px;border-radius:7px;background:#0b75e8;display:grid;place-items:center;font-weight:bold;color:white;font-size:17px}.brand strong{font-size:10px;letter-spacing:.3px;display:block}.brand small{font-size:8px;color:#9fb2cc;display:block;margin-top:3px}
 .nav{padding:9px 0;display:flex;flex-direction:column;gap:2px}.nav button{border:0;background:transparent;color:#d8e2f0;text-align:left;padding:10px 9px;font-size:11px;cursor:pointer;border-left:3px solid transparent}.nav button:hover{background:#142c4b}.nav button.active{background:#075bd4;color:#fff;border-left-color:#63b1ff}.nav .super{margin-top:8px;border-top:1px solid #26364d;padding-top:14px;color:#ff9da9}
 .main{min-width:0;flex:1;display:flex;flex-direction:column}.topbar{height:44px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 12px;font-size:12px;font-weight:600}.topright{display:flex;align-items:center;gap:12px;color:var(--muted);font-weight:400}.avatar{width:24px;height:24px;border-radius:50%;background:#d9eaff;color:#075bd4;display:grid;place-items:center}
 .content{padding:12px;display:flex;flex-direction:column;gap:10px;min-height:calc(100vh - 44px)}
-.select-lab{background:#fff;border:1px solid var(--line);padding:8px;border-radius:7px;display:flex;gap:8px;align-items:center}.select-lab select{max-width:260px}
+.select-lab{background:#fff;border:1px solid var(--line);padding:8px;border-radius:7px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}.select-lab select{max-width:260px}
 .cards{display:grid;grid-template-columns:1.05fr 1fr 1fr;gap:9px}.panel{background:white;border:1px solid #e1e6ed;border-radius:8px;box-shadow:0 1px 3px #152b4510;overflow:hidden}.panel-head{padding:10px 10px 7px;border-top:3px solid #2e8bea;color:#075ec9;font-weight:700;font-size:12px}.panel.doctor .panel-head{color:#087f70;border-top-color:#22b8a5}.panel.billing .panel-head{color:#8a43b6;border-top-color:#a56ad0}
 .panel-body{padding:0 10px 10px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:7px}.field{min-width:0}.field.full{grid-column:1/-1}label{display:block;font-size:9px;color:#5b6573;margin:3px 0 4px}
-input,select{width:100%;height:27px;border:1px solid #d8dee7;border-radius:5px;padding:4px 7px;background:#fff;color:#263445;font-size:11px;min-width:0}input:focus,select:focus{outline:2px solid #b8d7ff;border-color:#2680e8}
+input,select,textarea{width:100%;height:27px;border:1px solid #d8dee7;border-radius:5px;padding:4px 7px;background:#fff;color:#263445;font-size:11px;min-width:0}textarea{height:auto}input:focus,select:focus,textarea:focus{outline:2px solid #b8d7ff;border-color:#2680e8}
 .addrow{display:flex;gap:5px}.addrow input{flex:1}
 .test-search-wrap{position:relative;flex:1;min-width:0}
 .test-search-wrap>input{width:100%}
@@ -33,18 +33,23 @@ input,select{width:100%;height:27px;border:1px solid #d8dee7;border-radius:5px;p
 .test-search-option:active,.test-search-option:hover{background:#edf5ff}
 .test-search-option small{display:block;color:#778397;font-size:10px;margin-top:2px}
 .test-search-empty{padding:10px;color:#8a94a3;font-size:11px}
-.btn{border:0;border-radius:5px;padding:7px 10px;background:#0969df;color:white;font-size:10px;font-weight:700;cursor:pointer}.btn.green{background:var(--green)}.btn.light{background:#e8eef6;color:#344054}.btn.danger{background:#fee4e2;color:#b42318}
+.btn{border:0;border-radius:5px;padding:7px 10px;background:#0969df;color:white;font-size:10px;font-weight:700;cursor:pointer}.btn.green{background:var(--green)}.btn.light{background:#e8eef6;color:#344054}.btn.danger{background:#fee4e2;color:#b42318}.btn.amber{background:#fef3c7;color:#92400e}
 .amounts{display:grid;grid-template-columns:1fr 1fr;gap:6px}.paid input{color:#07934a;font-weight:bold}.due input{color:#c42f35;font-weight:bold}
 .results{flex:1;min-height:260px}.results-head{display:flex;justify-content:space-between;align-items:center;padding:7px 9px;gap:8px}.results-title{font-weight:700;font-size:11px}.actions{display:flex;gap:5px}.table-wrap{padding:0 5px 8px;overflow:auto}table{border-collapse:collapse;width:100%;font-size:10px}th{background:#173f83;color:white;text-align:left;padding:7px 6px;white-space:nowrap}td{border:1px solid #e2e7ee;padding:5px 6px}td input,td select{height:25px;min-width:70px}td.empty{text-align:center;color:#98a2b3;font-style:italic;height:30px}
 #notice{font-size:10px;color:#067647;padding:2px 0;min-height:15px;font-weight:600}
-.badge{display:inline-block;padding:2px 6px;border-radius:999px;font-size:9px;font-weight:700;background:#e2e8f0;color:#334155}
+.badge{display:inline-block;padding:2px 7px;border-radius:999px;font-size:9px;font-weight:700;background:#e2e8f0;color:#334155}
 .badge-normal{background:#dcfce7;color:#15803d}
 .badge-abnormal{background:#fee2e2;color:#b91c1c}
+.badge-warn{background:#fef3c7;color:#b45309}
 
-/* Dashboard page visibility fix */
+/* Dashboard page visibility */
 #entryPage:not(.hidden),
 #cataloguePage:not(.hidden),
 #savedReportsPage:not(.hidden),
+#sampleTrackingPage:not(.hidden),
+#accountsPage:not(.hidden),
+#inventoryPage:not(.hidden),
+#labSupportPage:not(.hidden),
 #otherPage:not(.hidden),
 #reportDesignerPage:not(.hidden),
 #superAdminCenter:not(.hidden) {
@@ -62,8 +67,17 @@ input,select{width:100%;height:27px;border:1px solid #d8dee7;border-radius:5px;p
   display: none !important;
 }
 
+/* Hide legacy duplicate panel if cached platform-mode.js ever tries to inject */
+#acdSuperAdminPanel, #nav [data-sa-nav] {
+  display: none !important;
+}
+
 .hidden{display:none!important}
 .placeholder-panel{background:#fff;border:1px solid var(--line);border-radius:8px;padding:18px;color:#667085;min-height:120px}
+.kpi-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.kpi-box{background:#fff;border:1px solid #e1e6ed;border-radius:8px;padding:12px}
+.kpi-box small{display:block;font-size:10px;color:#667085;font-weight:700;text-transform:uppercase}
+.kpi-box h2{margin:6px 0 0;font-size:20px;color:#0f172a}
 
 .catalogue-layout{display:grid;grid-template-columns:minmax(190px,260px) 1fr;gap:10px;min-height:420px}
 .catalogue-list{background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px}
@@ -77,13 +91,12 @@ input,select{width:100%;height:27px;border:1px solid #d8dee7;border-radius:5px;p
 .catalogue-detail td{padding:8px 7px}
 .catalogue-meta{font-size:10px;color:#667085;margin-bottom:10px}
 .catalogue-empty{padding:28px 10px;text-align:center;color:#98a2b3}
-@media(max-width:600px){.catalogue-layout{grid-template-columns:1fr}.catalogue-list{max-height:220px;overflow:auto}.catalogue-detail{overflow:auto}}
+@media(max-width:600px){.catalogue-layout{grid-template-columns:1fr}.catalogue-list{max-height:220px;overflow:auto}.catalogue-detail{overflow:auto}.kpi-strip{grid-template-columns:1fr 1fr}}
 
 button:disabled{opacity:.55;cursor:not-allowed}
 
 @media(max-width:700px){.sidebar{width:145px;flex-basis:145px}.brand{padding:7px}.nav button{font-size:10px;padding:9px 6px}.content{padding:8px}.cards{grid-template-columns:1fr 1fr}.panel.billing{grid-column:1/-1}.topbar{height:40px}}
 @media(max-width:480px){.sidebar{width:52px;flex-basis:52px}.brand{justify-content:center;padding:5px}.brand-copy,.nav .txt{display:none}.nav button{text-align:center;padding:12px 2px;font-size:15px}.cards{grid-template-columns:1fr}.panel.billing{grid-column:auto}.content{padding:7px}.topbar{padding:0 8px}.results{min-height:250px}}
-/* Lab Admin: Super Admin menu ko shuru se hi hatayein */
 html.acd-lab-admin .nav button.super,
 html.acd-lab-admin #nav [data-page="Super Admin"],
 html.acd-lab-admin #nav [data-sa-nav] {
@@ -101,7 +114,7 @@ html.acd-lab-admin #nav [data-sa-nav] {
 <button data-page="Sample Tracking">◆ <span class="txt">Sample Tracking</span></button>
 <button data-page="Accounts & Expenses">▤ <span class="txt">Accounts &amp; Expenses</span></button>
 <button data-page="Inventory & Stock">▣ <span class="txt">Inventory &amp; Stock</span></button>
-
+<button data-page="Centers, Staff & Support">🏥 <span class="txt">Centers, Staff &amp; Help</span></button>
 <button data-page="Lab & Print Setup">⚙ <span class="txt">Lab &amp; Print Setup</span></button>
 <button data-page="Subscription (Razorpay)">▰ <span class="txt">Subscription (Razorpay)</span></button>
 
@@ -110,8 +123,9 @@ html.acd-lab-admin #nav [data-sa-nav] {
 <main class="main">
 <header class="topbar"><span id="pageTitle">New Patient Entry</span><div class="topright"><span id="clock">00:00</span><span id="account"></span><button class="btn light" id="logout">Logout</button><span class="avatar">♟</span></div></header>
 <section class="content" id="workspace">
-<div class="select-lab hidden" id="labChooser"><b>Laboratory:</b><select id="labSelect"><option value="">Loading laboratories…</option></select><span id="labStatus">Selected</span></div>
+<div class="select-lab hidden" id="labChooser"><b>Laboratory:</b><select id="labSelect"><option value="">Loading laboratories…</option></select><span id="labStatus">Selected</span><span id="labAnnouncementBanner" style="margin-left:auto;font-size:11px;color:#075ec9;font-weight:600"></span></div>
 
+<!-- 1. NEW PATIENT ENTRY (FINAL - UNTOUCHED) -->
 <div id="entryPage">
 <div class="cards">
 <section class="panel"><div class="panel-head">▣ &nbsp;1. Patient Details</div><div class="panel-body"><div class="fields">
@@ -183,7 +197,6 @@ html.acd-lab-admin #nav [data-sa-nav] {
 
 <div class="table-wrap">
 <table>
-
 <thead>
   <tr>
     <th style="width:28%">Investigation (Editable)</th>
@@ -194,22 +207,19 @@ html.acd-lab-admin #nav [data-sa-nav] {
     <th class="no-print" style="width:4%"></th>
   </tr>
 </thead>
-
 <tbody id="testRows">
-
 <tr>
 <td class="empty" colspan="6">पहले ऊपर से CBC, KFT, LFT आदि टेस्ट जोड़ें।</td>
 </tr>
 </tbody>
 </table>
 </div>
-
-
 </section>
 </div>
 
 <div id="otherPage" class="placeholder-panel hidden"></div>
 
+<!-- 2. SAVED REPORTS (FINAL - UNTOUCHED) -->
 <div id="savedReportsPage" class="hidden">
   <section class="panel">
     <div class="panel-head">▣ Saved Reports</div>
@@ -298,6 +308,7 @@ html.acd-lab-admin #nav [data-sa-nav] {
   </section>
 </div>
 
+<!-- 3. TEST CATALOGUE (FINAL - UNTOUCHED) -->
 <div id="cataloguePage" class="hidden">
   <div class="catalogue-layout">
     <aside class="catalogue-list">
@@ -340,6 +351,263 @@ html.acd-lab-admin #nav [data-sa-nav] {
   </div>
 </div>
 
+<!-- 4. SAMPLE TRACKING (LIVE SUPABASE ORDERS) -->
+<div id="sampleTrackingPage" class="hidden">
+  <div class="kpi-strip">
+    <div class="kpi-box"><small>Total Samples</small><h2 id="stTotalCount">0</h2></div>
+    <div class="kpi-box"><small>Pending / Collected</small><h2 id="stPendingCount" style="color:#b45309">0</h2></div>
+    <div class="kpi-box"><small>In Processing</small><h2 id="stProcessingCount" style="color:#0866df">0</h2></div>
+    <div class="kpi-box"><small>Completed</small><h2 id="stCompletedCount" style="color:#067647">0</h2></div>
+  </div>
+  <section class="panel">
+    <div class="panel-head">◆ Sample Collection &amp; Lab Processing Tracker</div>
+    <div class="panel-body">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">
+        <input id="stSearchInput" placeholder="Search patient name, mobile or Order ID..." style="max-width:280px">
+        <input id="stDateInput" type="date" style="max-width:160px">
+        <select id="stStatusFilter" style="max-width:180px">
+          <option value="all">All Sample Statuses</option>
+          <option value="Pending">Pending</option>
+          <option value="Sample Collected">Sample Collected</option>
+          <option value="In Processing">In Processing</option>
+          <option value="Completed">Completed</option>
+        </select>
+        <button class="btn light" id="stRefreshBtn" type="button">↻ Refresh Samples</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Sample / Order ID</th>
+              <th>Patient &amp; Mobile</th>
+              <th>Date</th>
+              <th>Ordered Tests</th>
+              <th>Sample Status</th>
+              <th>Quick Action</th>
+            </tr>
+          </thead>
+          <tbody id="stRows">
+            <tr><td colspan="6" class="empty">Loading samples...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="stNotice" style="font-size:11px;color:#067647;margin-top:6px"></div>
+    </div>
+  </section>
+</div>
+
+<!-- 5. ACCOUNTS & EXPENSES (LIVE BILLING + DUE COLLECTION + DAILY EXPENSES) -->
+<div id="accountsPage" class="hidden">
+  <div class="kpi-strip">
+    <div class="kpi-box"><small>Total Billed</small><h2 id="accTotalBilled">₹0</h2></div>
+    <div class="kpi-box"><small>Total Collected</small><h2 id="accTotalCollected" style="color:#067647">₹0</h2></div>
+    <div class="kpi-box"><small>Pending Due</small><h2 id="accTotalDue" style="color:#b42318">₹0</h2></div>
+    <div class="kpi-box"><small>Net Cash (After Expenses)</small><h2 id="accNetCash" style="color:#0866df">₹0</h2></div>
+  </div>
+
+  <div class="cards" style="grid-template-columns:1.35fr 1fr;margin-bottom:10px">
+    <section class="panel">
+      <div class="panel-head">▤ Patient Billing &amp; Due Collection Register</div>
+      <div class="panel-body">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">
+          <input id="accFromDate" type="date" style="max-width:150px">
+          <input id="accToDate" type="date" style="max-width:150px">
+          <select id="accDueFilter" style="max-width:150px">
+            <option value="all">All Bills</option>
+            <option value="due">Due Pending Only</option>
+            <option value="paid">Fully Paid</option>
+          </select>
+          <button class="btn light" id="accRefreshBtn" type="button">↻ Refresh</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Patient</th>
+                <th>Total / Disc.</th>
+                <th>Paid</th>
+                <th>Due</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="accOrdersBody">
+              <tr><td colspan="6" class="empty">Loading billing ledger...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel billing">
+      <div class="panel-head">₹ Daily Laboratory Expenses</div>
+      <div class="panel-body">
+        <div class="fields" style="margin-top:8px">
+          <div class="field"><label>Expense Date</label><input id="expDate" type="date"></div>
+          <div class="field"><label>Amount (₹) *</label><input id="expAmount" type="number" min="1" placeholder="e.g. 500"></div>
+          <div class="field"><label>Category</label>
+            <select id="expCategory">
+              <option>Reagents &amp; Kits</option>
+              <option>Consumables / Tubes</option>
+              <option>Staff / Salary</option>
+              <option>Electricity / Rent</option>
+              <option>Maintenance / Other</option>
+            </select>
+          </div>
+          <div class="field"><label>Note / Vendor</label><input id="expNote" placeholder="Details..."></div>
+          <div class="field full"><button class="btn green" id="expAddBtn" type="button" style="width:100%">+ Add Expense Entry</button></div>
+        </div>
+        <div class="table-wrap" style="margin-top:10px">
+          <table>
+            <thead><tr><th>Date</th><th>Category</th><th>Note</th><th>Amount</th><th></th></tr></thead>
+            <tbody id="expRowsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- 6. INVENTORY & STOCK -->
+<div id="inventoryPage" class="hidden">
+  <div class="kpi-strip">
+    <div class="kpi-box"><small>Total Items</small><h2 id="invTotalItems">0</h2></div>
+    <div class="kpi-box"><small>Low Stock Alerts</small><h2 id="invLowStock" style="color:#b42318">0</h2></div>
+    <div class="kpi-box"><small>Expiring Soon (30d)</small><h2 id="invExpiring" style="color:#b45309">0</h2></div>
+    <div class="kpi-box"><small>Total Stock Units</small><h2 id="invTotalUnits" style="color:#067647">0</h2></div>
+  </div>
+  <section class="panel">
+    <div class="panel-head">▣ Reagent, Kit &amp; Consumable Stock Management</div>
+    <div class="panel-body">
+      <div class="fields" style="grid-template-columns:repeat(auto-fit,minmax(145px,1fr));margin:10px 0">
+        <div class="field"><label>Reagent / Item Name *</label><input id="invName" placeholder="e.g. EDTA Vacutainer"></div>
+        <div class="field"><label>Category</label>
+          <select id="invCategory">
+            <option>Hematology Reagent</option>
+            <option>Biochemistry Kit</option>
+            <option>Rapid Card / Serology</option>
+            <option>Tubes &amp; Syringes</option>
+            <option>General Consumable</option>
+          </select>
+        </div>
+        <div class="field"><label>Current Qty *</label><input id="invQty" type="number" min="0" value="10"></div>
+        <div class="field"><label>Min Alert Level</label><input id="invMinQty" type="number" min="0" value="5"></div>
+        <div class="field"><label>Unit</label><input id="invUnit" value="Box / Pcs"></div>
+        <div class="field"><label>Expiry Date</label><input id="invExpiry" type="date"></div>
+        <div class="field" style="display:flex;align-items:flex-end"><button class="btn green" id="invAddBtn" type="button" style="width:100%">+ Add Stock Item</button></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Item Name</th>
+              <th>Category</th>
+              <th>Available Stock</th>
+              <th>Min Alert</th>
+              <th>Expiry</th>
+              <th>Status</th>
+              <th>Quick Adjust</th>
+            </tr>
+          </thead>
+          <tbody id="invRowsBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- 7. CENTERS, STAFF & SUPPORT (MULTI-CENTER + STAFF INVITE + TICKETS) -->
+<div id="labSupportPage" class="hidden">
+  <div class="cards" style="grid-template-columns:1fr 1fr;margin-bottom:10px">
+    <!-- Multi-Center Management -->
+    <section class="panel">
+      <div class="panel-head">🏥 Owner Centers / Branches</div>
+      <div class="panel-body">
+        <div class="fields" style="margin-top:8px">
+          <div class="field"><label>New Branch / Center Name *</label><input id="newCenterName" placeholder="e.g. Branch 2 - Main Road"></div>
+          <div class="field"><label>Branch Phone</label><input id="newCenterPhone" placeholder="Phone number"></div>
+          <div class="field full"><label>Branch Address</label><input id="newCenterAddress" placeholder="Full address"></div>
+          <div class="field full"><button class="btn green" id="createCenterBtn" type="button">+ Add New Center</button></div>
+        </div>
+        <div id="centerMsg" style="font-size:11px;color:#067647;margin:6px 0"></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Center Name</th><th>Phone / Address</th><th>Status</th></tr></thead>
+            <tbody id="ownerCentersBody"><tr><td colspan="4" class="empty">Loading centers...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Lab Staff Invitations -->
+    <section class="panel doctor">
+      <div class="panel-head">👥 Laboratory Staff &amp; Role Invites</div>
+      <div class="panel-body">
+        <div class="fields" style="margin-top:8px">
+          <div class="field"><label>Staff Email *</label><input id="staffInviteEmail" type="email" placeholder="staff@example.com"></div>
+          <div class="field"><label>Staff Role *</label>
+            <select id="staffInviteRole">
+              <option value="lab_technician">Lab Technician</option>
+              <option value="receptionist">Receptionist</option>
+              <option value="pathologist">Pathologist</option>
+              <option value="accountant">Accountant</option>
+            </select>
+          </div>
+          <div class="field full"><button class="btn" id="sendStaffInviteBtn" type="button">+ Generate Staff Invite</button></div>
+        </div>
+        <div id="staffInviteMsg" style="font-size:11px;color:#067647;margin:6px 0"></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Staff Email</th><th>Role</th><th>Status</th></tr></thead>
+            <tbody id="labStaffBody"><tr><td colspan="3" class="empty">Loading staff list...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Support Tickets -->
+  <section class="panel billing">
+    <div class="panel-head">🎧 Platform Support &amp; Helpdesk Tickets</div>
+    <div class="panel-body">
+      <div class="cards" style="grid-template-columns:1fr 1.2fr;margin-top:8px">
+        <div>
+          <div class="fields">
+            <div class="field"><label>Subject *</label><input id="labTicketSubject" placeholder="e.g. Print setup / Billing query"></div>
+            <div class="field"><label>Priority</label>
+              <select id="labTicketPriority">
+                <option value="normal">Normal</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+            <div class="field full"><label>Describe Issue *</label><textarea id="labTicketMessage" rows="3" placeholder="Explain your issue clearly..."></textarea></div>
+            <div class="field full"><button class="btn green" id="labCreateTicketBtn" type="button">Submit Support Ticket</button></div>
+          </div>
+          <div id="labTicketNotice" style="font-size:11px;color:#067647;margin-top:6px"></div>
+        </div>
+        <div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Subject</th><th>Priority</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody id="labTicketsBody"><tr><td colspan="4" class="empty">Loading tickets...</td></tr></tbody>
+            </table>
+          </div>
+          <div id="labTicketThreadBox" class="hidden" style="margin-top:10px;border:1px solid #dce3eb;border-radius:6px;padding:10px;background:#f8fafc">
+            <strong id="labThreadTitle" style="font-size:12px">Ticket Thread</strong>
+            <div id="labThreadList" style="max-height:160px;overflow:auto;margin:8px 0;display:flex;flex-direction:column;gap:6px"></div>
+            <div class="addrow">
+              <input id="labThreadReplyInput" placeholder="Write reply to Super Admin...">
+              <button class="btn" id="labThreadReplyBtn" type="button">Send</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- 8. LAB & PRINT SETUP (FINAL - UNTOUCHED) -->
 <div id="reportDesignerPage" class="hidden">
   <div class="panel" style="margin-bottom:10px">
     <div class="panel-head">⚙ Lab Header, Report Design &amp; Signatures Setup</div>
@@ -448,6 +716,7 @@ const SUPABASE_URL="https://axfvvquhswapiwmvrepe.supabase.co";
 const SUPABASE_ANON_KEY="sb_publishable_n6jRvVDjw2kOF7CS46omqQ_6qGkdR-q";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 window.db = db;
+window.ACD_UNIFIED_SUPER_ADMIN = true;
 const $=id=>document.getElementById(id);
 let user=null,role=null,labId=null,labs=[],catalogue=[],selectedTests=[],flatRows=[];
 
@@ -459,7 +728,7 @@ function say(t){
     console.log("ACD Notice:", t);
   }
 }
-  
+
 function safe(s) {
   return String(s ?? "").replace(/[&<>"']/g, c => ({
     "&": "&amp;",
@@ -469,12 +738,13 @@ function safe(s) {
     "'": "&#39;"
   }[c]));
 }
-  
+
 function deviceId(){let id=localStorage.getItem("acd_device_id");if(!id){id=crypto.randomUUID?crypto.randomUUID():"acd-"+Date.now()+"-"+Math.random().toString(36).slice(2);localStorage.setItem("acd_device_id",id)}return id}
 let heartbeatBusy=false;
 async function deviceHeartbeat(){if(heartbeatBusy)return;heartbeatBusy=true;try{const {data,error}=await db.rpc("acd_device_heartbeat",{p_device_id:deviceId()});if(error)throw error;if(data?.status==="takeover"||data?.status==="revoked"){await db.auth.signOut();location.replace("index.html")}}catch(e){console.warn("Device heartbeat:",e.message)}finally{heartbeatBusy=false}}
 function calcDue(){let total=+($("total").value||0),discount=+($("discount").value||0),paid=+($("paid").value||0);$("due").value=Math.max(0,total-discount-paid)}
 ["total","discount","paid"].forEach(id=>$(id).addEventListener("input",calcDue));
+
 function resultControl(p,index){
  const type=(p.result_type||"numeric").toLowerCase(), opts=Array.isArray(p.result_options)?p.result_options:[];
  if(["positive_negative","reactive_nonreactive","present_absent","blood_group"].includes(type)){
@@ -484,37 +754,17 @@ function resultControl(p,index){
  }if(type==="titre")return '<input type="text" data-result="'+index+'" data-titre="true" list="titreOptions'+index+'" placeholder="Enter titre"><datalist id="titreOptions'+index+'"><option value="1:20"><option value="1:40"><option value="1:80"><option value="1:160"><option value="1:320"><option value="1:640"></datalist>';
  return '<input data-result="'+index+'" '+(type==="numeric"?'inputmode="decimal"':'')+' placeholder="Enter result">';
 }
-const CBC_GROUPS=[
- {title:"Haemoglobin",names:["Haemoglobin","Haemoglobin Percent"]},
- {title:"Total Count",names:["Platelet Count","Erythrocytes","Leucocytes"]},
- {title:"Differential W.B.C. Count",names:["Neutrophils","Lymphocytes","Monocytes","Eosinophils","Basophils"]},
- {title:"Absolute Count",names:["Absolute Neutrophil","Absolute Lymphocyte","Absolute Monocyte","Absolute Eosinophil","Absolute Basophil"]},
- {title:"RBC & Platelet Indices",names:["RDW-CV","PCV (HCT)","MCV","MCH","MCHC","RDW-SD","MPV","PDW","PCT","P-LCR","P-LCC"]},
- {title:"Other Hematology",names:["ESR (Westergren) - Male","ESR (Westergren) - Female","Bleeding Time (BT)","Clotting Time (CT)","Blood Group & Rh Factor"]}
-];
 
 function getResultStatus(result, referenceRange) {
-  const value = Number(
-    String(result ?? "").replace(/,/g, "").trim()
-  );
-
-  if (!String(result ?? "").trim() || !Number.isFinite(value)) {
-    return "";
-  }
-
-  const matches = String(referenceRange ?? "")
-    .match(/\d[\d,]*(?:\.\d+)?/g);
-
+  const value = Number(String(result ?? "").replace(/,/g, "").trim());
+  if (!String(result ?? "").trim() || !Number.isFinite(value)) return "";
+  const matches = String(referenceRange ?? "").match(/\d[\d,]*(?:\.\d+)?/g);
   if (!matches || matches.length < 2) return "";
-
   const low = Number(matches[0].replace(/,/g, ""));
   const high = Number(matches[1].replace(/,/g, ""));
-
   if (!Number.isFinite(low) || !Number.isFinite(high)) return "";
-
   if (value < low) return "Low";
   if (value > high) return "High";
-
   return "Normal";
 }
 
@@ -722,26 +972,17 @@ function calculateCBCResults(testId) {
   const tlc = get("Leucocytes");
   const pcv = get("PCV (HCT)");
 
- const hbRow = rows.find(
-  r => r.parameter_name.toLowerCase() === "haemoglobin"
-);
+  const hbRow = rows.find(r => r.parameter_name.toLowerCase() === "haemoglobin");
+  const hbRangeNumbers = String(hbRow?.reference_range ?? "").match(/\d[\d,]*(?:\.\d+)?/g);
+  const hbUpperLimit = hbRangeNumbers?.length >= 2 ? Number(hbRangeNumbers[1].replace(/,/g, "")) : NaN;
 
-const hbRangeNumbers = String(hbRow?.reference_range ?? "")
-  .match(/\d[\d,]*(?:\.\d+)?/g);
+  set(
+    "Haemoglobin Percent",
+    Number.isFinite(hb) && Number.isFinite(hbUpperLimit) && hbUpperLimit > 0
+      ? (hb / hbUpperLimit) * 100
+      : NaN
+  );
 
-const hbUpperLimit =
-  hbRangeNumbers?.length >= 2
-    ? Number(hbRangeNumbers[1].replace(/,/g, ""))
-    : NaN;
-
-set(
-  "Haemoglobin Percent",
-  Number.isFinite(hb) &&
-  Number.isFinite(hbUpperLimit) &&
-  hbUpperLimit > 0
-    ? (hb / hbUpperLimit) * 100
-    : NaN
-);
   [
     ["Neutrophils", "Absolute Neutrophil"],
     ["Lymphocytes", "Absolute Lymphocyte"],
@@ -871,15 +1112,15 @@ function renderEditableCatalogueParams() {
       if (!confirm("क्या इस Parameter को हटाना है?")) return;
       if (item.id && !String(item.id).startsWith("local-")) {
         const { error: deleteError } = await db
-  .from("acd_lab_test_parameters")
-  .delete()
-  .eq("id", item.id)
-  .eq("lab_id", labId);
+          .from("acd_lab_test_parameters")
+          .delete()
+          .eq("id", item.id)
+          .eq("lab_id", labId);
 
-if (deleteError) {
-  alert("Delete error: " + deleteError.message);
-  return;
-}
+        if (deleteError) {
+          alert("Delete error: " + deleteError.message);
+          return;
+        }
       }
       activeCatalogueParams.splice(idx, 1);
       renderEditableCatalogueParams();
@@ -901,12 +1142,12 @@ async function openCatalogueTest(id) {
 
   let params = [];
   try {
-   const { data, error } = await db
-  .from("acd_lab_test_parameters")
-  .select("id,lab_id,test_id,parameter_name,unit,reference_range,result_type,result_options,sort_order")
-  .eq("lab_id", labId)
-  .eq("test_id", id)
-  .order("sort_order");
+    const { data, error } = await db
+      .from("acd_lab_test_parameters")
+      .select("id,lab_id,test_id,parameter_name,unit,reference_range,result_type,result_options,sort_order")
+      .eq("lab_id", labId)
+      .eq("test_id", id)
+      .order("sort_order");
 
     if (error) throw error;
     params = data || [];
@@ -952,7 +1193,7 @@ $("catSaveParamsBtn").onclick = async () => {
 
       if (isNew) {
         const { data, error } = await db
-         .from("acd_lab_test_parameters")
+          .from("acd_lab_test_parameters")
           .insert({
             lab_id: labId,
             test_id: activeCatalogueTestId,
@@ -968,17 +1209,17 @@ $("catSaveParamsBtn").onclick = async () => {
         activeCatalogueParams[i] = data;
         await window.ACDOfflineDB.putRecord("parameters", labId, data);
       } else {
-       const { error } = await db
-  .from("acd_lab_test_parameters")
-  .update({
-    parameter_name: p.parameter_name.trim(),
-    unit: p.unit || null,
-    reference_range: p.reference_range || null,
-    result_type: p.result_type || "numeric",
-    sort_order: (i + 1) * 10
-  })
-  .eq("id", p.id)
-  .eq("lab_id", labId);
+        const { error } = await db
+          .from("acd_lab_test_parameters")
+          .update({
+            parameter_name: p.parameter_name.trim(),
+            unit: p.unit || null,
+            reference_range: p.reference_range || null,
+            result_type: p.result_type || "numeric",
+            sort_order: (i + 1) * 10
+          })
+          .eq("id", p.id)
+          .eq("lab_id", labId);
         if (error) throw error;
         await window.ACDOfflineDB.putRecord("parameters", labId, p);
       }
@@ -1056,10 +1297,10 @@ async function renderTestSearchResults() {
   let allParameters = [];
   try {
     const { data, error } = await db
-  .from("acd_lab_test_parameters")
-  .select("id,lab_id,test_id,parameter_name,unit,reference_range,result_type,result_options,sort_order")
-  .eq("lab_id", labId)
-  .order("sort_order");
+      .from("acd_lab_test_parameters")
+      .select("id,lab_id,test_id,parameter_name,unit,reference_range,result_type,result_options,sort_order")
+      .eq("lab_id", labId)
+      .order("sort_order");
 
     if (error) throw error;
     allParameters = data || [];
@@ -1184,12 +1425,12 @@ document.addEventListener("click", e => {
 
 async function getTestParametersOfflineSafe(testId) {
   try {
-   const { data, error } = await db
-  .from("acd_lab_test_parameters")
-  .select("id,lab_id,test_id,parameter_name,unit,reference_range,result_type,result_options,sort_order")
-  .eq("lab_id", labId)
-  .eq("test_id", testId)
-  .order("sort_order");
+    const { data, error } = await db
+      .from("acd_lab_test_parameters")
+      .select("id,lab_id,test_id,parameter_name,unit,reference_range,result_type,result_options,sort_order")
+      .eq("lab_id", labId)
+      .eq("test_id", testId)
+      .order("sort_order");
 
     if (error) throw error;
     const params = data || [];
@@ -1560,6 +1801,532 @@ $("rdTestPreviewBtn").onclick = async () => {
   window.ACDPrintModule.openCombinedA4Print(sampleReport, { labId: labId });
 };
 
+/* =========================================================
+   LAB ADMIN MODULES: SAMPLE TRACKING, ACCOUNTS, INVENTORY, CENTERS/STAFF/SUPPORT
+   ========================================================= */
+async function loadLabAnnouncementsBanner() {
+  const banner = $("labAnnouncementBanner");
+  if (!banner || !labId) return;
+  try {
+    const { data, error } = await db.rpc("acd_lab_get_active_announcements", { p_lab_id: labId });
+    if (error) return;
+    const list = Array.isArray(data) ? data : (data?.announcements || []);
+    if (list.length) {
+      banner.textContent = "📢 " + (list[0].title || "") + ": " + (list[0].message || "");
+    } else {
+      banner.textContent = "";
+    }
+  } catch (e) {
+    banner.textContent = "";
+  }
+}
+
+/* Sample Tracking */
+let stOrdersCache = [];
+async function loadSampleTracking() {
+  if (!labId) return;
+  $("stRows").innerHTML = '<tr><td colspan="6" class="empty">Loading samples...</td></tr>';
+  try {
+    const { data: orders, error } = await db
+      .from("lab_orders")
+      .select("id, order_date, status, created_at, ref_doctor, patient:lab_patients(id, patient_name, mobile, age, age_unit, gender)")
+      .eq("lab_id", labId)
+      .is("report_deleted_at", null)
+      .order("created_at", { ascending: false })
+      .limit(300);
+    if (error) throw error;
+
+    const orderIds = (orders || []).map(o => o.id);
+    let itemsMap = new Map();
+    if (orderIds.length) {
+      const { data: items } = await db
+        .from("lab_order_items")
+        .select("order_id, test_name")
+        .eq("lab_id", labId)
+        .in("order_id", orderIds);
+      (items || []).forEach(it => {
+        if (!itemsMap.has(it.order_id)) itemsMap.set(it.order_id, []);
+        itemsMap.get(it.order_id).push(it.test_name);
+      });
+    }
+
+    stOrdersCache = (orders || []).map(o => ({
+      ...o,
+      status: o.status || "Pending",
+      tests: itemsMap.get(o.id) || []
+    }));
+    renderSampleTracking();
+  } catch (err) {
+    $("stRows").innerHTML = '<tr><td colspan="6" class="empty">Error: ' + safe(err.message) + '</td></tr>';
+  }
+}
+
+function renderSampleTracking() {
+  const q = $("stSearchInput").value.trim().toLowerCase();
+  const dt = $("stDateInput").value;
+  const st = $("stStatusFilter").value;
+
+  $("stTotalCount").textContent = stOrdersCache.length;
+  $("stPendingCount").textContent = stOrdersCache.filter(o => ["Pending", "Sample Collected"].includes(o.status)).length;
+  $("stProcessingCount").textContent = stOrdersCache.filter(o => o.status === "In Processing").length;
+  $("stCompletedCount").textContent = stOrdersCache.filter(o => o.status === "Completed").length;
+
+  const filtered = stOrdersCache.filter(o => {
+    const hay = [o.id, o.patient?.patient_name, o.patient?.mobile, o.tests.join(" ")].join(" ").toLowerCase();
+    return (!q || hay.includes(q)) && (!dt || o.order_date === dt) && (st === "all" || o.status === st);
+  });
+
+  $("stRows").innerHTML = filtered.length
+    ? filtered.map(o => `
+      <tr>
+        <td style="font-family:monospace">${safe(o.id.slice(0, 8).toUpperCase())}</td>
+        <td><strong>${safe(o.patient?.patient_name || "Unknown")}</strong><br><small>${safe(o.patient?.mobile || "—")}</small></td>
+        <td>${safe(o.order_date || "—")}</td>
+        <td>${safe(o.tests.join(", ") || "—")}</td>
+        <td>
+          <select data-st-order="${safe(o.id)}" style="min-width:130px">
+            ${["Pending", "Sample Collected", "In Processing", "Completed"].map(opt =>
+              `<option value="${opt}" ${o.status === opt ? "selected" : ""}>${opt}</option>`
+            ).join("")}
+          </select>
+        </td>
+        <td><button type="button" class="btn green" data-st-save="${safe(o.id)}">Update</button></td>
+      </tr>
+    `).join("")
+    : '<tr><td colspan="6" class="empty">कोई Sample रिकॉर्ड नहीं मिला।</td></tr>';
+
+  $("stRows").querySelectorAll("[data-st-save]").forEach(btn => {
+    btn.onclick = async () => {
+      const oid = btn.dataset.stSave;
+      const newStatus = $("stRows").querySelector(`[data-st-order="${oid}"]`)?.value;
+      btn.disabled = true;
+      try {
+        const { error } = await db.from("lab_orders").update({ status: newStatus }).eq("id", oid).eq("lab_id", labId);
+        if (error) throw error;
+        const target = stOrdersCache.find(x => x.id === oid);
+        if (target) target.status = newStatus;
+        $("stNotice").textContent = "✓ Sample status updated to " + newStatus;
+        renderSampleTracking();
+      } catch (e) {
+        alert("Status update error: " + e.message);
+      } finally {
+        btn.disabled = false;
+      }
+    };
+  });
+}
+
+["stSearchInput", "stDateInput", "stStatusFilter"].forEach(id => {
+  $(id)?.addEventListener("input", renderSampleTracking);
+  $(id)?.addEventListener("change", renderSampleTracking);
+});
+$("stRefreshBtn")?.addEventListener("click", loadSampleTracking);
+
+/* Accounts & Expenses */
+let accOrdersCache = [];
+function getExpensesKey() { return "acd_lab_expenses_" + (labId || "default"); }
+function loadLocalExpenses() {
+  try { return JSON.parse(localStorage.getItem(getExpensesKey()) || "[]"); } catch (e) { return []; }
+}
+function saveLocalExpenses(list) {
+  localStorage.setItem(getExpensesKey(), JSON.stringify(list));
+}
+
+async function loadAccountsModule() {
+  if (!labId) return;
+  if (!$("expDate").value) $("expDate").value = new Date().toISOString().slice(0, 10);
+  try {
+    const { data, error } = await db
+      .from("lab_orders")
+      .select("id, order_date, total_amount, discount_amount, paid_amount, payment_mode, patient:lab_patients(patient_name, mobile)")
+      .eq("lab_id", labId)
+      .is("report_deleted_at", null)
+      .order("created_at", { ascending: false })
+      .limit(500);
+    if (error) throw error;
+    accOrdersCache = data || [];
+    renderAccountsModule();
+  } catch (e) {
+    $("accOrdersBody").innerHTML = '<tr><td colspan="6" class="empty">Error: ' + safe(e.message) + '</td></tr>';
+  }
+}
+
+function renderAccountsModule() {
+  const from = $("accFromDate").value;
+  const to = $("accToDate").value;
+  const filter = $("accDueFilter").value;
+
+  const filtered = accOrdersCache.filter(o => {
+    const net = Math.max(0, Number(o.total_amount || 0) - Number(o.discount_amount || 0));
+    const due = Math.max(0, net - Number(o.paid_amount || 0));
+    return (!from || o.order_date >= from) && (!to || o.order_date <= to) &&
+      (filter === "all" || (filter === "due" && due > 0) || (filter === "paid" && due === 0));
+  });
+
+  let billed = 0, collected = 0, dueTotal = 0;
+  filtered.forEach(o => {
+    const net = Math.max(0, Number(o.total_amount || 0) - Number(o.discount_amount || 0));
+    const paid = Number(o.paid_amount || 0);
+    billed += net;
+    collected += paid;
+    dueTotal += Math.max(0, net - paid);
+  });
+
+  const expenses = loadLocalExpenses().filter(x => (!from || x.date >= from) && (!to || x.date <= to));
+  const expSum = expenses.reduce((s, x) => s + Number(x.amount || 0), 0);
+
+  $("accTotalBilled").textContent = "₹" + billed.toLocaleString("en-IN");
+  $("accTotalCollected").textContent = "₹" + collected.toLocaleString("en-IN");
+  $("accTotalDue").textContent = "₹" + dueTotal.toLocaleString("en-IN");
+  $("accNetCash").textContent = "₹" + Math.max(0, collected - expSum).toLocaleString("en-IN");
+
+  $("accOrdersBody").innerHTML = filtered.length
+    ? filtered.map(o => {
+        const net = Math.max(0, Number(o.total_amount || 0) - Number(o.discount_amount || 0));
+        const paid = Number(o.paid_amount || 0);
+        const due = Math.max(0, net - paid);
+        return `
+          <tr>
+            <td>${safe(o.order_date || "")}</td>
+            <td><strong>${safe(o.patient?.patient_name || "Unknown")}</strong><br><small>${safe(o.payment_mode || "Cash")}</small></td>
+            <td>₹${net} <small>(Disc ₹${Number(o.discount_amount || 0)})</small></td>
+            <td style="color:#067647;font-weight:700">₹${paid}</td>
+            <td style="color:${due > 0 ? "#b42318" : "#067647"};font-weight:700">₹${due}</td>
+            <td>${due > 0 ? `<button type="button" class="btn green" data-collect-due="${safe(o.id)}" data-net="${net}">Collect Due</button>` : '<span class="badge badge-normal">Paid</span>'}</td>
+          </tr>
+        `;
+      }).join("")
+    : '<tr><td colspan="6" class="empty">No billing records found.</td></tr>';
+
+  $("accOrdersBody").querySelectorAll("[data-collect-due]").forEach(btn => {
+    btn.onclick = async () => {
+      const oid = btn.dataset.collectDue;
+      const net = Number(btn.dataset.net || 0);
+      if (!confirm("Mark full due amount as collected (Total Paid = ₹" + net + ")?")) return;
+      btn.disabled = true;
+      try {
+        const { error } = await db.from("lab_orders").update({ paid_amount: net }).eq("id", oid).eq("lab_id", labId);
+        if (error) throw error;
+        await loadAccountsModule();
+      } catch (e) {
+        alert("Update error: " + e.message);
+      } finally {
+        btn.disabled = false;
+      }
+    };
+  });
+
+  $("expRowsBody").innerHTML = expenses.length
+    ? expenses.map((x, idx) => `
+      <tr>
+        <td>${safe(x.date)}</td>
+        <td>${safe(x.category)}</td>
+        <td>${safe(x.note || "—")}</td>
+        <td style="color:#b42318;font-weight:700">₹${Number(x.amount || 0)}</td>
+        <td><button type="button" class="btn danger" data-del-exp="${idx}">×</button></td>
+      </tr>
+    `).join("")
+    : '<tr><td colspan="5" class="empty">No expenses added.</td></tr>';
+
+  $("expRowsBody").querySelectorAll("[data-del-exp]").forEach(btn => {
+    btn.onclick = () => {
+      const list = loadLocalExpenses();
+      list.splice(Number(btn.dataset.delExp), 1);
+      saveLocalExpenses(list);
+      renderAccountsModule();
+    };
+  });
+}
+
+$("expAddBtn")?.addEventListener("click", () => {
+  const amt = Number($("expAmount").value || 0);
+  if (amt <= 0) return alert("Enter valid expense amount.");
+  const list = loadLocalExpenses();
+  list.unshift({
+    date: $("expDate").value || new Date().toISOString().slice(0, 10),
+    category: $("expCategory").value,
+    note: $("expNote").value.trim(),
+    amount: amt
+  });
+  saveLocalExpenses(list);
+  $("expAmount").value = "";
+  $("expNote").value = "";
+  renderAccountsModule();
+});
+["accFromDate", "accToDate", "accDueFilter"].forEach(id => $(id)?.addEventListener("change", renderAccountsModule));
+$("accRefreshBtn")?.addEventListener("click", loadAccountsModule);
+
+/* Inventory & Stock */
+function getInventoryKey() { return "acd_lab_inventory_" + (labId || "default"); }
+function loadLocalInventory() {
+  try { return JSON.parse(localStorage.getItem(getInventoryKey()) || "[]"); } catch (e) { return []; }
+}
+function saveLocalInventory(list) {
+  localStorage.setItem(getInventoryKey(), JSON.stringify(list));
+}
+
+function renderInventoryModule() {
+  const items = loadLocalInventory();
+  const now = Date.now();
+  const in30Days = now + 30 * 86400000;
+
+  $("invTotalItems").textContent = items.length;
+  $("invLowStock").textContent = items.filter(x => Number(x.qty) <= Number(x.minQty)).length;
+  $("invExpiring").textContent = items.filter(x => x.expiry && new Date(x.expiry).getTime() <= in30Days).length;
+  $("invTotalUnits").textContent = items.reduce((s, x) => s + Number(x.qty || 0), 0);
+
+  $("invRowsBody").innerHTML = items.length
+    ? items.map((x, idx) => {
+        const isLow = Number(x.qty) <= Number(x.minQty);
+        return `
+          <tr>
+            <td><strong>${safe(x.name)}</strong></td>
+            <td>${safe(x.category)}</td>
+            <td><strong>${Number(x.qty)}</strong> ${safe(x.unit || "")}</td>
+            <td>${Number(x.minQty)}</td>
+            <td>${safe(x.expiry || "—")}</td>
+            <td>${isLow ? '<span class="badge badge-abnormal">Low Stock</span>' : '<span class="badge badge-normal">In Stock</span>'}</td>
+            <td>
+              <div class="actions">
+                <button type="button" class="btn green" data-inv-plus="${idx}">+1</button>
+                <button type="button" class="btn amber" data-inv-minus="${idx}">-1</button>
+                <button type="button" class="btn danger" data-inv-del="${idx}">×</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("")
+    : '<tr><td colspan="7" class="empty">No inventory items added yet.</td></tr>';
+
+  $("invRowsBody").querySelectorAll("[data-inv-plus]").forEach(b => {
+    b.onclick = () => {
+      const list = loadLocalInventory();
+      list[Number(b.dataset.invPlus)].qty = Number(list[Number(b.dataset.invPlus)].qty || 0) + 1;
+      saveLocalInventory(list);
+      renderInventoryModule();
+    };
+  });
+  $("invRowsBody").querySelectorAll("[data-inv-minus]").forEach(b => {
+    b.onclick = () => {
+      const list = loadLocalInventory();
+      const idx = Number(b.dataset.invMinus);
+      list[idx].qty = Math.max(0, Number(list[idx].qty || 0) - 1);
+      saveLocalInventory(list);
+      renderInventoryModule();
+    };
+  });
+  $("invRowsBody").querySelectorAll("[data-inv-del]").forEach(b => {
+    b.onclick = () => {
+      const list = loadLocalInventory();
+      list.splice(Number(b.dataset.invDel), 1);
+      saveLocalInventory(list);
+      renderInventoryModule();
+    };
+  });
+}
+
+$("invAddBtn")?.addEventListener("click", () => {
+  const name = $("invName").value.trim();
+  if (!name) return alert("Enter reagent/item name.");
+  const list = loadLocalInventory();
+  list.unshift({
+    name,
+    category: $("invCategory").value,
+    qty: Number($("invQty").value || 0),
+    minQty: Number($("invMinQty").value || 5),
+    unit: $("invUnit").value.trim() || "Pcs",
+    expiry: $("invExpiry").value || ""
+  });
+  saveLocalInventory(list);
+  $("invName").value = "";
+  renderInventoryModule();
+});
+
+/* Centers, Staff & Support */
+let activeLabTicketId = null;
+async function loadCentersStaffSupport() {
+  if (!labId) return;
+  // 1. Load Owner Centers
+  try {
+    const { data: centers, error } = await db.rpc("acd_owner_list_centers");
+    if (error) throw error;
+    $("ownerCentersBody").innerHTML = (centers || []).length
+      ? centers.map(c => `
+        <tr>
+          <td>${safe(c.center_number)}</td>
+          <td><strong>${safe(c.name)}</strong></td>
+          <td>${safe(c.phone || "—")}<br><small>${safe(c.address || "")}</small></td>
+          <td>${c.is_active ? '<span class="badge badge-normal">Active</span>' : '<span class="badge badge-abnormal">Inactive</span>'}</td>
+        </tr>
+      `).join("")
+      : '<tr><td colspan="4" class="empty">No centers listed.</td></tr>';
+  } catch (e) {
+    $("ownerCentersBody").innerHTML = '<tr><td colspan="4" class="empty">' + safe(e.message) + '</td></tr>';
+  }
+
+  // 2. Load Lab Staff
+  try {
+    const { data: staff, error } = await db
+      .from("acd_lab_staff")
+      .select("id, email, role, is_active")
+      .eq("lab_id", labId)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    $("labStaffBody").innerHTML = (staff || []).length
+      ? staff.map(s => `
+        <tr>
+          <td>${safe(s.email)}</td>
+          <td>${safe(s.role)}</td>
+          <td>${s.is_active ? '<span class="badge badge-normal">Active</span>' : '<span class="badge badge-abnormal">Inactive</span>'}</td>
+        </tr>
+      `).join("")
+      : '<tr><td colspan="3" class="empty">No staff members added yet.</td></tr>';
+  } catch (e) {
+    $("labStaffBody").innerHTML = '<tr><td colspan="3" class="empty">' + safe(e.message) + '</td></tr>';
+  }
+
+  // 3. Load Lab Support Tickets
+  try {
+    const { data, error } = await db.rpc("acd_lab_list_support_tickets", { p_lab_id: labId });
+    if (error) throw error;
+    const tickets = Array.isArray(data) ? data : (data?.tickets || []);
+    $("labTicketsBody").innerHTML = tickets.length
+      ? tickets.map(t => `
+        <tr>
+          <td><strong>${safe(t.subject)}</strong></td>
+          <td>${safe(t.priority || "normal")}</td>
+          <td><span class="badge">${safe(t.status || "open")}</span></td>
+          <td><button type="button" class="btn light" data-lab-ticket="${safe(t.id)}">Open</button></td>
+        </tr>
+      `).join("")
+      : '<tr><td colspan="4" class="empty">No support tickets yet.</td></tr>';
+
+    $("labTicketsBody").querySelectorAll("[data-lab-ticket]").forEach(btn => {
+      btn.onclick = () => openLabSupportThread(btn.dataset.labTicket);
+    });
+  } catch (e) {
+    $("labTicketsBody").innerHTML = '<tr><td colspan="4" class="empty">' + safe(e.message) + '</td></tr>';
+  }
+}
+
+async function openLabSupportThread(ticketId) {
+  activeLabTicketId = ticketId;
+  $("labTicketThreadBox").classList.remove("hidden");
+  $("labThreadList").innerHTML = "<small>Loading messages...</small>";
+  try {
+    const { data, error } = await db.rpc("acd_lab_get_support_ticket_thread", { p_ticket_id: ticketId });
+    if (error) throw error;
+    const d = Array.isArray(data) ? data[0] : (data || {});
+    const msgs = d.messages || d.thread || [];
+    $("labThreadTitle").textContent = d.ticket?.subject || "Ticket Conversation";
+    $("labThreadList").innerHTML = msgs.length
+      ? msgs.filter(m => !m.is_internal).map(m => `
+        <div style="background:#fff;border:1px solid #dce3eb;border-radius:5px;padding:6px 8px;font-size:11px">
+          <strong>${safe(m.sender_name || "Support")}</strong>: ${safe(m.body || m.message || "")}
+        </div>
+      `).join("")
+      : "<small>No messages yet.</small>";
+  } catch (e) {
+    $("labThreadList").innerHTML = "<small style='color:#b42318'>" + safe(e.message) + "</small>";
+  }
+}
+
+$("createCenterBtn")?.addEventListener("click", async () => {
+  const name = $("newCenterName").value.trim();
+  if (!name) return alert("Enter new center name.");
+  const btn = $("createCenterBtn");
+  btn.disabled = true;
+  try {
+    const { error } = await db.rpc("acd_owner_create_center", {
+      p_lab_name: name,
+      p_address: $("newCenterAddress").value.trim(),
+      p_phone: $("newCenterPhone").value.trim()
+    });
+    if (error) throw error;
+    $("newCenterName").value = "";
+    $("newCenterAddress").value = "";
+    $("newCenterPhone").value = "";
+    $("centerMsg").textContent = "✓ New center created successfully.";
+    await loadCentersStaffSupport();
+  } catch (e) {
+    $("centerMsg").textContent = "Error: " + e.message;
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+$("sendStaffInviteBtn")?.addEventListener("click", async () => {
+  const email = $("staffInviteEmail").value.trim();
+  const staffRole = $("staffInviteRole").value;
+  if (!email) return alert("Enter staff email.");
+  const btn = $("sendStaffInviteBtn");
+  btn.disabled = true;
+  try {
+    const { data: token, error } = await db.rpc("acd_create_staff_invite", {
+      p_lab_id: labId,
+      p_email: email,
+      p_role: staffRole
+    });
+    if (error) throw error;
+    $("staffInviteEmail").value = "";
+    $("staffInviteMsg").textContent = "✓ Invite created! Token: " + token;
+    await loadCentersStaffSupport();
+  } catch (e) {
+    $("staffInviteMsg").textContent = "Error: " + e.message;
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+$("labCreateTicketBtn")?.addEventListener("click", async () => {
+  const subject = $("labTicketSubject").value.trim();
+  const body = $("labTicketMessage").value.trim();
+  const priority = $("labTicketPriority").value;
+  if (!subject || !body) return alert("Enter subject and message.");
+  const btn = $("labCreateTicketBtn");
+  btn.disabled = true;
+  try {
+    const { error } = await db.rpc("acd_lab_create_support_ticket", {
+      p_lab_id: labId,
+      p_subject: subject,
+      p_body: body,
+      p_category: "general",
+      p_priority: priority
+    });
+    if (error) throw error;
+    $("labTicketSubject").value = "";
+    $("labTicketMessage").value = "";
+    $("labTicketNotice").textContent = "✓ Support ticket submitted.";
+    await loadCentersStaffSupport();
+  } catch (e) {
+    $("labTicketNotice").textContent = "Error: " + e.message;
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+$("labThreadReplyBtn")?.addEventListener("click", async () => {
+  if (!activeLabTicketId) return;
+  const body = $("labThreadReplyInput").value.trim();
+  if (!body) return;
+  const btn = $("labThreadReplyBtn");
+  btn.disabled = true;
+  try {
+    const { error } = await db.rpc("acd_support_ticket_add_message", {
+      p_ticket_id: activeLabTicketId,
+      p_body: body,
+      p_is_internal: false
+    });
+    if (error) throw error;
+    $("labThreadReplyInput").value = "";
+    await openLabSupportThread(activeLabTicketId);
+  } catch (e) {
+    alert("Reply error: " + e.message);
+  } finally {
+    btn.disabled = false;
+  }
+});
+
 async function init() {
   try {
     await window.ACDOfflineDB.open();
@@ -1574,6 +2341,7 @@ async function init() {
   }
 
   user = session.user;
+  window.acdCurrentUserId = user.id;
   await deviceHeartbeat();
   setInterval(deviceHeartbeat, 12000);
   document.addEventListener("visibilitychange", () => {
@@ -1602,7 +2370,7 @@ async function init() {
   }
 
   if (role === "super_admin") {
-    const { data, error } = await db.from("cloud_labs").select("id,name,address,phone").order("name");
+    const { data, error } = await db.from("cloud_labs").select("id,name,address,phone,is_active").order("name");
     if (error) throw error;
     labs = data || [];
     $("labChooser").classList.remove("hidden");
@@ -1611,7 +2379,7 @@ async function init() {
       labs.map(l => '<option value="' + safe(l.id) + '">' + safe(l.name) + "</option>").join("");
     const saved = sessionStorage.getItem("acd_lab_id");
     if (saved && labs.some(l => l.id === saved)) $("labSelect").value = saved;
-    else if (labs.length === 1) $("labSelect").value = labs[0].id;
+    else if (labs.length) $("labSelect").value = labs[0].id;
     setLab($("labSelect").value);
   } else {
     const { data: members, error } = await db
@@ -1635,18 +2403,8 @@ async function init() {
     $("labSelect").value = labId;
   }
 
-  // Populate the separate Super Admin lab selector from the same authorized lab list.
-  // The original ZIP filled #labSelect but left #saLab at its placeholder option.
-  const saLabSelect = $("saLab");
-  if (role === "super_admin" && saLabSelect) {
-    const selectedLabId = labId || sessionStorage.getItem("acd_lab_id") || "";
-    saLabSelect.innerHTML =
-      '<option value="">Select Laboratory</option>' +
-      labs.map(l => '<option value="' + safe(l.id) + '">' + safe(l.name) + '</option>').join("");
-    saLabSelect.value = labs.some(l => l.id === selectedLabId) ? selectedLabId : "";
-  }
-
   await loadCatalogue();
+  await loadLabAnnouncementsBanner();
   if (typeof updateFeatureNavigation === "function") {
     await updateFeatureNavigation();
   }
@@ -1665,6 +2423,8 @@ function setLab(id) {
 
 $("labSelect").onchange = async () => {
   setLab($("labSelect").value);
+  await loadCatalogue();
+  await loadLabAnnouncementsBanner();
   if (typeof updateFeatureNavigation === "function") {
     await updateFeatureNavigation();
   }
@@ -1757,17 +2517,6 @@ $("save").onclick = async () => {
         if (deleteItemsError) {
           throw new Error("पुराने Test Items हट नहीं पाए; Duplicate रोकने के लिए Update रोक दिया गया: " + deleteItemsError.message);
         }
-
-        const { data: remainingItems, error: verifyDeleteError } = await db
-          .from("lab_order_items")
-          .select("id")
-          .eq("order_id", editingOrderId)
-          .eq("lab_id", labId)
-          .in("id", oldItemIds);
-        if (verifyDeleteError) throw verifyDeleteError;
-        if ((remainingItems || []).length) {
-          throw new Error("पुराने Test Items अभी भी मौजूद हैं; Duplicate रोकने के लिए नया डेटा नहीं जोड़ा गया।");
-        }
       }
     } else {
       const { data: p, error: pe } = await db
@@ -1852,6 +2601,7 @@ $("save").onclick = async () => {
   }
 };
 
+/* SAVED REPORTS MODULE */
 let srAllReports = [];
 let srPage = 1;
 const srPageSize = 25;
@@ -2337,7 +3087,7 @@ function srEdit(id) {
           .maybeSingle();
         if (error) throw error;
         if (!updatedRow?.id) {
-          throw new Error("Result ID " + resultId + " अपडेट नहीं हुआ। यह रिपोर्ट जिस Lab में बनी थी, वही Lab चुनें; फिर Refresh करें। RLS UPDATE policy भी जाँचें।");
+          throw new Error("Result ID " + resultId + " अपडेट नहीं हुआ। यह रिपोर्ट जिस Lab में बनी थी, वही Lab चुनें; फिर Refresh करें।");
         }
       }
 
@@ -2433,6 +3183,10 @@ $("nav")
         const isEntry = page === "New Patient Entry";
         const isCatalogue = page === "Test Catalogue";
         const isSavedReports = page === "Saved Reports";
+        const isSampleTracking = page === "Sample Tracking";
+        const isAccounts = page === "Accounts & Expenses";
+        const isInventory = page === "Inventory & Stock";
+        const isLabSupport = page === "Centers, Staff & Support";
         const isDesigner = page === "Lab & Print Setup";
         const isSuperAdmin = page === "Super Admin";
 
@@ -2447,6 +3201,10 @@ $("nav")
         $("entryPage").classList.toggle("hidden", !isEntry);
         $("cataloguePage").classList.toggle("hidden", !isCatalogue);
         $("savedReportsPage").classList.toggle("hidden", !isSavedReports);
+        $("sampleTrackingPage").classList.toggle("hidden", !isSampleTracking);
+        $("accountsPage").classList.toggle("hidden", !isAccounts);
+        $("inventoryPage").classList.toggle("hidden", !isInventory);
+        $("labSupportPage").classList.toggle("hidden", !isLabSupport);
         $("reportDesignerPage").classList.toggle("hidden", !isDesigner);
 
         const saEl = document.getElementById("superAdminCenter");
@@ -2457,11 +3215,31 @@ $("nav")
 
         $("otherPage").classList.toggle(
           "hidden",
-          isEntry || isCatalogue || isSavedReports || isDesigner || isSuperAdmin
+          isEntry || isCatalogue || isSavedReports || isSampleTracking || isAccounts || isInventory || isLabSupport || isDesigner || isSuperAdmin
         );
 
         if (page === "Subscription (Razorpay)") {
           location.href = "subscription.html";
+          return;
+        }
+
+        if (isSampleTracking) {
+          loadSampleTracking();
+          return;
+        }
+
+        if (isAccounts) {
+          loadAccountsModule();
+          return;
+        }
+
+        if (isInventory) {
+          renderInventoryModule();
+          return;
+        }
+
+        if (isLabSupport) {
+          loadCentersStaffSupport();
           return;
         }
 
@@ -2487,7 +3265,7 @@ $("nav")
           return;
         }
 
-        if (!isEntry && !isSavedReports && !isCatalogue && !isDesigner && !isSuperAdmin) {
+        if (!isEntry && !isSavedReports && !isCatalogue && !isSampleTracking && !isAccounts && !isInventory && !isLabSupport && !isDesigner && !isSuperAdmin) {
           $("otherPage").textContent = page + " module active.";
         }
       })
@@ -2508,7 +3286,12 @@ init().catch(e => say("Session/setup error: " + e.message));
 </script>
 
 <script>
-/* ACD BITTU LAB CLOUD — PATHOCLOUD SUPER ADMIN CONTROL CENTER (REAL SUPABASE RPCs) */
+/* ============================================================================
+   ACD BITTU LAB CLOUD — UNIFIED SUPER ADMIN CONTROL CENTER (REAL SUPABASE RPCs)
+   Includes Platform Mode (TEST/LIVE), Lab Feature Visibility, Tenant Management,
+   Memberships/Owner Controls, Billing & Pricing, Device Lock, Master Catalog,
+   Announcements & Credit Ledger, Support Tickets, and Audit Logs.
+   ============================================================================ */
 (function () {
   let saMounted = false;
   let saInitialized = false;
@@ -2518,6 +3301,7 @@ init().catch(e => say("Session/setup error: " + e.message));
     dashboard: null,
     labs: [],
     memberships: [],
+    featureControls: [],
     billingData: null,
     billingPrices: [],
     planPrices: [],
@@ -2546,8 +3330,8 @@ init().catch(e => say("Session/setup error: " + e.message));
   ];
 
   const tabMeta = {
-    overview: ["Dashboard (Overview)", "Platform-wide live metrics, tenant status, and recent audit activity"],
-    labs: ["Labs / Tenants & Workspace", "Manage laboratory active status, owner/membership access, UI modules, and read-only lab workspace"],
+    overview: ["Dashboard (Overview)", "Platform-wide live metrics, TEST/LIVE mode switch, tenant status & recent audit activity"],
+    labs: ["Labs / Tenants & Feature Controls", "Manage laboratory active status, feature visibility, memberships, and read-only workspace"],
     billing: ["Subscriptions & Billing", "Live subscription overview, billing type prices, and plan pricing configuration"],
     security: ["Security & Device Lock", "Active device sessions, bound hardware reset, and force-logout controls"],
     catalog: ["Master Test Catalog", "Global master pathology tests, parameters, and push to individual laboratories"],
@@ -2649,91 +3433,89 @@ init().catch(e => say("Session/setup error: " + e.message));
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     color: #1e293b;
     background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
+    border: 1px solid #dbe3ef;
+    border-radius: 18px;
     overflow: hidden;
-    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
+    box-shadow: 0 10px 30px rgba(15,23,42,.07);
   }
   #superAdminCenter * { box-sizing: border-box; }
-  #superAdminCenter .pc-shell { display: flex; min-height: 760px; position: relative; }
+  #superAdminCenter .pc-shell { display: flex; min-height: 820px; position: relative; }
   #superAdminCenter .pc-sidebar {
-    width: 256px; flex: 0 0 256px; background: #0f172a; color: #cbd5e1;
-    display: flex; flex-direction: column; border-right: 1px solid #1e293b;
+    width: 272px; flex: 0 0 272px;
+    background: linear-gradient(180deg,#0b1224 0%,#111c33 100%);
+    color: #cbd5e1; display: flex; flex-direction: column;
+    border-right: 1px solid #24314a;
   }
   #superAdminCenter .pc-brand {
-    padding: 16px 18px; border-bottom: 1px solid #1e293b;
+    min-height: 76px; padding: 17px 18px;
+    background: rgba(15,23,42,.35);
+    border-bottom: 1px solid rgba(148,163,184,.16);
     display: flex; align-items: center; justify-content: space-between; gap: 10px;
   }
   #superAdminCenter .pc-brand-logo {
-    width: 34px; height: 34px; border-radius: 10px; background: #4f46e5;
+    width: 38px; height: 38px; border-radius: 12px;
+    background: linear-gradient(135deg,#6366f1,#06b6d4);
+    box-shadow: 0 7px 18px rgba(79,70,229,.28);
     color: #fff; font-weight: 700; font-size: 13px; display: grid; place-items: center;
   }
-  #superAdminCenter .pc-nav {
-    padding: 12px 10px; display: flex; flex-direction: column; gap: 4px; flex: 1;
-  }
+  #superAdminCenter .pc-nav { padding: 15px 12px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
   #superAdminCenter .pc-nav-btn {
     width: 100%; border: 0; background: transparent; color: #cbd5e1;
-    padding: 10px 12px; border-radius: 10px; font-size: 12.5px; font-weight: 500;
+    min-height: 42px; padding: 10px 13px; border-radius: 11px;
+    font-size: 12.5px; font-weight: 500;
     display: flex; align-items: center; justify-content: space-between; gap: 8px;
     cursor: pointer; text-align: left; transition: all .15s ease;
   }
-  #superAdminCenter .pc-nav-btn:hover { background: #1e293b; color: #fff; }
-  #superAdminCenter .pc-nav-btn.active { background: #4f46e5; color: #fff; font-weight: 600; }
+  #superAdminCenter .pc-nav-btn:hover:not(.active) { background: rgba(148,163,184,.12); color: #fff; }
+  #superAdminCenter .pc-nav-btn.active {
+    background: linear-gradient(100deg,#4f46e5,#5558e8);
+    box-shadow: 0 5px 14px rgba(79,70,229,.22);
+    color: #fff; font-weight: 600;
+  }
   #superAdminCenter .pc-nav-left { display: flex; align-items: center; gap: 9px; min-width: 0; }
   #superAdminCenter .pc-pill {
     font-size: 11px; padding: 1px 8px; border-radius: 9999px;
     background: #1e293b; color: #cbd5e1; font-weight: 600;
   }
   #superAdminCenter .pc-nav-btn.active .pc-pill { background: rgba(255,255,255,0.2); color: #fff; }
-  #superAdminCenter .pc-side-foot { padding: 12px; border-top: 1px solid #1e293b; }
+  #superAdminCenter .pc-side-foot { padding: 12px; border-top: 1px solid rgba(148,163,184,.16); }
   #superAdminCenter .pc-root-box {
-    background: rgba(30, 41, 59, 0.85); border-radius: 10px; padding: 10px;
-    display: flex; align-items: center; gap: 10px;
+    background: rgba(30,41,59,.72); border: 1px solid rgba(148,163,184,.12);
+    border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 10px;
   }
   #superAdminCenter .pc-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   #superAdminCenter .pc-header {
-    background: #fff; border-bottom: 1px solid #e2e8f0; padding: 14px 20px;
+    min-height: 70px; padding: 16px 24px;
+    background: rgba(255,255,255,.96); border-bottom: 1px solid #e7edf5;
     display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
   }
-  #superAdminCenter .pc-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 16px; }
-  #superAdminCenter .pc-kpi-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(195px, 1fr)); gap: 12px;
+  #superAdminCenter .pc-body { padding: 22px 24px 26px; display: flex; flex-direction: column; gap: 18px; }
+  #superAdminCenter .pc-kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(195px, 1fr)); gap: 12px; }
+  #superAdminCenter .pc-card, #superAdminCenter .pc-card-flush {
+    background: #fff; border: 1px solid #e3eaf3; border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(15,23,42,.035);
   }
-  #superAdminCenter .pc-card {
-    background: #fff; border: 1px solid #e2e8f0; border-radius: 14px;
-    padding: 16px; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
-  }
-  #superAdminCenter .pc-card-flush {
-    background: #fff; border: 1px solid #e2e8f0; border-radius: 14px;
-    overflow: hidden; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
-  }
+  #superAdminCenter .pc-card { padding: 18px; }
+  #superAdminCenter .pc-card-flush { overflow: hidden; }
   #superAdminCenter .pc-card-head {
-    padding: 13px 16px; border-bottom: 1px solid #e2e8f0;
+    padding: 15px 18px; border-bottom: 1px solid #edf1f6;
     display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
   }
-  #superAdminCenter .pc-kpi-label {
-    font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .04em;
-  }
-  #superAdminCenter .pc-kpi-val {
-    font-size: 26px; font-weight: 700; color: #0f172a; margin-top: 6px;
-  }
+  #superAdminCenter .pc-kpi-label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .04em; }
+  #superAdminCenter .pc-kpi-val { font-size: 28px; font-weight: 700; color: #0f172a; margin-top: 6px; letter-spacing: -.035em; }
   #superAdminCenter .pc-kpi-sub { font-size: 11.5px; color: #64748b; margin-top: 4px; }
-  #superAdminCenter .pc-grid-2 {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 16px;
-  }
+  #superAdminCenter .pc-grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 16px; }
   #superAdminCenter .pc-table-wrap { width: 100%; overflow-x: auto; }
   #superAdminCenter table.pc-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
   #superAdminCenter table.pc-table th {
-    background: #f8fafc; color: #475569; font-size: 11px; font-weight: 700;
-    text-transform: uppercase; letter-spacing: .03em; padding: 10px 14px;
+    background: #f7f9fc; color: #475569; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .03em; padding: 12px 15px;
     border-bottom: 1px solid #e2e8f0; text-align: left; white-space: nowrap;
   }
-  #superAdminCenter table.pc-table td {
-    border: 0; border-bottom: 1px solid #f1f5f9; padding: 11px 14px; vertical-align: middle;
-  }
+  #superAdminCenter table.pc-table td { border: 0; border-bottom: 1px solid #f1f5f9; padding: 13px 15px; vertical-align: middle; }
   #superAdminCenter table.pc-table tr:hover td { background: #f8fafc; }
   #superAdminCenter .pc-btn {
-    border: 1px solid transparent; border-radius: 9px; padding: 7px 12px;
+    border: 1px solid transparent; border-radius: 10px; padding: 8px 13px;
     font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex;
     align-items: center; gap: 6px; transition: all .15s;
   }
@@ -2749,11 +3531,8 @@ init().catch(e => say("Session/setup error: " + e.message));
   #superAdminCenter .pc-btn-red { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
   #superAdminCenter .pc-btn-red:hover:not(:disabled) { background: #fee2e2; }
   #superAdminCenter .pc-input, #superAdminCenter .pc-select, #superAdminCenter .pc-textarea {
-    width: 100%; border: 1px solid #cbd5e1; border-radius: 9px; padding: 7px 10px;
+    width: 100%; border: 1px solid #d7e0eb; border-radius: 10px; padding: 9px 11px;
     font-size: 12.5px; color: #0f172a; background: #fff; height: auto;
-  }
-  #superAdminCenter .pc-input:focus, #superAdminCenter .pc-select:focus, #superAdminCenter .pc-textarea:focus {
-    outline: 2px solid #c7d2fe; border-color: #4f46e5;
   }
   #superAdminCenter .pc-tab-pane.hidden { display: none !important; }
   #superAdminCenter .pc-modal-backdrop {
@@ -2765,76 +3544,10 @@ init().catch(e => say("Session/setup error: " + e.message));
     background: #fff; border-radius: 16px; width: min(560px, 100%);
     max-height: 90vh; overflow-y: auto; padding: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.25);
   }
-  #superAdminCenter .pc-mod-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 8px;
-  }
-  #superAdminCenter .pc-mod-item {
-    border: 1px solid #e2e8f0; border-radius: 9px; padding: 9px; font-size: 11.5px; background: #f8fafc;
-  }
-  #superAdminCenter .pc-mod-item label {
-    display: inline-flex; align-items: center; gap: 5px; margin-right: 10px; font-size: 11px; color: #334155;
-  }
+  #superAdminCenter .pc-mod-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 8px; }
+  #superAdminCenter .pc-mod-item { border: 1px solid #e2e8f0; border-radius: 9px; padding: 9px; font-size: 11.5px; background: #f8fafc; }
+  #superAdminCenter .pc-mod-item label { display: inline-flex; align-items: center; gap: 5px; margin-right: 10px; font-size: 11px; color: #334155; }
   #superAdminCenter .pc-mod-item input { width: 14px; height: 14px; }
-
-  /* Reviewed visual refresh aligned with Multi-Lab Pathology SaaS dashboard.
-     Existing IDs, handlers and live Supabase data bindings remain unchanged. */
-  #superAdminCenter {
-    border: 1px solid #dbe3ef;
-    border-radius: 18px;
-    background: #f8fafc;
-    box-shadow: 0 10px 30px rgba(15,23,42,.07);
-  }
-  #superAdminCenter .pc-shell { min-height: 820px; }
-  #superAdminCenter .pc-sidebar {
-    width: 272px; flex-basis: 272px;
-    background: linear-gradient(180deg,#0b1224 0%,#111c33 100%);
-    border-right: 1px solid #24314a;
-  }
-  #superAdminCenter .pc-brand {
-    min-height: 76px; padding: 17px 18px;
-    background: rgba(15,23,42,.35);
-    border-bottom-color: rgba(148,163,184,.16);
-  }
-  #superAdminCenter .pc-brand-logo {
-    width: 38px; height: 38px; border-radius: 12px;
-    background: linear-gradient(135deg,#6366f1,#06b6d4);
-    box-shadow: 0 7px 18px rgba(79,70,229,.28);
-  }
-  #superAdminCenter .pc-nav { padding: 15px 12px; gap: 6px; }
-  #superAdminCenter .pc-nav-btn {
-    min-height: 42px; padding: 10px 13px; border-radius: 11px;
-    font-size: 12.5px; letter-spacing: .005em;
-  }
-  #superAdminCenter .pc-nav-btn.active {
-    background: linear-gradient(100deg,#4f46e5,#5558e8);
-    box-shadow: 0 5px 14px rgba(79,70,229,.22);
-  }
-  #superAdminCenter .pc-nav-btn:hover:not(.active) { background: rgba(148,163,184,.12); }
-  #superAdminCenter .pc-side-foot { border-top-color: rgba(148,163,184,.16); }
-  #superAdminCenter .pc-root-box {
-    background: rgba(30,41,59,.72); border: 1px solid rgba(148,163,184,.12);
-    border-radius: 12px; padding: 12px;
-  }
-  #superAdminCenter .pc-header {
-    min-height: 70px; padding: 16px 24px;
-    background: rgba(255,255,255,.96); border-bottom-color: #e7edf5;
-  }
-  #superAdminCenter .pc-body { padding: 22px 24px 26px; gap: 18px; }
-  #superAdminCenter .pc-card,
-  #superAdminCenter .pc-card-flush {
-    border-color: #e3eaf3; border-radius: 16px;
-    box-shadow: 0 2px 8px rgba(15,23,42,.035);
-  }
-  #superAdminCenter .pc-card { padding: 18px; }
-  #superAdminCenter .pc-card-head { padding: 15px 18px; border-bottom-color: #edf1f6; }
-  #superAdminCenter .pc-kpi-val { font-size: 28px; letter-spacing: -.035em; }
-  #superAdminCenter table.pc-table th { background: #f7f9fc; padding: 12px 15px; }
-  #superAdminCenter table.pc-table td { padding: 13px 15px; }
-  #superAdminCenter .pc-btn { border-radius: 10px; padding: 8px 13px; }
-  #superAdminCenter .pc-input, #superAdminCenter .pc-select,
-  #superAdminCenter .pc-textarea { border-color: #d7e0eb; border-radius: 10px; padding: 9px 11px; }
-  #superAdminCenter .pc-tab-pane { animation: saReviewedFade .18s ease-out; }
-  @keyframes saReviewedFade { from { opacity: .65; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
   #superAdminCenter .pc-drawer-btn { display: none; }
   @media (max-width: 860px) {
     #superAdminCenter .pc-body { padding: 14px; }
@@ -2849,17 +3562,14 @@ init().catch(e => say("Session/setup error: " + e.message));
   }
 </style>
 
-<!-- Backward-compatible hidden selector for platform-mode.js -->
 <select id="saLab" class="hidden" aria-hidden="true"></select>
 
-<!-- Live Toast -->
 <div id="saToast" class="hidden" style="position:fixed;bottom:18px;right:18px;z-index:10000;background:#0f172a;color:#fff;padding:11px 16px;border-radius:12px;border:1px solid #334155;box-shadow:0 10px 25px rgba(0,0,0,0.25);display:flex;align-items:center;gap:10px;font-size:12.5px">
   <span id="saToastDot" style="width:9px;height:9px;border-radius:50%;background:#34d399;flex:none"></span>
   <span id="saToastMsg">Ready</span>
 </div>
 
 <div class="pc-shell">
-  <!-- PathoCloud Dark Slate Sidebar -->
   <aside class="pc-sidebar" id="pcSidebar">
     <div class="pc-brand">
       <div style="display:flex;align-items:center;gap:10px">
@@ -2877,7 +3587,7 @@ init().catch(e => say("Session/setup error: " + e.message));
         <span class="pc-nav-left"><span>⊞</span><span>Dashboard (Overview)</span></span>
       </button>
       <button type="button" class="pc-nav-btn" data-sa-tab="labs">
-        <span class="pc-nav-left"><span>🏥</span><span>Labs / Tenants</span></span>
+        <span class="pc-nav-left"><span>🏥</span><span>Labs &amp; Feature Controls</span></span>
         <span class="pc-pill" id="saBadgeLabs">0</span>
       </button>
       <button type="button" class="pc-nav-btn" data-sa-tab="billing">
@@ -2914,14 +3624,13 @@ init().catch(e => say("Session/setup error: " + e.message));
     </div>
   </aside>
 
-  <!-- Main Control Plane -->
   <div class="pc-main">
     <header class="pc-header">
       <div style="display:flex;align-items:center;gap:10px">
         <button type="button" class="pc-drawer-btn pc-btn pc-btn-light" id="pcOpenDrawer">☰</button>
         <div>
           <h2 id="pcPageTitle" style="margin:0;font-size:17px;font-weight:700;color:#0f172a">Dashboard (Overview)</h2>
-          <div id="pcPageSub" style="font-size:11.5px;color:#64748b">Platform-wide live metrics, tenant status, and recent audit activity</div>
+          <div id="pcPageSub" style="font-size:11.5px;color:#64748b">Platform-wide live metrics, TEST/LIVE mode switch, tenant status &amp; recent audit activity</div>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
@@ -2932,8 +3641,25 @@ init().catch(e => say("Session/setup error: " + e.message));
 
     <div class="pc-body">
 
-      <!-- 1. OVERVIEW -->
+      <!-- 1. OVERVIEW + PLATFORM MODE (TEST / LIVE) -->
       <div id="sa-tab-overview" class="pc-tab-pane" style="display:flex;flex-direction:column;gap:16px">
+        <!-- Merged Platform Mode Switcher -->
+        <div class="pc-card" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-left:4px solid #4f46e5">
+          <div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <strong style="font-size:14px;color:#0f172a">Platform Mode Control (TEST vs LIVE)</strong>
+              <span id="saPlatformModeBadge">Loading…</span>
+            </div>
+            <div id="saPlatformModeHint" style="font-size:11.5px;color:#64748b;margin-top:4px">
+              TEST mode allows free access without payment gate. Switching to LIVE mode enforces trials/subscriptions and resumes eligible paused trials.
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button type="button" class="pc-btn pc-btn-light" id="saSetTestModeBtn">Set TEST Mode</button>
+            <button type="button" class="pc-btn pc-btn-green" id="saSetLiveModeBtn">Set LIVE Mode</button>
+          </div>
+        </div>
+
         <div class="pc-kpi-grid" id="saOverviewKpis"></div>
 
         <div class="pc-grid-2">
@@ -2955,7 +3681,7 @@ init().catch(e => say("Session/setup error: " + e.message));
         </div>
       </div>
 
-      <!-- 2. LABS / TENANTS & WORKSPACE -->
+      <!-- 2. LABS / TENANTS, FEATURE VISIBILITY & WORKSPACE -->
       <div id="sa-tab-labs" class="pc-tab-pane hidden" style="display:flex;flex-direction:column;gap:16px">
         <!-- Read-Only Lab Workspace Inspector -->
         <div id="saLabWorkspacePanel" class="pc-card hidden" style="border:2px solid #4f46e5">
@@ -3005,7 +3731,36 @@ init().catch(e => say("Session/setup error: " + e.message));
           </div>
         </div>
 
-        <!-- Lab Owners & Memberships Status Control -->
+        <!-- Merged Lab Feature Visibility Controls (from platform-mode.js) -->
+        <div class="pc-card-flush">
+          <div class="pc-card-head">
+            <div>
+              <strong style="font-size:14px;color:#0f172a">Master Control — Per-Lab Feature Visibility &amp; Customization</strong>
+              <div style="font-size:11.5px;color:#64748b">Show/hide modules for a laboratory and control whether its Lab Admin can customize settings</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <select class="pc-select" id="saFeatureLabSelect" style="width:230px"></select>
+              <button type="button" class="pc-btn pc-btn-light" id="saLoadFeatureControlsBtn">Load Features</button>
+            </div>
+          </div>
+          <div class="pc-table-wrap">
+            <table class="pc-table">
+              <thead>
+                <tr>
+                  <th>Feature Module</th>
+                  <th>Visible to Lab</th>
+                  <th>Lab Admin Can Customize</th>
+                  <th style="text-align:right">Save</th>
+                </tr>
+              </thead>
+              <tbody id="saFeatureControlsBody">
+                <tr><td colspan="4" style="text-align:center;color:#94a3b8;padding:16px">Select a laboratory above to manage feature controls.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Lab Memberships & Owner Account Controls -->
         <div class="pc-card-flush">
           <div class="pc-card-head">
             <div>
@@ -3029,12 +3784,12 @@ init().catch(e => say("Session/setup error: " + e.message));
           </div>
         </div>
 
-        <!-- Global & Per-Lab UI Module Visibility Controls -->
+        <!-- Global & Per-Lab UI Module Visibility Config -->
         <div class="pc-card">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px">
             <div>
-              <strong style="font-size:14px;color:#0f172a">Lab UI Module Visibility Controls</strong>
-              <div style="font-size:11.5px;color:#64748b">Control allowed and visible modules globally or per laboratory</div>
+              <strong style="font-size:14px;color:#0f172a">Lab UI JSON Visibility Config</strong>
+              <div style="font-size:11.5px;color:#64748b">Control allowed and visible UI sections globally or per laboratory</div>
             </div>
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
               <select class="pc-select" id="saUiLabSelect" style="width:230px"></select>
@@ -3061,7 +3816,6 @@ init().catch(e => say("Session/setup error: " + e.message));
         <div class="pc-kpi-grid" id="saBillingKpis"></div>
 
         <div class="pc-grid-2">
-          <!-- Billing Type Prices -->
           <div class="pc-card-flush">
             <div class="pc-card-head">
               <div>
@@ -3084,7 +3838,6 @@ init().catch(e => say("Session/setup error: " + e.message));
             </div>
           </div>
 
-          <!-- Plan Prices -->
           <div class="pc-card-flush">
             <div class="pc-card-head">
               <div>
@@ -3109,7 +3862,6 @@ init().catch(e => say("Session/setup error: " + e.message));
           </div>
         </div>
 
-        <!-- Real Billing Records / Subscriptions Table -->
         <div class="pc-card-flush">
           <div class="pc-card-head">
             <strong style="font-size:14px;color:#0f172a">Laboratory Subscriptions &amp; Billing Records</strong>
@@ -3119,7 +3871,7 @@ init().catch(e => say("Session/setup error: " + e.message));
             <table class="pc-table">
               <thead>
                 <tr>
-                  <th>Laboratory</th>
+                  <th>Laboratory / Owner</th>
                   <th>Plan / Type</th>
                   <th>Amount</th>
                   <th>Status</th>
@@ -3195,7 +3947,6 @@ init().catch(e => say("Session/setup error: " + e.message));
       <!-- 6. COMMUNICATION & CREDIT LEDGER -->
       <div id="sa-tab-comms" class="pc-tab-pane hidden" style="display:flex;flex-direction:column;gap:16px">
         <div class="pc-grid-2">
-          <!-- Publish Announcement Form -->
           <div class="pc-card" style="display:flex;flex-direction:column;gap:10px">
             <strong style="font-size:14px;color:#0f172a">Publish Platform / Lab Announcement</strong>
             <div>
@@ -3235,12 +3986,11 @@ init().catch(e => say("Session/setup error: " + e.message));
             </div>
           </div>
 
-          <!-- Message Credit Ledger Balances -->
           <div class="pc-card-flush">
             <div class="pc-card-head">
               <div>
                 <strong style="font-size:14px;color:#0f172a">Message Credit Ledger Balances</strong>
-                <div style="font-size:11px;color:#64748b">Accounting ledger balances per lab (not an external SMS/WhatsApp sender)</div>
+                <div style="font-size:11px;color:#64748b">Accounting ledger balances per lab</div>
               </div>
               <button type="button" class="pc-btn pc-btn-indigo" id="saOpenCreditAdjustModalBtn">± Adjust Ledger</button>
             </div>
@@ -3259,7 +4009,6 @@ init().catch(e => say("Session/setup error: " + e.message));
           </div>
         </div>
 
-        <!-- Published Announcements List -->
         <div class="pc-card-flush">
           <div class="pc-card-head">
             <strong style="font-size:14px;color:#0f172a">Announcements History &amp; Publish Status</strong>
@@ -3285,7 +4034,6 @@ init().catch(e => say("Session/setup error: " + e.message));
       <!-- 7. SUPPORT & TICKETS -->
       <div id="sa-tab-support" class="pc-tab-pane hidden" style="display:flex;flex-direction:column;gap:16px">
         <div class="pc-grid-2">
-          <!-- Ticket List -->
           <div class="pc-card-flush">
             <div class="pc-card-head">
               <strong style="font-size:14px;color:#0f172a">Laboratory Support Tickets</strong>
@@ -3315,7 +4063,6 @@ init().catch(e => say("Session/setup error: " + e.message));
             </div>
           </div>
 
-          <!-- Ticket Thread & Internal Notes -->
           <div class="pc-card" id="saTicketThreadCard" style="display:flex;flex-direction:column;gap:10px">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;border-bottom:1px solid #e2e8f0;padding-bottom:10px">
               <div>
@@ -3530,6 +4277,7 @@ init().catch(e => say("Session/setup error: " + e.message));
     document.getElementById("pcSidebar")?.classList.remove("open");
     loadActiveSaTabData(tabKey);
   }
+  window.switchSuperAdminTab = switchSaTab;
 
   window.onOpenSuperAdminCenter = async function () {
     if (role !== "super_admin") return;
@@ -3545,7 +4293,7 @@ init().catch(e => say("Session/setup error: " + e.message));
   async function loadActiveSaTabData(tabKey) {
     try {
       if (tabKey === "overview") {
-        await Promise.all([loadDashboardOverview(), loadAuditLogs()]);
+        await Promise.all([loadPlatformModeControl(), loadDashboardOverview(), loadAuditLogs()]);
       } else if (tabKey === "labs") {
         await loadLabsAndMemberships();
       } else if (tabKey === "billing") {
@@ -3573,17 +4321,17 @@ init().catch(e => say("Session/setup error: " + e.message));
     const opts = labList.map(l => `<option value="${esc(l.id)}">${esc(l.name)}</option>`).join("");
     const placeholder = `<option value="">Select Laboratory</option>` + opts;
 
-    ["saLab", "saUiLabSelect", "mPushTargetLab", "mCreditLab"].forEach(id => {
+    ["saLab", "saFeatureLabSelect", "saUiLabSelect", "mPushTargetLab", "mCreditLab"].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.innerHTML = placeholder;
     });
 
-    const selectedLabId = labId || sessionStorage.getItem("acd_lab_id") || "";
+    const selectedLabId = labId || sessionStorage.getItem("acd_lab_id") || (labList[0]?.id || "");
     if (selectedLabId && labList.some(l => l.id === selectedLabId)) {
-      const saLabEl = document.getElementById("saLab");
-      const uiLabEl = document.getElementById("saUiLabSelect");
-      if (saLabEl) saLabEl.value = selectedLabId;
-      if (uiLabEl) uiLabEl.value = selectedLabId;
+      ["saLab", "saFeatureLabSelect", "saUiLabSelect"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = selectedLabId;
+      });
     }
 
     const annTarget = document.getElementById("saAnnTargetLab");
@@ -3596,8 +4344,40 @@ init().catch(e => say("Session/setup error: " + e.message));
   }
 
   /* =========================================================
-     1. DASHBOARD OVERVIEW
+     1. DASHBOARD OVERVIEW + PLATFORM MODE (TEST / LIVE)
   ========================================================= */
+  async function loadPlatformModeControl() {
+    const badge = document.getElementById("saPlatformModeBadge");
+    if (!badge) return;
+    try {
+      const { data, error } = await db.rpc("acd_get_platform_mode");
+      if (error) throw error;
+      const mode = String(data?.mode || "test").toLowerCase();
+      badge.innerHTML = badgeHtml(mode.toUpperCase() + " MODE", mode === "live" ? "green" : "amber");
+    } catch (err) {
+      badge.innerHTML = badgeHtml("ERROR", "red");
+    }
+  }
+
+  async function changePlatformMode(mode) {
+    if (mode === "live" && !confirm("Switch platform to LIVE MODE? Eligible Lab Owner trials and Razorpay subscription checks will become active.")) return;
+    if (mode === "test" && !confirm("Switch platform to TEST MODE?")) return;
+    const testBtn = document.getElementById("saSetTestModeBtn");
+    const liveBtn = document.getElementById("saSetLiveModeBtn");
+    testBtn.disabled = liveBtn.disabled = true;
+    try {
+      const { data, error } = await db.rpc("acd_superadmin_set_platform_mode", { p_mode: mode });
+      if (error) throw error;
+      const resumed = Number(data?.resumed_trials || 0);
+      saToast(`Platform switched to ${mode.toUpperCase()} MODE` + (resumed ? ` (${resumed} trials resumed)` : ""));
+      await loadPlatformModeControl();
+    } catch (err) {
+      saToast("Mode update error: " + err.message, true);
+    } finally {
+      testBtn.disabled = liveBtn.disabled = false;
+    }
+  }
+
   async function loadDashboardOverview() {
     setBannerStatus("Loading dashboard overview...");
     const [dashRes, labsRes] = await Promise.all([
@@ -3667,39 +4447,99 @@ init().catch(e => say("Session/setup error: " + e.message));
   }
 
   /* =========================================================
-     2. LABS, MEMBERSHIPS, UI CONFIG & WORKSPACE
+     2. LABS, FEATURE VISIBILITY, MEMBERSHIPS & WORKSPACE
   ========================================================= */
   async function loadLabsAndMemberships() {
-    setBannerStatus("Loading laboratories and memberships...");
-    const [labsRes, memRes] = await Promise.all([
-      db.from("cloud_labs").select("id,name,address,phone,is_active,created_at").order("name"),
-      db.from("cloud_memberships").select("id,lab_id,user_id,role,status,is_active,profiles(full_name,email,account_status,is_active)").order("created_at", { ascending: false })
-    ]);
-
+    setBannerStatus("Loading laboratories, feature controls & memberships...");
+    const labsRes = await db.from("cloud_labs").select("id,name,address,phone,is_active,created_at").order("name");
     if (labsRes.error) throw labsRes.error;
     saState.labs = labsRes.data || [];
     labs = saState.labs;
     populateLabDropdowns();
 
-    if (!memRes.error) {
-      saState.memberships = memRes.data || [];
-    } else {
-      const fallbackMem = await db.from("cloud_memberships").select("id,lab_id,user_id,role,is_active");
-      const rawMems = fallbackMem.data || [];
-      const userIds = [...new Set(rawMems.map(m => m.user_id).filter(Boolean))];
-      let profMap = new Map();
-      if (userIds.length) {
-        const profRes = await db.from("profiles").select("id,full_name,email,account_status,is_active").in("id", userIds);
-        if (!profRes.error && Array.isArray(profRes.data)) {
-          profMap = new Map(profRes.data.map(p => [p.id, p]));
-        }
+    // Load memberships safely without requesting nonexistent columns on profiles
+    const memRes = await db
+      .from("cloud_memberships")
+      .select("id,lab_id,user_id,role,status,is_active,created_at")
+      .order("created_at", { ascending: false });
+
+    const rawMems = memRes.data || [];
+    const userIds = [...new Set(rawMems.map(m => m.user_id).filter(Boolean))];
+    let profMap = new Map();
+    if (userIds.length) {
+      const profRes = await db.from("profiles").select("id,full_name,platform_role").in("id", userIds);
+      if (!profRes.error && Array.isArray(profRes.data)) {
+        profMap = new Map(profRes.data.map(p => [p.id, p]));
       }
-      saState.memberships = rawMems.map(m => ({ ...m, profiles: profMap.get(m.user_id) || {} }));
     }
+    saState.memberships = rawMems.map(m => ({ ...m, profiles: profMap.get(m.user_id) || {} }));
 
     renderLabsTable();
     renderMembershipsTable();
+
+    const selectedFeatureLab = document.getElementById("saFeatureLabSelect")?.value;
+    if (selectedFeatureLab) {
+      await loadFeatureControlsForLab(selectedFeatureLab);
+    }
+
     setBannerStatus("Laboratories & memberships loaded");
+  }
+
+  async function loadFeatureControlsForLab(targetLabId) {
+    const tbody = document.getElementById("saFeatureControlsBody");
+    if (!targetLabId) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:#94a3b8;padding:16px">Select a laboratory above.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:#64748b;padding:16px">Loading feature controls...</td></tr>`;
+    try {
+      const { data, error } = await db.rpc("acd_lab_get_feature_controls", { p_lab_id: targetLabId });
+      if (error) throw error;
+      const list = Array.isArray(data) ? data : [];
+      saState.featureControls = list;
+
+      tbody.innerHTML = list.length
+        ? list.map(item => `
+          <tr data-f-key="${esc(item.feature_key)}">
+            <td>
+              <strong>${esc(item.feature_name || item.feature_key)}</strong><br>
+              <small style="color:#64748b;font-family:monospace">${esc(item.feature_key)}</small>
+            </td>
+            <td><input type="checkbox" data-f-visible ${item.is_visible ? "checked" : ""} style="width:17px;height:17px"></td>
+            <td><input type="checkbox" data-f-custom ${item.lab_admin_can_customize ? "checked" : ""} style="width:17px;height:17px"></td>
+            <td style="text-align:right"><button type="button" class="pc-btn pc-btn-green" data-f-save>Save</button></td>
+          </tr>
+        `).join("")
+        : `<tr><td colspan="4" style="text-align:center;color:#94a3b8;padding:16px">No features found in catalogue.</td></tr>`;
+
+      tbody.querySelectorAll("[data-f-save]").forEach(btn => {
+        btn.onclick = async () => {
+          const row = btn.closest("tr");
+          const fKey = row.dataset.fKey;
+          const visible = !!row.querySelector("[data-f-visible]")?.checked;
+          const custom = !!row.querySelector("[data-f-custom]")?.checked;
+          const existingSettings = saState.featureControls.find(x => x.feature_key === fKey)?.settings || {};
+          btn.disabled = true;
+          try {
+            const { error: saveErr } = await db.rpc("acd_superadmin_set_lab_feature", {
+              p_lab_id: targetLabId,
+              p_feature_key: fKey,
+              p_is_visible: visible,
+              p_lab_admin_can_customize: custom,
+              p_settings: existingSettings
+            });
+            if (saveErr) throw saveErr;
+            saToast(`Feature "${fKey}" updated`);
+          } catch (err) {
+            saToast("Feature save error: " + err.message, true);
+          } finally {
+            btn.disabled = false;
+          }
+        };
+      });
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:#b42318;padding:16px">${esc(err.message)}</td></tr>`;
+    }
   }
 
   function renderLabsTable() {
@@ -3769,11 +4609,10 @@ init().catch(e => say("Session/setup error: " + e.message));
       ? saState.memberships.map(m => {
           const prof = m.profiles || {};
           const mStatus = m.status || (m.is_active !== false ? "active" : "suspended");
-          const accStatus = prof.account_status || (prof.is_active !== false ? "active" : "suspended");
           return `
             <tr>
               <td>
-                <div style="font-weight:600;color:#0f172a">${esc(prof.full_name || prof.email || m.user_id)}</div>
+                <div style="font-weight:600;color:#0f172a">${esc(prof.full_name || m.user_id)}</div>
                 <div style="font-size:10.5px;color:#64748b;font-family:monospace">${esc(m.user_id)}</div>
               </td>
               <td>${esc(labMap.get(m.lab_id) || m.lab_id)}</td>
@@ -3791,9 +4630,9 @@ init().catch(e => say("Session/setup error: " + e.message));
               <td>
                 <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">
                   <select class="pc-select" data-acc-status-sel="${esc(m.user_id)}" style="width:110px;padding:4px 7px;font-size:11.5px">
-                    <option value="active" ${accStatus === "active" ? "selected" : ""}>active</option>
-                    <option value="suspended" ${accStatus === "suspended" ? "selected" : ""}>suspended</option>
-                    <option value="blocked" ${accStatus === "blocked" ? "selected" : ""}>blocked</option>
+                    <option value="active" selected>active</option>
+                    <option value="suspended">suspended</option>
+                    <option value="blocked">blocked</option>
                   </select>
                   <button type="button" class="pc-btn pc-btn-light" data-save-acc="${esc(m.user_id)}" style="padding:4px 8px;font-size:11px">Account</button>
                   <button type="button" class="pc-btn pc-btn-green" data-owner-active="${esc(m.user_id)}" data-val="true" style="padding:4px 8px;font-size:11px">Owner ON</button>
@@ -4056,7 +4895,7 @@ init().catch(e => say("Session/setup error: " + e.message));
     document.getElementById("saBillingKpis").innerHTML = [
       { label: "Total Revenue / Billed", val: money(bm.total_revenue ?? bm.revenue_total ?? bm.mrr ?? 0), sub: "From Supabase billing data" },
       { label: "Active Subscriptions", val: bm.active_subscriptions ?? records.filter(r => (r.status || "").toLowerCase() === "active").length, sub: "Paid / active tenants" },
-      { label: "Trial / Expiring", val: bm.trial_subscriptions ?? bm.expiring_count ?? records.filter(r => ["trial", "grace", "past_due"].includes((r.status || "").toLowerCase())).length, sub: "Monitoring window" }
+      { label: "Trial / Expiring", val: bm.trial_subscriptions ?? bm.expiring_count ?? records.filter(r => ["trial", "grace", "past_due", "payment_pending"].includes((r.status || "").toLowerCase())).length, sub: "Monitoring window" }
     ].map(k => `
       <div class="pc-card">
         <div class="pc-kpi-label">${esc(k.label)}</div>
@@ -4072,11 +4911,11 @@ init().catch(e => say("Session/setup error: " + e.message));
     recBody.innerHTML = records.length
       ? records.map(r => `
         <tr>
-          <td><strong>${esc(r.lab_name || r.name || r.lab_id || "—")}</strong></td>
+          <td><strong>${esc(r.lab_name || r.owner_name || r.name || r.lab_id || r.owner_user_id || "—")}</strong></td>
           <td>${esc(r.plan_code || r.billing_type || r.plan || "—")}</td>
-          <td><strong>${money(r.amount ?? r.price_rupees ?? r.total_amount ?? 0)}</strong></td>
-          <td>${badgeHtml(r.status || "—", (r.status || "").toLowerCase() === "active" || (r.status || "").toLowerCase() === "paid" ? "green" : "amber")}</td>
-          <td style="font-size:11.5px;color:#64748b">${esc(r.current_period_end || r.created_at || r.expiry || "—")}</td>
+          <td><strong>${money(r.amount ?? (r.amount_paise ? r.amount_paise / 100 : (r.price_rupees ?? r.total_amount ?? 0)))}</strong></td>
+          <td>${badgeHtml(r.status || r.payment_status || "—", ["active", "paid"].includes((r.status || r.payment_status || "").toLowerCase()) ? "green" : "amber")}</td>
+          <td style="font-size:11.5px;color:#64748b">${esc(fmtDate(r.current_period_end || r.paid_at || r.created_at || r.expiry))}</td>
         </tr>
       `).join("")
       : `<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:18px">No subscription or billing records returned.</td></tr>`;
@@ -4089,8 +4928,8 @@ init().catch(e => say("Session/setup error: " + e.message));
     tbody.innerHTML = saState.billingPrices.length
       ? saState.billingPrices.map((p, idx) => `
         <tr>
-          <td><input type="text" class="pc-input" data-bp-type="${idx}" value="${esc(p.billing_type || "")}" placeholder="e.g. monthly"></td>
-          <td><input type="number" class="pc-input" data-bp-price="${idx}" value="${esc(p.price_rupees ?? p.price ?? 0)}" min="0" step="1"></td>
+          <td><input type="text" class="pc-input" data-bp-type="${idx}" value="${esc(p.billing_type || "")}" placeholder="e.g. first_registration"></td>
+          <td><input type="number" class="pc-input" data-bp-price="${idx}" value="${esc(p.amount_rupees ?? p.price_rupees ?? p.price ?? 0)}" min="0" step="1"></td>
           <td style="text-align:right">
             <button type="button" class="pc-btn pc-btn-green" data-save-bp="${idx}">Save</button>
           </td>
@@ -4127,7 +4966,7 @@ init().catch(e => say("Session/setup error: " + e.message));
     tbody.innerHTML = saState.planPrices.length
       ? saState.planPrices.map((p, idx) => `
         <tr>
-          <td><input type="text" class="pc-input" data-pp-code="${idx}" value="${esc(p.plan_code || "")}" placeholder="e.g. PRO_MONTHLY"></td>
+          <td><input type="text" class="pc-input" data-pp-code="${idx}" value="${esc(p.plan_code || "")}" placeholder="e.g. one_center"></td>
           <td><input type="number" class="pc-input" data-pp-price="${idx}" value="${esc(p.price_rupees ?? p.price ?? 0)}" min="0" step="1"></td>
           <td><input type="checkbox" data-pp-active="${idx}" ${p.is_active !== false ? "checked" : ""} style="width:16px;height:16px"></td>
           <td style="text-align:right">
@@ -4179,21 +5018,20 @@ init().catch(e => say("Session/setup error: " + e.message));
     tbody.innerHTML = list.length
       ? list.map(s => {
           const uid = s.user_id || s.id;
-          const isOnline = s.is_active !== false && (s.status || "active") !== "revoked";
+          const isOnline = s.status === "online" || (s.is_active !== false && s.status !== "revoked" && s.status !== "offline");
           return `
             <tr>
               <td>
                 <div style="font-weight:700;color:#0f172a">${esc(s.full_name || s.user_email || s.email || uid)}</div>
-                <div style="font-size:10.5px;color:#64748b;font-family:monospace">${esc(uid)}</div>
+                <div style="font-size:10.5px;color:#64748b">${esc(s.email || "")} • ${esc(s.role || s.platform_role || "Lab Owner")}</div>
               </td>
-              <td>${esc(s.lab_name || s.lab_id || "—")}</td>
+              <td>${esc((s.lab_names || []).join(", ") || s.lab_name || s.lab_id || "—")}</td>
               <td>
                 <div style="font-family:monospace;font-size:11px;color:#334155">${esc(s.device_id || s.bound_device_id || "—")}</div>
-                <div style="font-size:10.5px;color:#64748b">${esc(s.device_label || s.user_agent || "")}</div>
               </td>
               <td>
-                ${badgeHtml(s.status || (isOnline ? "Active" : "Inactive"), isOnline ? "green" : "amber")}
-                <div style="font-size:10.5px;color:#64748b;margin-top:3px">${fmtDate(s.last_seen_at || s.updated_at)}</div>
+                ${badgeHtml((s.status || (isOnline ? "ONLINE" : "OFFLINE")).toUpperCase(), isOnline ? "green" : "amber")}
+                <div style="font-size:10.5px;color:#64748b;margin-top:3px">${fmtDate(s.heartbeat_at || s.last_seen_at || s.updated_at)}</div>
               </td>
               <td style="text-align:right;white-space:nowrap">
                 <button type="button" class="pc-btn pc-btn-light" data-reset-dev="${esc(uid)}">Reset Device Lock</button>
@@ -4384,7 +5222,7 @@ init().catch(e => say("Session/setup error: " + e.message));
   }
 
   /* =========================================================
-     7. SUPPORT & TICKETS (INTERNAL NOTES PROTECTED)
+     7. SUPPORT & TICKETS
   ========================================================= */
   async function loadSupportModule() {
     setBannerStatus("Loading support tickets...");
@@ -4542,6 +5380,15 @@ init().catch(e => say("Session/setup error: " + e.message));
 
     document.getElementById("saRefreshActiveTab").onclick = () => loadActiveSaTabData(activeSaTab);
 
+    // Platform Mode Switcher
+    document.getElementById("saSetTestModeBtn").onclick = () => changePlatformMode("test");
+    document.getElementById("saSetLiveModeBtn").onclick = () => changePlatformMode("live");
+
+    // Feature Visibility Controls
+    document.getElementById("saFeatureLabSelect").onchange = e => loadFeatureControlsForLab(e.target.value);
+    document.getElementById("saLoadFeatureControlsBtn").onclick = () =>
+      loadFeatureControlsForLab(document.getElementById("saFeatureLabSelect").value);
+
     document.getElementById("saLabFilterInput").oninput = renderLabsTable;
     document.getElementById("saReloadLabsBtn").onclick = loadLabsAndMemberships;
     document.getElementById("saCloseWorkspaceBtn").onclick = () => {
@@ -4552,16 +5399,14 @@ init().catch(e => say("Session/setup error: " + e.message));
     document.getElementById("saWsOrdersBtn").onclick = () => loadWorkspaceRows("orders");
     document.getElementById("saWsSearchInput").oninput = () => loadWorkspaceRows(saState.workspaceSection);
 
-    // Sync top labSelect with Super Admin UI lab selector
     document.getElementById("labSelect")?.addEventListener("change", () => {
       const val = document.getElementById("labSelect").value;
-      const saLabEl = document.getElementById("saLab");
-      const uiLabEl = document.getElementById("saUiLabSelect");
-      if (saLabEl) saLabEl.value = val;
-      if (uiLabEl && val) uiLabEl.value = val;
+      ["saLab", "saFeatureLabSelect", "saUiLabSelect"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && val) el.value = val;
+      });
     });
 
-    // UI Module Visibility Config
     document.getElementById("saLoadUiConfigBtn").onclick = async () => {
       const targetId = document.getElementById("saUiLabSelect").value;
       if (!targetId) return saToast("Select a laboratory first", true);
@@ -4611,9 +5456,8 @@ init().catch(e => say("Session/setup error: " + e.message));
       }
     };
 
-    // Billing add row & reload
     document.getElementById("saAddBillingPriceRowBtn").onclick = () => {
-      saState.billingPrices.push({ billing_type: "", price_rupees: 0 });
+      saState.billingPrices.push({ billing_type: "", amount_rupees: 0 });
       renderBillingPriceRows();
     };
     document.getElementById("saAddPlanPriceRowBtn").onclick = () => {
@@ -4622,10 +5466,8 @@ init().catch(e => say("Session/setup error: " + e.message));
     };
     document.getElementById("saReloadBillingBtn").onclick = loadBillingModule;
 
-    // Security reload
     document.getElementById("saReloadDevicesBtn").onclick = loadSecurityModule;
 
-    // Catalog search, modal, push
     document.getElementById("saCatalogSearchInput").oninput = renderMasterCatalogTable;
     document.getElementById("saOpenCreateTestModalBtn").onclick = () => {
       document.getElementById("mParamRowsContainer").innerHTML = "";
@@ -4698,7 +5540,6 @@ init().catch(e => say("Session/setup error: " + e.message));
       }
     };
 
-    // Communication & Credit Ledger
     document.getElementById("saPublishAnnBtn").onclick = async () => {
       const title = document.getElementById("saAnnTitle").value.trim();
       const message = document.getElementById("saAnnMessage").value.trim();
@@ -4767,7 +5608,6 @@ init().catch(e => say("Session/setup error: " + e.message));
       }
     };
 
-    // Support Tickets
     document.getElementById("saTicketStatusFilter").onchange = loadSupportModule;
     document.getElementById("saReloadTicketsBtn").onclick = loadSupportModule;
 
@@ -4817,11 +5657,9 @@ init().catch(e => say("Session/setup error: " + e.message));
       }
     };
 
-    // Audit Logs
     document.getElementById("saAuditLimitSelect").onchange = loadAuditLogs;
     document.getElementById("saReloadAuditBtn").onclick = loadAuditLogs;
 
-    // Close modals
     root.querySelectorAll("[data-close-modal]").forEach(btn => {
       btn.onclick = () => document.getElementById(btn.dataset.closeModal)?.classList.add("hidden");
     });
@@ -4843,23 +5681,24 @@ const FEATURE_MENU_MAP = {
 };
 
 async function updateFeatureNavigation() {
-  if (!labId) {
-    const buttons = [
-      ...$("nav").querySelectorAll("button[data-page]")
-    ];
+  if (role === "super_admin") {
+    [...$("nav").querySelectorAll("button[data-page]")].forEach(b => {
+      b.style.display = "";
+    });
+    return;
+  }
 
+  if (!labId) {
+    const buttons = [...$("nav").querySelectorAll("button[data-page]")];
     buttons.forEach(button => {
       if (FEATURE_MENU_MAP[button.dataset.page]) {
         button.style.display = "none";
       }
     });
-
     return;
   }
 
-  const buttons = [
-    ...$("nav").querySelectorAll("button[data-page]")
-  ];
+  const buttons = [...$("nav").querySelectorAll("button[data-page]")];
 
   await Promise.all(buttons.map(async button => {
     const featureKey = FEATURE_MENU_MAP[button.dataset.page];
@@ -4875,16 +5714,10 @@ async function updateFeatureNavigation() {
       );
 
       if (error) throw error;
-
       button.style.display = data === true ? "" : "none";
-
     } catch (error) {
       button.style.display = "none";
-      console.error(
-        "Feature visibility check failed:",
-        featureKey,
-        error
-      );
+      console.error("Feature visibility check failed:", featureKey, error);
     }
   }));
 }
@@ -4892,12 +5725,15 @@ async function updateFeatureNavigation() {
 <script src="platform-mode.js"></script>
 
 <script>
-if ("serviceWorker" in navigator) {
+if (
+  "serviceWorker" in navigator &&
+  (window.location.protocol === "https:" || window.location.protocol === "http:")
+) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("./sw.js", {
       scope: "./"
     }).catch(error => {
-      console.error("Offline registration failed:", error);
+      console.warn("Offline registration skipped:", error);
     });
   });
 }
