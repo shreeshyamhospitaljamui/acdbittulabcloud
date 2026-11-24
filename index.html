@@ -119,6 +119,7 @@ $("toggleRecovery").onclick=()=>{
   clear("recoveryMessage");
 };
 
+
 $("sendRecoveryLink").onclick=async()=>{
   const b=$("sendRecoveryLink");
   const email=$("username").value.trim();
@@ -150,11 +151,8 @@ $("sendRecoveryLink").onclick=async()=>{
 
     if(error) throw error;
 
-    msg(
-      "Recovery link sent. Check your email and open the link on this same device.",
-      "success",
-      "recoveryMessage"
-    );
+    msg("Recovery link sent. Check your email inbox and spam folder.",
+      "success","recoveryMessage");
 
   }catch(e){
     msg(e.message,"error","recoveryMessage");
@@ -163,7 +161,75 @@ $("sendRecoveryLink").onclick=async()=>{
     b.textContent="Send secure recovery link";
   }
 };
-  
+
+
+// EMAIL VERIFICATION AND DEVICE RECOVERY
+(async()=>{
+  const params=new URLSearchParams(location.search);
+
+  if(params.get("acd_recovery")!=="1")return;
+
+  const b=$("sendRecoveryLink");
+  if(b){
+    b.disabled=true;
+    b.textContent="Verifying secure link...";
+  }
+
+  try{
+    const {data:{session},error}=await db.auth.getSession();
+
+    if(error)throw error;
+
+    if(!session){
+      throw new Error(
+        "Email verification failed or link expired. Request a new link."
+      );
+    }
+
+    const {data:profile,error:profileError}=await db
+      .from("profiles")
+      .select("platform_role")
+      .eq("id",session.user.id)
+      .maybeSingle();
+
+    if(profileError)throw profileError;
+
+    if(profile?.platform_role!=="super_admin"){
+      throw new Error("This email is not registered as Super Admin.");
+    }
+
+    const {data,error:recoveryError}=await db.rpc(
+      "acd_super_admin_recover_device",
+      {p_device_id:deviceId()}
+    );
+
+    if(recoveryError)throw recoveryError;
+
+    if(data?.status!=="granted"){
+      throw new Error("Device recovery was not granted.");
+    }
+
+    sessionStorage.setItem("acd_role","super_admin");
+    sessionStorage.removeItem("acd_lab_id");
+
+    msg("Device recovery successful. Opening dashboard...",
+      "success","recoveryMessage");
+
+    history.replaceState({},document.title,location.pathname);
+
+    setTimeout(()=>{
+      location.href="dashboard.html";
+    },1200);
+
+  }catch(e){
+    msg(e.message,"error","recoveryMessage");
+
+    if(b){
+      b.disabled=false;
+      b.textContent="Send secure recovery link";
+    }
+  }
+})();
   
 // DEVICE LOCK LOGIC (UNTOUCHED)
 async function deviceSecurity(){
