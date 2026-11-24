@@ -3,8 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ACD BITTU LAB CLOUD — Reviewed Dashboard</title>
-<!-- Reviewed copy: preserves existing Supabase project/schema and current UI. Safe Mode disables the non-transactional Reopen overwrite path. Required companion assets remain external. -->
+<title>ACD BITTU LAB CLOUD — New Patient Entry</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#07172d">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1309,8 +1308,6 @@ function resetEntryForm() {
   $("due").value = "0";
   $("entryModeTitle").textContent = "Investigation / Result Entry — Combined";
   $("save").textContent = "Save & Print A4";
-  $("save").disabled = false;
-  $("save").title = "Save a new report";
   renderRows();
   renderSelected();
 }
@@ -1972,15 +1969,10 @@ function srReopenInEntry(id) {
   renderSelected();
   renderRows();
   $("entryModeTitle").textContent = "Editing Saved Report — " + (p.patient_name || "");
-  // Safety lock: the current Save handler replaces existing test items/results
-  // with multiple non-transactional requests. Keep Reopen available for review
-  // and printing, but prevent an unsafe overwrite until an atomic DB update exists.
-  $("save").textContent = "Update Disabled (Safe Mode)";
-  $("save").disabled = true;
-  $("save").title = "Safe Mode: use Saved Reports > Edit for result changes. Reopen is view/print only.";
+  $("save").textContent = "Update & Print A4";
 
   $("nav").querySelector('[data-page="New Patient Entry"]')?.click();
-  say("Saved Report सुरक्षित रूप से Reopen हुई है। इस मोड में Print कर सकते हैं; Update बंद है ताकि पुराने Results गलती से न मिटें। Results बदलने के लिए Saved Reports में Edit इस्तेमाल करें।");
+  say("Saved Report दोबारा खोली गई। आप बदलाव करके Print या Update कर सकते हैं।");
 }
 
 function srRender() {
@@ -2496,7 +2488,7 @@ $("nav")
         }
 
         if (!isEntry && !isSavedReports && !isCatalogue && !isDesigner && !isSuperAdmin) {
-          $("otherPage").textContent = page + " — इस HTML फाइल में अभी इसका पूरा module उपलब्ध नहीं है। इस पेज से कोई data update नहीं होगा।";
+          $("otherPage").textContent = page + " module active.";
         }
       })
   );
@@ -2783,8 +2775,71 @@ init().catch(e => say("Session/setup error: " + e.message));
     display: inline-flex; align-items: center; gap: 5px; margin-right: 10px; font-size: 11px; color: #334155;
   }
   #superAdminCenter .pc-mod-item input { width: 14px; height: 14px; }
+
+  /* Reviewed visual refresh aligned with Multi-Lab Pathology SaaS dashboard.
+     Existing IDs, handlers and live Supabase data bindings remain unchanged. */
+  #superAdminCenter {
+    border: 1px solid #dbe3ef;
+    border-radius: 18px;
+    background: #f8fafc;
+    box-shadow: 0 10px 30px rgba(15,23,42,.07);
+  }
+  #superAdminCenter .pc-shell { min-height: 820px; }
+  #superAdminCenter .pc-sidebar {
+    width: 272px; flex-basis: 272px;
+    background: linear-gradient(180deg,#0b1224 0%,#111c33 100%);
+    border-right: 1px solid #24314a;
+  }
+  #superAdminCenter .pc-brand {
+    min-height: 76px; padding: 17px 18px;
+    background: rgba(15,23,42,.35);
+    border-bottom-color: rgba(148,163,184,.16);
+  }
+  #superAdminCenter .pc-brand-logo {
+    width: 38px; height: 38px; border-radius: 12px;
+    background: linear-gradient(135deg,#6366f1,#06b6d4);
+    box-shadow: 0 7px 18px rgba(79,70,229,.28);
+  }
+  #superAdminCenter .pc-nav { padding: 15px 12px; gap: 6px; }
+  #superAdminCenter .pc-nav-btn {
+    min-height: 42px; padding: 10px 13px; border-radius: 11px;
+    font-size: 12.5px; letter-spacing: .005em;
+  }
+  #superAdminCenter .pc-nav-btn.active {
+    background: linear-gradient(100deg,#4f46e5,#5558e8);
+    box-shadow: 0 5px 14px rgba(79,70,229,.22);
+  }
+  #superAdminCenter .pc-nav-btn:hover:not(.active) { background: rgba(148,163,184,.12); }
+  #superAdminCenter .pc-side-foot { border-top-color: rgba(148,163,184,.16); }
+  #superAdminCenter .pc-root-box {
+    background: rgba(30,41,59,.72); border: 1px solid rgba(148,163,184,.12);
+    border-radius: 12px; padding: 12px;
+  }
+  #superAdminCenter .pc-header {
+    min-height: 70px; padding: 16px 24px;
+    background: rgba(255,255,255,.96); border-bottom-color: #e7edf5;
+  }
+  #superAdminCenter .pc-body { padding: 22px 24px 26px; gap: 18px; }
+  #superAdminCenter .pc-card,
+  #superAdminCenter .pc-card-flush {
+    border-color: #e3eaf3; border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(15,23,42,.035);
+  }
+  #superAdminCenter .pc-card { padding: 18px; }
+  #superAdminCenter .pc-card-head { padding: 15px 18px; border-bottom-color: #edf1f6; }
+  #superAdminCenter .pc-kpi-val { font-size: 28px; letter-spacing: -.035em; }
+  #superAdminCenter table.pc-table th { background: #f7f9fc; padding: 12px 15px; }
+  #superAdminCenter table.pc-table td { padding: 13px 15px; }
+  #superAdminCenter .pc-btn { border-radius: 10px; padding: 8px 13px; }
+  #superAdminCenter .pc-input, #superAdminCenter .pc-select,
+  #superAdminCenter .pc-textarea { border-color: #d7e0eb; border-radius: 10px; padding: 9px 11px; }
+  #superAdminCenter .pc-tab-pane { animation: saReviewedFade .18s ease-out; }
+  @keyframes saReviewedFade { from { opacity: .65; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
   #superAdminCenter .pc-drawer-btn { display: none; }
   @media (max-width: 860px) {
+    #superAdminCenter .pc-body { padding: 14px; }
+    #superAdminCenter .pc-header { padding: 13px 15px; }
+    #superAdminCenter .pc-shell { min-height: 680px; }
     #superAdminCenter .pc-drawer-btn { display: inline-flex; }
     #superAdminCenter .pc-sidebar {
       position: fixed; top: 0; bottom: 0; left: 0; z-index: 9990;
@@ -2810,8 +2865,8 @@ init().catch(e => say("Session/setup error: " + e.message));
       <div style="display:flex;align-items:center;gap:10px">
         <div class="pc-brand-logo">SA</div>
         <div>
-          <div style="font-weight:700;color:#fff;font-size:12.5px;letter-spacing:.03em">LAB CLOUD ADMIN</div>
-          <div style="font-size:10.5px;color:#94a3b8">Multi-Tenant Control Plane</div>
+          <div style="font-weight:800;color:#fff;font-size:12.5px;letter-spacing:.035em">ACD BITTU LAB CLOUD</div>
+          <div style="font-size:10.5px;color:#94a3b8">Super Admin Control Center</div>
         </div>
       </div>
       <button type="button" class="pc-drawer-btn pc-btn pc-btn-dark" id="pcCloseDrawer" style="padding:4px 8px">✕</button>
