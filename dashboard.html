@@ -10,7 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 <link rel="stylesheet" href="./print-report.css?v=6">
-<script src="./print-report.js?v=6"></script>
+<script src="./print-report.js?v=7"></script>
 
 <style>
 :root{
@@ -29,9 +29,23 @@
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);font-size:12.5px}
 
-/* =========================================================
-   ENTERPRISE FIXED-VIEWPORT DESKTOP LIMS SHELL (NO PAGE SHAKE)
-   ========================================================= */
+/* Live Animated Festival Ribbon */
+.fest-top-strip{
+  color:#fff;padding:5px 14px;text-align:center;font-size:12px;font-weight:800;
+  position:relative;overflow:hidden;display:none;letter-spacing:.3px;flex:0 0 auto;
+}
+.fest-top-strip::before{
+  content:"";position:absolute;top:0;left:-120%;width:80%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);
+  transform:skewX(-22deg);animation:festShine 3s infinite;
+}
+.fest-theme-diwali{background:linear-gradient(90deg,#b45309,#ea580c,#d97706)}
+.fest-theme-durga{background:linear-gradient(90deg,#991b1b,#dc2626,#b91c1c)}
+.fest-theme-holi{background:linear-gradient(90deg,#7e22ce,#db2777,#2563eb)}
+.fest-theme-eid{background:linear-gradient(90deg,#065f46,#059669,#0d9488)}
+.fest-theme-gold{background:linear-gradient(90deg,#1e3a8a,#1d4ed8,#0284c7)}
+@keyframes festShine{0%{left:-120%}65%,100%{left:160%}}
+
 @media(min-width:960px){
   html,body{height:100vh;overflow:hidden}
   .lims-shell{height:100vh;display:flex;flex-direction:column;overflow:hidden}
@@ -52,7 +66,6 @@ html,body{margin:0;padding:0;font-family:Inter,Arial,Helvetica,sans-serif;backgr
   .queue-list{max-height:125px;overflow-y:auto}
 }
 
-/* TOP COMMAND RIBBON + DROPDOWN MENUS */
 .cmd-bar{
   height:48px;
   flex:0 0 48px;
@@ -125,11 +138,10 @@ html,body{margin:0;padding:0;font-family:Inter,Arial,Helvetica,sans-serif;backgr
 .nav-dd-item:hover,.nav-dd-item.active{background:var(--blue-soft);color:var(--blue);font-weight:700}
 
 .cmd-right{display:flex;align-items:center;gap:8px;white-space:nowrap}
-.status-pill{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:999px;background:#0f294a;color:#6ee7b7}
+.status-pill{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:999px;background:#0f294a;color:#6ee7b7;cursor:pointer}
 .cmd-clock{font-family:monospace;font-size:11.5px;color:#cbd5e1}
 .cmd-user{font-size:11px;color:#e2e8f0;max-width:130px;overflow:hidden;text-overflow:ellipsis}
 
-/* LAB SELECT & ANNOUNCEMENT SUB-BAR */
 .sub-ribbon{
   background:#ffffff;
   border-bottom:1px solid var(--line);
@@ -142,7 +154,6 @@ html,body{margin:0;padding:0;font-family:Inter,Arial,Helvetica,sans-serif;backgr
 }
 .sub-ribbon select{max-width:240px;height:26px;font-size:11px}
 
-/* LEFT TODAY'S LIVE PATIENT QUEUE RAIL */
 .queue-rail{background:#ffffff;border-right:1px solid var(--line)}
 .queue-head{padding:8px 10px;border-bottom:1px solid var(--line);background:#f8fafc}
 .queue-head-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
@@ -162,7 +173,6 @@ html,body{margin:0;padding:0;font-family:Inter,Arial,Helvetica,sans-serif;backgr
 .queue-item-top{display:flex;justify-content:space-between;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#0f172a}
 .queue-item-sub{font-size:10px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-/* WORKSPACE & CARDS */
 .workspace-stage{padding:8px 10px;gap:8px}
 .entry-cards{display:grid;grid-template-columns:1.1fr 1fr .95fr;gap:8px;margin-bottom:8px}
 @media(max-width:900px){.entry-cards{grid-template-columns:1fr 1fr}.panel.billing{grid-column:1/-1}}
@@ -235,7 +245,6 @@ td.empty{text-align:center;color:#94a3b8;font-style:italic;height:32px}
 .catalogue-test.active{border-color:#2563eb;background:#eff6ff;color:#1d4ed8;font-weight:700}
 .catalogue-detail{background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px;min-width:0}
 
-/* SUPER ADMIN INTEGRATED PANEL */
 .sa-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;background:#0f172a;padding:8px;border-radius:8px}
 .sa-tab{border:0;border-radius:6px;padding:7px 11px;background:#1e293b;color:#cbd5e1;font-size:11px;font-weight:700;cursor:pointer}
 .sa-tab.active{background:#0866df;color:#fff}
@@ -246,6 +255,11 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
 </head>
 <body>
 <div class="lims-shell">
+
+  <!-- LIVE ANIMATED FESTIVAL SPARKLE BANNER (CONTROLLED BY SUPER ADMIN) -->
+  <div id="dashFestBanner" class="fest-top-strip fest-theme-diwali">
+    ✨ <span id="dashFestText"></span> ✨
+  </div>
 
   <!-- TOP COMMAND RIBBON WITH DROPDOWN MENUS -->
   <header class="cmd-bar">
@@ -284,7 +298,7 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
       <div class="nav-dd" data-dd-group="settings">
         <button type="button" class="nav-btn" data-dd-trigger="ddSettings">⚙ Setup &amp; Plan ▾</button>
         <div class="nav-dd-menu hidden" id="ddSettings">
-          <button type="button" class="nav-dd-item" data-page="Lab & Print Setup"><span>🖨️ Print Designer &amp; Menu Hide/Show</span></button>
+          <button type="button" class="nav-dd-item" data-page="Lab & Print Setup"><span>🖨️ Print Designer &amp; WhatsApp API</span></button>
           <button type="button" class="nav-dd-item" data-page="Subscription (Razorpay)"><span>💳 Plan &amp; Subscription (Razorpay)</span></button>
         </div>
       </div>
@@ -293,7 +307,7 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
     </nav>
 
     <div class="cmd-right">
-      <span class="status-pill" id="offlineSyncStatus">🟢 Online</span>
+      <span class="status-pill" id="offlineSyncStatus" title="Click to Sync Offline Records">🟢 Online</span>
       <span class="cmd-clock" id="clock">00:00:00</span>
       <span class="cmd-user" id="account"></span>
       <button class="btn light" id="logout" style="padding:5px 9px">Logout</button>
@@ -330,20 +344,20 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
     <section class="workspace-stage" id="workspace">
 
       <!-- =========================================================
-           1. NEW PATIENT & RESULT ENTRY (FIXED-VIEWPORT WORKSTATION)
+           1. NEW PATIENT & RESULT ENTRY (MOBILE FIRST → ENTER → NAME)
            ========================================================= -->
       <div id="entryPage">
         <div class="entry-cards">
           <!-- Card 1: Patient Details -->
           <section class="panel">
             <div class="panel-head">
-              <span>1. Patient Registration &amp; Demographics</span>
+              <span>1. Patient Registration (Mobile First → Enter)</span>
               <span id="verificationStatusPill" class="badge badge-warn">Unverified Draft</span>
             </div>
             <div class="panel-body">
               <div class="fields">
-                <div class="field"><label>Center / Lab</label><input id="labId" disabled></div>
-                <div class="field"><label>Mobile / WhatsApp</label><input id="mobile" inputmode="numeric" maxlength="10" placeholder="10 Digits"></div>
+                <div class="field"><label>1. Mobile / WhatsApp (Enter → Name)</label><input id="mobile" inputmode="numeric" maxlength="10" placeholder="10 Digits"></div>
+                <div class="field"><label>2. Patient Name *</label><input id="patient" placeholder="Full patient name"></div>
                 <div class="field">
                   <label>Title</label>
                   <select id="patientTitle">
@@ -356,7 +370,6 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
                     <option value="Dr.">Dr.</option>
                   </select>
                 </div>
-                <div class="field"><label>Patient Name *</label><input id="patient" placeholder="Full patient name"></div>
                 <div class="field">
                   <label>Age (Auto-Range)</label>
                   <div style="display:flex;gap:4px">
@@ -382,6 +395,7 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
                     <option value="Swab">Swab</option>
                   </select>
                 </div>
+                <div class="field"><label>Center / Lab</label><input id="labId" disabled></div>
               </div>
             </div>
           </section>
@@ -442,7 +456,7 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
               <button class="btn teal hidden" id="verifyReportBtn" type="button">✓ Verify &amp; Approve</button>
               <button class="btn amber hidden" id="thermalSlipBtn" type="button">🧾 Token Slip</button>
               <button class="btn" id="printCurrentBtn" type="button">🖨️ Preview / Print A4</button>
-              <button class="btn light" id="whatsappCurrentBtn" type="button" style="background:#dcfce7;color:#15803d">📲 Send PDF WhatsApp</button>
+              <button class="btn light" id="whatsappCurrentBtn" type="button" style="background:#dcfce7;color:#15803d">📲 Send Bill &amp; Report WhatsApp</button>
               <button class="btn green" id="save" type="button" title="Ctrl+S">💾 Save &amp; Print A4</button>
             </div>
           </div>
@@ -551,7 +565,6 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
               </div>
             </div>
 
-            <!-- Editable Test Rate, Code & Department Bar -->
             <div id="catTestRateEditor" class="hidden" style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:7px;padding:9px;margin-bottom:10px">
               <div class="fields" style="grid-template-columns:2fr 1fr 1.2fr 1fr;gap:8px">
                 <div class="field"><label>Editable Test Name *</label><input id="catEditTestName"></div>
@@ -830,17 +843,14 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
       </div>
 
       <!-- =========================================================
-           8. LAB PRINT DESIGNER & LAB MENU HIDE/SHOW CUSTOMIZER
+           8. LAB PRINT DESIGNER, DIRECT CLOUD WHATSAPP API & MENU CUSTOMIZER
            ========================================================= -->
       <div id="reportDesignerPage" class="scroll-view hidden">
 
-        <!-- PART A: LAB MENU HIDE / SHOW CUSTOMIZER (FOR CLEAN WORKSPACE) -->
+        <!-- PART A: LAB MENU HIDE / SHOW CUSTOMIZER -->
         <div class="panel doctor" style="margin-bottom:10px">
           <div class="panel-head"><span>🎛️ Lab Menu &amp; Workspace Hide/Show Customizer (अपनी ज़रूरत के अनुसार मेनू छिपाएं या दिखाएं)</span></div>
           <div class="panel-body">
-            <p style="font-size:11px;color:#475569;margin:4px 0 8px">
-              जो लैब बहुत सारे ऑप्शन या मेनू नहीं रखना चाहती, वह यहाँ से उन्हें अनचेक करके छिपा (Hide) सकती है। *(नोट: Super Admin द्वारा बंद किए गए पेड मॉड्यूल केवल Super Admin ही चालू कर सकते हैं।)*
-            </p>
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;font-size:11px">
               <label style="display:flex;align-items:center;gap:7px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:8px;cursor:pointer">
                 <input type="checkbox" id="visLiveQueue" style="width:15px;height:15px" checked>
@@ -890,7 +900,31 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
           </div>
         </div>
 
-        <!-- PART B: A4 PRINT & LETTERHEAD DESIGNER -->
+        <!-- PART B: DIRECT CLOUD WHATSAPP API -->
+        <div class="panel billing" style="margin-bottom:10px">
+          <div class="panel-head"><span>📲 Direct Cloud WhatsApp API Setup (बिना फ़ोन या WhatsApp Web लॉगिन किए सीधे बिल और रिपोर्ट भेजें)</span></div>
+          <div class="panel-body">
+            <div class="fields" style="grid-template-columns:1fr 1.5fr 1.5fr;gap:8px">
+              <div class="field">
+                <label>WhatsApp Delivery Mode</label>
+                <select id="rdWaDeliveryMode">
+                  <option value="cloud_api">Direct Cloud API (Zero Login Required)</option>
+                  <option value="wa_link">WhatsApp App / Web Link Fallback</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Cloud API Endpoint URL (Meta / Gateway)</label>
+                <input id="rdWaCloudUrl" placeholder="https://graph.facebook.com/v19.0/PHONE_ID/messages">
+              </div>
+              <div class="field">
+                <label>Bearer API Access Token</label>
+                <input id="rdWaCloudToken" type="password" placeholder="Paste WhatsApp Business Cloud Token">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PART C: A4 PRINT & LETTERHEAD DESIGNER -->
         <div class="panel">
           <div class="panel-head"><span>⚙ A4 Print Layout, Pre-Printed Letterhead &amp; Signatures Setup</span></div>
           <div class="panel-body">
@@ -973,7 +1007,7 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
             <div class="field full"><label>Footer Note</label><input id="rdFooterNote"></div>
 
             <div class="actions" style="margin-top:10px">
-              <button class="btn green" id="rdSaveBtn" type="button">💾 Save Report Design &amp; Signatures</button>
+              <button class="btn green" id="rdSaveBtn" type="button">💾 Save Report Design, Signatures &amp; WhatsApp API</button>
               <button class="btn" id="rdTestPreviewBtn" type="button">👁️ Sample A4 Preview</button>
               <span id="rdSaveStatus" style="font-size:11px;color:#059669;font-weight:700;align-self:center"></span>
             </div>
@@ -982,24 +1016,25 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
       </div>
 
       <!-- =========================================================
-           9. UNIFIED SUPER ADMIN CONTROL CENTER (FULL FEATURE & PLAN CONTROL)
+           9. UNIFIED SUPER ADMIN CONTROL CENTER (FULL COMMAND & CONTROL)
            ========================================================= -->
       <div id="superAdminCenter" class="scroll-view hidden">
         <div class="sa-tabs" id="saTabBar">
-          <button type="button" class="sa-tab active" data-sa-tab="overview">📊 Platform Overview</button>
+          <button type="button" class="sa-tab active" data-sa-tab="overview">📊 All Labs, Lock &amp; Device Reset</button>
+          <button type="button" class="sa-tab" data-sa-tab="festival">🎊 Festival Sparkle Banner</button>
           <button type="button" class="sa-tab" data-sa-tab="features">🎛️ Lab Plans &amp; Feature Hide/Show</button>
           <button type="button" class="sa-tab" data-sa-tab="pricing">💳 3-Tier Subscription Pricing</button>
           <button type="button" class="sa-tab" data-sa-tab="security">🔒 Device Lock &amp; Security</button>
           <button type="button" class="sa-tab" data-sa-tab="announcements">📢 Global Notice &amp; Tickets</button>
         </div>
 
-        <!-- SA Tab 1: Overview -->
+        <!-- SA Tab 1: Overview, Remote Lock/Unlock & Device Reset -->
         <div id="saPaneOverview">
           <div class="kpi-strip">
             <div class="kpi-box"><small>Total Labs</small><h2 id="saTotalLabs">—</h2></div>
             <div class="kpi-box"><small>Platform Mode</small><h2 id="saPlatformModeVal" style="color:#0866df">—</h2></div>
-            <div class="kpi-box"><small>Active Subscriptions</small><h2 id="saActiveSubs" style="color:#0f9d58">—</h2></div>
-            <div class="kpi-box"><small>Open Tickets</small><h2 id="saOpenTickets" style="color:#d97706">—</h2></div>
+            <div class="kpi-box"><small>Active Labs</small><h2 id="saActiveSubs" style="color:#0f9d58">—</h2></div>
+            <div class="kpi-box"><small>Locked / Suspended</small><h2 id="saLockedLabsCount" style="color:#dc2626">0</h2></div>
           </div>
 
           <section class="panel" style="margin-bottom:10px">
@@ -1014,13 +1049,53 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
           </section>
 
           <section class="panel">
-            <div class="panel-head"><span>🏥 Registered Laboratories Directory</span></div>
+            <div class="panel-head"><span>🏥 Master Laboratory Directory — Remote Lock/Unlock, Device Reset &amp; Feature Control</span></div>
             <div class="panel-body">
               <div class="table-wrap">
                 <table>
-                  <thead><tr><th>Lab Name</th><th>Phone / Address</th><th>Assigned Plan</th><th>Status</th><th>Quick Action</th></tr></thead>
+                  <thead><tr><th>Lab Name &amp; ID</th><th>Phone / Address</th><th>Assigned Plan</th><th>Status</th><th>Super Admin Controls</th></tr></thead>
                   <tbody id="saLabsTableBody"><tr><td colspan="5" class="empty">Loading laboratories...</td></tr></tbody>
                 </table>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- SA Tab: Festival & Celebration Sparkle Banner -->
+        <div id="saPaneFestival" class="hidden">
+          <section class="panel" style="border:2px solid #ea580c">
+            <div class="panel-head" style="color:#c2410c;border-top-color:#ea580c"><span>🎊 Live Animated Festival &amp; Celebration Banner (Diwali, Durga Puja, Holi, Eid, New Year)</span></div>
+            <div class="panel-body">
+              <div class="fields" style="grid-template-columns:1fr 1fr 2fr 2fr;gap:8px;margin-bottom:10px">
+                <div class="field">
+                  <label>Banner Status</label>
+                  <select id="saFestActive">
+                    <option value="1">ON (Show Sparkle Banner Live)</option>
+                    <option value="0">OFF (Hide Banner)</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Sparkle Color Theme</label>
+                  <select id="saFestTheme">
+                    <option value="diwali">Diwali Saffron &amp; Gold</option>
+                    <option value="durga">Durga Puja Royal Crimson</option>
+                    <option value="holi">Holi Rainbow Colors</option>
+                    <option value="eid">Eid Emerald Crescent</option>
+                    <option value="gold">New Year / Republic Blue</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Main Greeting Text (Hindi / English)</label>
+                  <input id="saFestTitle" placeholder="✨ शुभ दीपावली! Happy Diwali ✨">
+                </div>
+                <div class="field">
+                  <label>Subtitle Message</label>
+                  <input id="saFestSub" placeholder="आप सभी को हार्दिक शुभकामनाएँ!">
+                </div>
+              </div>
+              <div class="actions">
+                <button type="button" class="btn green" id="saSaveFestBtn">✨ Publish Festival Banner Live</button>
+                <span id="saFestMsg" style="font-size:11.5px;color:#0f9d58;font-weight:700;align-self:center"></span>
               </div>
             </div>
           </section>
@@ -1118,10 +1193,10 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
         <!-- SA Tab 4: Device Lock & Security -->
         <div id="saPaneSecurity" class="hidden">
           <section class="panel">
-            <div class="panel-head"><span>🔒 Single-Device Lock &amp; Account Recovery</span></div>
+            <div class="panel-head"><span>🔒 Single-Device Lock Reset &amp; Account Recovery</span></div>
             <div class="panel-body">
               <div class="fields" style="grid-template-columns:2fr auto;align-items:end;max-width:540px">
-                <div class="field"><label>User Email to Reset Device Lock</label><input id="saResetEmail" placeholder="owner@example.com"></div>
+                <div class="field"><label>Lab Owner Email to Reset Device Lock</label><input id="saResetEmail" placeholder="owner@example.com"></div>
                 <button type="button" class="btn danger" id="saResetDeviceBtn">Reset Device Lock</button>
               </div>
               <div id="saSecurityMsg" style="font-size:11.5px;color:#0f9d58;margin-top:8px"></div>
@@ -1164,12 +1239,13 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
 <script>
 const SUPABASE_URL="https://axfvvquhswapiwmvrepe.supabase.co";
 const SUPABASE_ANON_KEY="sb_publishable_n6jRvVDjw2kOF7CS46omqQ_6qGkdR-q";
+const SUPER_ADMIN_EMAIL="deepakkumar70612440@gmail.com";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 window.db = db;
 window.ACD_UNIFIED_SUPER_ADMIN = true;
 const $=id=>document.getElementById(id);
 
-let user=null,role=null,labId=null,labs=[],catalogue=[],selectedTests=[],flatRows=[];
+let user=null,role=null,labId=null,labs=[],catalogue=[],allParametersCache=[],selectedTests=[],flatRows=[];
 let currentReportVerified = false;
 let superAdminBlockedFeatures = new Set();
 
@@ -1258,6 +1334,7 @@ async function deviceHeartbeat() {
     const { data, error } = await db.rpc("acd_device_heartbeat", { p_device_id: deviceId() });
     if (error) throw error;
     if (data?.status === "takeover" || data?.status === "revoked") {
+      localStorage.removeItem("acd_offline_session_snapshot");
       await db.auth.signOut();
       location.replace("index.html");
     }
@@ -1378,28 +1455,35 @@ function saveTestClinicalNote(testNameOrCode, noteText) {
   localStorage.setItem("acd_test_notes_" + (labId || "default"), JSON.stringify(store));
 }
 
-/* Repeat Patient Auto-Fill by Mobile */
+/* Repeat Patient Auto-Fill by Mobile (Online + Offline IndexedDB) */
 $("mobile")?.addEventListener("input", async () => {
   if (!getOptionalFeatures().repeatPatient || !labId) return;
   const mob = $("mobile").value.trim();
   if (mob.length !== 10 || editingOrderId) return;
   try {
-    const { data } = await db
-      .from("lab_patients")
-      .select("id, patient_name, address, age, age_unit, gender")
-      .eq("lab_id", labId)
-      .eq("mobile", mob)
-      .order("created_at", { ascending: false })
-      .limit(1);
-    if (data && data.length) {
-      const p = data[0];
-      if (!$("patient").value.trim()) $("patient").value = p.patient_name || "";
-      if (!$("patientAddress").value.trim() && p.address) $("patientAddress").value = p.address;
-      if (!$("age").value && p.age !== null) $("age").value = p.age;
-      if (p.age_unit) $("ageUnit").value = p.age_unit;
-      if (p.gender) $("gender").value = p.gender;
+    let found = null;
+    if (navigator.onLine) {
+      const { data } = await db
+        .from("lab_patients")
+        .select("id, patient_name, address, age, age_unit, gender")
+        .eq("lab_id", labId)
+        .eq("mobile", mob)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      if (data && data.length) found = data[0];
+    }
+    if (!found && window.ACDOfflineDB) {
+      const cachedPts = await window.ACDOfflineDB.getRecords("patients", labId);
+      found = cachedPts.find(x => x.mobile === mob) || null;
+    }
+    if (found) {
+      if (!$("patient").value.trim()) $("patient").value = found.patient_name || "";
+      if (!$("patientAddress").value.trim() && found.address) $("patientAddress").value = found.address;
+      if (!$("age").value && found.age !== null) $("age").value = found.age;
+      if (found.age_unit) $("ageUnit").value = found.age_unit;
+      if (found.gender) $("gender").value = found.gender;
       applyAgeGenderRangesToActiveRows();
-      say("✓ Repeat patient loaded: " + p.patient_name);
+      say("✓ Repeat patient loaded: " + found.patient_name);
     }
   } catch (e) {}
 });
@@ -1888,7 +1972,7 @@ function renderSelected() {
 }
 
 /* =========================================================
-   CATALOGUE & EDITABLE RATE LIST (WITH LOCAL PRICE OVERRIDES)
+   CATALOGUE & EDITABLE RATE LIST (100% OFFLINE + CLOUD SYNCED)
    ========================================================= */
 function getLabPriceOverrideKey() { return "acd_lab_rate_list_" + (labId || "default"); }
 function getLabPriceOverrides() {
@@ -1898,6 +1982,29 @@ function setLabPriceOverride(testId, price) {
   const map = getLabPriceOverrides();
   map[testId] = Math.max(0, Number(price || 0));
   localStorage.setItem(getLabPriceOverrideKey(), JSON.stringify(map));
+}
+
+async function prefetchAllParametersForOffline() {
+  if (!labId) return;
+  try {
+    if (navigator.onLine) {
+      const { data, error } = await db
+        .from("acd_lab_test_parameters")
+        .select("id,lab_id,test_id,parameter_name,unit,reference_range,result_type,result_options,sort_order")
+        .eq("lab_id", labId)
+        .order("sort_order");
+      if (!error && data) {
+        allParametersCache = data;
+        if (window.ACDOfflineDB) {
+          await Promise.all(data.map(p => window.ACDOfflineDB.putRecord("parameters", labId, p)));
+        }
+        return;
+      }
+    }
+  } catch (e) {}
+  if (window.ACDOfflineDB) {
+    try { allParametersCache = await window.ACDOfflineDB.getRecords("parameters", labId); } catch (e) {}
+  }
 }
 
 async function loadCatalogue() {
@@ -1930,6 +2037,7 @@ async function loadCatalogue() {
         .sort((a, b) => (a.sort_order || 100) - (b.sort_order || 100));
     } catch (e) { catalogue = []; }
   }
+  await prefetchAllParametersForOffline();
   if ($("catCountBadge")) $("catCountBadge").textContent = catalogue.length;
 }
 
@@ -2025,45 +2133,74 @@ $("catSeedPackBtn")?.addEventListener("click", async () => {
       );
 
       if (!existing) {
-        const { data: created, error: cErr } = await db
-          .from("acd_test_catalogue")
-          .insert({
+        if (navigator.onLine) {
+          const { data: created, error: cErr } = await db
+            .from("acd_test_catalogue")
+            .insert({
+              test_code: item.test_code,
+              test_name: item.test_name,
+              department: item.department,
+              result_type: item.result_type,
+              default_price: item.default_price,
+              is_active: true,
+              sort_order: (catalogue.length + 1) * 10
+            })
+            .select()
+            .single();
+          if (cErr) continue;
+          existing = created;
+        } else {
+          existing = {
+            id: "local-test-" + item.test_code + "-" + Date.now(),
             test_code: item.test_code,
             test_name: item.test_name,
             department: item.department,
-            result_type: item.result_type,
             default_price: item.default_price,
+            effective_price: item.default_price,
             is_active: true,
             sort_order: (catalogue.length + 1) * 10
-          })
-          .select()
-          .single();
-        if (cErr) continue;
-        existing = created;
-        catalogue.push(created);
+          };
+          if (window.ACDOfflineDB) await window.ACDOfflineDB.putRecord("catalogue", labId, existing);
+        }
+        catalogue.push(existing);
         addedTests++;
       }
 
-      const { data: existingParams } = await db
-        .from("acd_lab_test_parameters")
-        .select("parameter_name")
-        .eq("lab_id", labId)
-        .eq("test_id", existing.id);
+      if (navigator.onLine) {
+        const { data: existingParams } = await db
+          .from("acd_lab_test_parameters")
+          .select("parameter_name")
+          .eq("lab_id", labId)
+          .eq("test_id", existing.id);
 
-      const existingNames = new Set((existingParams || []).map(p => p.parameter_name.toLowerCase()));
-      const missingParams = item.parameters.filter(p => !existingNames.has(p.parameter_name.toLowerCase()));
+        const existingNames = new Set((existingParams || []).map(p => p.parameter_name.toLowerCase()));
+        const missingParams = item.parameters.filter(p => !existingNames.has(p.parameter_name.toLowerCase()));
 
-      if (missingParams.length) {
-        const rows = missingParams.map(p => ({
-          lab_id: labId,
-          test_id: existing.id,
-          parameter_name: p.parameter_name,
-          unit: p.unit || "-",
-          reference_range: p.reference_range || "-",
-          result_type: p.result_type || "numeric",
-          sort_order: p.sort_order || 100
-        }));
-        await db.from("acd_lab_test_parameters").insert(rows);
+        if (missingParams.length) {
+          const rows = missingParams.map(p => ({
+            lab_id: labId,
+            test_id: existing.id,
+            parameter_name: p.parameter_name,
+            unit: p.unit || "-",
+            reference_range: p.reference_range || "-",
+            result_type: p.result_type || "numeric",
+            sort_order: p.sort_order || 100
+          }));
+          await db.from("acd_lab_test_parameters").insert(rows);
+        }
+      } else if (window.ACDOfflineDB) {
+        for (const p of item.parameters) {
+          await window.ACDOfflineDB.putRecord("parameters", labId, {
+            id: "local-param-" + Math.random().toString(36).slice(2),
+            lab_id: labId,
+            test_id: existing.id,
+            parameter_name: p.parameter_name,
+            unit: p.unit || "-",
+            reference_range: p.reference_range || "-",
+            result_type: p.result_type || "numeric",
+            sort_order: p.sort_order || 100
+          });
+        }
       }
     }
 
@@ -2137,13 +2274,11 @@ function renderEditableCatalogueParams() {
       const item = activeCatalogueParams[idx];
       const ok = await acdConfirm("क्या इस Parameter को हटाना है?");
       if (!ok) return;
-      if (item.id && !String(item.id).startsWith("local-")) {
-        const { error: deleteError } = await db
-          .from("acd_lab_test_parameters")
-          .delete()
-          .eq("id", item.id)
-          .eq("lab_id", labId);
-        if (deleteError) return acdNotify("Delete error: " + deleteError.message, true);
+      if (item.id && !String(item.id).startsWith("local-") && navigator.onLine) {
+        await db.from("acd_lab_test_parameters").delete().eq("id", item.id).eq("lab_id", labId);
+      }
+      if (item.id && window.ACDOfflineDB) {
+        await window.ACDOfflineDB.deleteRecord("parameters", labId, item.id);
       }
       activeCatalogueParams.splice(idx, 1);
       renderEditableCatalogueParams();
@@ -2171,25 +2306,7 @@ async function openCatalogueTest(id) {
   $("catClinicalNoteInput").value = getTestClinicalNote(t.test_name) || getTestClinicalNote(t.test_code);
   $("catalogueParameterRows").innerHTML = '<tr><td class="empty" colspan="5">Loading parameters…</td></tr>';
 
-  let params = [];
-  try {
-    if (!navigator.onLine) throw new Error("Offline");
-    const { data, error } = await db
-      .from("acd_lab_test_parameters")
-      .select("id,lab_id,test_id,parameter_name,unit,reference_range,result_type,result_options,sort_order")
-      .eq("lab_id", labId)
-      .eq("test_id", id)
-      .order("sort_order");
-    if (error) throw error;
-    params = data || [];
-    if (window.ACDOfflineDB) {
-      await Promise.all(params.map(parameter => window.ACDOfflineDB.putRecord("parameters", labId, parameter)));
-    }
-  } catch (error) {
-    const cached = window.ACDOfflineDB ? await window.ACDOfflineDB.getRecords("parameters", labId) : [];
-    params = cached.filter(p => p.test_id === id).sort((a, b) => (a.sort_order || 100) - (b.sort_order || 100));
-  }
-
+  const params = await getTestParametersOfflineSafe(id);
   activeCatalogueParams = params.map(p => ({ ...p }));
   renderEditableCatalogueParams();
 }
@@ -2230,8 +2347,9 @@ $("catSaveParamsBtn").onclick = async () => {
       activeTest.effective_price = newTestPrice;
       activeTest.default_price = newTestPrice;
       saveTestClinicalNote(activeTest.test_name, $("catClinicalNoteInput").value);
+      if (window.ACDOfflineDB) await window.ACDOfflineDB.putRecord("catalogue", labId, activeTest);
 
-      if (navigator.onLine) {
+      if (navigator.onLine && !String(activeCatalogueTestId).startsWith("local-")) {
         await db.from("acd_test_catalogue").update({
           test_name: activeTest.test_name,
           test_code: activeTest.test_code,
@@ -2246,40 +2364,56 @@ $("catSaveParamsBtn").onclick = async () => {
       if (!String(p.parameter_name || "").trim()) continue;
       const isNew = !p.id || String(p.id).startsWith("local-");
 
-      if (isNew) {
-        const { data, error } = await db
-          .from("acd_lab_test_parameters")
-          .insert({
-            lab_id: labId,
-            test_id: activeCatalogueTestId,
-            parameter_name: p.parameter_name.trim(),
-            unit: p.unit || "-",
-            reference_range: p.reference_range || "-",
-            result_type: p.result_type || "numeric",
-            sort_order: (i + 1) * 10
-          })
-          .select()
-          .single();
-        if (error) throw error;
-        activeCatalogueParams[i] = data;
-        if (window.ACDOfflineDB) await window.ACDOfflineDB.putRecord("parameters", labId, data);
-      } else {
-        const { error } = await db
-          .from("acd_lab_test_parameters")
-          .update({
-            parameter_name: p.parameter_name.trim(),
-            unit: p.unit || "-",
-            reference_range: p.reference_range || "-",
-            result_type: p.result_type || "numeric",
-            sort_order: (i + 1) * 10
-          })
-          .eq("id", p.id)
-          .eq("lab_id", labId);
-        if (error) throw error;
-        if (window.ACDOfflineDB) await window.ACDOfflineDB.putRecord("parameters", labId, p);
+      if (navigator.onLine && !String(activeCatalogueTestId).startsWith("local-")) {
+        if (isNew) {
+          const { data, error } = await db
+            .from("acd_lab_test_parameters")
+            .insert({
+              lab_id: labId,
+              test_id: activeCatalogueTestId,
+              parameter_name: p.parameter_name.trim(),
+              unit: p.unit || "-",
+              reference_range: p.reference_range || "-",
+              result_type: p.result_type || "numeric",
+              sort_order: (i + 1) * 10
+            })
+            .select()
+            .single();
+          if (error) throw error;
+          activeCatalogueParams[i] = data;
+          if (window.ACDOfflineDB) await window.ACDOfflineDB.putRecord("parameters", labId, data);
+        } else {
+          const { error } = await db
+            .from("acd_lab_test_parameters")
+            .update({
+              parameter_name: p.parameter_name.trim(),
+              unit: p.unit || "-",
+              reference_range: p.reference_range || "-",
+              result_type: p.result_type || "numeric",
+              sort_order: (i + 1) * 10
+            })
+            .eq("id", p.id)
+            .eq("lab_id", labId);
+          if (error) throw error;
+          if (window.ACDOfflineDB) await window.ACDOfflineDB.putRecord("parameters", labId, p);
+        }
+      } else if (window.ACDOfflineDB) {
+        const localParam = {
+          id: p.id || ("local-" + Date.now() + "-" + i),
+          lab_id: labId,
+          test_id: activeCatalogueTestId,
+          parameter_name: p.parameter_name.trim(),
+          unit: p.unit || "-",
+          reference_range: p.reference_range || "-",
+          result_type: p.result_type || "numeric",
+          sort_order: (i + 1) * 10
+        };
+        activeCatalogueParams[i] = localParam;
+        await window.ACDOfflineDB.putRecord("parameters", labId, localParam);
       }
     }
 
+    await prefetchAllParametersForOffline();
     renderCatalogueList($("catalogueFilter").value);
     $("catalogueSelectedTitle").textContent = activeTest?.test_name || "";
     $("catStatusMsg").textContent = `✓ Test Rate (₹${newTestPrice}) और सभी Parameters सफलतापूर्वक Save हो गए!`;
@@ -2302,25 +2436,40 @@ $("catNewTestBtn").onclick = async () => {
   const dept = (await acdPrompt("Department लिखें (जैसे: Biochemistry / Hematology / Serology):", "Biochemistry", "Department")) || "General";
 
   try {
-    const { data, error } = await db
-      .from("acd_test_catalogue")
-      .insert({
+    let newTestObj = null;
+    if (navigator.onLine) {
+      const { data, error } = await db
+        .from("acd_test_catalogue")
+        .insert({
+          test_name: testName.trim(),
+          test_code: testCode.trim().toUpperCase(),
+          department: dept.trim(),
+          default_price: priceNum,
+          is_active: true,
+          sort_order: (catalogue.length + 1) * 10
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      newTestObj = data;
+    } else {
+      newTestObj = {
+        id: "local-test-" + Date.now(),
         test_name: testName.trim(),
         test_code: testCode.trim().toUpperCase(),
         department: dept.trim(),
         default_price: priceNum,
         is_active: true,
         sort_order: (catalogue.length + 1) * 10
-      })
-      .select()
-      .single();
-    if (error) throw error;
+      };
+    }
 
-    setLabPriceOverride(data.id, priceNum);
-    data.effective_price = priceNum;
-    catalogue.push(data);
-    if (window.ACDOfflineDB) await window.ACDOfflineDB.putRecord("catalogue", labId, data);
-    await openCatalogueTest(data.id);
+    setLabPriceOverride(newTestObj.id, priceNum);
+    newTestObj.effective_price = priceNum;
+    catalogue.push(newTestObj);
+    if ($("catCountBadge")) $("catCountBadge").textContent = catalogue.length;
+    if (window.ACDOfflineDB) await window.ACDOfflineDB.putRecord("catalogue", labId, newTestObj);
+    await openCatalogueTest(newTestObj.id);
     $("catStatusMsg").textContent = "✓ नया टेस्ट जोड़ दिया गया। अब '+ Add Parameter' से इसके पैरामीटर जोड़ें।";
   } catch (e) {
     acdNotify("नया टेस्ट जोड़ने में त्रुटि: " + e.message, true);
@@ -2338,17 +2487,15 @@ async function showCataloguePage() {
 }
 
 /* =========================================================
-   TEST SEARCH & AUTO-RATE ADDITION
+   TEST SEARCH & AUTO-RATE ADDITION (INSTANT IN-MEMORY + OFFLINE)
    ========================================================= */
 let chosenSearchWidal = false;
-let searchRequestId = 0;
 let chosenSearchParameter = null;
 let chosenSearchTestId = null;
 
-async function renderTestSearchResults() {
+function renderTestSearchResults() {
   const q = $("testSearch").value.trim().toLowerCase();
   const box = $("testSearchResults");
-  const requestId = ++searchRequestId;
 
   chosenSearchTestId = null;
   chosenSearchParameter = null;
@@ -2359,25 +2506,6 @@ async function renderTestSearchResults() {
     box.innerHTML = "";
     return;
   }
-
-  let allParameters = [];
-  try {
-    if (!navigator.onLine) throw new Error("Offline");
-    const { data, error } = await db
-      .from("acd_lab_test_parameters")
-      .select("id,lab_id,test_id,parameter_name,unit,reference_range,result_type,result_options,sort_order")
-      .eq("lab_id", labId)
-      .order("sort_order");
-    if (error) throw error;
-    allParameters = data || [];
-    if (window.ACDOfflineDB) {
-      await Promise.all(allParameters.map(p => window.ACDOfflineDB.putRecord("parameters", labId, p)));
-    }
-  } catch (error) {
-    allParameters = window.ACDOfflineDB ? await window.ACDOfflineDB.getRecords("parameters", labId) : [];
-  }
-
-  if (requestId !== searchRequestId) return;
 
   if (q.includes("widal") || q.includes("विडाल") || q.includes("वाइडल")) {
     const widalCat = catalogue.find(x => (x.test_code || "").toUpperCase() === "WIDAL" || (x.test_name || "").toLowerCase().includes("widal"));
@@ -2410,7 +2538,7 @@ async function renderTestSearchResults() {
     )
     .slice(0, 8);
 
-  const parameters = allParameters
+  const parameters = allParametersCache
     .filter(p => (p.parameter_name || "").toLowerCase().includes(q) && catalogue.some(t => t.id === p.test_id))
     .slice(0, 10);
 
@@ -2465,6 +2593,9 @@ $("testSearch").addEventListener("focus", () => { if ($("testSearch").value.trim
 document.addEventListener("click", e => { if (!e.target.closest(".test-search-wrap")) $("testSearchResults").classList.add("hidden"); });
 
 async function getTestParametersOfflineSafe(testId) {
+  const inMemory = allParametersCache.filter(p => p.test_id === testId).sort((a, b) => (a.sort_order || 100) - (b.sort_order || 100));
+  if (inMemory.length && !navigator.onLine) return inMemory;
+
   try {
     if (!navigator.onLine) throw new Error("Offline");
     const { data, error } = await db
@@ -2486,8 +2617,9 @@ async function getTestParametersOfflineSafe(testId) {
     if (window.ACDOfflineDB) {
       await Promise.all(params.map(p => window.ACDOfflineDB.putRecord("parameters", labId, p)));
     }
-    return params;
+    return params.length ? params : inMemory;
   } catch (error) {
+    if (inMemory.length) return inMemory;
     const cached = window.ACDOfflineDB ? await window.ACDOfflineDB.getRecords("parameters", labId) : [];
     return cached.filter(p => p.test_id === testId).sort((a, b) => (a.sort_order || 100) - (b.sort_order || 100));
   }
@@ -2617,7 +2749,7 @@ function resetEntryForm() {
 $("clear").onclick = () => {
   resetEntryForm();
   say("नया मरीज़ फॉर्म तैयार है।");
-  $("patient")?.focus();
+  $("mobile")?.focus();
 };
 
 function buildCurrentEntryReportObject(orderIdOverride = null) {
@@ -2641,6 +2773,12 @@ function buildCurrentEntryReportObject(orderIdOverride = null) {
     order_date: $("date").value || new Date().toISOString().slice(0, 10),
     ref_doctor: $("doctor").value.trim() || "Self",
     is_verified: allowVerify ? currentReportVerified : true,
+    billing: {
+      total: +$("total").value || 0,
+      discount: +$("discount").value || 0,
+      paid: +$("paid").value || 0,
+      due: +$("due").value || 0
+    },
     patient: {
       id: editingPatientId || null,
       title: $("patientTitle").value,
@@ -2786,6 +2924,10 @@ function showReportDesignerPage() {
   $("rdAccentColor").value = rdTempState.accentColor || "#0b4fa8";
   $("rdAddress").value = rdTempState.address || "";
 
+  $("rdWaDeliveryMode").value = rdTempState.waDeliveryMode || "cloud_api";
+  $("rdWaCloudUrl").value = rdTempState.waCloudUrl || "";
+  $("rdWaCloudToken").value = rdTempState.waCloudToken || "";
+
   $("rdShowHeader").checked = rdTempState.showHeader !== false;
   $("rdShowLabName").checked = rdTempState.showLabName !== false;
   $("rdShowReportBanner").checked = rdTempState.showReportBanner !== false;
@@ -2872,6 +3014,9 @@ function collectReportDesignerForm() {
     email: $("rdEmail").value.trim(),
     accentColor: $("rdAccentColor").value || "#0b4fa8",
     address: $("rdAddress").value.trim(),
+    waDeliveryMode: $("rdWaDeliveryMode").value || "cloud_api",
+    waCloudUrl: $("rdWaCloudUrl").value.trim(),
+    waCloudToken: $("rdWaCloudToken").value.trim(),
     showHeader: $("rdShowHeader").checked,
     showLabName: $("rdShowLabName").checked,
     showReportBanner: $("rdShowReportBanner").checked,
@@ -2909,7 +3054,7 @@ $("rdSaveBtn").onclick = async () => {
   try {
     const data = collectReportDesignerForm();
     await window.ACDPrintModule.saveReportDesign(labId, data, db);
-    $("rdSaveStatus").textContent = "✓ Report Design & Signatures Saved!";
+    $("rdSaveStatus").textContent = "✓ Report Design, Signatures & Direct WhatsApp API Saved!";
   } catch (e) {
     $("rdSaveStatus").textContent = "Error: " + e.message;
   } finally { btn.disabled = false; }
@@ -2933,15 +3078,27 @@ $("rdTestPreviewBtn").onclick = async () => {
 };
 
 /* =========================================================
-   ALWAYS-ON OFFLINE ENGINE & AUTO-SYNC
+   ALWAYS-ON OFFLINE ENGINE & AUTO-SYNC (WITH CLICK TO SYNC)
    ========================================================= */
-function updateNetworkIndicator() {
+async function updateNetworkIndicator() {
   const el = $("offlineSyncStatus");
   if (!el) return;
+  let pendingCount = 0;
+  try {
+    if (labId && window.ACDOfflineDB) {
+      const jobs = await window.ACDOfflineDB.getPendingSyncJobs(labId);
+      pendingCount = jobs.length;
+    }
+  } catch (e) {}
+
   if (!navigator.onLine) {
     el.style.background = "#78350f";
     el.style.color = "#fde68a";
-    el.textContent = "📴 Offline Mode";
+    el.textContent = `📴 Offline${pendingCount ? " (" + pendingCount + " Saved)" : ""}`;
+  } else if (pendingCount > 0) {
+    el.style.background = "#1e3a8a";
+    el.style.color = "#93c5fd";
+    el.textContent = `🔄 Syncing (${pendingCount})...`;
   } else {
     el.style.background = "#064e3b";
     el.style.color = "#6ee7b7";
@@ -2949,9 +3106,13 @@ function updateNetworkIndicator() {
   }
 }
 window.addEventListener("offline", updateNetworkIndicator);
+$("offlineSyncStatus")?.addEventListener("click", () => {
+  if (navigator.onLine) flushOfflineSyncQueue();
+  else acdNotify("Offline Mode Active — सभी रिपोर्ट्स लोकल डेटाबेस में सुरक्षित सेव हो रही हैं।");
+});
 
 async function flushOfflineSyncQueue() {
-  updateNetworkIndicator();
+  await updateNetworkIndicator();
   if (!labId || !navigator.onLine || !window.ACDOfflineDB) return;
   try {
     const jobs = await window.ACDOfflineDB.getPendingSyncJobs(labId);
@@ -2968,8 +3129,7 @@ async function flushOfflineSyncQueue() {
         await window.ACDOfflineDB.updateSyncJob(labId, job.id, { attempts: (job.attempts || 0) + 1, last_error: err.message });
       }
     }
-    const remaining = await window.ACDOfflineDB.getPendingSyncJobs(labId);
-    $("offlineSyncStatus").textContent = remaining.length ? `⚠ ${remaining.length} Pending` : "🟢 Synced";
+    await updateNetworkIndicator();
   } catch (e) {}
 }
 window.addEventListener("online", flushOfflineSyncQueue);
@@ -3032,11 +3192,61 @@ async function saveEntryOfflineLocally(patientName) {
   }
 
   saveOrderMeta(offlineOrderId, { title: $("patientTitle").value, sample_type: $("sampleType").value, verified: currentReportVerified });
+  await updateNetworkIndicator();
   await loadTodayLiveQueue();
   say("✓ Offline Saved! इंटरनेट आते ही अपने-आप क्लाउड पर सिंक हो जाएगा।");
   const currentLab = labs.find(x => x.id === labId);
   window.ACDPrintModule.openCombinedA4Print(buildCurrentEntryReportObject(offlineOrderId), { labId: labId, lab: currentLab });
 }
+
+/* =========================================================
+   FESTIVAL SPARKLE BANNER LOADER & SUPER ADMIN PUBLISHER
+   ========================================================= */
+async function loadDashFestivalBanner() {
+  try {
+    let fest = JSON.parse(localStorage.getItem("acd_festival_banner_cache") || "null");
+    if (navigator.onLine) {
+      const { data } = await db.from("saas_festival_banner").select("*").eq("id", 1).maybeSingle();
+      if (data) {
+        fest = data;
+        localStorage.setItem("acd_festival_banner_cache", JSON.stringify(data));
+      }
+    }
+    const bar = $("dashFestBanner");
+    if (fest && fest.is_active && fest.title_text) {
+      bar.className = "fest-top-strip fest-theme-" + (fest.theme || "diwali");
+      $("dashFestText").textContent = fest.title_text + (fest.sub_text ? " — " + fest.sub_text : "");
+      bar.style.display = "block";
+    } else {
+      bar.style.display = "none";
+    }
+    if (fest && $("saFestTitle")) {
+      $("saFestActive").value = fest.is_active ? "1" : "0";
+      $("saFestTheme").value = fest.theme || "diwali";
+      $("saFestTitle").value = fest.title_text || "";
+      $("saFestSub").value = fest.sub_text || "";
+    }
+  } catch (e) {}
+}
+
+$("saSaveFestBtn")?.addEventListener("click", async () => {
+  if (role !== "super_admin") return;
+  const payload = {
+    id: 1,
+    is_active: $("saFestActive").value === "1",
+    theme: $("saFestTheme").value,
+    title_text: $("saFestTitle").value.trim(),
+    sub_text: $("saFestSub").value.trim(),
+    updated_at: new Date().toISOString()
+  };
+  localStorage.setItem("acd_festival_banner_cache", JSON.stringify(payload));
+  if (navigator.onLine) {
+    await db.from("saas_festival_banner").upsert(payload);
+  }
+  await loadDashFestivalBanner();
+  $("saFestMsg").textContent = "✓ Festival Banner Published Live Across Website!";
+  acdNotify("Festival Banner Updated!");
+});
 
 /* =========================================================
    LAB ADMIN MODULES: SAMPLE TRACKING, ACCOUNTS, INVENTORY, CENTERS/STAFF
@@ -3413,7 +3623,7 @@ $("labThreadReplyBtn")?.addEventListener("click", async () => {
 });
 
 /* =========================================================
-   SUPER ADMIN FULL FEATURE & PLAN CONTROL CENTER
+   SUPER ADMIN FULL FEATURE, LOCK/UNLOCK & PLAN CONTROL CENTER
    ========================================================= */
 const SA_PLAN_PRESETS = {
   standard: {
@@ -3441,8 +3651,17 @@ function saveSaLabPlanLocal(targetLabId, planKey, featureMap) {
 
 async function onOpenSuperAdminCenter() {
   if (role !== "super_admin") return;
+
+  try {
+    const { data: freshLabs } = await db.from("cloud_labs").select("id,name,address,phone,is_active").order("name");
+    if (freshLabs) labs = freshLabs;
+  } catch (e) {}
+
   $("saTotalLabs").textContent = labs.length;
+  $("saActiveSubs").textContent = labs.filter(l => l.is_active !== false).length;
+  $("saLockedLabsCount").textContent = labs.filter(l => l.is_active === false).length;
   const planStore = getSaLabPlanStore();
+  await loadDashFestivalBanner();
 
   try {
     const { data: modeData } = await db.rpc("acd_get_platform_mode");
@@ -3452,12 +3671,18 @@ async function onOpenSuperAdminCenter() {
   $("saLabsTableBody").innerHTML = labs.length
     ? labs.map(l => {
         const assigned = planStore[l.id]?.planKey || "standard";
+        const isActive = l.is_active !== false;
         return `<tr>
           <td><strong>${safe(l.name)}</strong><br><small style="font-family:monospace">${safe(l.id.slice(0, 8))}</small></td>
           <td>${safe(l.phone || "—")}<br><small>${safe(l.address || "")}</small></td>
           <td><span class="badge badge-verified">${safe(SA_PLAN_PRESETS[assigned]?.label || "Standard Lab")}</span></td>
-          <td>${l.is_active !== false ? '<span class="badge badge-normal">Active</span>' : '<span class="badge badge-abnormal">Inactive</span>'}</td>
-          <td><button type="button" class="btn" data-sa-manage-lab="${safe(l.id)}">Configure Features</button></td>
+          <td>${isActive ? '<span class="badge badge-normal">Active</span>' : '<span class="badge badge-abnormal">🔒 Locked</span>'}</td>
+          <td>
+            <div class="actions">
+              <button type="button" class="btn" data-sa-manage-lab="${safe(l.id)}">Features</button>
+              <button type="button" class="btn ${isActive ? "danger" : "green"}" data-sa-toggle-lock="${safe(l.id)}" data-next-active="${isActive ? "0" : "1"}">${isActive ? "🔒 Lock Lab" : "🔓 Unlock Lab"}</button>
+            </div>
+          </td>
         </tr>`;
       }).join("")
     : '<tr><td colspan="5" class="empty">No laboratories registered yet.</td></tr>';
@@ -3467,6 +3692,29 @@ async function onOpenSuperAdminCenter() {
       switchSuperAdminTab("features");
       $("saFeatureLabSelect").value = btn.dataset.saManageLab;
       loadSaFeaturesForSelectedLab();
+    };
+  });
+
+  $("saLabsTableBody").querySelectorAll("[data-sa-toggle-lock]").forEach(btn => {
+    btn.onclick = async () => {
+      const targetLabId = btn.dataset.saToggleLock;
+      const nextActive = btn.dataset.nextActive === "1";
+      const ok = await acdConfirm(
+        nextActive ? "Unlock & restore access for this laboratory?" : "Lock & suspend this laboratory remotely?",
+        nextActive ? "Unlock Laboratory" : "Remote Lock Laboratory"
+      );
+      if (!ok) return;
+      btn.disabled = true;
+      try {
+        const { error } = await db.from("cloud_labs").update({ is_active: nextActive }).eq("id", targetLabId);
+        if (error) throw error;
+        acdNotify(nextActive ? "✓ Laboratory Unlocked!" : "🔒 Laboratory Locked!");
+        await onOpenSuperAdminCenter();
+      } catch (e) {
+        acdNotify("Action failed: " + e.message, true);
+      } finally {
+        btn.disabled = false;
+      }
     };
   });
 
@@ -3481,6 +3729,7 @@ async function onOpenSuperAdminCenter() {
 function switchSuperAdminTab(tabKey) {
   $("saTabBar").querySelectorAll("[data-sa-tab]").forEach(b => b.classList.toggle("active", b.dataset.saTab === tabKey));
   $("saPaneOverview").classList.toggle("hidden", tabKey !== "overview");
+  $("saPaneFestival").classList.toggle("hidden", tabKey !== "festival");
   $("saPaneFeatures").classList.toggle("hidden", tabKey !== "features");
   $("saPanePricing").classList.toggle("hidden", tabKey !== "pricing");
   $("saPaneSecurity").classList.toggle("hidden", tabKey !== "security");
@@ -3580,7 +3829,7 @@ $("saResetDeviceBtn")?.addEventListener("click", async () => {
   try {
     const { error } = await db.rpc("acd_super_admin_reset_user_device", { p_email: email });
     if (error) throw error;
-    $("saSecurityMsg").textContent = "✓ Device lock cleared for " + email;
+    $("saSecurityMsg").textContent = "✓ Device lock cleared for " + email + " — Owner can now log in on a new device.";
   } catch (e) { $("saSecurityMsg").textContent = "Error: " + e.message; }
 });
 
@@ -3596,7 +3845,7 @@ $("saPublishAnnBtn")?.addEventListener("click", async () => {
 });
 
 /* =========================================================
-   SESSION INIT & OFFLINE FALLBACK
+   SESSION INIT & 100% INSTANT OFFLINE RESUME
    ========================================================= */
 function saveOfflineSessionSnapshot(snapshot) {
   try { localStorage.setItem("acd_offline_session_snapshot", JSON.stringify(snapshot)); } catch (e) {}
@@ -3606,7 +3855,7 @@ function loadOfflineSessionSnapshot() {
 }
 
 async function init() {
-  updateNetworkIndicator();
+  await updateNetworkIndicator();
   try { if (window.ACDOfflineDB) await window.ACDOfflineDB.open(); } catch (e) {}
 
   let session = null;
@@ -3616,27 +3865,40 @@ async function init() {
   } catch (e) {}
 
   const cachedSnap = loadOfflineSessionSnapshot();
-  if (!session && !navigator.onLine && cachedSnap?.userId) {
+  // Instant offline boot if device matches the locked device!
+  if ((!session || !navigator.onLine) && cachedSnap?.userId && cachedSnap?.deviceId === deviceId()) {
     user = { id: cachedSnap.userId, email: cachedSnap.email || "Offline User" };
     role = cachedSnap.role || "lab_admin";
     labs = cachedSnap.labs || [];
     $("account").textContent = cachedSnap.accountName || user.email;
     document.documentElement.classList.toggle("acd-lab-admin", role !== "super_admin");
+    if (role === "super_admin") {
+      $("nav").querySelector('[data-page="Super Admin"]')?.removeAttribute("hidden");
+    } else {
+      $("nav").querySelector('[data-page="Super Admin"]')?.remove();
+      $("superAdminCenter")?.remove();
+    }
     if (labs.length) {
       $("labChooser").classList.remove("hidden");
       $("labSelect").innerHTML = labs.map(l => '<option value="' + safe(l.id) + '">' + safe(l.name) + "</option>").join("");
       setLab(cachedSnap.labId || labs[0].id);
       $("labSelect").value = labId;
     }
+    await loadDashFestivalBanner();
     await loadCatalogue();
     await loadTodayLiveQueue();
     applyOptionalFeaturesUI();
     $("date").value = new Date().toISOString().slice(0, 10);
-    say("📴 Offline Mode Ready • " + catalogue.length + " tests available.");
-    return;
+    say("📴 Offline Mode Active (Fast Local Cache) • " + catalogue.length + " tests ready.");
+    $("mobile")?.focus();
+    if (!navigator.onLine) return;
   }
 
-  if (!session) {
+  if (!session && navigator.onLine) {
+    location.replace("index.html");
+    return;
+  }
+  if (!session && !navigator.onLine) {
     location.replace("index.html");
     return;
   }
@@ -3653,7 +3915,8 @@ async function init() {
     .maybeSingle();
   if (pe) throw pe;
 
-  role = profile?.platform_role === "super_admin" ? "super_admin" : "lab_admin";
+  const isSuper = (profile?.platform_role === "super_admin" || String(user.email || "").toLowerCase() === SUPER_ADMIN_EMAIL);
+  role = isSuper ? "super_admin" : "lab_admin";
   $("account").textContent = profile?.full_name || user.email;
   document.documentElement.classList.toggle("acd-lab-admin", role !== "super_admin");
 
@@ -3677,7 +3940,7 @@ async function init() {
   } else {
     const { data: members, error } = await db
       .from("cloud_memberships")
-      .select("lab_id,cloud_labs(id,name,address,phone)")
+      .select("lab_id,cloud_labs(id,name,address,phone,is_active)")
       .eq("user_id", user.id)
       .eq("is_active", true);
     if (error) throw error;
@@ -3686,8 +3949,16 @@ async function init() {
       id: m.lab_id,
       name: m.cloud_labs?.name || "Laboratory",
       address: m.cloud_labs?.address || "",
-      phone: m.cloud_labs?.phone || ""
+      phone: m.cloud_labs?.phone || "",
+      is_active: m.cloud_labs?.is_active !== false
     }));
+    if (labs[0] && labs[0].is_active === false) {
+      localStorage.removeItem("acd_offline_session_snapshot");
+      await db.auth.signOut();
+      alert("Your laboratory account has been locked by Super Admin.");
+      location.replace("index.html");
+      return;
+    }
     $("labChooser").classList.remove("hidden");
     $("labSelect").innerHTML = labs.map(l => '<option value="' + safe(l.id) + '">' + safe(l.name) + "</option>").join("");
     $("labSelect").disabled = labs.length === 1;
@@ -3696,13 +3967,22 @@ async function init() {
     $("labSelect").value = labId;
   }
 
-  saveOfflineSessionSnapshot({ userId: user.id, email: user.email, accountName: profile?.full_name || user.email, role, labId, labs });
+  saveOfflineSessionSnapshot({
+    userId: user.id,
+    email: user.email,
+    accountName: profile?.full_name || user.email,
+    role,
+    labId,
+    labs,
+    deviceId: deviceId()
+  });
 
   const currentLabObj = labs.find(x => x.id === labId);
   if (window.ACDPrintModule?.syncReportDesignFromCloud && labId) {
     await window.ACDPrintModule.syncReportDesignFromCloud(labId, currentLabObj, db);
   }
 
+  await loadDashFestivalBanner();
   await loadCatalogue();
   await loadLabAnnouncementsBanner();
   await updateFeatureNavigation();
@@ -3710,7 +3990,8 @@ async function init() {
   await loadTodayLiveQueue();
   await flushOfflineSyncQueue();
   $("date").value = new Date().toISOString().slice(0, 10);
-  say("✓ Enterprise LIMS Ready • " + catalogue.length + " tests loaded.");
+  say("✓ Enterprise LIMS Ready • " + catalogue.length + " tests cached for Offline & Online.");
+  $("mobile")?.focus();
 }
 
 function setLab(id) {
@@ -3901,11 +4182,19 @@ function buildReportPayloadFromSaved(r) {
   const meta = getOrderMeta(r.id);
   const p = r.patient || {};
   const allowVerify = getOptionalFeatures().pathVerify && !superAdminBlockedFeatures.has("nabl_verify_lock");
+  const net = Math.max(0, Number(r.total_amount || 0) - Number(r.discount_amount || 0));
+  const paid = Number(r.paid_amount || 0);
   return {
     id: r.id,
     order_date: r.order_date,
     ref_doctor: r.ref_doctor || "Self",
     is_verified: allowVerify ? !!meta.verified : true,
+    billing: {
+      total: Number(r.total_amount || 0),
+      discount: Number(r.discount_amount || 0),
+      paid: paid,
+      due: Math.max(0, net - paid)
+    },
     patient: {
       id: p.id || null,
       title: meta.title || "",
@@ -4267,7 +4556,7 @@ async function updateFeatureNavigation() {
 }
 
 function setupEnterFlow() {
-  const ids = ["patientTitle", "patient", "mobile", "age", "ageUnit", "gender", "patientAddress", "sampleType", "doctor", "testSearch"];
+  const ids = ["mobile", "patient", "age", "ageUnit", "gender", "patientAddress", "sampleType", "doctor", "testSearch"];
   ids.forEach((id, i) => {
     const el = $(id);
     if (!el) return;
@@ -4284,7 +4573,7 @@ document.addEventListener("keydown", e => {
   if (e.key === "F2") {
     e.preventDefault();
     navigateToPage("New Patient Entry");
-    $("patient")?.focus();
+    $("mobile")?.focus();
   } else if (e.key === "F4") {
     e.preventDefault();
     navigateToPage("Saved Reports");
@@ -4297,6 +4586,7 @@ document.addEventListener("keydown", e => {
 });
 
 $("logout").onclick = async () => {
+  localStorage.removeItem("acd_offline_session_snapshot");
   try { await db.rpc("acd_device_release", { p_device_id: deviceId() }); } catch (e) {}
   await db.auth.signOut();
   location.replace("index.html");
