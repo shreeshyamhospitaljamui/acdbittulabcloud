@@ -1,6 +1,6 @@
 "use strict";
 
-const CACHE_NAME = "acd-bittu-lab-shell-v3";
+const CACHE_NAME = "acd-bittu-lab-shell-v6";
 
 const CORE_FILES = [
   "./",
@@ -9,7 +9,9 @@ const CORE_FILES = [
   "./subscription.html",
   "./verify.html",
   "./print-report.js",
+  "./print-report.js?v=6",
   "./print-report.css",
+  "./print-report.css?v=6",
   "./platform-mode.js",
   "./offline-db.js",
   "./manifest.webmanifest"
@@ -19,11 +21,7 @@ self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(async cache => {
       for (const file of CORE_FILES) {
-        try {
-          await cache.add(file);
-        } catch (err) {
-          console.warn("SW precache skip:", file, err);
-        }
+        try { await cache.add(file); } catch (err) {}
       }
     })
   );
@@ -46,7 +44,6 @@ self.addEventListener("activate", event => {
 self.addEventListener("fetch", event => {
   const request = event.request;
   if (request.method !== "GET") return;
-
   const url = new URL(request.url);
 
   if (
@@ -58,14 +55,10 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  if (
-    url.origin !== self.location.origin &&
-    ["script", "style", "font", "image"].includes(request.destination)
-  ) {
+  if (url.origin !== self.location.origin && ["script", "style", "font", "image"].includes(request.destination)) {
     event.respondWith(
       caches.match(request).then(cached => {
         if (cached) return cached;
-
         return fetch(request).then(response => {
           if (response && (response.ok || response.type === "opaque")) {
             const copy = response.clone();
@@ -89,15 +82,11 @@ self.addEventListener("fetch", event => {
           return response;
         })
         .catch(async () => {
-          const cached = await caches.match(request);
+          const cached = await caches.match(request, { ignoreSearch: true });
           if (cached) return cached;
-
           if (request.mode === "navigate") {
-            return caches.match(
-              new URL("./index.html", self.registration.scope).href
-            );
+            return caches.match(new URL("./dashboard.html", self.registration.scope).href);
           }
-
           return new Response("Offline: File is not available.", {
             status: 503,
             headers: { "Content-Type": "text/plain" }
