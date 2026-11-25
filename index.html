@@ -8,10 +8,33 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="manifest" href="./manifest.webmanifest">
 <style>
-:root{--navy:#0b1b33;--blue:#1769e0;--ink:#18263a;--muted:#718096;--line:#dfe6ef;--bg:#f4f7fb}*{box-sizing:border-box}html,body{min-height:100%;margin:0}body{font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);color:var(--ink);display:grid;place-items:center;padding:24px}.page{width:min(100%,980px);min-height:610px;background:#fff;border:1px solid #e7edf4;border-radius:24px;overflow:hidden;display:grid;grid-template-columns:.92fr 1.08fr;box-shadow:0 24px 70px #12233f18}.visual{background:linear-gradient(145deg,var(--navy),#12345d 70%,#14529a);color:white;padding:42px 36px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}.brand{display:flex;align-items:center;gap:12px}.brandmark{width:46px;height:46px;border-radius:14px;background:#fff;color:#1769e0;display:grid;place-items:center;font-size:24px;font-weight:900}.brandname{font-size:16px;font-weight:800}.brandtag{font-size:10px;color:#b8c9df;letter-spacing:1.2px;margin-top:4px}.hero{margin:65px 0}.eyebrow{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8dbdff;font-weight:800}.hero h1{font-size:34px;line-height:1.15;margin:14px 0}.hero p{font-size:13px;line-height:1.7;color:#c5d4e6}.features{display:grid;gap:13px;color:#d9e5f4;font-size:12px}.formside{padding:42px 52px;display:flex;flex-direction:column;justify-content:center}.formhead h2{font-size:25px;margin:0 0 7px}.formhead p{font-size:12px;color:var(--muted);margin:0 0 22px}.role-label,.field label{font-size:11px;font-weight:750;color:#42516a}.roles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:9px 0 20px}.role{border:1px solid var(--line);border-radius:12px;background:#fff;padding:13px 10px;text-align:left;color:#40516a;cursor:pointer}.role.active{border:2px solid var(--blue);background:#f1f6ff;color:#1459bd;padding:12px 9px}.role .ico{font-size:20px;display:block;margin-bottom:7px}.role b{display:block;font-size:12px}.role small{display:block;font-size:10px;color:#8290a3;margin-top:4px}.field{margin:11px 0}.field label{display:block;margin-bottom:6px}.field input{width:100%;height:43px;border:1px solid #dce4ee;border-radius:9px;padding:0 12px;background:#fff;color:#17243a;font-size:13px;outline:none}.field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px #1769e018}.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:11px 0 18px;font-size:11px;color:#64748b}.link{border:0;background:transparent;color:var(--blue);padding:0;font-size:11px;font-weight:700;cursor:pointer}.submit,.choice{width:100%;min-height:46px;border:0;border-radius:9px;background:var(--blue);color:#fff;font-size:13px;font-weight:800;box-shadow:0 7px 15px #1769e02b;cursor:pointer}.submit:disabled,.choice:disabled{opacity:.65;cursor:wait}.message{display:none;border-radius:8px;padding:10px 12px;margin:0 0 12px;font-size:11px;line-height:1.5}.message.show{display:block}.message.error{background:#fff0f1;color:#a52c3a;border:1px solid #ffd6da}.message.info,.message.success{background:#edf5ff;color:#245a9d;border:1px solid #d5e7ff}.message.success{background:#eaf8ef;color:#176b3b;border-color:#ccebd6}.security,.foot{font-size:10px;color:#8996a8;text-align:center;margin-top:17px}#signupForm,#accessPanel{display:none}#accessPanel .choice{margin:9px 0;text-align:left;padding:13px 15px}.choice.secondary{background:#fff;color:#1459bd;border:1px solid #b9d2f5;box-shadow:none}.choice span{display:block;font-size:10px;font-weight:500;margin-top:4px}.backlink{margin-top:10px}@media(max-width:760px){body{padding:0;background:#fff}.page{min-height:100vh;width:100%;border:0;border-radius:0;grid-template-columns:1fr;box-shadow:none}.visual{padding:20px 22px 12px;min-height:145px}.hero{margin:20px 0 4px}.hero h1{font-size:23px;margin:8px 0}.hero p,.features{display:none}.formside{padding:25px 24px 35px}.formhead h2{font-size:23px}.field-grid{grid-template-columns:1fr}}
+:root{--navy:#0b1b33;--blue:#1769e0;--ink:#18263a;--muted:#718096;--line:#dfe6ef;--bg:#f4f7fb}*{box-sizing:border-box}html,body{min-height:100%;margin:0}body{font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+
+/* Live Animated Festival Sparkle Banner */
+.fest-banner{width:min(100%,980px);margin-bottom:14px;border-radius:14px;padding:11px 18px;text-align:center;color:#fff;position:relative;overflow:hidden;box-shadow:0 10px 26px rgba(15,23,42,.22);display:none;animation:festFloat 3s ease-in-out infinite}
+.fest-banner::before{content:"";position:absolute;top:0;left:-120%;width:85%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.38),transparent);transform:skewX(-22deg);animation:festShine 2.8s infinite}
+.fest-theme-diwali{background:linear-gradient(135deg,#b45309,#ea580c,#d97706)}
+.fest-theme-durga{background:linear-gradient(135deg,#991b1b,#dc2626,#b91c1c)}
+.fest-theme-holi{background:linear-gradient(135deg,#7e22ce,#db2777,#2563eb)}
+.fest-theme-eid{background:linear-gradient(135deg,#065f46,#059669,#0d9488)}
+.fest-theme-gold{background:linear-gradient(135deg,#1e3a8a,#1d4ed8,#0284c7)}
+.fest-title{font-size:15px;font-weight:800;letter-spacing:.3px;text-shadow:0 2px 6px rgba(0,0,0,.3)}
+.fest-sub{font-size:12px;opacity:.95;margin-top:2px}
+.fest-sparkle{display:inline-block;animation:festPulse 1.2s alternate infinite}
+@keyframes festShine{0%{left:-120%}65%,100%{left:160%}}
+@keyframes festFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes festPulse{from{transform:scale(.9);opacity:.85}to{transform:scale(1.2);opacity:1}}
+
+.page{width:min(100%,980px);min-height:610px;background:#fff;border:1px solid #e7edf4;border-radius:24px;overflow:hidden;display:grid;grid-template-columns:.92fr 1.08fr;box-shadow:0 24px 70px #12233f18}.visual{background:linear-gradient(145deg,var(--navy),#12345d 70%,#14529a);color:white;padding:42px 36px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}.brand{display:flex;align-items:center;gap:12px}.brandmark{width:46px;height:46px;border-radius:14px;background:#fff;color:#1769e0;display:grid;place-items:center;font-size:24px;font-weight:900}.brandname{font-size:16px;font-weight:800}.brandtag{font-size:10px;color:#b8c9df;letter-spacing:1.2px;margin-top:4px}.hero{margin:65px 0}.eyebrow{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8dbdff;font-weight:800}.hero h1{font-size:34px;line-height:1.15;margin:14px 0}.hero p{font-size:13px;line-height:1.7;color:#c5d4e6}.features{display:grid;gap:13px;color:#d9e5f4;font-size:12px}.formside{padding:42px 52px;display:flex;flex-direction:column;justify-content:center}.formhead h2{font-size:25px;margin:0 0 7px}.formhead p{font-size:12px;color:var(--muted);margin:0 0 22px}.role-label,.field label{font-size:11px;font-weight:750;color:#42516a}.roles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:9px 0 20px}.role{border:1px solid var(--line);border-radius:12px;background:#fff;padding:13px 10px;text-align:left;color:#40516a;cursor:pointer}.role.active{border:2px solid var(--blue);background:#f1f6ff;color:#1459bd;padding:12px 9px}.role .ico{font-size:20px;display:block;margin-bottom:7px}.role b{display:block;font-size:12px}.role small{display:block;font-size:10px;color:#8290a3;margin-top:4px}.field{margin:11px 0}.field label{display:block;margin-bottom:6px}.field input{width:100%;height:43px;border:1px solid #dce4ee;border-radius:9px;padding:0 12px;background:#fff;color:#17243a;font-size:13px;outline:none}.field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px #1769e018}.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:11px 0 18px;font-size:11px;color:#64748b}.link{border:0;background:transparent;color:var(--blue);padding:0;font-size:11px;font-weight:700;cursor:pointer}.submit,.choice{width:100%;min-height:46px;border:0;border-radius:9px;background:var(--blue);color:#fff;font-size:13px;font-weight:800;box-shadow:0 7px 15px #1769e02b;cursor:pointer}.submit:disabled,.choice:disabled{opacity:.65;cursor:wait}.message{display:none;border-radius:8px;padding:10px 12px;margin:0 0 12px;font-size:11px;line-height:1.5}.message.show{display:block}.message.error{background:#fff0f1;color:#a52c3a;border:1px solid #ffd6da}.message.info,.message.success{background:#edf5ff;color:#245a9d;border:1px solid #d5e7ff}.message.success{background:#eaf8ef;color:#176b3b;border-color:#ccebd6}.security,.foot{font-size:10px;color:#8996a8;text-align:center;margin-top:17px}#signupForm,#accessPanel{display:none}#accessPanel .choice{margin:9px 0;text-align:left;padding:13px 15px}.choice.secondary{background:#fff;color:#1459bd;border:1px solid #b9d2f5;box-shadow:none}.choice span{display:block;font-size:10px;font-weight:500;margin-top:4px}.backlink{margin-top:10px}@media(max-width:760px){body{padding:0;background:#fff}.fest-banner{border-radius:0;margin-bottom:0}.page{min-height:100vh;width:100%;border:0;border-radius:0;grid-template-columns:1fr;box-shadow:none}.visual{padding:20px 22px 12px;min-height:145px}.hero{margin:20px 0 4px}.hero h1{font-size:23px;margin:8px 0}.hero p,.features{display:none}.formside{padding:25px 24px 35px}.formhead h2{font-size:23px}.field-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
+
+<div id="loginFestBanner" class="fest-banner fest-theme-diwali">
+  <div class="fest-title"><span class="fest-sparkle">✨</span> <span id="loginFestTitle"></span> <span class="fest-sparkle">✨</span></div>
+  <div class="fest-sub" id="loginFestSub"></div>
+</div>
+
 <main class="page">
 <section class="visual">
   <div class="brand"><div class="brandmark">✚</div><div><div class="brandname">ACD BITTU LAB CLOUD</div><div class="brandtag">DESKTOP + CLOUD LIMS</div></div></div>
@@ -65,7 +88,7 @@
       <div class="message" id="recoveryMessage" role="status" aria-live="polite"></div>
     </div>
   </div>
-  <div class="security">🔒 Secure access for authorized users only</div><div class="foot">© <span id="year"></span> ACD Bittu Lab Cloud. All rights reserved.</div>
+  <div class="security">🔒 Strict Single-Device Lock &amp; Offline Support Enabled</div><div class="foot">© <span id="year"></span> ACD Bittu Lab Cloud. All rights reserved.</div>
 </div>
 
 <div id="accessPanel">
@@ -82,9 +105,39 @@
 "use strict";
 const SUPABASE_URL="https://axfvvquhswapiwmvrepe.supabase.co";
 const SUPABASE_ANON_KEY="sb_publishable_n6jRvVDjw2kOF7CS46omqQ_6qGkdR-q";
+const SUPER_ADMIN_EMAIL="deepakkumar70612440@gmail.com";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 const $=id=>document.getElementById(id);
 let selectedRole="Super Admin",pendingLabId=null,accessOptions=null;
+
+// If user already has an active offline session on this locked device, allow instant offline resume!
+(function checkOfflineResume(){
+  if(navigator.onLine)return;
+  try{
+    const snap=JSON.parse(localStorage.getItem("acd_offline_session_snapshot")||"null");
+    if(snap&&snap.userId&&snap.deviceId===deviceId()){
+      location.replace("dashboard.html");
+    }
+  }catch(e){}
+})();
+
+// Load Animated Festival Banner if enabled by Super Admin
+(async function loadLoginFest(){
+  try{
+    let fest=JSON.parse(localStorage.getItem("acd_festival_banner_cache")||"null");
+    if(navigator.onLine){
+      const {data}=await db.from("saas_festival_banner").select("*").eq("id",1).maybeSingle();
+      if(data){fest=data;localStorage.setItem("acd_festival_banner_cache",JSON.stringify(data));}
+    }
+    if(fest&&fest.is_active&&fest.title_text){
+      const b=$("loginFestBanner");
+      b.className="fest-banner fest-theme-"+(fest.theme||"diwali");
+      $("loginFestTitle").textContent=fest.title_text;
+      $("loginFestSub").textContent=fest.sub_text||"";
+      b.style.display="block";
+    }
+  }catch(e){}
+})();
 
 function deviceId(){
   let id=localStorage.getItem("acd_device_id");
@@ -94,7 +147,6 @@ function deviceId(){
   }
   return id;
 }
-const wait=ms=>new Promise(r=>setTimeout(r,ms));
 function msg(t,type="error",id="message"){$(id).textContent=t;$(id).className="message show "+type}
 function clear(id="message"){$(id).textContent="";$(id).className="message"}
 function formatRupees(paise,fallback){
@@ -149,11 +201,9 @@ $("labRole").onclick=()=>{chooseRole("Lab Admin");loginMode()};
 $("showSignup").onclick=signupMode;
 $("showLogin").onclick=loginMode;
 
-// Restore remembered email if saved
 const savedEmail=localStorage.getItem("acd_saved_email");
 if(savedEmail){$("username").value=savedEmail;$("remember").checked=true;}
 
-// Forgot password handler
 $("forgot").onclick=async()=>{
   clear();
   const email=$("username").value.trim();
@@ -169,7 +219,6 @@ $("forgot").onclick=async()=>{
   }
 };
 
-// Emergency Super Admin Recovery
 $("toggleRecovery").onclick=()=>{
   $("recoveryPanel").style.display=$("recoveryPanel").style.display==="none"?"block":"none";
   clear("recoveryMessage");
@@ -200,7 +249,6 @@ $("sendRecoveryLink").onclick=async()=>{
   }
 };
 
-// Email verification & device recovery callback
 (async()=>{
   const params=new URLSearchParams(location.search);
   if(params.get("acd_recovery")!=="1")return;
@@ -212,7 +260,7 @@ $("sendRecoveryLink").onclick=async()=>{
     if(!session)throw new Error("Email verification failed or link expired. Request a new link.");
     const {data:profile,error:profileError}=await db.from("profiles").select("platform_role").eq("id",session.user.id).maybeSingle();
     if(profileError)throw profileError;
-    if(profile?.platform_role!=="super_admin")throw new Error("This email is not registered as Super Admin.");
+    if(profile?.platform_role!=="super_admin"&&session.user.email!==SUPER_ADMIN_EMAIL)throw new Error("This email is not registered as Super Admin.");
     const {data,error:recoveryError}=await db.rpc("acd_super_admin_recover_device",{p_device_id:deviceId()});
     if(recoveryError)throw recoveryError;
     if(data?.status!=="granted")throw new Error("Device recovery was not granted.");
@@ -227,31 +275,21 @@ $("sendRecoveryLink").onclick=async()=>{
   }
 })();
 
-// Single-Device Lock Security
+// STRICT SINGLE-DEVICE LOCK: Blocks 2nd device even if 1st device is offline!
 async function deviceSecurity(){
-  let {data,error}=await db.rpc("acd_device_claim",{p_device_id:deviceId()});
+  if(!navigator.onLine)throw new Error("New login requires an internet connection.");
+  const myDev=deviceId();
+  let {data,error}=await db.rpc("acd_device_claim",{p_device_id:myDev});
   if(error)throw new Error("Secure device check failed: "+error.message);
   let s=data?.status;
-  if(s==="waiting_for_old_device"){
-    msg("Waiting for the previous device to sign out…","info");
-    let end=Date.now()+120000;
-    while(Date.now()<end){
-      await wait(4000);
-      let x=await db.rpc("acd_device_wait_for_handoff",{p_device_id:deviceId()});
-      if(x.error)throw x.error;
-      s=x.data?.status;
-      if(s==="granted")break;
-      if(s==="blocked_old_device_offline")throw new Error("Previous device is offline. Open it online and sign out first.");
-    }
-    if(s!=="granted")throw new Error("Previous device has not signed out yet.");
-  }else if(s==="blocked_old_device_offline"){
-    throw new Error("Previous device is offline. Open it online and sign out first.");
-  }else if(s!=="granted"){
+  if(s==="waiting_for_old_device"||s==="blocked_old_device_offline"||s==="already_claimed"||s==="locked_other_device"){
+    throw new Error("🔒 STRICT DEVICE LOCK: This account is already active/locked on another device (even if offline). Sign out from the first device online, or ask Super Admin to reset your Device Lock.");
+  }
+  if(s!=="granted"){
     throw new Error("Secure device check did not grant access.");
   }
 }
 
-// Post-login routing for Lab Admin / Lab Owner
 async function routeLabOwner(uid){
   let {data:members,error:me}=await db
     .from("cloud_memberships")
@@ -260,7 +298,6 @@ async function routeLabOwner(uid){
     .eq("is_active",true);
   if(me)throw new Error("Lab access check failed: "+me.message);
 
-  // If user verified email after signup and hasn't created lab row yet, auto-complete registration
   if(!members?.length){
     const pendingRaw=localStorage.getItem("acd_pending_owner_signup");
     if(pendingRaw){
@@ -284,6 +321,17 @@ async function routeLabOwner(uid){
 
   if(!members?.length)throw new Error("No active laboratory linked to this account.");
   pendingLabId=members[0].lab_id;
+
+  // Check if Super Admin locked this lab remotely
+  try{
+    const {data:labRec}=await db.from("cloud_labs").select("is_active").eq("id",pendingLabId).maybeSingle();
+    if(labRec&&labRec.is_active===false){
+      throw new Error("⛔ Your Laboratory account is temporarily suspended/locked by Super Admin. Contact support.");
+    }
+  }catch(lockErr){
+    if(String(lockErr.message||"").includes("suspended"))throw lockErr;
+  }
+
   sessionStorage.setItem("acd_role","lab_admin");
   sessionStorage.setItem("acd_lab_id",pendingLabId);
 
@@ -297,12 +345,10 @@ async function routeLabOwner(uid){
   let o=Array.isArray(opts)?opts[0]:opts;
   if(!o)throw new Error("Subscription status could not be verified.");
 
-  // If already paid & active, go directly to dashboard
   if(String(o.subscription_status||"").toLowerCase()==="active")return dashboard();
   accessScreen(o);
 }
 
-// LOGIN FLOW
 $("loginForm").onsubmit=async e=>{
   e.preventDefault(); clear();
   let email=$("username").value.trim(), password=$("password").value;
@@ -314,6 +360,7 @@ $("loginForm").onsubmit=async e=>{
   let b=$("submit"); b.disabled=true; b.textContent="Signing in…";
   let signed=false;
   try{
+    if(!navigator.onLine)throw new Error("Internet connection is required for first-time sign in.");
     let {data,error}=await db.auth.signInWithPassword({email,password});
     if(error)throw error;
     signed=true;
@@ -323,13 +370,15 @@ $("loginForm").onsubmit=async e=>{
     let {data:p,error:pe}=await db.from("profiles").select("platform_role").eq("id",uid).maybeSingle();
     if(pe)throw new Error("Account role check failed: "+pe.message);
 
+    const isSuper=(p?.platform_role==="super_admin"||email.toLowerCase()===SUPER_ADMIN_EMAIL);
+
     if(selectedRole==="Super Admin"){
-      if(p?.platform_role!=="super_admin")throw new Error("This account is not a Super Admin.");
+      if(!isSuper)throw new Error("This account is not a Super Admin.");
       sessionStorage.setItem("acd_role","super_admin");
       sessionStorage.removeItem("acd_lab_id");
       return dashboard();
     }
-    if(p?.platform_role==="super_admin")throw new Error("Select Super Admin Login for this account.");
+    if(isSuper)throw new Error("Select Super Admin Login for this account.");
     await routeLabOwner(uid);
   }catch(e){
     msg(authError(e));
@@ -340,7 +389,6 @@ $("loginForm").onsubmit=async e=>{
   }
 };
 
-// NEW LAB OWNER SIGNUP FLOW (acd_register_lab_owner)
 $("signupForm").onsubmit=async e=>{
   e.preventDefault(); clear();
   const ownerName=$("ownerName").value.trim();
@@ -370,7 +418,6 @@ $("signupForm").onsubmit=async e=>{
     });
     if(signErr)throw signErr;
 
-    // If email verification is enabled in Supabase, session will be null until confirmed
     if(!signData?.session){
       localStorage.setItem("acd_pending_owner_signup",JSON.stringify({
         owner_name:ownerName,
@@ -449,7 +496,6 @@ $("trialBtn").onclick=async()=>{
   }
 };
 
-// RAZORPAY SUBSCRIPTION LOGIC
 $("payBtn").onclick=async()=>{
   let b=$("payBtn"); b.disabled=true;
   try{
