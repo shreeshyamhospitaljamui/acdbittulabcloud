@@ -1,5 +1,98 @@
-/* ... existing code ... /
-/ Exact A4 Sheet Container with Dynamic Margins & Font Family */
+/* =========================================================
+ACD BITTU LAB CLOUD — COMPLETE A4 PRINT STYLESHEET
+========================================================= */
+
+#acdPrintOverlay {
+position: fixed !important;
+top: 0 !important;
+left: 0 !important;
+right: 0 !important;
+bottom: 0 !important;
+width: 100vw !important;
+height: 100vh !important;
+z-index: 999999 !important;
+background: rgba(15, 23, 42, 0.92) !important;
+display: flex !important;
+flex-direction: column !important;
+overflow: hidden !important;
+}
+
+#acdPrintOverlay.hidden {
+display: none !important;
+}
+
+.acd-print-toolbar {
+flex: 0 0 auto !important;
+background: #0f172a !important;
+color: #ffffff !important;
+padding: 10px 18px !important;
+display: flex !important;
+align-items: center !important;
+justify-content: space-between !important;
+gap: 10px !important;
+border-bottom: 1px solid #334155 !important;
+flex-wrap: wrap !important;
+}
+
+.acd-print-toolbar-title {
+font-size: 13px !important;
+font-weight: 700 !important;
+display: flex !important;
+align-items: center !important;
+gap: 8px !important;
+}
+
+.acd-print-toolbar-actions {
+display: flex !important;
+align-items: center !important;
+gap: 8px !important;
+flex-wrap: wrap !important;
+}
+
+.acd-btn-print {
+border: 0 !important;
+border-radius: 6px !important;
+padding: 7px 14px !important;
+font-size: 12px !important;
+font-weight: 700 !important;
+cursor: pointer !important;
+display: inline-flex !important;
+align-items: center !important;
+gap: 5px !important;
+}
+
+.acd-btn-print.primary {
+background: #0866df !important;
+color: #fff !important;
+}
+
+.acd-btn-print.pdf {
+background: #7c3aed !important;
+color: #fff !important;
+}
+
+.acd-btn-print.whatsapp {
+background: #16a34a !important;
+color: #fff !important;
+}
+
+.acd-btn-print.close {
+background: #e2e8f0 !important;
+color: #1e293b !important;
+}
+
+.acd-print-viewport {
+flex: 1 1 auto !important;
+overflow-y: auto !important;
+overflow-x: auto !important;
+padding: 20px 12px 44px !important;
+display: flex !important;
+flex-direction: column !important;
+align-items: center !important;
+gap: 18px !important;
+}
+
+/* Exact A4 Sheet Container */
 .acd-a4-page {
 width: 210mm;
 height: 297mm;
@@ -7,7 +100,7 @@ min-height: 297mm;
 max-height: 297mm;
 background: #ffffff;
 color: #111827;
-box-shadow: 0 12px 35px rgba(0, 0, 0, 0.45);
+box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5);
 padding-top: var(--report-margin-top, 10mm);
 padding-bottom: var(--report-margin-bottom, 9mm);
 padding-left: var(--report-margin-side, 12mm);
@@ -18,6 +111,7 @@ justify-content: space-between;
 position: relative;
 overflow: hidden;
 box-sizing: border-box;
+transform-origin: top center;
 font-family: var(--report-font-family, Arial, Helvetica, sans-serif);
 }
 
@@ -28,7 +122,7 @@ flex: 0 0 auto;
 .acd-a4-body {
 flex: 1 1 auto;
 overflow: hidden;
-margin-top: var(--report-gap-top, 6px);
+margin-top: var(--report-gap-top, 2mm);
 }
 
 /* Bottom Pinned Signature Area on EVERY A4 Page */
@@ -98,16 +192,16 @@ margin-top: 3px;
 line-height: 1.35;
 }
 
-/* Patient Meta Box (Supports Boxed, Lines & Borderless Styles + Independent Gap) */
+/* Patient Meta Box */
 .acd-patient-box {
-margin-top: var(--patient-gap-top, 6px);
+margin-top: var(--patient-gap-top, 2mm);
 border: 1px solid #94a3b8;
 border-radius: 5px;
 padding: 7px 9px;
 background: #f8fafc;
 display: grid;
 grid-template-columns: 1fr 1fr auto;
-gap: 8px;
+gap: 10px;
 align-items: center;
 font-size: var(--report-patient-size, 11px);
 }
@@ -127,7 +221,104 @@ border-radius: 0;
 background: transparent;
 padding: 4px 0;
 }
-/* ... existing code ... /
+
+.acd-patient-col {
+display: flex;
+flex-direction: column;
+gap: 3px;
+min-width: 0;
+}
+
+.acd-patient-row {
+display: flex;
+gap: 4px;
+line-height: 1.35;
+}
+
+.acd-patient-row b {
+min-width: 82px;
+color: #1e293b;
+font-weight: 700;
+flex-shrink: 0;
+}
+
+.acd-barcode-box {
+margin: 2px 0;
+max-width: 175px;
+overflow: hidden;
+}
+
+.acd-barcode-box svg {
+max-width: 170px;
+height: 28px;
+display: block;
+}
+
+.acd-barcode-fallback {
+font-family: monospace;
+font-size: 10px;
+font-weight: 700;
+letter-spacing: 0.5px;
+color: #0f172a;
+}
+
+.acd-qr-box {
+width: 64px;
+height: 64px;
+padding: 2px;
+background: #fff;
+border: 1px solid #cbd5e1;
+border-radius: 4px;
+display: grid;
+place-items: center;
+flex-shrink: 0;
+}
+
+.acd-qr-box img,
+.acd-qr-box canvas {
+width: 58px !important;
+height: 58px !important;
+display: block;
+}
+
+.acd-report-banner-title {
+margin-top: 7px;
+padding: 4px 8px;
+background: var(--report-accent, #0b4fa8);
+color: #ffffff;
+font-size: 11px;
+font-weight: 800;
+text-align: center;
+letter-spacing: 1px;
+border-radius: 3px;
+}
+
+/* Report Results Table */
+.acd-report-table {
+width: 100%;
+border-collapse: collapse;
+font-size: var(--report-font-size, 11px);
+}
+
+.acd-report-table thead th {
+background: #e2e8f0;
+color: #0f172a;
+font-size: calc(var(--report-font-size, 11px) - 0.5px);
+font-weight: 800;
+text-transform: uppercase;
+padding: 5px 7px;
+border-top: 1.5px solid #475569;
+border-bottom: 1.5px solid #475569;
+text-align: left;
+}
+
+.acd-report-table tbody td {
+padding: var(--report-row-pad, 4.5px) 7px;
+border-bottom: 1px solid #e2e8f0;
+vertical-align: middle;
+color: #1e293b;
+}
+
 .acd-test-group-header td {
 background: #f1f5f9;
 color: var(--report-accent, #0b4fa8);
@@ -138,4 +329,177 @@ border-top: 1px solid #94a3b8;
 border-bottom: 1px solid #cbd5e1;
 letter-spacing: 0.3px;
 }
-/ ... existing code ... */
+
+.acd-res-abnormal {
+color: #b91c1c !important;
+font-weight: 800 !important;
+}
+
+.acd-res-normal {
+font-weight: 600;
+}
+
+.acd-clinical-note-row td {
+font-size: 9.5px;
+color: #475569;
+background: #fafafa;
+font-style: italic;
+}
+
+/* Widal Matrix Table inside Print */
+.acd-widal-table {
+width: 100%;
+border-collapse: collapse;
+margin: 4px 0;
+font-size: 10px;
+}
+
+.acd-widal-table th,
+.acd-widal-table td {
+border: 1px solid #94a3b8;
+padding: 4px 6px;
+text-align: center;
+}
+
+.acd-widal-table th {
+background: #e2e8f0;
+font-weight: 700;
+color: #0f172a;
+}
+
+.acd-widal-table td:first-child,
+.acd-widal-table th:first-child {
+text-align: left;
+font-weight: 700;
+}
+
+/* 3-Column Signatures & Footer */
+.acd-sig-grid {
+display: grid;
+grid-template-columns: 1fr auto 1fr;
+align-items: end;
+gap: 16px;
+padding-top: 4px;
+}
+
+.acd-sig-block {
+text-align: center;
+display: flex;
+flex-direction: column;
+align-items: center;
+}
+
+.acd-sig-block:first-child {
+align-items: flex-start;
+text-align: left;
+}
+
+.acd-sig-block:last-child {
+align-items: flex-end;
+text-align: right;
+}
+
+.acd-sig-img {
+max-height: 36px;
+max-width: 130px;
+object-fit: contain;
+margin-bottom: 3px;
+display: block;
+}
+
+.acd-sig-line {
+font-size: 11px;
+font-weight: 800;
+color: #0f172a;
+border-top: 1px solid #64748b;
+padding-top: 3px;
+min-width: 145px;
+}
+
+.acd-sig-sub {
+font-size: 9.5px;
+color: #475569;
+margin-top: 1px;
+}
+
+.acd-footer-center {
+text-align: center;
+font-size: 9.5px;
+color: #334155;
+padding-bottom: 2px;
+}
+
+.acd-footer-note {
+margin-top: 6px;
+padding-top: 4px;
+border-top: 1px dashed #cbd5e1;
+display: flex;
+justify-content: space-between;
+font-size: 8.8px;
+color: #64748b;
+gap: 8px;
+}
+
+/* =========================================================
+CRITICAL: EXACT A4 PRINT ISOLATION (HIDES DASHBOARD ON PRINT)
+========================================================= */
+@media print {
+@page {
+size: A4 portrait;
+margin: 0;
+}
+
+html,
+body {
+margin: 0 !important;
+padding: 0 !important;
+background: #ffffff !important;
+width: 210mm !important;
+-webkit-print-color-adjust: exact !important;
+print-color-adjust: exact !important;
+}
+
+.app,
+#acdGlobalToast,
+dialog {
+display: none !important;
+}
+
+#acdPrintOverlay {
+position: static !important;
+inset: auto !important;
+width: 210mm !important;
+height: auto !important;
+display: block !important;
+background: #ffffff !important;
+overflow: visible !important;
+}
+
+.acd-print-toolbar {
+display: none !important;
+}
+
+.acd-print-viewport {
+display: block !important;
+padding: 0 !important;
+margin: 0 !important;
+overflow: visible !important;
+}
+
+.acd-a4-page {
+width: 210mm !important;
+height: 297mm !important;
+min-height: 297mm !important;
+max-height: 297mm !important;
+margin: 0 !important;
+box-shadow: none !important;
+transform: none !important;
+page-break-after: always;
+break-after: page;
+}
+
+.acd-a4-page:last-child {
+page-break-after: auto;
+break-after: auto;
+}
+}
