@@ -1,259 +1,357 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ACD BITTU LAB CLOUD — Enterprise Pathology LIMS</title>
-  <link rel="manifest" href="manifest.webmanifest" />
-  <meta name="theme-color" content="#0f294a" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
-    body {
-      margin: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
-      background: linear-gradient(135deg, #0b1f3a 0%, #163a6b 55%, #0f294a 100%);
-      color: #0f172a; padding: 16px;
-    }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#07172d">
+<title>ACD BITTU LAB CLOUD — Login &amp; Lab Owner Portal</title>
+<link rel="manifest" href="manifest.webmanifest">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--navy:#07172d;--blue:#0866df;--ink:#18263a;--muted:#667085;--line:#dce3eb;--bg:#f1f5f9;--green:#078447;--red:#b42318}
+*{box-sizing:border-box;font-family:'Segoe UI',Inter,Arial,sans-serif}
+body{margin:0;min-height:100vh;background:linear-gradient(135deg,#07172d 0%,#0e2d56 55%,#07172d 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;color:var(--ink)}
 
-    /* Animated Shimmer & Sparkle Festival Banner */
-    .festival-ribbon {
-      width: 100%; max-width: 540px; margin-bottom: 16px; border-radius: 14px;
-      padding: 12px 18px; text-align: center; color: #fff; position: relative; overflow: hidden;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35); border: 1.5px solid rgba(255, 255, 255, 0.45);
-      display: none; animation: festFloat 3s ease-in-out infinite;
-    }
-    .festival-ribbon::before {
-      content: ""; position: absolute; top: 0; left: -120%; width: 90%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.38), transparent);
-      transform: skewX(-22deg); animation: festShine 2.8s infinite;
-    }
-    .fest-theme-diwali { background: linear-gradient(135deg, #b45309, #ea580c, #d97706); }
-    .fest-theme-durga  { background: linear-gradient(135deg, #991b1b, #dc2626, #b91c1c); }
-    .fest-theme-holi   { background: linear-gradient(135deg, #7e22ce, #db2777, #2563eb); }
-    .fest-theme-eid    { background: linear-gradient(135deg, #065f46, #059669, #0d9488); }
-    .fest-theme-gold   { background: linear-gradient(135deg, #1e3a8a, #1d4ed8, #0284c7); }
-    .fest-title { font-size: 15.5px; font-weight: 800; letter-spacing: 0.3px; text-shadow: 0 2px 6px rgba(0,0,0,0.35); }
-    .fest-sub { font-size: 12px; opacity: 0.95; margin-top: 3px; }
-    .fest-sparkle { display: inline-block; animation: festPulse 1.3s alternate infinite; }
+/* Animated Shimmer & Sparkle Festival Banner */
+.festival-ribbon{width:100%;max-width:480px;margin-bottom:14px;border-radius:14px;padding:12px 16px;text-align:center;color:#fff;position:relative;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.35);border:1.5px solid rgba(255,255,255,.45);display:none;animation:festFloat 3s ease-in-out infinite}
+.festival-ribbon::before{content:"";position:absolute;top:0;left:-120%;width:90%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.38),transparent);transform:skewX(-22deg);animation:festShine 2.8s infinite}
+.fest-theme-diwali{background:linear-gradient(135deg,#b45309,#ea580c,#d97706)}
+.fest-theme-durga{background:linear-gradient(135deg,#991b1b,#dc2626,#b91c1c)}
+.fest-theme-holi{background:linear-gradient(135deg,#7e22ce,#db2777,#2563eb)}
+.fest-theme-eid{background:linear-gradient(135deg,#065f46,#059669,#0d9488)}
+.fest-theme-gold{background:linear-gradient(135deg,#1e3a8a,#1d4ed8,#0284c7)}
+.fest-title{font-size:15px;font-weight:800;letter-spacing:.3px;text-shadow:0 2px 6px rgba(0,0,0,.35)}
+.fest-sub{font-size:12px;opacity:.95;margin-top:3px}
+.fest-sparkle{display:inline-block;animation:festPulse 1.3s alternate infinite}
+@keyframes festShine{0%{left:-120%}65%,100%{left:160%}}
+@keyframes festFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes festPulse{from{transform:scale(.92);opacity:.85}to{transform:scale(1.18);opacity:1}}
 
-    @keyframes festShine { 0% { left: -120%; } 65%, 100% { left: 160%; } }
-    @keyframes festFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
-    @keyframes festPulse { from { transform: scale(0.92); opacity: 0.85; } to { transform: scale(1.18); opacity: 1; } }
-
-    .login-card {
-      width: 100%; max-width: 440px; background: #ffffff; border-radius: 16px;
-      padding: 32px 28px; box-shadow: 0 24px 60px rgba(0,0,0,0.35);
-    }
-    .brand { text-align: center; margin-bottom: 22px; }
-    .brand-badge {
-      display: inline-block; background: #eff6ff; color: #1d4ed8; font-weight: 700;
-      font-size: 11px; padding: 4px 10px; border-radius: 999px; letter-spacing: 0.5px;
-    }
-    .brand h1 { margin: 8px 0 4px; font-size: 22px; color: #0f294a; }
-    .brand p { margin: 0; font-size: 13px; color: #64748b; }
-    .field { margin-bottom: 14px; }
-    .field label { display: block; font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 5px; }
-    .field input {
-      width: 100%; padding: 11px 13px; border: 1.5px solid #cbd5e1; border-radius: 9px;
-      font-size: 14px; outline: none; transition: border-color 0.2s;
-    }
-    .field input:focus { border-color: #1d4ed8; }
-    .btn-primary {
-      width: 100%; padding: 12px; border: none; border-radius: 9px; background: #1d4ed8;
-      color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 6px;
-    }
-    .btn-primary:hover { background: #1e40af; }
-    .btn-primary:disabled { background: #94a3b8; cursor: not-allowed; }
-    .status-box {
-      margin-top: 14px; padding: 10px 12px; border-radius: 8px; font-size: 13px;
-      display: none; line-height: 1.45;
-    }
-    .status-err { display: block; background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
-    .status-ok { display: block; background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
-    .offline-resume {
-      margin-top: 14px; padding: 12px; background: #f8fafc; border: 1px dashed #94a3b8;
-      border-radius: 10px; text-align: center; display: none;
-    }
-    .offline-resume button {
-      margin-top: 8px; background: #0f294a; color: #fff; border: none; padding: 9px 16px;
-      border-radius: 7px; font-weight: 600; cursor: pointer;
-    }
-    .footer-note { text-align: center; margin-top: 18px; font-size: 11.5px; color: #64748b; }
-  </style>
+.card{width:100%;max-width:440px;background:#fff;border-radius:16px;padding:28px 26px;box-shadow:0 24px 60px rgba(0,0,0,.38)}
+.head{text-align:center;margin-bottom:18px}
+.pill-top{display:inline-block;background:#eff6ff;color:var(--blue);font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px;letter-spacing:.4px}
+.head h1{margin:8px 0 4px;font-size:21px;color:var(--navy)}
+.head p{margin:0;font-size:12.5px;color:var(--muted)}
+.role-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#f1f5f9;padding:5px;border-radius:10px;margin-bottom:16px}
+.role-btn{border:0;background:transparent;padding:9px;border-radius:8px;font-size:13px;font-weight:700;color:#475569;cursor:pointer}
+.role-btn.active{background:#fff;color:var(--navy);box-shadow:0 2px 6px rgba(15,23,42,.1)}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;font-weight:700;color:#334155;margin-bottom:4px}
+.field input{width:100%;padding:10px 12px;border:1.5px solid #cbd5e1;border-radius:8px;font-size:13.5px;outline:none}
+.field input:focus{border-color:var(--blue)}
+.row-between{display:flex;align-items:center;justify-content:space-between;font-size:12px;margin:8px 0 14px}
+.link-btn{background:none;border:0;color:var(--blue);font-weight:700;cursor:pointer;padding:0;font-size:12px}
+.btn-main{width:100%;padding:11px;border:0;border-radius:9px;background:var(--blue);color:#fff;font-size:14px;font-weight:800;cursor:pointer}
+.btn-main:disabled{opacity:.6;cursor:not-allowed}
+.btn-green{width:100%;padding:11px;border:0;border-radius:9px;background:var(--green);color:#fff;font-size:14px;font-weight:800;cursor:pointer;margin-top:8px}
+.msg{margin-top:12px;padding:10px 12px;border-radius:8px;font-size:12.5px;display:none;line-height:1.45}
+.msg.err{display:block;background:#fef2f2;color:var(--red);border:1px solid #fecaca}
+.msg.ok{display:block;background:#f0fdf4;color:var(--green);border:1px solid #bbf7d0}
+.offline-box{margin-top:12px;padding:10px;background:#f8fafc;border:1px dashed #94a3b8;border-radius:9px;text-align:center;display:none;font-size:12px}
+.offline-box button{margin-top:6px;background:var(--navy);color:#fff;border:0;padding:8px 14px;border-radius:7px;font-weight:700;cursor:pointer}
+.sub-links{margin-top:14px;padding-top:12px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:12px}
+.hidden{display:none!important}
+</style>
 </head>
 <body>
 
-  <!-- Animated Festival Greeting Banner -->
+  <!-- Animated Festival Banner (Controlled by Super Admin) -->
   <div id="loginFestivalBanner" class="festival-ribbon fest-theme-diwali">
     <div class="fest-title"><span class="fest-sparkle">✨</span> <span id="loginFestTitle"></span> <span class="fest-sparkle">✨</span></div>
     <div class="fest-sub" id="loginFestSub"></div>
   </div>
 
-  <div class="login-card">
-    <div class="brand">
-      <span class="brand-badge">INDIA'S #1 ENTERPRISE PATHOLOGY LIMS</span>
+  <div class="card">
+    <div class="head">
+      <span class="pill-top">PATHOLOGY &amp; DIAGNOSTIC LIMS</span>
       <h1>ACD BITTU LAB CLOUD</h1>
-      <p>Cloud + Offline Hybrid Diagnostic Console</p>
+      <p>Secure Single-Device &amp; Offline Hybrid Cloud Portal</p>
     </div>
 
-    <form id="loginForm">
+    <!-- Role Selector (Hidden from normal Lab Owners; shown only for Super Admin email or ?admin=1) -->
+    <div class="role-tabs" id="roleTabsBox" style="display:none;">
+      <button type="button" class="role-btn active" id="tabLabOwner" onclick="switchRole('owner')">🧪 Lab Owner / Staff</button>
+      <button type="button" class="role-btn" id="tabSuperAdmin" onclick="switchRole('admin')">⬟ Super Admin</button>
+    </div>
+
+    <!-- SIGN IN FORM -->
+    <form id="signInForm">
       <div class="field">
-        <label>Registered Email ID</label>
-        <input type="email" id="email" placeholder="lab@example.com" required autocomplete="username" />
+        <label>Email Address</label>
+        <input type="email" id="loginEmail" placeholder="Enter registered email" required autocomplete="username" oninput="checkSuperAdminEmailHint()">
       </div>
       <div class="field">
         <label>Password</label>
-        <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password" />
+        <input type="password" id="loginPassword" placeholder="Enter password" required autocomplete="current-password">
       </div>
-      <button type="submit" class="btn-primary" id="loginBtn">Sign In to LIMS Console</button>
+      <div class="row-between">
+        <label style="display:flex;align-items:center;gap:5px;cursor:pointer">
+          <input type="checkbox" id="rememberEmail" checked> Remember Email
+        </label>
+        <button type="button" class="link-btn" onclick="handleForgotPassword()">Forgot Password?</button>
+      </div>
+      <button type="submit" class="btn-main" id="signInBtn">Sign In to Dashboard →</button>
     </form>
 
-    <div id="statusBox" class="status-box"></div>
-
-    <div id="offlineResumeBox" class="offline-resume">
-      <div style="font-size:12.5px;color:#334155;font-weight:600;">
-        Authorized Device Detected (Offline Mode Available)
+    <!-- NEW LAB OWNER SIGNUP FORM -->
+    <form id="signUpForm" class="hidden">
+      <div class="field">
+        <label>Owner Full Name *</label>
+        <input type="text" id="regOwnerName" placeholder="e.g. Dr. Rakesh Sharma" required>
       </div>
-      <button type="button" id="resumeOfflineBtn">Open Authorized Offline Console</button>
+      <div class="field">
+        <label>Laboratory / Diagnostic Center Name *</label>
+        <input type="text" id="regLabName" placeholder="e.g. Saawariya Diagnostic" required>
+      </div>
+      <div class="field">
+        <label>Owner Email *</label>
+        <input type="email" id="regEmail" placeholder="owner@lab.com" required>
+      </div>
+      <div class="field">
+        <label>Mobile Number *</label>
+        <input type="tel" id="regPhone" placeholder="10-digit mobile number" required>
+      </div>
+      <div class="field">
+        <label>Create Password *</label>
+        <input type="password" id="regPassword" placeholder="Minimum 6 characters" required minlength="6">
+      </div>
+      <button type="submit" class="btn-green" id="signUpBtn">Create Lab Owner Account (3-Day Free Trial)</button>
+      <div style="text-align:center;margin-top:10px">
+        <button type="button" class="link-btn" onclick="toggleAuthMode('signin')">← Back to Sign In</button>
+      </div>
+    </form>
+
+    <div id="statusMsg" class="msg"></div>
+
+    <!-- Offline Mode Resume -->
+    <div id="offlineBox" class="offline-box">
+      <div><strong>Offline Mode Ready:</strong> This device is already authorized.</div>
+      <button type="button" onclick="location.href='dashboard.html'">Open Offline Dashboard</button>
     </div>
 
-    <div class="footer-note">
-      Single-Device Protected &bull; Auto-Cloud Sync &bull; NABL Ready
+    <div class="sub-links" id="footerLinks">
+      <button type="button" class="link-btn" id="createAccountLink" onclick="toggleAuthMode('signup')">+ New Lab Owner? Create Account</button>
+      <button type="button" class="link-btn" id="recoveryLink" style="display:none;color:#b45309" onclick="handleEmergencyRecovery()">Emergency Admin Recovery</button>
     </div>
   </div>
 
-  <script>
-    const SUPABASE_URL = "https://axfvvquhswapiwmvrepe.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_n6jRvVDjw2kOF7CS46omqQ_6qGkdR-q";
-    const SUPER_ADMIN_EMAIL = "acdbittu@gmail.com";
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+<script>
+"use strict";
+const SUPABASE_URL = "https://axfvvquhswapiwmvrepe.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_n6jRvVDjw2kOF7CS46omqQ_6qGkdR-q";
+const SUPER_ADMIN_EMAIL = "deepakkumar70612440@gmail.com";
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Load Live Festival Greeting Banner on Login Screen
-    (async function loadFestivalBanner() {
-      try {
-        if (!navigator.onLine) return;
-        const { data } = await sb.from("saas_festival_banner").select("*").eq("id", 1).single();
-        if (data && data.is_active && data.title_text) {
-          const box = document.getElementById("loginFestivalBanner");
-          box.className = "festival-ribbon fest-theme-" + (data.theme || "diwali");
-          document.getElementById("loginFestTitle").textContent = data.title_text;
-          document.getElementById("loginFestSub").textContent = data.sub_text || "";
-          box.style.display = "block";
-        }
-      } catch (e) {}
-    })();
+let selectedRole = "owner";
 
-    function getOrCreateDeviceId() {
-      let did = localStorage.getItem("acd_device_fingerprint");
-      if (!did) {
-        did = "DEV-" + crypto.randomUUID().slice(0, 12).toUpperCase();
-        localStorage.setItem("acd_device_fingerprint", did);
+// Load Live Festival Greeting Banner
+(async function loadFestivalBanner() {
+  try {
+    let fest = JSON.parse(localStorage.getItem("acd_festival_banner_cache") || "null");
+    if (navigator.onLine) {
+      const { data } = await db.from("saas_festival_banner").select("*").eq("id", 1).maybeSingle();
+      if (data) {
+        fest = data;
+        localStorage.setItem("acd_festival_banner_cache", JSON.stringify(data));
       }
-      return did;
+    }
+    if (fest && fest.is_active && fest.title_text) {
+      const box = document.getElementById("loginFestivalBanner");
+      box.className = "festival-ribbon fest-theme-" + (fest.theme || "diwali");
+      document.getElementById("loginFestTitle").textContent = fest.title_text;
+      document.getElementById("loginFestSub").textContent = fest.sub_text || "";
+      box.style.display = "block";
+    }
+  } catch (e) {}
+})();
+
+function getDeviceId() {
+  let id = localStorage.getItem("acd_device_id");
+  if (!id) {
+    id = "DEV-" + crypto.randomUUID().slice(0, 12).toUpperCase();
+    localStorage.setItem("acd_device_id", id);
+  }
+  return id;
+}
+
+function showMsg(text, isErr = true) {
+  const el = document.getElementById("statusMsg");
+  el.textContent = text;
+  el.className = "msg " + (isErr ? "err" : "ok");
+}
+
+function switchRole(role) {
+  selectedRole = role;
+  document.getElementById("tabLabOwner").classList.toggle("active", role === "owner");
+  document.getElementById("tabSuperAdmin").classList.toggle("active", role === "admin");
+  document.getElementById("createAccountLink").style.display = role === "owner" ? "inline" : "none";
+  document.getElementById("recoveryLink").style.display = role === "admin" ? "inline" : "none";
+  toggleAuthMode("signin");
+}
+
+function toggleAuthMode(mode) {
+  document.getElementById("signInForm").classList.toggle("hidden", mode !== "signin");
+  document.getElementById("signUpForm").classList.toggle("hidden", mode !== "signup");
+  document.getElementById("statusMsg").style.display = "none";
+}
+
+function checkSuperAdminEmailHint() {
+  const val = (document.getElementById("loginEmail").value || "").trim().toLowerCase();
+  const isAdminUrl = window.location.search.includes("admin=1");
+  const show = (val === SUPER_ADMIN_EMAIL || isAdminUrl);
+  document.getElementById("roleTabsBox").style.display = show ? "grid" : "none";
+  if (!show && selectedRole === "admin") switchRole("owner");
+}
+
+(function initLoginState() {
+  const savedEmail = localStorage.getItem("acd_remember_email");
+  if (savedEmail) document.getElementById("loginEmail").value = savedEmail;
+  checkSuperAdminEmailHint();
+  if (localStorage.getItem("acd_offline_session")) {
+    document.getElementById("offlineBox").style.display = "block";
+  }
+})();
+
+// SIGN IN HANDLER
+document.getElementById("signInForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!navigator.onLine) {
+    showMsg("Internet connection is required for a new login. Use 'Open Offline Dashboard' below if already authorized.");
+    return;
+  }
+
+  const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+  const password = document.getElementById("loginPassword").value;
+  const btn = document.getElementById("signInBtn");
+  const deviceId = getDeviceId();
+
+  if (document.getElementById("rememberEmail").checked) {
+    localStorage.setItem("acd_remember_email", email);
+  }
+
+  btn.disabled = true;
+  btn.textContent = "Verifying Account & Device Lock...";
+  document.getElementById("statusMsg").style.display = "none";
+
+  try {
+    const { data, error } = await db.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+
+    const isSuper = (email === SUPER_ADMIN_EMAIL);
+
+    const { data: prof } = await db.from("profiles").select("*").eq("id", data.user.id).maybeSingle();
+    if (prof) {
+      if (prof.is_active === false) {
+        await db.auth.signOut();
+        throw new Error("Your account has been suspended by Super Admin. Please contact support.");
+      }
+      if (!isSuper && prof.locked_device_id && prof.locked_device_id !== deviceId) {
+        await db.auth.signOut();
+        throw new Error("Single-Device Lock: This account is locked to another device (" + prof.locked_device_id + "). Contact Super Admin to reset.");
+      }
+      if (!prof.locked_device_id) {
+        await db.from("profiles").update({
+          locked_device_id: deviceId,
+          last_login_at: new Date().toISOString()
+        }).eq("id", data.user.id);
+      }
     }
 
-    function showStatus(msg, isError = true) {
-      const box = document.getElementById("statusBox");
-      box.textContent = msg;
-      box.className = "status-box " + (isError ? "status-err" : "status-ok");
+    if (!isSuper) {
+      try {
+        const { data: modeRow } = await db.from("platform_settings").select("value").eq("key", "platform_mode").maybeSingle();
+        const isLive = modeRow && String(modeRow.value || "").toLowerCase() === "live";
+        if (isLive) {
+          const { data: subOverview } = await db.rpc("acd_owner_billing_overview");
+          const ov = Array.isArray(subOverview) ? subOverview[0] : subOverview;
+          const st = String(ov?.subscription_status || ov?.status || "").toLowerCase();
+          if (st === "expired" || st === "past_due") {
+            localStorage.setItem("acd_offline_session", JSON.stringify({ email, userId: data.user.id, deviceId }));
+            location.href = "subscription.html";
+            return;
+          }
+        }
+      } catch (subErr) {}
     }
 
-    (function checkOfflineSession() {
-      const cachedSession = localStorage.getItem("acd_offline_auth_bundle");
-      if (cachedSession && !navigator.onLine) {
-        document.getElementById("offlineResumeBox").style.display = "block";
-      }
-      document.getElementById("resumeOfflineBtn").addEventListener("click", () => {
-        window.location.href = "dashboard.html";
-      });
-    })();
+    localStorage.setItem("acd_offline_session", JSON.stringify({
+      email,
+      userId: data.user.id,
+      isSuperAdmin: isSuper,
+      deviceId,
+      savedAt: Date.now()
+    }));
 
-    document.getElementById("loginForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      if (!navigator.onLine) {
-        showStatus("New login requires an active internet connection so your license and single-device lock can be verified.", true);
-        return;
-      }
+    showMsg("Login verified! Opening dashboard...", false);
+    setTimeout(() => { location.href = "dashboard.html"; }, 300);
+  } catch (err) {
+    showMsg(err.message || "Sign in failed.");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Sign In to Dashboard →";
+  }
+});
 
-      const btn = document.getElementById("loginBtn");
-      const email = document.getElementById("email").value.trim().toLowerCase();
-      const password = document.getElementById("password").value;
-      const deviceId = getOrCreateDeviceId();
+// NEW LAB OWNER SIGNUP
+document.getElementById("signUpForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!navigator.onLine) {
+    showMsg("Internet connection is required to create a new Lab Owner account.");
+    return;
+  }
 
-      btn.disabled = true;
-      btn.textContent = "Verifying License & Device...";
-      showStatus("", false);
-      document.getElementById("statusBox").style.display = "none";
+  const ownerName = document.getElementById("regOwnerName").value.trim();
+  const labName = document.getElementById("regLabName").value.trim();
+  const email = document.getElementById("regEmail").value.trim().toLowerCase();
+  const phone = document.getElementById("regPhone").value.trim();
+  const password = document.getElementById("regPassword").value;
+  const btn = document.getElementById("signUpBtn");
 
-      try {
-        const { data, error } = await sb.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+  btn.disabled = true;
+  btn.textContent = "Creating Lab & Trial Account...";
 
-        const isSuperAdmin = (email === SUPER_ADMIN_EMAIL);
-
-        if (!isSuperAdmin) {
-          const { data: labs, error: labErr } = await sb
-            .from("labs")
-            .select("*")
-            .eq("owner_email", email)
-            .limit(1);
-
-          if (labErr) throw labErr;
-          if (!labs || labs.length === 0) {
-            await sb.auth.signOut();
-            throw new Error("No pathology center is linked to this email. Contact Super Admin.");
-          }
-
-          const lab = labs[0];
-
-          if (lab.is_locked) {
-            await sb.auth.signOut();
-            throw new Error("ACCOUNT SUSPENDED BY ADMIN: " + (lab.lock_reason || "Payment due or administrative hold."));
-          }
-
-          if (lab.active_device_id && lab.active_device_id !== deviceId) {
-            await sb.auth.signOut();
-            throw new Error("DEVICE LOCKED: This account is already registered on another computer (" + lab.active_device_id + "). Ask Super Admin to reset Device Lock.");
-          }
-
-          if (!lab.active_device_id) {
-            await sb.from("labs").update({
-              active_device_id: deviceId,
-              active_device_info: navigator.platform + " | " + new Date().toLocaleDateString()
-            }).eq("id", lab.id);
-          }
-
-          localStorage.setItem("acd_offline_auth_bundle", JSON.stringify({
-            email,
-            userId: data.user.id,
-            labId: lab.id,
-            deviceId,
-            isLocked: !!lab.is_locked,
-            lockReason: lab.lock_reason || "",
-            subscriptionEnd: lab.subscription_end || "2099-12-31",
-            planTier: lab.plan_tier || "standard",
-            featureFlags: lab.feature_flags || {},
-            lastVerifiedEpoch: Date.now()
-          }));
-        } else {
-          localStorage.setItem("acd_offline_auth_bundle", JSON.stringify({
-            email,
-            userId: data.user.id,
-            isSuperAdmin: true,
-            deviceId,
-            lastVerifiedEpoch: Date.now()
-          }));
-        }
-
-        showStatus("Verified! Opening LIMS Console...", false);
-        setTimeout(() => { window.location.href = "dashboard.html"; }, 350);
-      } catch (err) {
-        showStatus(err.message || "Login failed.", true);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "Sign In to LIMS Console";
-      }
+  try {
+    const { data: authData, error: signUpErr } = await db.auth.signUp({
+      email,
+      password,
+      options: { data: { full_name: ownerName, lab_name: labName, phone } }
     });
-  </script>
+    if (signUpErr) throw signUpErr;
+
+    if (authData.user) {
+      await db.rpc("acd_register_lab_owner", {
+        p_user_id: authData.user.id,
+        p_owner_name: ownerName,
+        p_lab_name: labName,
+        p_email: email,
+        p_phone: phone,
+        p_device_id: getDeviceId()
+      });
+    }
+
+    showMsg("Lab Owner account created! Please check your email if verification is enabled, or Sign In now.", false);
+    setTimeout(() => toggleAuthMode("signin"), 1800);
+  } catch (err) {
+    showMsg(err.message || "Signup failed.");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Create Lab Owner Account (3-Day Free Trial)";
+  }
+});
+
+async function handleForgotPassword() {
+  const email = document.getElementById("loginEmail").value.trim();
+  if (!email) { showMsg("Please enter your registered email address first."); return; }
+  const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + "/index.html" });
+  if (error) showMsg(error.message);
+  else showMsg("Password reset link sent to " + email, false);
+}
+
+async function handleEmergencyRecovery() {
+  const { error } = await db.auth.resetPasswordForEmail(SUPER_ADMIN_EMAIL, { redirectTo: window.location.origin + "/index.html" });
+  if (error) showMsg(error.message);
+  else showMsg("Emergency Super Admin recovery link sent to " + SUPER_ADMIN_EMAIL, false);
+}
+</script>
 </body>
 </html>
