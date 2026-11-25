@@ -1,15 +1,15 @@
 "use strict";
 
-const CACHE_NAME = "acd-bittu-lab-shell-v6";
+const CACHE_NAME = "acd-bittu-lab-offline-v8";
 
-const CORE_FILES = [
+const CORE_ASSETS = [
   "./",
   "./index.html",
   "./dashboard.html",
   "./subscription.html",
   "./verify.html",
   "./print-report.js",
-  "./print-report.js?v=6",
+  "./print-report.js?v=7",
   "./print-report.css",
   "./print-report.css?v=6",
   "./platform-mode.js",
@@ -17,11 +17,25 @@ const CORE_FILES = [
   "./manifest.webmanifest"
 ];
 
+const CDN_ASSETS = [
+  "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
+  "https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js",
+  "https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"
+];
+
 self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(async cache => {
-      for (const file of CORE_FILES) {
-        try { await cache.add(file); } catch (err) {}
+      for (const url of CORE_ASSETS) {
+        try {
+          await cache.add(new Request(url, { cache: "reload" }));
+        } catch (e) {}
+      }
+      for (const cdnUrl of CDN_ASSETS) {
+        try {
+          const resp = await fetch(cdnUrl, { mode: "cors" });
+          if (resp && resp.ok) await cache.put(cdnUrl, resp);
+        } catch (e) {}
       }
     })
   );
@@ -33,8 +47,8 @@ self.addEventListener("activate", event => {
     caches.keys().then(keys =>
       Promise.all(
         keys
-          .filter(key => key.startsWith("acd-bittu-lab-") && key !== CACHE_NAME)
-          .map(key => caches.delete(key))
+          .filter(k => k.startsWith("acd-bittu-lab-") && k !== CACHE_NAME)
+          .map(k => caches.delete(k))
       )
     )
   );
@@ -42,10 +56,11 @@ self.addEventListener("activate", event => {
 });
 
 self.addEventListener("fetch", event => {
-  const request = event.request;
-  if (request.method !== "GET") return;
-  const url = new URL(request.url);
+  const req = event.request;
+  if (req.method !== "GET") return;
+  const url = new URL(req.url);
 
+  // Never intercept live Supabase API calls
   if (
     url.hostname.includes("supabase.co") ||
     url.pathname.includes("/rest/v1/") ||
@@ -55,43 +70,48 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  if (url.origin !== self.location.origin && ["script", "style", "font", "image"].includes(request.destination)) {
+  // Cache-First for external CDN libraries (instant offline boot)
+  if (url.origin !== self.location.origin) {
     event.respondWith(
-      caches.match(request).then(cached => {
+      caches.match(req, { ignoreSearch: true }).then(cached => {
         if (cached) return cached;
-        return fetch(request).then(response => {
-          if (response && (response.ok || response.type === "opaque")) {
-            const copy = response.clone();
-            caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
+        return fetch(req).then(res => {
+          if (res && (res.ok || res.type === "opaque")) {
+            const copy = res.clone();
+            caches.open(CACHE_NAME).then(c => c.put(req, copy));
           }
-          return response;
-        });
+          return res;
+        }).catch(() => new Response("", { status: 504 }));
       })
     );
     return;
   }
 
-  if (url.origin === self.location.origin) {
-    event.respondWith(
-      fetch(request)
-        .then(response => {
-          if (response && response.ok) {
-            const copy = response.clone();
-            caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
+  // Stale-While-Revalidate / Instant Cache Fallback for App Shell
+  event.respondWith(
+    caches.match(req, { ignoreSearch: true }).then(cached => {
+      const networkFetch = fetch(req)
+        .then(res => {
+          if (res && res.ok) {
+            const copy = res.clone();
+            caches.open(CACHE_NAME).then(c => c.put(req, copy));
           }
-          return response;
+          return res;
         })
-        .catch(async () => {
-          const cached = await caches.match(request, { ignoreSearch: true });
-          if (cached) return cached;
-          if (request.mode === "navigate") {
-            return caches.match(new URL("./dashboard.html", self.registration.scope).href);
-          }
-          return new Response("Offline: File is not available.", {
-            status: 503,
-            headers: { "Content-Type": "text/plain" }
-          });
-        })
-    );
-  }
+        .catch(() => null);
+
+      if (cached) {
+        // Return cached instantaneously for ultra-fast load, update in background
+        return cached;
+      }
+
+      return networkFetch.then(res => {
+        if (res) return res;
+        if (req.mode === "navigate") {
+          return caches.match("./dashboard.html") || caches.match("./index.html");
+        }
+        return new Response("Offline", { status: 503 });
+      });
+    })
+  );
 });
