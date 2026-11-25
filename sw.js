@@ -1,13 +1,13 @@
-const CACHE_NAME = "acd-bittu-lab-cloud-v9";
+```javascript
+const CACHE_NAME = "acd-bittu-lab-cloud-v10";
 const ASSETS = [
   "./",
   "./index.html",
   "./dashboard.html",
   "./subscription.html",
   "./verify.html",
-  "./print-report.js?v=9",
-  "./print-report.css?v=9",
-  "./offline-db.js?v=9",
+  "./print-report.js",
+  "./print-report.css",
   "./manifest.webmanifest"
 ];
 
@@ -35,10 +35,13 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     fetch(event.request)
       .then((res) => {
-        const clone = res.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        if (res && res.status === 200) {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        }
         return res;
       })
-      .catch(() => caches.match(event.request).then((cached) => cached || caches.match("./dashboard.html")))
+      .catch(() => caches.match(event.request))
   );
 });
+```
