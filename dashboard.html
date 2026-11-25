@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ACD BITTU LAB CLOUD — Enterprise Desktop LIMS</title>
+  <title>ACD BITTU LAB CLOUD — Enterprise LIMS Console</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="print-report.css?v=9" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="offline-db.js?v=9"></script>
+  <script src="offline-db.js?v=9" onerror="window._noOfflineDb=true"></script>
   <style>
     :root {
-      --navy: #0f294a;
-      --blue: #1d4ed8;
+      --navy: #07172d;
+      --blue: #0866df;
       --bg: #f1f5f9;
       --card: #ffffff;
       --border: #cbd5e1;
@@ -21,11 +21,27 @@
     * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
     html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); color: var(--text); }
 
-    /* Fixed-Viewport Zero-Shake Desktop Shell */
+    /* Animated Festival Shimmer Banner */
+    .dash-fest-banner {
+      display: none; padding: 7px 14px; text-align: center; color: #fff; font-size: 13px;
+      font-weight: 800; position: relative; overflow: hidden; letter-spacing: 0.3px;
+    }
+    .dash-fest-banner::before {
+      content: ""; position: absolute; top: 0; left: -120%; width: 80%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.42), transparent);
+      transform: skewX(-22deg); animation: dashShine 2.6s infinite;
+    }
+    @keyframes dashShine { 0% { left: -120%; } 65%, 100% { left: 160%; } }
+    .fest-theme-diwali { background: linear-gradient(90deg, #b45309, #ea580c, #d97706); }
+    .fest-theme-durga { background: linear-gradient(90deg, #991b1b, #dc2626, #b91c1c); }
+    .fest-theme-holi { background: linear-gradient(90deg, #7e22ce, #db2777, #2563eb); }
+    .fest-theme-eid { background: linear-gradient(90deg, #065f46, #059669, #0d9488); }
+    .fest-theme-gold { background: linear-gradient(90deg, #1e3a8a, #1d4ed8, #0284c7); }
+
     @media (min-width: 960px) {
       body { overflow: hidden; }
       .lims-shell { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-      .lims-body { display: grid; grid-template-columns: 265px 1fr; flex: 1; min-height: 0; overflow: hidden; }
+      .lims-body { display: grid; grid-template-columns: 260px 1fr; flex: 1; min-height: 0; overflow: hidden; }
       .queue-pane { border-right: 1px solid var(--border); background: #fff; display: flex; flex-direction: column; min-height: 0; }
       .queue-list { flex: 1; overflow-y: auto; padding: 8px; }
       .work-pane { display: flex; flex-direction: column; min-height: 0; overflow-y: auto; padding: 12px 16px; }
@@ -36,34 +52,12 @@
       .work-pane { padding: 12px; }
     }
 
-    /* Animated Shimmer & Sparkle Festival Banner */
-    .dash-festival-bar {
-      display: none; position: relative; overflow: hidden; padding: 7px 14px;
-      color: #fff; text-align: center; font-size: 13px; font-weight: 800;
-      letter-spacing: 0.3px; border-bottom: 1.5px solid rgba(255,255,255,0.45);
-      box-shadow: 0 3px 12px rgba(0,0,0,0.18); z-index: 45;
-    }
-    .dash-festival-bar::before {
-      content: ""; position: absolute; top: 0; left: -120%; width: 85%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.42), transparent);
-      transform: skewX(-22deg); animation: dashFestShine 2.6s infinite;
-    }
-    .fest-theme-diwali { background: linear-gradient(90deg, #9a3412, #ea580c, #d97706, #ea580c); }
-    .fest-theme-durga  { background: linear-gradient(90deg, #7f1d1d, #dc2626, #b91c1c, #dc2626); }
-    .fest-theme-holi   { background: linear-gradient(90deg, #6b21a8, #db2777, #2563eb, #059669); }
-    .fest-theme-eid    { background: linear-gradient(90deg, #064e3b, #059669, #0d9488, #059669); }
-    .fest-theme-gold   { background: linear-gradient(90deg, #1e3a8a, #1d4ed8, #0284c7, #1d4ed8); }
-    .fest-twinkle { display: inline-block; animation: festTwinkle 1.1s alternate infinite; }
-    @keyframes dashFestShine { 0% { left: -120%; } 65%, 100% { left: 160%; } }
-    @keyframes festTwinkle { from { transform: scale(0.88) rotate(-6deg); opacity: 0.8; } to { transform: scale(1.22) rotate(6deg); opacity: 1; } }
-
-    /* Top Command Ribbon */
     .topbar {
       background: var(--navy); color: #fff; padding: 8px 14px; display: flex;
       align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
       border-bottom: 2px solid #1e3a8a; z-index: 40;
     }
-    .brand-title { font-weight: 800; font-size: 15px; letter-spacing: 0.4px; display: flex; align-items: center; gap: 8px; }
+    .brand-title { font-weight: 800; font-size: 15px; display: flex; align-items: center; gap: 8px; }
     .nav-strip { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
     .nav-btn {
       background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.18);
@@ -72,7 +66,6 @@
     .nav-btn:hover, .nav-btn.active { background: #2563eb; border-color: #60a5fa; }
     .nav-btn.admin-pill { background: #b45309; border-color: #f59e0b; }
 
-    /* Sub-bar */
     .subbar {
       background: #fff; border-bottom: 1px solid var(--border); padding: 6px 14px;
       display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: 12.5px;
@@ -80,9 +73,7 @@
     .badge { padding: 3px 9px; border-radius: 999px; font-weight: 700; font-size: 11px; }
     .badge-online { background: #dcfce7; color: #166534; }
     .badge-offline { background: #fef3c7; color: #92400e; }
-    .badge-plan { background: #dbeafe; color: #1e40af; }
 
-    /* Cards & Grids */
     .card {
       background: var(--card); border: 1px solid var(--border); border-radius: 10px;
       padding: 12px 14px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
@@ -95,96 +86,61 @@
       width: 100%; padding: 7px 9px; border: 1px solid #cbd5e1; border-radius: 7px;
       font-size: 13px; background: #fff;
     }
-    input.inp:focus, select.inp:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 2px rgba(29,78,216,0.14); }
+    input.inp:focus, select.inp:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 2px rgba(8,102,223,0.14); }
 
-    /* Buttons */
     .btn {
       padding: 7px 13px; border-radius: 7px; border: 1px solid transparent; font-size: 12.5px;
       font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
     }
-    .btn-blue { background: #1d4ed8; color: #fff; }
+    .btn-blue { background: #0866df; color: #fff; }
     .btn-green { background: #15803d; color: #fff; }
     .btn-amber { background: #d97706; color: #fff; }
     .btn-red { background: #dc2626; color: #fff; }
     .btn-outline { background: #fff; border-color: #cbd5e1; color: #1e293b; }
 
-    /* Tables */
     table.tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; }
     table.tbl th {
-      background: #0f294a; color: #fff; text-align: left; padding: 7px 8px;
+      background: var(--navy); color: #fff; text-align: left; padding: 7px 8px;
       position: sticky; top: 0; z-index: 5; font-size: 12px;
     }
     table.tbl td { padding: 6px 8px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
     .flag-high, .flag-low { color: #dc2626; font-weight: 800; }
     .flag-normal { color: #15803d; font-weight: 600; }
 
-    /* Queue Item */
     .q-item {
       padding: 8px 10px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 6px;
       cursor: pointer; transition: background 0.15s;
     }
     .q-item:hover { background: #eff6ff; border-color: #93c5fd; }
-
-    /* Hard Lock Overlay */
-    #hardLockOverlay {
-      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.96); color: #fff;
-      z-index: 99999; display: none; align-items: center; justify-content: center; padding: 20px;
-    }
-    .lock-modal {
-      max-width: 480px; width: 100%; background: #1e293b; border: 2px solid #ef4444;
-      border-radius: 16px; padding: 28px; text-align: center;
-    }
-    .lock-modal h2 { color: #fca5a5; margin: 0 0 10px; }
-    .lock-modal p { color: #e2e8f0; font-size: 14px; line-height: 1.5; }
-
     .view-section { display: none; }
     .view-section.active { display: block; }
   </style>
 </head>
 <body>
 
-  <!-- Tamper-Proof Remote Lock / Subscription Expiry Screen -->
-  <div id="hardLockOverlay">
-    <div class="lock-modal">
-      <div style="font-size:40px;margin-bottom:8px;">🔒</div>
-      <h2 id="lockTitle">Software Access Locked</h2>
-      <p id="lockMessage">Your license has expired or been suspended by the administrator.</p>
-      <div style="margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
-        <button class="btn btn-blue" onclick="window.location.href='subscription.html'">Renew / Check Subscription</button>
-        <button class="btn btn-outline" onclick="recheckCloudLock()">Recheck Online Status</button>
-        <button class="btn btn-red" onclick="logoutUser()">Logout</button>
-      </div>
-    </div>
-  </div>
-
   <div class="lims-shell">
-    <!-- Animated Festival / Greeting Banner (Controlled by Super Admin) -->
-    <div id="dashFestivalBar" class="dash-festival-bar fest-theme-diwali">
-      <span class="fest-twinkle">✨</span>
-      <span id="dashFestTitleText"></span>
-      <span id="dashFestSubText" style="font-weight:500;font-size:12px;margin-left:8px;opacity:0.95;"></span>
-      <span class="fest-twinkle">✨</span>
-    </div>
+    <!-- Live Animated Festival Banner -->
+    <div id="dashFestBanner" class="dash-fest-banner fest-theme-diwali"></div>
 
     <!-- Top Command Bar -->
     <header class="topbar">
       <div class="brand-title">
         <span>✚ ACD BITTU LAB CLOUD</span>
-        <span style="font-size:11px;background:#1e40af;padding:2px 8px;border-radius:6px;">ENTERPRISE LIMS</span>
+        <span style="font-size:11px;background:#1e40af;padding:2px 8px;border-radius:6px;">LIMS</span>
       </div>
 
-      <nav class="nav-strip" id="mainNavStrip">
-        <button class="nav-btn active" data-view="viewEntry" onclick="switchView('viewEntry', this)">🧪 Worklist / Entry (F2)</button>
+      <nav class="nav-strip">
+        <button class="nav-btn active" data-view="viewEntry" onclick="switchView('viewEntry', this)">🧪 Patient Entry (F2)</button>
         <button class="nav-btn" data-view="viewReports" onclick="switchView('viewReports', this)">📋 Saved Reports (F4)</button>
-        <button class="nav-btn" data-view="viewRates" data-feat="rates" onclick="switchView('viewRates', this)">💰 Rate List & Packages</button>
-        <button class="nav-btn" data-view="viewFinance" data-feat="expenses" onclick="switchView('viewFinance', this)">📊 Cash Closing & Expenses</button>
-        <button class="nav-btn" data-view="viewInventory" data-feat="inventory" onclick="switchView('viewInventory', this)">📦 Stock & Reagents</button>
-        <button class="nav-btn" data-view="viewSetup" onclick="switchView('viewSetup', this)">⚙ Lab & Print Setup</button>
+        <button class="nav-btn" data-view="viewCatalog" onclick="switchView('viewCatalog', this)">🧬 Test Catalogue &amp; Rates</button>
+        <button class="nav-btn" data-view="viewAccounts" onclick="switchView('viewAccounts', this)">💰 Accounts &amp; Dues</button>
+        <button class="nav-btn" data-view="viewSetup" onclick="switchView('viewSetup', this)">⚙ Lab &amp; Print Setup</button>
         <button class="nav-btn admin-pill" id="navSuperAdmin" style="display:none;" onclick="switchView('viewSuperAdmin', this)">⬟ Super Admin</button>
       </nav>
 
       <div style="display:flex;align-items:center;gap:8px;">
         <span id="userEmailLabel" style="font-size:11.5px;color:#cbd5e1;"></span>
+        <button class="btn btn-outline" style="padding:5px 10px;font-size:11.5px;" onclick="location.href='subscription.html'">Subscription</button>
         <button class="btn btn-red" style="padding:5px 10px;font-size:11.5px;" onclick="logoutUser()">Logout</button>
       </div>
     </header>
@@ -195,11 +151,9 @@
         <strong>Active Lab:</strong>
         <select id="activeLabSelect" class="inp" style="width:auto;padding:4px 8px;font-weight:700;"></select>
         <span id="netStatusBadge" class="badge badge-online">● Online Cloud Sync</span>
-        <span id="planTierBadge" class="badge badge-plan">Plan: Standard Lab</span>
-        <span id="expiryBadge" style="font-size:11.5px;color:#475569;"></span>
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
-        <button class="btn btn-outline" style="padding:4px 9px;font-size:11.5px;" onclick="syncOfflineQueueNow()">↻ Sync Offline Queue (<span id="offlinePendingCount">0</span>)</button>
+        <button class="btn btn-outline" style="padding:4px 9px;font-size:11.5px;" onclick="syncOfflineQueueNow()">↻ Sync Offline (<span id="offlinePendingCount">0</span>)</button>
       </div>
     </div>
 
@@ -208,34 +162,34 @@
       <!-- Left: Today's Live Patient Queue -->
       <aside class="queue-pane">
         <div style="padding:9px 10px;border-bottom:1px solid #e2e8f0;background:#f8fafc;">
-          <div style="font-weight:700;font-size:12.5px;color:#0f294a;margin-bottom:6px;">
-            🕒 Today's Live Queue (<span id="queueCount">0</span>)
+          <div style="font-weight:700;font-size:12.5px;color:#07172d;margin-bottom:6px;">
+            🕒 Today's Patients (<span id="queueCount">0</span>)
           </div>
-          <input type="text" id="queueSearch" class="inp" placeholder="Search patient / mobile..." oninput="renderTodayQueue()" />
+          <input type="text" id="queueSearch" class="inp" placeholder="Search name / mobile..." oninput="renderTodayQueue()" />
         </div>
         <div class="queue-list" id="todayQueueList"></div>
       </aside>
 
-      <!-- Right: Active Module Workspace -->
+      <!-- Right: Main Workspace -->
       <main class="work-pane">
 
-        <!-- 1. WORKLIST / PATIENT ENTRY -->
+        <!-- 1. PATIENT ENTRY & RESULT WORKLIST -->
         <section id="viewEntry" class="view-section active">
           <div class="card">
             <div class="card-title">
-              <span>👤 Patient Registration & Billing (Press Enter to Move Next)</span>
+              <span>👤 Patient Entry &amp; Billing (Mobile First → Press Enter for Patient Name)</span>
               <div style="display:flex;gap:6px;flex-wrap:wrap;">
                 <button class="btn btn-outline" onclick="resetPatientForm()">+ New Patient (F2)</button>
-                <button class="btn btn-amber" id="btnVerifyReport" style="display:none;" onclick="verifyCurrentReport()">✓ Pathologist Verify & Lock</button>
-                <button class="btn btn-green" onclick="saveAndPrintOrder(true)">💾 Save & Print A4 (Ctrl+S)</button>
+                <button class="btn btn-green" onclick="saveAndPrintOrder(true)">💾 Save &amp; Print A4 (Ctrl+S)</button>
                 <button class="btn btn-blue" onclick="saveAndPrintOrder(false)">💾 Save Only</button>
               </div>
             </div>
 
             <input type="hidden" id="editingOrderId" />
-            <div class="grid-4" id="patientRegGrid">
+            <input type="hidden" id="editingPatientId" />
+            <div class="grid-4">
               <div>
-                <label class="lbl">1. Mobile Number (Enter → Auto-Fill &amp; Name)</label>
+                <label class="lbl">1. Mobile Number (Enter → Patient Name)</label>
                 <input type="text" id="pMobile" class="inp reg-nav" data-next="pName" placeholder="10-digit WhatsApp No." oninput="autoLookupRepeatPatient()" />
               </div>
               <div>
@@ -245,8 +199,8 @@
               <div>
                 <label class="lbl">3. Age &amp; Unit</label>
                 <div style="display:flex;gap:5px;">
-                  <input type="number" id="pAge" class="inp reg-nav" data-next="pGender" placeholder="25" oninput="reapplyAgeGenderRanges()" />
-                  <select id="pAgeUnit" class="inp" style="width:72px;" onchange="reapplyAgeGenderRanges()">
+                  <input type="number" id="pAge" class="inp reg-nav" data-next="pGender" placeholder="25" />
+                  <select id="pAgeUnit" class="inp" style="width:72px;">
                     <option value="Y">Yrs</option>
                     <option value="M">Mos</option>
                     <option value="D">Days</option>
@@ -254,20 +208,20 @@
                 </div>
               </div>
               <div>
-                <label class="lbl">4. Gender (Auto Reference Range)</label>
-                <select id="pGender" class="inp reg-nav" data-next="pDoctor" onchange="reapplyAgeGenderRanges()">
+                <label class="lbl">4. Gender</label>
+                <select id="pGender" class="inp reg-nav" data-next="pDoctor">
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
-                  <option value="Child">Child / Pediatric</option>
+                  <option value="Other">Other</option>
                 </select>
               </div>
               <div>
-                <label class="lbl">5. Referred By Doctor</label>
-                <input type="text" id="pDoctor" class="inp reg-nav" data-next="pAddress" value="SELF" />
+                <label class="lbl">5. Ref. Doctor</label>
+                <input type="text" id="pDoctor" class="inp reg-nav" data-next="pAddress" value="Self" />
               </div>
               <div>
-                <label class="lbl">6. Address / City</label>
-                <input type="text" id="pAddress" class="inp reg-nav" data-next="testPicker" placeholder="Patient address" />
+                <label class="lbl">6. Address</label>
+                <input type="text" id="pAddress" class="inp reg-nav" data-next="testPicker" placeholder="Village / City" />
               </div>
               <div>
                 <label class="lbl">Report Date</label>
@@ -277,17 +231,16 @@
                 <label class="lbl">Payment Mode</label>
                 <select id="pPayMode" class="inp">
                   <option value="Cash">Cash</option>
-                  <option value="UPI / QR">UPI / QR</option>
+                  <option value="UPI">UPI / QR</option>
                   <option value="Card">Card</option>
-                  <option value="B2B Credit">B2B Credit</option>
                 </select>
               </div>
             </div>
 
-            <!-- Auto-Billing Bar -->
+            <!-- Test Picker & Billing -->
             <div style="margin-top:10px;padding-top:10px;border-top:1px dashed #cbd5e1;display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">
               <div style="flex:2;min-width:220px;">
-                <label class="lbl">7. Add Investigation / Test Profile (Enter to Add)</label>
+                <label class="lbl">7. Select Investigation / Test (Enter to Add)</label>
                 <div style="display:flex;gap:6px;">
                   <select id="testPicker" class="inp" onkeydown="if(event.key==='Enter'){event.preventDefault();addSelectedTestToWorklist();}"></select>
                   <button class="btn btn-blue" type="button" onclick="addSelectedTestToWorklist()">+ Add</button>
@@ -317,23 +270,22 @@
           <!-- Investigation Result Grid -->
           <div class="card" style="padding:0;overflow:hidden;">
             <div style="padding:10px 14px;background:#f8fafc;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;">
-              <strong style="font-size:13px;color:#0f294a;">🧬 Investigation Result Grid (Press Enter to Jump Next)</strong>
-              <span id="verificationStatusPill" class="badge badge-online">Ready</span>
+              <strong style="font-size:13px;color:#07172d;">🧬 Test Parameters &amp; Results (Press Enter to Jump Next)</strong>
             </div>
             <div style="max-height:420px;overflow-y:auto;">
               <table class="tbl">
                 <thead>
                   <tr>
-                    <th style="width:30%;">Investigation / Parameter</th>
+                    <th style="width:32%;">Investigation / Parameter</th>
                     <th style="width:20%;">Result Value</th>
                     <th style="width:14%;">Unit</th>
                     <th style="width:20%;">Reference Range</th>
-                    <th style="width:10%;">Flag</th>
+                    <th style="width:8%;">Flag</th>
                     <th style="width:6%;">Del</th>
                   </tr>
                 </thead>
                 <tbody id="resultGridBody">
-                  <tr><td colspan="6" style="text-align:center;color:#64748b;padding:24px;">Select a test above (e.g., CBC, Widal, LFT, KFT, Malaria) to start entering results.</td></tr>
+                  <tr><td colspan="6" style="text-align:center;color:#64748b;padding:24px;">Select a test from your catalogue above to enter results.</td></tr>
                 </tbody>
               </table>
             </div>
@@ -344,19 +296,13 @@
         <section id="viewReports" class="view-section">
           <div class="card">
             <div class="card-title">
-              <span>📋 Saved Reports & Verification Archive</span>
+              <span>📋 Saved Reports Archive (All Existing &amp; New Reports)</span>
               <button class="btn btn-blue" onclick="loadSavedReports()">↻ Refresh</button>
             </div>
-            <div class="grid-4" style="margin-bottom:10px;">
-              <input type="text" id="repSearch" class="inp" placeholder="Search Name / Mobile..." oninput="renderSavedReportsTable()" />
+            <div class="grid-3" style="margin-bottom:10px;">
+              <input type="text" id="repSearch" class="inp" placeholder="Search Patient Name / Mobile..." oninput="renderSavedReportsTable()" />
               <input type="date" id="repFrom" class="inp" onchange="renderSavedReportsTable()" />
               <input type="date" id="repTo" class="inp" onchange="renderSavedReportsTable()" />
-              <select id="repFilterStatus" class="inp" onchange="renderSavedReportsTable()">
-                <option value="all">All Reports</option>
-                <option value="verified">Verified Only</option>
-                <option value="pending">Unverified / Pending</option>
-                <option value="due">With Balance Due</option>
-              </select>
             </div>
             <div style="max-height:520px;overflow-y:auto;">
               <table class="tbl">
@@ -366,7 +312,6 @@
                     <th>Date</th>
                     <th>Tests</th>
                     <th>Billing</th>
-                    <th>Status</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -376,113 +321,57 @@
           </div>
         </section>
 
-        <!-- 3. EDITABLE TEST RATE LIST (CLOUD SYNCED) -->
-        <section id="viewRates" class="view-section">
+        <!-- 3. TEST CATALOGUE & EDITABLE RATES -->
+        <section id="viewCatalog" class="view-section">
           <div class="card">
             <div class="card-title">
-              <span>💰 Custom Test Rate List (Cloud Synced per Lab)</span>
-              <button class="btn btn-green" onclick="saveCloudRateList()">💾 Save All Rates to Cloud</button>
+              <span>🧬 Lab Test Catalogue &amp; Editable Prices</span>
+              <button class="btn btn-blue" onclick="loadLabTestCatalog()">↻ Reload Catalogue</button>
             </div>
-            <p style="font-size:12px;color:#64748b;margin-top:0;">Edit any test's MRP or B2B Partner rate below. Prices automatically apply during Patient Entry.</p>
             <table class="tbl">
               <thead>
                 <tr>
-                  <th>Test Code</th>
-                  <th>Investigation Name</th>
-                  <th>Patient Rate / MRP (₹)</th>
-                  <th>B2B / Collection Center Rate (₹)</th>
+                  <th>Department</th>
+                  <th>Test Name</th>
+                  <th>Rate / Price (₹)</th>
+                  <th>Action</th>
                 </tr>
               </thead>
-              <tbody id="rateListBody"></tbody>
+              <tbody id="catalogTableBody"></tbody>
             </table>
           </div>
         </section>
 
-        <!-- 4. DAILY CASH CLOSING & CLOUD EXPENSES -->
-        <section id="viewFinance" class="view-section">
+        <!-- 4. ACCOUNTS & DUES -->
+        <section id="viewAccounts" class="view-section">
           <div class="card">
-            <div class="card-title">
-              <span>📊 Daily Cash Closing & Expense Register (Cloud Synced)</span>
-              <input type="date" id="finDate" class="inp" style="width:auto;" onchange="loadFinanceSummary()" />
+            <div class="card-title"><span>💰 Billing &amp; Due Collection Register</span></div>
+            <div class="grid-3" style="margin-bottom:12px;">
+              <div class="card" style="margin:0;background:#eff6ff;"><div class="lbl">Total Billed</div><div style="font-size:20px;font-weight:800;color:#0866df;">₹<span id="accTotal">0</span></div></div>
+              <div class="card" style="margin:0;background:#f0fdf4;"><div class="lbl">Total Collected</div><div style="font-size:20px;font-weight:800;color:#15803d;">₹<span id="accPaid">0</span></div></div>
+              <div class="card" style="margin:0;background:#fef2f2;"><div class="lbl">Pending Dues</div><div style="font-size:20px;font-weight:800;color:#dc2626;">₹<span id="accDue">0</span></div></div>
             </div>
-            <div class="grid-4" style="margin-bottom:14px;">
-              <div class="card" style="margin:0;background:#eff6ff;">
-                <div class="lbl">Total Billed Today</div>
-                <div style="font-size:20px;font-weight:800;color:#1d4ed8;">₹<span id="sumBilled">0</span></div>
-              </div>
-              <div class="card" style="margin:0;background:#f0fdf4;">
-                <div class="lbl">Total Collected</div>
-                <div style="font-size:20px;font-weight:800;color:#15803d;">₹<span id="sumCollected">0</span></div>
-              </div>
-              <div class="card" style="margin:0;background:#fef2f2;">
-                <div class="lbl">Today's Expenses</div>
-                <div style="font-size:20px;font-weight:800;color:#dc2626;">₹<span id="sumExpenses">0</span></div>
-              </div>
-              <div class="card" style="margin:0;background:#fefce8;">
-                <div class="lbl">Net Cash in Hand</div>
-                <div style="font-size:20px;font-weight:800;color:#a16207;">₹<span id="sumNetCash">0</span></div>
-              </div>
-            </div>
-
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
-              <select id="expCat" class="inp" style="width:160px;">
-                <option value="Reagents">Reagents / Kits</option>
-                <option value="Outsource Lab">Outsource Lab</option>
-                <option value="Staff / Tea">Staff / Tea</option>
-                <option value="Electricity / Rent">Electricity / Rent</option>
-                <option value="Other">Other</option>
-              </select>
-              <input type="text" id="expDesc" class="inp" style="flex:1;min-width:180px;" placeholder="Expense description..." />
-              <input type="number" id="expAmt" class="inp" style="width:120px;" placeholder="Amount ₹" />
-              <button class="btn btn-blue" onclick="addCloudExpense()">+ Add Expense</button>
-            </div>
-
-            <table class="tbl">
-              <thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount (₹)</th></tr></thead>
-              <tbody id="expenseListBody"></tbody>
-            </table>
           </div>
         </section>
 
-        <!-- 5. CLOUD INVENTORY & REAGENT STOCK -->
-        <section id="viewInventory" class="view-section">
-          <div class="card">
-            <div class="card-title"><span>📦 Reagent & Consumable Stock (Cloud Synced)</span></div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
-              <input type="text" id="invName" class="inp" style="flex:1;min-width:180px;" placeholder="Item / Reagent Name (e.g. EDTA Vials, CBC Diluent)" />
-              <input type="number" id="invQty" class="inp" style="width:100px;" placeholder="Qty" />
-              <input type="text" id="invUnit" class="inp" style="width:100px;" value="Pack" />
-              <input type="number" id="invMin" class="inp" style="width:110px;" value="5" placeholder="Min Alert" />
-              <button class="btn btn-green" onclick="addCloudInventory()">+ Save Stock</button>
-            </div>
-            <table class="tbl">
-              <thead><tr><th>Item Name</th><th>Available Qty</th><th>Unit</th><th>Min Alert</th><th>Status</th></tr></thead>
-              <tbody id="inventoryBody"></tbody>
-            </table>
-          </div>
-        </section>
-
-        <!-- 6. LAB & PRINT SETUP + DIRECT WHATSAPP CLOUD API + MENU CUSTOMIZER -->
+        <!-- 5. LAB & PRINT SETUP + DIRECT WHATSAPP API -->
         <section id="viewSetup" class="view-section">
           <div class="card">
             <div class="card-title">
-              <span>⚙ Lab Letterhead, Report Spacing & Direct WhatsApp Cloud Setup</span>
-              <div style="display:flex;gap:8px;">
-                <button class="btn btn-outline" onclick="previewSampleA4()">👁️ Sample A4 Preview</button>
-                <button class="btn btn-green" onclick="saveLabPrintSetup()">💾 Save All Setup</button>
-              </div>
+              <span>⚙ Lab Details, A4 Print Layout &amp; Direct Cloud WhatsApp API</span>
+              <button class="btn btn-green" onclick="saveLabPrintSetup()">💾 Save All Settings</button>
             </div>
             <div class="grid-3">
-              <div><label class="lbl">Lab / Hospital Name</label><input type="text" id="setLabName" class="inp" /></div>
-              <div><label class="lbl">Tagline / Subtitle</label><input type="text" id="setTagline" class="inp" /></div>
-              <div><label class="lbl">Address & Phone</label><input type="text" id="setAddress" class="inp" /></div>
-              <div><label class="lbl">Left Signatory (Technician)</label><input type="text" id="setLeftSig" class="inp" value="Lab Technician" /></div>
+              <div><label class="lbl">Lab Name</label><input type="text" id="setLabName" class="inp" /></div>
+              <div><label class="lbl">Tagline</label><input type="text" id="setTagline" class="inp" /></div>
+              <div><label class="lbl">Address &amp; Phone</label><input type="text" id="setAddress" class="inp" /></div>
+              <div><label class="lbl">Left Signatory</label><input type="text" id="setLeftSig" class="inp" value="Lab Technician" /></div>
               <div><label class="lbl">Left Qualification</label><input type="text" id="setLeftQual" class="inp" value="DMLT / BMLT" /></div>
-              <div><label class="lbl">Right Signatory (Doctor)</label><input type="text" id="setRightSig" class="inp" value="Consultant Pathologist" /></div>
+              <div><label class="lbl">Right Signatory</label><input type="text" id="setRightSig" class="inp" value="Consultant Pathologist" /></div>
               <div><label class="lbl">Right Qualification</label><input type="text" id="setRightQual" class="inp" value="MBBS, MD (Pathology)" /></div>
-              <div><label class="lbl">Top Margin for Letterhead (mm)</label><input type="number" id="setTopMargin" class="inp" value="10" /></div>
+              <div><label class="lbl">Top Margin (mm)</label><input type="number" id="setTopMargin" class="inp" value="10" /></div>
               <div>
-                <label class="lbl">Digital Lab Header on A4</label>
+                <label class="lbl">Header Display</label>
                 <select id="setShowHeader" class="inp">
                   <option value="1">Show Digital Header (Plain A4)</option>
                   <option value="0">Hide Header (Pre-Printed Letterhead)</option>
@@ -490,105 +379,86 @@
               </div>
             </div>
 
-            <!-- Direct Cloud WhatsApp API (Cloud Synced per Lab) -->
             <div style="margin-top:14px;padding-top:12px;border-top:1px solid #e2e8f0;">
-              <strong style="font-size:13px;color:#15803d;">📲 Direct Cloud WhatsApp API (Cloud Synced — No Phone / Laptop Login Needed)</strong>
+              <strong style="font-size:13px;color:#15803d;">📲 Direct Cloud WhatsApp API (No Phone / Laptop WhatsApp Login Required)</strong>
               <p style="font-size:11.5px;color:#64748b;margin:4px 0 8px;">
-                Connect your WhatsApp Business Cloud API (Meta / AiSensy / Interakt / Wati) to send Billing Receipts &amp; Digital Report links directly from the server with 1 click—without logging into WhatsApp Web on any computer.
+                Configure your WhatsApp Cloud API (Meta / AiSensy / Interakt / Wati) so Billing Receipts &amp; Report links go directly from the server without opening WhatsApp Web.
               </p>
               <div class="grid-3">
                 <div>
                   <label class="lbl">WhatsApp Delivery Mode</label>
                   <select id="setWaMode" class="inp">
                     <option value="cloud_api">Direct Cloud API (Zero Login Needed)</option>
-                    <option value="wa_link">Standard WhatsApp Web / App Link</option>
+                    <option value="wa_link">Standard WhatsApp Link Fallback</option>
                   </select>
                 </div>
                 <div>
-                  <label class="lbl">WhatsApp Cloud API Endpoint URL</label>
+                  <label class="lbl">WhatsApp Cloud API URL</label>
                   <input type="text" id="setWaApiUrl" class="inp" placeholder="https://graph.facebook.com/v19.0/PHONE_ID/messages" />
                 </div>
                 <div>
-                  <label class="lbl">Bearer Access Token / API Key</label>
+                  <label class="lbl">Bearer Access Token</label>
                   <input type="password" id="setWaApiToken" class="inp" placeholder="Paste API Bearer Token" />
                 </div>
-              </div>
-            </div>
-
-            <div style="margin-top:14px;padding-top:12px;border-top:1px solid #e2e8f0;">
-              <strong style="font-size:13px;color:#0f294a;">🎛 Hide / Show Optional Workspace Menus (Lab Preference)</strong>
-              <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;font-size:13px;">
-                <label><input type="checkbox" id="prefShowRates" checked /> Show Rate List Menu</label>
-                <label><input type="checkbox" id="prefShowFinance" checked /> Show Cash Closing & Expenses</label>
-                <label><input type="checkbox" id="prefShowInventory" checked /> Show Stock & Reagents</label>
               </div>
             </div>
           </div>
         </section>
 
-        <!-- 7. SUPER ADMIN MASTER CONTROL CENTER -->
+        <!-- 6. SUPER ADMIN PANEL -->
         <section id="viewSuperAdmin" class="view-section">
-          <!-- Festival & Celebration Shimmer Banner Control -->
+          <!-- Animated Festival Banner Publisher -->
           <div class="card" style="border:2px solid #ea580c;background:#fff7ed;">
             <div class="card-title">
-              <span style="color:#9a3412;">🎊 Live Festival & Celebration Banner (Diwali, Durga Puja, Holi, Eid, New Year)</span>
-              <button class="btn btn-amber" onclick="saveFestivalBannerConfig()">✨ Publish Festival Banner</button>
+              <span style="color:#9a3412;">🎊 Live Festival &amp; Celebration Banner Control (Diwali, Durga Puja, Holi, Eid, New Year)</span>
+              <button class="btn btn-amber" onclick="saveFestivalBanner()">✨ Publish / Update Banner</button>
             </div>
-            <p style="font-size:12px;color:#7c2d12;margin-top:0;">
-              Write any greeting message below and turn it ON. It will appear with animated sparkles and shimmer across the Login Page and every Lab's Dashboard!
-            </p>
             <div class="grid-4">
               <div>
                 <label class="lbl">Banner Status</label>
                 <select id="festActive" class="inp">
-                  <option value="1">✨ ON (Show Animated Banner)</option>
+                  <option value="1">ON (Show Across Entire Website)</option>
                   <option value="0">OFF (Hidden)</option>
                 </select>
               </div>
               <div>
-                <label class="lbl">Sparkle Theme Color</label>
+                <label class="lbl">Festival Color &amp; Sparkle Theme</label>
                 <select id="festTheme" class="inp">
-                  <option value="diwali">🪔 Diwali / Chhath Gold-Orange</option>
-                  <option value="durga">🌺 Durga Puja / Navratri Crimson</option>
-                  <option value="holi">🎨 Holi Rainbow Celebration</option>
-                  <option value="eid">🌙 Eid / Festival Emerald Green</option>
-                  <option value="gold">🎉 New Year / Republic Royal Blue</option>
+                  <option value="diwali">Diwali / Chhath Gold &amp; Orange</option>
+                  <option value="durga">Durga Puja Royal Crimson</option>
+                  <option value="holi">Holi Festive Colors</option>
+                  <option value="eid">Eid Emerald Green</option>
+                  <option value="gold">New Year / Special Blue-Gold</option>
                 </select>
               </div>
               <div>
-                <label class="lbl">Main Festival Greeting Title</label>
-                <input type="text" id="festTitleInp" class="inp" placeholder="✨ शुभ दीपावली! Happy Diwali ✨" />
+                <label class="lbl">Main Greeting Title</label>
+                <input type="text" id="festTitleInput" class="inp" placeholder="✨ शुभ दीपावली! Happy Diwali ✨" />
               </div>
               <div>
-                <label class="lbl">Subtitle / Wishes Message</label>
-                <input type="text" id="festSubInp" class="inp" placeholder="आप सभी को हार्दिक शुभकामनाएँ!" />
+                <label class="lbl">Sub-Message</label>
+                <input type="text" id="festSubInput" class="inp" placeholder="आप सभी को हार्दिक शुभकामनाएँ!" />
               </div>
             </div>
           </div>
 
-          <div class="card" style="border:2px solid #d97706;">
+          <!-- Registered Labs & Owner Profiles Management -->
+          <div class="card" style="border:2px solid #0866df;">
             <div class="card-title">
-              <span>⬟ Super Admin Control Center — Remote Kill-Switch, Device Lock & 3-Tier Plans</span>
-              <button class="btn btn-blue" onclick="loadAllLabsForAdmin()">↻ Refresh All Labs</button>
+              <span>⬟ Super Admin — All Registered Labs &amp; Single-Device Locks</span>
+              <button class="btn btn-blue" onclick="loadSuperAdminData()">↻ Refresh</button>
             </div>
-            <p style="font-size:12.5px;color:#475569;margin-top:0;">
-              Control every lab's subscription tier, remotely lock/suspend unpaid centers (works even when their device is offline), or reset Single-Device Lock if they change computers.
-            </p>
-            <div style="overflow-x:auto;">
-              <table class="tbl">
-                <thead>
-                  <tr>
-                    <th>Lab Name & Owner</th>
-                    <th>Plan Tier</th>
-                    <th>Expiry Date</th>
-                    <th>Device Lock</th>
-                    <th>Remote Access Status</th>
-                    <th>Admin Controls</th>
-                  </tr>
-                </thead>
-                <tbody id="superAdminLabsBody"></tbody>
-              </table>
-            </div>
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th>Lab Name</th>
+                  <th>Phone / Address</th>
+                  <th>Owner Account / Device Lock</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="superAdminLabsBody"></tbody>
+            </table>
           </div>
         </section>
 
@@ -606,161 +476,38 @@
     <div id="acdA4SheetContainer" class="acd-a4-sheet"></div>
   </div>
 
-  <script src="print-report.js?v=9"></script>
+  <script src="print-report.js?v=9" onerror="window._noPrintJs=true"></script>
   <script>
+    "use strict";
     const SUPABASE_URL = "https://axfvvquhswapiwmvrepe.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_n6jRvVDjw2kOF7CS46omqQ_6qGkdR-q";
-    const SUPER_ADMIN_EMAIL = "acdbittu@gmail.com";
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const SUPER_ADMIN_EMAIL = "deepakkumar70612440@gmail.com";
+    const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
     let currentUser = null;
     let isSuperAdmin = false;
     let labsList = [];
     let activeLab = null;
+    let labCatalog = [];
     let currentWorklistTests = [];
-    let savedReportsCache = [];
+    let savedOrdersCache = [];
 
-    const MASTER_TESTS = [
-      {
-        code: "CBC", name: "COMPLETE BLOOD COUNT (CBC)", price: 300, b2b: 180,
-        params: [
-          { name: "Haemoglobin", unit: "gm/dl", minM: 13.0, maxM: 17.0, minF: 12.0, maxF: 15.5, minC: 11.0, maxC: 14.5 },
-          { name: "Total Leucocyte Count (WBC)", unit: "/ Cu mm", minM: 4000, maxM: 11000, minF: 4000, maxF: 11000, minC: 5000, maxC: 13000 },
-          { name: "Neutrophils", unit: "%", minM: 40, maxM: 75, minF: 40, maxF: 75, minC: 35, maxC: 70 },
-          { name: "Lymphocytes", unit: "%", minM: 20, maxM: 45, minF: 20, maxF: 45, minC: 25, maxC: 55 },
-          { name: "Monocytes", unit: "%", minM: 2, maxM: 10, minF: 2, maxF: 10, minC: 2, maxC: 10 },
-          { name: "Eosinophils", unit: "%", minM: 1, maxM: 6, minF: 1, maxF: 6, minC: 1, maxC: 6 },
-          { name: "Basophils", unit: "%", minM: 0, maxM: 1, minF: 0, maxF: 1, minC: 0, maxC: 1 },
-          { name: "RBC Count", unit: "million/Cu mm", minM: 4.5, maxM: 5.9, minF: 4.1, maxF: 5.1, minC: 4.0, maxC: 5.2 },
-          { name: "PCV (Hematocrit)", unit: "%", minM: 40, maxM: 50, minF: 36, maxF: 46, minC: 34, maxC: 44 },
-          { name: "MCV", unit: "fL", minM: 80, maxM: 100, minF: 80, maxF: 100, minC: 75, maxC: 95 },
-          { name: "MCH", unit: "pg", minM: 27, maxM: 34, minF: 27, maxF: 34, minC: 25, maxC: 33 },
-          { name: "MCHC", unit: "g/dL", minM: 32, maxM: 36, minF: 32, maxF: 36, minC: 31, maxC: 36 },
-          { name: "Platelet Count", unit: "/ Cu mm", minM: 150000, maxM: 450000, minF: 150000, maxF: 450000, minC: 150000, maxC: 450000 }
-        ]
-      },
-      {
-        code: "WIDAL", name: "WIDAL SLIDE / TUBE AGGLUTINATION", price: 150, b2b: 80,
-        params: [
-          { name: "Salmonella Typhi 'O'", unit: "Titre", rangeText: "< 1:80 (Negative)" },
-          { name: "Salmonella Typhi 'H'", unit: "Titre", rangeText: "< 1:80 (Negative)" },
-          { name: "Salmonella Paratyphi 'AH'", unit: "Titre", rangeText: "< 1:80 (Negative)" },
-          { name: "Salmonella Paratyphi 'BH'", unit: "Titre", rangeText: "< 1:80 (Negative)" }
-        ]
-      },
-      {
-        code: "MP", name: "MALARIA PARASITE (MP ANTIGEN / SLIDE)", price: 200, b2b: 100,
-        params: [
-          { name: "Plasmodium Vivax (Pv)", unit: "", rangeText: "Negative" },
-          { name: "Plasmodium Falciparum (Pf)", unit: "", rangeText: "Negative" }
-        ]
-      },
-      {
-        code: "TYPHIDOT", name: "TYPHIDOT IgM / IgG", price: 300, b2b: 160,
-        params: [
-          { name: "Salmonella Typhi IgM", unit: "", rangeText: "Non-Reactive" },
-          { name: "Salmonella Typhi IgG", unit: "", rangeText: "Non-Reactive" }
-        ]
-      },
-      {
-        code: "LFT", name: "LIVER FUNCTION TEST (LFT)", price: 550, b2b: 300,
-        params: [
-          { name: "Bilirubin Total", unit: "mg/dL", minM: 0.2, maxM: 1.2, minF: 0.2, maxF: 1.2, minC: 0.2, maxC: 1.2 },
-          { name: "Bilirubin Direct", unit: "mg/dL", minM: 0.0, maxM: 0.3, minF: 0.0, maxF: 0.3, minC: 0.0, maxC: 0.3 },
-          { name: "SGOT (AST)", unit: "U/L", minM: 8, maxM: 40, minF: 8, maxF: 35, minC: 10, maxC: 45 },
-          { name: "SGPT (ALT)", unit: "U/L", minM: 7, maxM: 45, minF: 7, maxF: 35, minC: 10, maxC: 40 },
-          { name: "Alkaline Phosphatase", unit: "U/L", minM: 44, maxM: 147, minF: 44, maxF: 147, minC: 100, maxC: 320 },
-          { name: "Total Protein", unit: "g/dL", minM: 6.0, maxM: 8.3, minF: 6.0, maxF: 8.3, minC: 6.0, maxC: 8.0 },
-          { name: "Albumin", unit: "g/dL", minM: 3.5, maxM: 5.2, minF: 3.5, maxF: 5.2, minC: 3.5, maxC: 5.2 }
-        ]
-      },
-      {
-        code: "KFT", name: "KIDNEY FUNCTION TEST (KFT / RFT)", price: 500, b2b: 280,
-        params: [
-          { name: "Blood Urea", unit: "mg/dL", minM: 15, maxM: 45, minF: 15, maxF: 45, minC: 10, maxC: 40 },
-          { name: "Serum Creatinine", unit: "mg/dL", minM: 0.7, maxM: 1.3, minF: 0.6, maxF: 1.1, minC: 0.3, maxC: 0.8 },
-          { name: "Uric Acid", unit: "mg/dL", minM: 3.5, maxM: 7.2, minF: 2.6, maxF: 6.0, minC: 2.0, maxC: 5.5 },
-          { name: "Sodium (Na+)", unit: "mmol/L", minM: 135, maxM: 145, minF: 135, maxF: 145, minC: 135, maxC: 145 },
-          { name: "Potassium (K+)", unit: "mmol/L", minM: 3.5, maxM: 5.1, minF: 3.5, maxF: 5.1, minC: 3.5, maxC: 5.1 }
-        ]
-      },
-      {
-        code: "SUGAR_F", name: "BLOOD SUGAR FASTING (FBS)", price: 80, b2b: 40,
-        params: [{ name: "Fasting Plasma Glucose", unit: "mg/dL", minM: 70, maxM: 110, minF: 70, maxF: 110, minC: 70, maxC: 105 }]
-      },
-      {
-        code: "BTCT", name: "BLEEDING & CLOTTING TIME (BT / CT)", price: 100, b2b: 50,
-        params: [
-          { name: "Bleeding Time (BT)", unit: "Min/Sec", rangeText: "1 Min 00 Sec - 5 Min 00 Sec" },
-          { name: "Clotting Time (CT)", unit: "Min/Sec", rangeText: "3 Min 00 Sec - 8 Min 00 Sec" }
-        ]
-      }
-    ];
-
-    let labCustomRates = {};
-
-    // =========================================================================
-    // FESTIVAL BANNER LOADER & SUPER ADMIN PUBLISHER
-    // =========================================================================
-    async function loadFestivalBanner() {
-      try {
-        let fest = JSON.parse(localStorage.getItem("acd_festival_banner_cache") || "null");
-        if (navigator.onLine) {
-          const { data } = await sb.from("saas_festival_banner").select("*").eq("id", 1).single();
-          if (data) {
-            fest = data;
-            localStorage.setItem("acd_festival_banner_cache", JSON.stringify(data));
-          }
-        }
-        const bar = document.getElementById("dashFestivalBar");
-        if (fest && fest.is_active && fest.title_text) {
-          bar.className = "dash-festival-bar fest-theme-" + (fest.theme || "diwali");
-          document.getElementById("dashFestTitleText").textContent = fest.title_text;
-          document.getElementById("dashFestSubText").textContent = fest.sub_text || "";
-          bar.style.display = "block";
-        } else {
-          bar.style.display = "none";
-        }
-
-        if (fest && document.getElementById("festActive")) {
-          document.getElementById("festActive").value = fest.is_active ? "1" : "0";
-          document.getElementById("festTheme").value = fest.theme || "diwali";
-          document.getElementById("festTitleInp").value = fest.title_text || "";
-          document.getElementById("festSubInp").value = fest.sub_text || "";
-        }
-      } catch (e) {}
+    function genId() {
+      return (typeof crypto !== "undefined" && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : "id-" + Date.now() + "-" + Math.random().toString(36).slice(2, 10);
     }
 
-    async function saveFestivalBannerConfig() {
-      if (!isSuperAdmin || !navigator.onLine) { showToast("Online Super Admin access required."); return; }
-      const payload = {
-        id: 1,
-        is_active: document.getElementById("festActive").value === "1",
-        theme: document.getElementById("festTheme").value,
-        title_text: document.getElementById("festTitleInp").value.trim(),
-        sub_text: document.getElementById("festSubInp").value.trim(),
-        updated_at: new Date().toISOString()
-      };
-      const { error } = await sb.from("saas_festival_banner").upsert(payload);
-      if (error) { showToast("Banner error: " + error.message); return; }
-      localStorage.setItem("acd_festival_banner_cache", JSON.stringify(payload));
-      await loadFestivalBanner();
-      showToast(payload.is_active ? "✨ Festival Banner is now LIVE across the software!" : "Festival Banner turned OFF.");
-    }
-
-    // =========================================================================
-    // SEQUENTIAL ENTER KEY NAVIGATION
-    // =========================================================================
-    function bindSequentialRegistrationNavigation() {
+    // 1. Sequential Enter Navigation
+    function bindSequentialNav() {
       document.querySelectorAll(".reg-nav").forEach(el => {
         el.addEventListener("keydown", (e) => {
           if (e.key === "Enter") {
             e.preventDefault();
             e.stopPropagation();
             const nextId = el.getAttribute("data-next");
-            if (nextId) {
-              const nextEl = document.getElementById(nextId);
-              if (nextEl) nextEl.focus();
+            if (nextId && document.getElementById(nextId)) {
+              document.getElementById(nextId).focus();
             }
           }
         });
@@ -770,192 +517,154 @@
     function autoLookupRepeatPatient() {
       const mob = (document.getElementById("pMobile").value || "").replace(/\D/g, "");
       if (mob.length === 10) {
-        const prev = savedReportsCache.find(r => (r.mobile || "").replace(/\D/g, "").endsWith(mob));
-        if (prev) {
-          if (!document.getElementById("pName").value) document.getElementById("pName").value = prev.patient_name || "";
-          const ageParts = (prev.age || "").split(" ");
-          if (!document.getElementById("pAge").value && ageParts[0]) document.getElementById("pAge").value = ageParts[0];
-          if (ageParts[1]) document.getElementById("pAgeUnit").value = ageParts[1];
-          if (prev.gender) document.getElementById("pGender").value = prev.gender;
-          if (!document.getElementById("pAddress").value && prev.address) document.getElementById("pAddress").value = prev.address;
-          reapplyAgeGenderRanges();
-          showToast("Repeat patient auto-filled: " + prev.patient_name);
+        const match = savedOrdersCache.find(o => ((o.patient?.mobile || o.mobile || "").replace(/\D/g, "")).endsWith(mob));
+        if (match) {
+          const p = match.patient || match;
+          if (!document.getElementById("pName").value) document.getElementById("pName").value = p.patient_name || "";
+          if (!document.getElementById("pAge").value && p.age) document.getElementById("pAge").value = p.age;
+          if (p.gender) document.getElementById("pGender").value = p.gender;
+          if (!document.getElementById("pAddress").value && p.address) document.getElementById("pAddress").value = p.address;
+          showToast("Repeat patient auto-filled: " + (p.patient_name || ""));
         }
       }
     }
 
-    // =========================================================================
-    // TAMPER-PROOF OFFLINE & ONLINE LICENSE / REMOTE LOCK ENFORCEMENT
-    // =========================================================================
-    function enforceOfflineAndOnlineLock(bundle) {
-      if (!bundle || bundle.isSuperAdmin) return false;
-
-      const overlay = document.getElementById("hardLockOverlay");
-      const title = document.getElementById("lockTitle");
-      const msg = document.getElementById("lockMessage");
-
-      if (bundle.isLocked) {
-        title.textContent = "Account Suspended by Super Admin";
-        msg.textContent = bundle.lockReason || "Your center has been locked by the administrator. Please clear pending dues or contact support.";
-        overlay.style.display = "flex";
-        return true;
-      }
-
-      const now = Date.now();
-      const maxSeen = Number(localStorage.getItem("acd_max_clock_seen") || 0);
-      if (maxSeen && now < (maxSeen - 3600000)) {
-        title.textContent = "System Date/Time Tampering Detected";
-        msg.textContent = "Your computer clock was moved backwards. Please restore the correct date/time and connect to the internet to verify your license.";
-        overlay.style.display = "flex";
-        return true;
-      }
-      if (now > maxSeen) localStorage.setItem("acd_max_clock_seen", String(now));
-
-      if (bundle.subscriptionEnd) {
-        const expTime = new Date(bundle.subscriptionEnd + "T23:59:59").getTime();
-        if (now > expTime) {
-          title.textContent = "Subscription Expired (" + bundle.subscriptionEnd + ")";
-          msg.textContent = "Your annual subscription validity has ended. Please renew online to continue creating and printing reports.";
-          overlay.style.display = "flex";
-          return true;
+    // 2. Festival Banner Loader & Publisher
+    async function loadAndRenderFestivalBanner() {
+      try {
+        let fest = JSON.parse(localStorage.getItem("acd_festival_banner_cache") || "null");
+        if (navigator.onLine && sb) {
+          const { data } = await sb.from("saas_festival_banner").select("*").eq("id", 1).maybeSingle();
+          if (data) {
+            fest = data;
+            localStorage.setItem("acd_festival_banner_cache", JSON.stringify(data));
+          }
         }
-      }
-
-      const myDevice = localStorage.getItem("acd_device_fingerprint");
-      if (bundle.deviceId && myDevice && bundle.deviceId !== myDevice) {
-        title.textContent = "Unauthorized Device";
-        msg.textContent = "This license belongs to a different registered computer.";
-        overlay.style.display = "flex";
-        return true;
-      }
-
-      overlay.style.display = "none";
-      return false;
+        const bar = document.getElementById("dashFestBanner");
+        if (fest && fest.is_active && fest.title_text) {
+          bar.className = "dash-fest-banner fest-theme-" + (fest.theme || "diwali");
+          bar.innerHTML = `✨ ${fest.title_text} ${fest.sub_text ? " — <span style='font-weight:500'>" + fest.sub_text + "</span>" : ""} ✨`;
+          bar.style.display = "block";
+        } else {
+          bar.style.display = "none";
+        }
+        if (fest && document.getElementById("festTitleInput")) {
+          document.getElementById("festActive").value = fest.is_active ? "1" : "0";
+          document.getElementById("festTheme").value = fest.theme || "diwali";
+          document.getElementById("festTitleInput").value = fest.title_text || "";
+          document.getElementById("festSubInput").value = fest.sub_text || "";
+        }
+      } catch (e) {}
     }
 
-    async function recheckCloudLock() {
-      if (!navigator.onLine) return;
-      const bundle = JSON.parse(localStorage.getItem("acd_offline_auth_bundle") || "{}");
-      if (!bundle.email) return;
-      const { data: labs } = await sb.from("labs").select("*").eq("owner_email", bundle.email).limit(1);
-      if (labs && labs[0]) {
-        const lab = labs[0];
-        bundle.isLocked = !!lab.is_locked;
-        bundle.lockReason = lab.lock_reason || "";
-        bundle.subscriptionEnd = lab.subscription_end || bundle.subscriptionEnd;
-        bundle.planTier = lab.plan_tier || bundle.planTier;
-        bundle.featureFlags = lab.feature_flags || {};
-        localStorage.setItem("acd_offline_auth_bundle", JSON.stringify(bundle));
-        enforceOfflineAndOnlineLock(bundle);
+    async function saveFestivalBanner() {
+      const payload = {
+        id: 1,
+        is_active: document.getElementById("festActive").value === "1",
+        theme: document.getElementById("festTheme").value,
+        title_text: document.getElementById("festTitleInput").value.trim(),
+        sub_text: document.getElementById("festSubInput").value.trim(),
+        updated_at: new Date().toISOString()
+      };
+      localStorage.setItem("acd_festival_banner_cache", JSON.stringify(payload));
+      if (sb) {
+        const { error } = await sb.from("saas_festival_banner").upsert(payload);
+        if (error) { showToast("Banner error: " + error.message); return; }
       }
+      await loadAndRenderFestivalBanner();
+      showToast("Festival Banner updated across the entire website!");
     }
 
-    // =========================================================================
-    // INITIALIZATION
-    // =========================================================================
+    // 3. Init & Load Original Supabase Tables
     async function initDashboard() {
-      bindSequentialRegistrationNavigation();
+      bindSequentialNav();
       document.getElementById("pDate").value = new Date().toISOString().slice(0, 10);
-      document.getElementById("finDate").value = new Date().toISOString().slice(0, 10);
       updateNetBadge();
-      window.addEventListener("online", () => { updateNetBadge(); recheckCloudLock(); syncOfflineQueueNow(); loadFestivalBanner(); });
+      window.addEventListener("online", () => { updateNetBadge(); syncOfflineQueueNow(); });
       window.addEventListener("offline", updateNetBadge);
 
-      const bundleRaw = localStorage.getItem("acd_offline_auth_bundle");
-      const bundle = bundleRaw ? JSON.parse(bundleRaw) : null;
-
-      if (navigator.onLine) {
+      const offSess = JSON.parse(localStorage.getItem("acd_offline_session") || "null");
+      if (navigator.onLine && sb) {
         const { data: { session } } = await sb.auth.getSession();
-        if (!session && !bundle) {
-          window.location.href = "index.html";
+        if (!session && !offSess) {
+          if (!window.location.href.includes("gemini.google")) {
+            location.href = "index.html";
+          }
           return;
         }
-        currentUser = session ? session.user : { email: bundle.email, id: bundle.userId };
+        currentUser = session ? session.user : { email: offSess.email, id: offSess.userId };
       } else {
-        if (!bundle) {
-          window.location.href = "index.html";
+        if (!offSess) {
+          if (!window.location.href.includes("gemini.google")) {
+            location.href = "index.html";
+          }
           return;
         }
-        currentUser = { email: bundle.email, id: bundle.userId };
+        currentUser = { email: offSess.email, id: offSess.userId };
       }
 
       isSuperAdmin = (currentUser.email.toLowerCase() === SUPER_ADMIN_EMAIL);
       document.getElementById("userEmailLabel").textContent = currentUser.email;
-
+      const saBtn = document.getElementById("navSuperAdmin");
+      const saSec = document.getElementById("viewSuperAdmin");
       if (isSuperAdmin) {
-        document.getElementById("navSuperAdmin").style.display = "inline-flex";
-      } else if (bundle && enforceOfflineAndOnlineLock(bundle)) {
-        return;
+        if (saBtn) saBtn.style.display = "inline-flex";
+      } else {
+        if (saBtn) saBtn.remove();
+        if (saSec) saSec.remove();
       }
 
-      await loadFestivalBanner();
-      await loadLabsAndSync();
-      populateTestPicker();
-      await loadCloudRateList();
+      await loadAndRenderFestivalBanner();
+      await loadUserLabs();
+      await loadLabTestCatalog();
       await loadSavedReports();
-      await loadFinanceSummary();
-      await loadCloudInventory();
-      if (isSuperAdmin) await loadAllLabsForAdmin();
+      if (isSuperAdmin) await loadSuperAdminData();
       document.getElementById("pMobile").focus();
     }
 
     function updateNetBadge() {
       const b = document.getElementById("netStatusBadge");
-      if (navigator.onLine) {
-        b.textContent = "● Online Cloud Sync";
-        b.className = "badge badge-online";
-      } else {
-        b.textContent = "● Offline Mode (Local Active)";
-        b.className = "badge badge-offline";
-      }
+      b.textContent = navigator.onLine ? "● Online Cloud Sync" : "● Offline Mode Active";
+      b.className = navigator.onLine ? "badge badge-online" : "badge badge-offline";
     }
 
-    async function loadLabsAndSync() {
+    async function loadUserLabs() {
       const sel = document.getElementById("activeLabSelect");
-      if (navigator.onLine) {
-        let query = sb.from("labs").select("*");
-        if (!isSuperAdmin) query = query.eq("owner_email", currentUser.email);
-        const { data } = await query;
-        labsList = data || [];
+      if (navigator.onLine && sb) {
+        if (isSuperAdmin) {
+          const { data } = await sb.from("labs").select("*").order("created_at", { ascending: false });
+          labsList = data || [];
+        } else {
+          const { data: mems } = await sb.from("lab_memberships").select("lab_id, labs(*)").eq("user_id", currentUser.id);
+          labsList = (mems || []).map(m => m.labs).filter(Boolean);
+          if (labsList.length === 0) {
+            const { data: owned } = await sb.from("labs").select("*").eq("owner_id", currentUser.id);
+            labsList = owned || [];
+          }
+        }
         localStorage.setItem("acd_cached_labs", JSON.stringify(labsList));
       } else {
         labsList = JSON.parse(localStorage.getItem("acd_cached_labs") || "[]");
       }
 
-      sel.innerHTML = labsList.map(l => `<option value="${l.id}">${l.lab_name || l.name || "Diagnostic Center"}</option>`).join("");
+      sel.innerHTML = labsList.map(l => `<option value="${l.id}">${l.name || l.lab_name || "Pathology Lab"}</option>`).join("");
       if (labsList.length > 0) {
         activeLab = labsList[0];
-        applyActiveLabSettings();
+        applyLabSetupFields();
       }
       sel.onchange = () => {
         activeLab = labsList.find(x => x.id === sel.value) || labsList[0];
-        applyActiveLabSettings();
-        loadCloudRateList();
+        applyLabSetupFields();
+        loadLabTestCatalog();
         loadSavedReports();
-        loadFinanceSummary();
-        loadCloudInventory();
       };
     }
 
-    function applyActiveLabSettings() {
+    function applyLabSetupFields() {
       if (!activeLab) return;
-      document.getElementById("planTierBadge").textContent = "Plan: " + (activeLab.plan_tier || "standard").toUpperCase();
-      document.getElementById("expiryBadge").textContent = activeLab.subscription_end ? ("Valid till: " + activeLab.subscription_end) : "";
-
-      if (!isSuperAdmin) {
-        const bundle = JSON.parse(localStorage.getItem("acd_offline_auth_bundle") || "{}");
-        bundle.isLocked = !!activeLab.is_locked;
-        bundle.lockReason = activeLab.lock_reason || "";
-        bundle.subscriptionEnd = activeLab.subscription_end || bundle.subscriptionEnd;
-        bundle.planTier = activeLab.plan_tier || "standard";
-        bundle.featureFlags = activeLab.feature_flags || {};
-        localStorage.setItem("acd_offline_auth_bundle", JSON.stringify(bundle));
-        enforceOfflineAndOnlineLock(bundle);
-      }
-
-      document.getElementById("setLabName").value = activeLab.lab_name || activeLab.name || "";
+      document.getElementById("setLabName").value = activeLab.name || activeLab.lab_name || "";
       document.getElementById("setTagline").value = activeLab.tagline || "Computerized Pathology & Diagnostic Laboratory";
-      document.getElementById("setAddress").value = activeLab.address || "";
+      document.getElementById("setAddress").value = [activeLab.address, activeLab.phone].filter(Boolean).join(" | ");
 
       const cfg = JSON.parse(localStorage.getItem("acd_print_cfg_" + activeLab.id) || "{}");
       document.getElementById("setLeftSig").value = cfg.leftSig || "Lab Technician";
@@ -964,130 +673,70 @@
       document.getElementById("setRightQual").value = cfg.rightQual || "MBBS, MD (Pathology)";
       document.getElementById("setTopMargin").value = cfg.topMargin ?? 10;
       document.getElementById("setShowHeader").value = cfg.showHeader ?? "1";
-      document.getElementById("setWaMode").value = activeLab.wa_mode || cfg.waMode || "cloud_api";
-      document.getElementById("setWaApiUrl").value = activeLab.wa_api_url || cfg.waApiUrl || "";
-      document.getElementById("setWaApiToken").value = activeLab.wa_api_token || cfg.waApiToken || "";
-
-      const flags = activeLab.feature_flags || {};
-      const prefs = JSON.parse(localStorage.getItem("acd_menu_prefs_" + activeLab.id) || '{"rates":true,"expenses":true,"inventory":true}');
-      document.getElementById("prefShowRates").checked = prefs.rates !== false;
-      document.getElementById("prefShowFinance").checked = prefs.expenses !== false;
-      document.getElementById("prefShowInventory").checked = prefs.inventory !== false;
-
-      document.querySelectorAll("[data-feat]").forEach(btn => {
-        const f = btn.getAttribute("data-feat");
-        const adminAllowed = isSuperAdmin || (flags[f] !== false);
-        const labAllowed = (prefs[f] !== false);
-        btn.style.display = (adminAllowed && labAllowed) ? "inline-flex" : "none";
-      });
+      document.getElementById("setWaMode").value = cfg.waMode || "cloud_api";
+      document.getElementById("setWaApiUrl").value = cfg.waApiUrl || "";
+      document.getElementById("setWaApiToken").value = cfg.waApiToken || "";
     }
 
-    // =========================================================================
-    // EDITABLE TEST RATE LIST
-    // =========================================================================
-    function populateTestPicker() {
-      const picker = document.getElementById("testPicker");
-      picker.innerHTML = MASTER_TESTS.map(t => {
-        const r = labCustomRates[t.code] ? labCustomRates[t.code].price : t.price;
-        return `<option value="${t.code}">${t.name} — ₹${r}</option>`;
-      }).join("");
-    }
-
-    async function loadCloudRateList() {
+    async function loadLabTestCatalog() {
       if (!activeLab) return;
-      if (navigator.onLine) {
-        const { data } = await sb.from("lab_rate_list").select("*").eq("lab_id", activeLab.id);
-        labCustomRates = {};
-        (data || []).forEach(row => {
-          labCustomRates[row.test_code] = { price: Number(row.price), b2b: Number(row.b2b_price) };
-        });
-        localStorage.setItem("acd_rates_" + activeLab.id, JSON.stringify(labCustomRates));
+      if (navigator.onLine && sb) {
+        const { data } = await sb.from("test_catalog")
+          .select("*, test_parameters(*)")
+          .eq("lab_id", activeLab.id)
+          .order("test_name");
+        labCatalog = data || [];
+        localStorage.setItem("acd_catalog_cache_" + activeLab.id, JSON.stringify(labCatalog));
       } else {
-        labCustomRates = JSON.parse(localStorage.getItem("acd_rates_" + activeLab.id) || "{}");
+        labCatalog = JSON.parse(localStorage.getItem("acd_catalog_cache_" + activeLab.id) || "[]");
       }
-      populateTestPicker();
-      renderRateListTable();
+
+      const picker = document.getElementById("testPicker");
+      picker.innerHTML = labCatalog.map(t => `<option value="${t.id}">${t.test_name} — ₹${t.default_price || 0}</option>`).join("");
+
+      document.getElementById("catalogTableBody").innerHTML = labCatalog.map(t => `
+        <tr>
+          <td>${t.department || "Pathology"}</td>
+          <td><strong>${t.test_name}</strong></td>
+          <td><input type="number" class="inp" style="width:110px;" id="catPrice_${t.id}" value="${t.default_price || 0}" /></td>
+          <td><button class="btn btn-green" style="padding:4px 9px;font-size:11px;" onclick="updateTestCatalogPrice('${t.id}')">Save Rate</button></td>
+        </tr>
+      `).join("");
     }
 
-    function renderRateListTable() {
-      const tbody = document.getElementById("rateListBody");
-      tbody.innerHTML = MASTER_TESTS.map(t => {
-        const custom = labCustomRates[t.code] || { price: t.price, b2b: t.b2b };
-        return `
-          <tr>
-            <td><strong>${t.code}</strong></td>
-            <td>${t.name}</td>
-            <td><input type="number" class="inp rate-mrp" data-code="${t.code}" data-name="${t.name}" value="${custom.price}" style="width:120px;" /></td>
-            <td><input type="number" class="inp rate-b2b" data-code="${t.code}" value="${custom.b2b}" style="width:120px;" /></td>
-          </tr>
-        `;
-      }).join("");
-    }
-
-    async function saveCloudRateList() {
-      if (!activeLab) return;
-      const rows = [];
-      document.querySelectorAll(".rate-mrp").forEach(inp => {
-        const code = inp.dataset.code;
-        const name = inp.dataset.name;
-        const price = Number(inp.value || 0);
-        const b2bInp = document.querySelector(`.rate-b2b[data-code="${code}"]`);
-        const b2b = Number(b2bInp ? b2bInp.value : 0);
-        labCustomRates[code] = { price, b2b };
-        rows.push({ lab_id: activeLab.id, test_code: code, test_name: name, price, b2b_price: b2b });
-      });
-      localStorage.setItem("acd_rates_" + activeLab.id, JSON.stringify(labCustomRates));
-      populateTestPicker();
-
-      if (navigator.onLine) {
-        const { error } = await sb.from("lab_rate_list").upsert(rows, { onConflict: "lab_id,test_code" });
-        if (error) { showToast("Cloud rate save error: " + error.message); return; }
-      }
-      showToast("All test rates saved & synced to cloud!");
-    }
-
-    // =========================================================================
-    // WORKLIST, AGE/GENDER RANGES & AUTO-BILLING
-    // =========================================================================
-    function getRangeForPatient(param) {
-      if (param.rangeText) return { text: param.rangeText, min: null, max: null };
-      const gender = document.getElementById("pGender").value;
-      const age = Number(document.getElementById("pAge").value || 25);
-      const unit = document.getElementById("pAgeUnit").value;
-      const isChild = (gender === "Child" || unit === "M" || unit === "D" || (unit === "Y" && age < 14));
-
-      let min = param.minM, max = param.maxM;
-      if (isChild) { min = param.minC; max = param.maxC; }
-      else if (gender === "Female") { min = param.minF; max = param.maxF; }
-      return { text: `${min} - ${max}`, min, max };
+    async function updateTestCatalogPrice(testId) {
+      const price = Number(document.getElementById("catPrice_" + testId).value || 0);
+      if (sb) await sb.from("test_catalog").update({ default_price: price }).eq("id", testId);
+      const t = labCatalog.find(x => x.id === testId);
+      if (t) t.default_price = price;
+      loadLabTestCatalog();
+      showToast("Test price updated to ₹" + price);
     }
 
     function addSelectedTestToWorklist() {
-      const code = document.getElementById("testPicker").value;
-      const master = MASTER_TESTS.find(t => t.code === code);
-      if (!master) return;
-      if (currentWorklistTests.some(x => x.code === code)) return;
+      const testId = document.getElementById("testPicker").value;
+      const cat = labCatalog.find(t => t.id === testId);
+      if (!cat) return;
+      if (currentWorklistTests.some(x => x.id === testId)) return;
 
-      const rate = labCustomRates[code] ? labCustomRates[code].price : master.price;
-      const testObj = {
-        code: master.code,
-        name: master.name,
-        price: rate,
-        params: master.params.map(p => {
-          const r = getRangeForPatient(p);
-          return {
-            name: p.name,
-            value: "",
-            unit: p.unit,
-            rangeText: r.text,
-            min: r.min,
-            max: r.max,
-            flag: "Normal",
-            meta: p
-          };
-        })
-      };
-      currentWorklistTests.push(testObj);
+      const params = (cat.test_parameters || [])
+        .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+        .map(p => ({
+          paramId: p.id,
+          name: p.parameter_name,
+          value: "",
+          unit: p.unit || "",
+          rangeText: p.reference_range || "",
+          flag: "Normal"
+        }));
+
+      currentWorklistTests.push({
+        id: cat.id,
+        name: cat.test_name,
+        price: Number(cat.default_price || 0),
+        params: params.length ? params : [{ name: cat.test_name, value: "", unit: "", rangeText: "", flag: "Normal" }]
+      });
+
       recalcTotalFromTests();
       renderResultGrid();
       setTimeout(() => {
@@ -1096,58 +745,45 @@
       }, 30);
     }
 
-    function reapplyAgeGenderRanges() {
-      currentWorklistTests.forEach(t => {
-        t.params.forEach(p => {
-          if (p.meta) {
-            const r = getRangeForPatient(p.meta);
-            p.rangeText = r.text;
-            p.min = r.min;
-            p.max = r.max;
-            p.flag = computeFlag(p.value, r.min, r.max);
-          }
-        });
-      });
-      renderResultGrid();
-    }
-
-    function computeFlag(val, min, max) {
-      if (val === "" || val === null || min === null || max === null) return "Normal";
-      const num = parseFloat(val);
-      if (isNaN(num)) return "Normal";
-      if (num < min) return "Low";
-      if (num > max) return "High";
+    function evaluateRangeFlag(val, refText) {
+      const num = parseFloat(String(val || "").replace(/,/g, ""));
+      if (isNaN(num) || !refText) return "Normal";
+      const nums = String(refText).match(/\d[\d,]*(?:\.\d+)?/g);
+      if (!nums || nums.length < 2) return "Normal";
+      const lo = parseFloat(nums[0].replace(/,/g, ""));
+      const hi = parseFloat(nums[1].replace(/,/g, ""));
+      if (num < lo) return "Low";
+      if (num > hi) return "High";
       return "Normal";
     }
 
     function renderResultGrid() {
       const tbody = document.getElementById("resultGridBody");
       if (currentWorklistTests.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#64748b;padding:24px;">Select a test above to start entering results.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#64748b;padding:24px;">Select a test above to enter results.</td></tr>`;
         return;
       }
-
       let html = "";
       currentWorklistTests.forEach((t, tIdx) => {
         html += `
           <tr style="background:#eff6ff;">
-            <td colspan="5"><strong>${t.name}</strong> <span style="color:#1d4ed8;font-size:11.5px;">(₹${t.price})</span></td>
-            <td><button class="btn btn-red" style="padding:2px 7px;font-size:11px;" onclick="removeTestFromWorklist(${tIdx})">✕</button></td>
+            <td colspan="5"><strong>${t.name}</strong> <span style="color:#0866df;font-size:11.5px;">(₹${t.price})</span></td>
+            <td><button class="btn btn-red" style="padding:2px 7px;font-size:11px;" onclick="removeTest(${tIdx})">✕</button></td>
           </tr>
         `;
         t.params.forEach((p, pIdx) => {
-          const flagCls = p.flag === "High" ? "flag-high" : (p.flag === "Low" ? "flag-low" : "flag-normal");
+          const flCls = p.flag === "High" ? "flag-high" : (p.flag === "Low" ? "flag-low" : "flag-normal");
           html += `
             <tr>
               <td style="padding-left:18px;">${p.name}</td>
               <td>
-                <input type="text" class="inp res-val-inp" value="${p.value}"
-                  oninput="updateParamValue(${tIdx}, ${pIdx}, this.value)"
-                  onkeydown="handleResultEnter(event, this)" />
+                <input type="text" class="inp res-val-inp" value="${p.value || ""}"
+                  oninput="onParamChange(${tIdx}, ${pIdx}, this.value)"
+                  onkeydown="handleGridEnter(event, this)" />
               </td>
               <td>${p.unit}</td>
               <td>${p.rangeText}</td>
-              <td class="${flagCls}" id="flag_${tIdx}_${pIdx}">${p.flag}</td>
+              <td class="${flCls}" id="fl_${tIdx}_${pIdx}">${p.flag}</td>
               <td></td>
             </tr>
           `;
@@ -1156,81 +792,70 @@
       tbody.innerHTML = html;
     }
 
-    function updateParamValue(tIdx, pIdx, rawVal) {
-      let val = rawVal;
+    function onParamChange(tIdx, pIdx, raw) {
+      let val = raw;
       const t = currentWorklistTests[tIdx];
-      const p = t.params[pIdx];
-
-      if (t.code === "WIDAL" && /^\d{2,3}$/.test(val.trim())) {
+      if ((t.name || "").toLowerCase().includes("widal") && /^\d{2,3}$/.test(val.trim())) {
         val = "1:" + val.trim();
       }
+      const p = t.params[pIdx];
       p.value = val;
-      p.flag = computeFlag(val, p.min, p.max);
-      const cell = document.getElementById(`flag_${tIdx}_${pIdx}`);
+      p.flag = evaluateRangeFlag(val, p.rangeText);
+      const cell = document.getElementById(`fl_${tIdx}_${pIdx}`);
       if (cell) {
         cell.textContent = p.flag;
         cell.className = p.flag === "High" ? "flag-high" : (p.flag === "Low" ? "flag-low" : "flag-normal");
       }
     }
 
-    function handleResultEnter(e, inp) {
+    function handleGridEnter(e, inp) {
       if (e.key === "Enter") {
         e.preventDefault();
-        const all = Array.from(document.querySelectorAll(".res-val-inp"));
-        const idx = all.indexOf(inp);
-        if (idx >= 0 && idx + 1 < all.length) all[idx + 1].focus();
+        const list = Array.from(document.querySelectorAll(".res-val-inp"));
+        const i = list.indexOf(inp);
+        if (i >= 0 && i + 1 < list.length) list[i + 1].focus();
       }
     }
 
-    function removeTestFromWorklist(tIdx) {
+    function removeTest(tIdx) {
       currentWorklistTests.splice(tIdx, 1);
       recalcTotalFromTests();
       renderResultGrid();
     }
 
     function recalcTotalFromTests() {
-      const sum = currentWorklistTests.reduce((acc, t) => acc + Number(t.price || 0), 0);
-      document.getElementById("billTotal").value = sum;
+      document.getElementById("billTotal").value = currentWorklistTests.reduce((a, b) => a + Number(b.price || 0), 0);
       recalcDue();
     }
 
     function recalcDue() {
-      const total = Number(document.getElementById("billTotal").value || 0);
+      const tot = Number(document.getElementById("billTotal").value || 0);
       const disc = Number(document.getElementById("billDiscount").value || 0);
       const paid = Number(document.getElementById("billPaid").value || 0);
-      document.getElementById("billDue").value = Math.max(0, total - disc - paid);
+      document.getElementById("billDue").value = Math.max(0, tot - disc - paid);
     }
 
     function markFullPaid() {
-      const total = Number(document.getElementById("billTotal").value || 0);
+      const tot = Number(document.getElementById("billTotal").value || 0);
       const disc = Number(document.getElementById("billDiscount").value || 0);
-      document.getElementById("billPaid").value = Math.max(0, total - disc);
+      document.getElementById("billPaid").value = Math.max(0, tot - disc);
       recalcDue();
     }
 
-    // =========================================================================
-    // SAVE ORDER & DIRECT WHATSAPP BILLING + REPORT
-    // =========================================================================
-    function buildCurrentOrderPayload() {
-      const pName = document.getElementById("pName").value.trim();
-      const orderId = document.getElementById("editingOrderId").value || crypto.randomUUID();
+    function buildPrintOrderObject(orderId) {
       return {
         id: orderId,
-        lab_id: activeLab ? activeLab.id : "",
-        patient_name: pName,
+        patient_name: document.getElementById("pName").value.trim(),
         age: document.getElementById("pAge").value + " " + document.getElementById("pAgeUnit").value,
         gender: document.getElementById("pGender").value,
         mobile: document.getElementById("pMobile").value.trim(),
-        referred_by: document.getElementById("pDoctor").value.trim() || "SELF",
+        referred_by: document.getElementById("pDoctor").value.trim() || "Self",
         address: document.getElementById("pAddress").value.trim(),
         report_date: document.getElementById("pDate").value,
-        payment_mode: document.getElementById("pPayMode").value,
         total_amount: Number(document.getElementById("billTotal").value || 0),
-        discount_amount: Number(document.getElementById("billDiscount").value || 0),
         paid_amount: Number(document.getElementById("billPaid").value || 0),
         due_amount: Number(document.getElementById("billDue").value || 0),
-        test_results: currentWorklistTests,
-        status: "Completed"
+        test_results: currentWorklistTests
       };
     }
 
@@ -1239,213 +864,240 @@
       if (!pName) { showToast("Please enter Patient Name."); document.getElementById("pName").focus(); return; }
       if (!activeLab) return;
 
-      const payload = buildCurrentOrderPayload();
-      document.getElementById("editingOrderId").value = payload.id;
+      const orderId = document.getElementById("editingOrderId").value || genId();
+      const patientId = document.getElementById("editingPatientId").value || genId();
+      const printObj = buildPrintOrderObject(orderId);
 
-      if (navigator.onLine) {
-        const { error } = await sb.from("lab_orders").upsert(payload);
-        if (error) queueOrderOffline(payload);
+      if (navigator.onLine && sb) {
+        await sb.from("patients").upsert({
+          id: patientId,
+          lab_id: activeLab.id,
+          patient_name: pName,
+          age: Number(document.getElementById("pAge").value || 0) || null,
+          age_unit: document.getElementById("pAgeUnit").value,
+          gender: document.getElementById("pGender").value,
+          mobile: document.getElementById("pMobile").value.trim(),
+          address: document.getElementById("pAddress").value.trim()
+        });
+
+        await sb.from("orders").upsert({
+          id: orderId,
+          lab_id: activeLab.id,
+          patient_id: patientId,
+          order_date: document.getElementById("pDate").value,
+          ref_doctor: document.getElementById("pDoctor").value.trim() || "Self",
+          total_amount: printObj.total_amount,
+          discount_amount: Number(document.getElementById("billDiscount").value || 0),
+          paid_amount: printObj.paid_amount,
+          due_amount: printObj.due_amount,
+          payment_mode: document.getElementById("pPayMode").value,
+          status: "completed"
+        });
+
+        for (const t of currentWorklistTests) {
+          const itemId = t.orderItemId || genId();
+          await sb.from("order_items").upsert({
+            id: itemId,
+            order_id: orderId,
+            test_id: t.id,
+            test_name: t.name,
+            price: t.price
+          });
+          for (const p of t.params) {
+            await sb.from("test_results").upsert({
+              id: p.resultRowId || genId(),
+              order_item_id: itemId,
+              parameter_name: p.name,
+              result_value: p.value,
+              unit: p.unit,
+              reference_range: p.rangeText
+            });
+          }
+        }
+        await loadSavedReports();
       } else {
-        queueOrderOffline(payload);
+        const q = JSON.parse(localStorage.getItem("acd_offline_orders_queue") || "[]");
+        q.push({ orderId, patientId, printObj });
+        localStorage.setItem("acd_offline_orders_queue", JSON.stringify(q));
+        document.getElementById("offlinePendingCount").textContent = q.length;
+        showToast("Saved Offline! Will auto-sync when online.");
       }
 
-      const idx = savedReportsCache.findIndex(r => r.id === payload.id);
-      if (idx >= 0) savedReportsCache[idx] = payload;
-      else savedReportsCache.unshift(payload);
-      localStorage.setItem("acd_reports_cache_" + activeLab.id, JSON.stringify(savedReportsCache));
-
-      renderTodayQueue();
-      renderSavedReportsTable();
-      loadFinanceSummary();
+      document.getElementById("editingOrderId").value = orderId;
+      document.getElementById("editingPatientId").value = patientId;
 
       if (openPrintAfter && typeof window.openCombinedA4Report === "function") {
-        window.openCombinedA4Report(payload, activeLab);
+        window.openCombinedA4Report(printObj, activeLab);
       } else {
-        showToast("Report & Bill saved successfully!");
+        showToast("Patient Report & Bill Saved!");
       }
     }
 
     async function sendDirectWhatsAppFromEntry() {
       const pName = document.getElementById("pName").value.trim();
-      const mobile = document.getElementById("pMobile").value.trim();
-      if (!pName) { showToast("Enter Patient Name first."); document.getElementById("pName").focus(); return; }
-      if (!mobile) { showToast("Enter Patient Mobile Number first."); document.getElementById("pMobile").focus(); return; }
-
+      const mob = document.getElementById("pMobile").value.trim();
+      if (!pName || !mob) { showToast("Enter Mobile Number & Patient Name first."); return; }
       await saveAndPrintOrder(false);
-      const payload = buildCurrentOrderPayload();
-      window._lastPrintedOrder = payload;
-      window._lastPrintedLab = activeLab;
+      const orderId = document.getElementById("editingOrderId").value;
+      const printObj = buildPrintOrderObject(orderId);
       if (typeof window.sendDirectWhatsAppCloud === "function") {
-        await window.sendDirectWhatsAppCloud(payload, activeLab, showToast);
+        await window.sendDirectWhatsAppCloud(printObj, activeLab, showToast);
       }
     }
 
-    function queueOrderOffline(payload) {
-      const q = JSON.parse(localStorage.getItem("acd_offline_orders_queue") || "[]");
-      const i = q.findIndex(x => x.id === payload.id);
-      if (i >= 0) q[i] = payload; else q.push(payload);
-      localStorage.setItem("acd_offline_orders_queue", JSON.stringify(q));
-      updateOfflinePendingBadge();
-      showToast("Saved Offline — will auto-sync when internet connects.");
-    }
-
-    function updateOfflinePendingBadge() {
-      const q = JSON.parse(localStorage.getItem("acd_offline_orders_queue") || "[]");
-      document.getElementById("offlinePendingCount").textContent = q.length;
-    }
-
-    async function syncOfflineQueueNow() {
-      updateOfflinePendingBadge();
-      if (!navigator.onLine) return;
-      const q = JSON.parse(localStorage.getItem("acd_offline_orders_queue") || "[]");
-      if (q.length === 0) return;
-
-      const { error } = await sb.from("lab_orders").upsert(q);
-      if (!error) {
-        localStorage.removeItem("acd_offline_orders_queue");
-        updateOfflinePendingBadge();
-        showToast("Synced " + q.length + " offline report(s) to Supabase Cloud!");
-        loadSavedReports();
-      }
-    }
-
-    async function verifyCurrentReport() {
-      const id = document.getElementById("editingOrderId").value;
-      if (!id) return;
-      if (navigator.onLine) {
-        await sb.from("lab_orders").update({
-          is_verified: true,
-          verified_by: document.getElementById("setRightSig").value || "Consultant Pathologist",
-          verified_at: new Date().toISOString()
-        }).eq("id", id);
-      }
-      const rep = savedReportsCache.find(r => r.id === id);
-      if (rep) rep.is_verified = true;
-      document.getElementById("verificationStatusPill").textContent = "✓ Verified & Locked";
-      renderSavedReportsTable();
-      showToast("Report verified by Pathologist!");
-    }
-
-    // =========================================================================
-    // SAVED REPORTS & TODAY'S LIVE QUEUE
-    // =========================================================================
     async function loadSavedReports() {
       if (!activeLab) return;
-      updateOfflinePendingBadge();
-      if (navigator.onLine) {
-        const { data } = await sb.from("lab_orders")
-          .select("*")
+      const q = JSON.parse(localStorage.getItem("acd_offline_orders_queue") || "[]");
+      document.getElementById("offlinePendingCount").textContent = q.length;
+
+      if (navigator.onLine && sb) {
+        const { data } = await sb.from("orders")
+          .select("*, patient:patients(*), items:order_items(*, results:test_results(*))")
           .eq("lab_id", activeLab.id)
           .order("created_at", { ascending: false })
           .limit(200);
-        savedReportsCache = data || [];
-        localStorage.setItem("acd_reports_cache_" + activeLab.id, JSON.stringify(savedReportsCache));
+        savedOrdersCache = data || [];
+        localStorage.setItem("acd_orders_cache_" + activeLab.id, JSON.stringify(savedOrdersCache));
       } else {
-        savedReportsCache = JSON.parse(localStorage.getItem("acd_reports_cache_" + activeLab.id) || "[]");
+        savedOrdersCache = JSON.parse(localStorage.getItem("acd_orders_cache_" + activeLab.id) || "[]");
       }
+
       renderTodayQueue();
       renderSavedReportsTable();
+      updateAccountsCards();
+    }
+
+    function mapOrderToPrintObj(o) {
+      const p = o.patient || {};
+      return {
+        id: o.id,
+        patient_name: p.patient_name || "Patient",
+        age: [p.age, p.age_unit || "Y"].filter(Boolean).join(" "),
+        gender: p.gender || "",
+        mobile: p.mobile || "",
+        referred_by: o.ref_doctor || "Self",
+        address: p.address || "",
+        report_date: o.order_date || "",
+        total_amount: o.total_amount || 0,
+        paid_amount: o.paid_amount || 0,
+        due_amount: o.due_amount || 0,
+        test_results: (o.items || []).map(it => ({
+          id: it.test_id,
+          orderItemId: it.id,
+          name: it.test_name,
+          price: it.price || 0,
+          params: (it.results || []).map(r => ({
+            resultRowId: r.id,
+            name: r.parameter_name,
+            value: r.result_value || "",
+            unit: r.unit || "",
+            rangeText: r.reference_range || "",
+            flag: evaluateRangeFlag(r.result_value, r.reference_range)
+          }))
+        }))
+      };
     }
 
     function renderTodayQueue() {
       const today = new Date().toISOString().slice(0, 10);
-      const qTerm = (document.getElementById("queueSearch").value || "").toLowerCase();
-      const list = savedReportsCache.filter(r =>
-        (r.report_date === today) &&
-        ((r.patient_name || "").toLowerCase().includes(qTerm) || (r.mobile || "").includes(qTerm))
-      );
+      const term = (document.getElementById("queueSearch").value || "").toLowerCase();
+      const list = savedOrdersCache.filter(o => {
+        const p = o.patient || {};
+        return (o.order_date === today) &&
+          ((p.patient_name || "").toLowerCase().includes(term) || (p.mobile || "").includes(term));
+      });
       document.getElementById("queueCount").textContent = list.length;
-      const box = document.getElementById("todayQueueList");
-      if (list.length === 0) {
-        box.innerHTML = `<div style="font-size:12px;color:#64748b;padding:12px;text-align:center;">No patients in today's queue yet.</div>`;
-        return;
-      }
-      box.innerHTML = list.map(r => `
-        <div class="q-item" onclick="openReportForEdit('${r.id}')">
-          <div style="font-weight:700;font-size:12.5px;color:#0f294a;">${r.patient_name}</div>
-          <div style="font-size:11px;color:#64748b;">${r.age || ""} / ${r.gender || ""} &bull; ₹${r.total_amount || 0}</div>
-        </div>
-      `).join("");
+      document.getElementById("todayQueueList").innerHTML = list.length
+        ? list.map(o => {
+            const p = o.patient || {};
+            return `<div class="q-item" onclick="editOrderById('${o.id}')"><strong>${p.patient_name || "Patient"}</strong><div style="font-size:11px;color:#64748b;">${p.mobile || ""} &bull; ₹${o.total_amount || 0}</div></div>`;
+          }).join("")
+        : `<div style="font-size:12px;color:#64748b;padding:12px;text-align:center;">No patients today yet.</div>`;
     }
 
     function renderSavedReportsTable() {
       const term = (document.getElementById("repSearch").value || "").toLowerCase();
       const from = document.getElementById("repFrom").value;
       const to = document.getElementById("repTo").value;
-      const st = document.getElementById("repFilterStatus").value;
 
-      const filtered = savedReportsCache.filter(r => {
-        if (term && !(r.patient_name || "").toLowerCase().includes(term) && !(r.mobile || "").includes(term)) return false;
-        if (from && r.report_date < from) return false;
-        if (to && r.report_date > to) return false;
-        if (st === "verified" && !r.is_verified) return false;
-        if (st === "pending" && r.is_verified) return false;
-        if (st === "due" && Number(r.due_amount || 0) <= 0) return false;
+      const filtered = savedOrdersCache.filter(o => {
+        const p = o.patient || {};
+        if (term && !(p.patient_name || "").toLowerCase().includes(term) && !(p.mobile || "").includes(term)) return false;
+        if (from && o.order_date < from) return false;
+        if (to && o.order_date > to) return false;
         return true;
       });
 
-      document.getElementById("savedReportsBody").innerHTML = filtered.map(r => {
-        const testsStr = (r.test_results || []).map(t => t.code).join(", ") || "Lab Report";
-        const verBadge = r.is_verified
-          ? `<span class="badge badge-online">✓ Verified</span>`
-          : `<span class="badge badge-offline">Unverified</span>`;
+      document.getElementById("savedReportsBody").innerHTML = filtered.map(o => {
+        const p = o.patient || {};
+        const tests = (o.items || []).map(i => i.test_name).join(", ") || "Lab Report";
         return `
           <tr>
-            <td><strong>${r.patient_name}</strong><div style="font-size:11px;color:#64748b;">${r.age || ""} / ${r.gender || ""} | ${r.mobile || ""}</div></td>
-            <td>${r.report_date || ""}</td>
-            <td>${testsStr}</td>
-            <td>₹${r.total_amount || 0} <span style="color:#dc2626;font-size:11px;">(Due: ₹${r.due_amount || 0})</span></td>
-            <td>${verBadge}</td>
+            <td><strong>${p.patient_name || "Patient"}</strong><div style="font-size:11px;color:#64748b;">${p.age || ""} ${p.age_unit || ""} / ${p.gender || ""} | ${p.mobile || ""}</div></td>
+            <td>${o.order_date || ""}</td>
+            <td>${tests}</td>
+            <td>₹${o.total_amount || 0} <span style="color:#dc2626;font-size:11px;">(Due: ₹${o.due_amount || 0})</span></td>
             <td style="display:flex;gap:5px;flex-wrap:wrap;">
-              <button class="btn btn-blue" style="padding:4px 8px;font-size:11px;" onclick="printReportById('${r.id}')">🖨 Print A4</button>
-              <button class="btn btn-green" style="padding:4px 8px;font-size:11px;" onclick="sendWhatsAppById('${r.id}')">📲 WhatsApp</button>
-              <button class="btn btn-outline" style="padding:4px 8px;font-size:11px;" onclick="openReportForEdit('${r.id}')">Edit</button>
+              <button class="btn btn-blue" style="padding:4px 8px;font-size:11px;" onclick="printOrderById('${o.id}')">🖨 Print A4</button>
+              <button class="btn btn-green" style="padding:4px 8px;font-size:11px;" onclick="whatsAppOrderById('${o.id}')">📲 WhatsApp</button>
+              <button class="btn btn-outline" style="padding:4px 8px;font-size:11px;" onclick="editOrderById('${o.id}')">Edit</button>
             </td>
           </tr>
         `;
       }).join("");
     }
 
-    function openReportForEdit(id) {
-      const r = savedReportsCache.find(x => x.id === id);
-      if (!r) return;
-      document.getElementById("editingOrderId").value = r.id;
-      document.getElementById("pMobile").value = r.mobile || "";
-      document.getElementById("pName").value = r.patient_name || "";
-      const ageParts = (r.age || "25 Y").split(" ");
-      document.getElementById("pAge").value = ageParts[0] || "";
-      document.getElementById("pAgeUnit").value = ageParts[1] || "Y";
-      document.getElementById("pGender").value = r.gender || "Male";
-      document.getElementById("pDoctor").value = r.referred_by || "SELF";
-      document.getElementById("pAddress").value = r.address || "";
-      document.getElementById("pDate").value = r.report_date || new Date().toISOString().slice(0, 10);
-      document.getElementById("billTotal").value = r.total_amount || 0;
-      document.getElementById("billDiscount").value = r.discount_amount || 0;
-      document.getElementById("billPaid").value = r.paid_amount || 0;
-      document.getElementById("billDue").value = r.due_amount || 0;
-      currentWorklistTests = JSON.parse(JSON.stringify(r.test_results || []));
-      document.getElementById("btnVerifyReport").style.display = "inline-flex";
-      document.getElementById("verificationStatusPill").textContent = r.is_verified ? "✓ Verified" : "Pending Verification";
+    function updateAccountsCards() {
+      const tot = savedOrdersCache.reduce((a, b) => a + Number(b.total_amount || 0), 0);
+      const paid = savedOrdersCache.reduce((a, b) => a + Number(b.paid_amount || 0), 0);
+      const due = savedOrdersCache.reduce((a, b) => a + Number(b.due_amount || 0), 0);
+      document.getElementById("accTotal").textContent = tot;
+      document.getElementById("accPaid").textContent = paid;
+      document.getElementById("accDue").textContent = due;
+    }
+
+    function printOrderById(id) {
+      const o = savedOrdersCache.find(x => x.id === id);
+      if (o && typeof window.openCombinedA4Report === "function") {
+        window.openCombinedA4Report(mapOrderToPrintObj(o), activeLab);
+      }
+    }
+
+    async function whatsAppOrderById(id) {
+      const o = savedOrdersCache.find(x => x.id === id);
+      if (o && typeof window.sendDirectWhatsAppCloud === "function") {
+        await window.sendDirectWhatsAppCloud(mapOrderToPrintObj(o), activeLab, showToast);
+      }
+    }
+
+    function editOrderById(id) {
+      const o = savedOrdersCache.find(x => x.id === id);
+      if (!o) return;
+      const p = o.patient || {};
+      document.getElementById("editingOrderId").value = o.id;
+      document.getElementById("editingPatientId").value = o.patient_id || p.id || "";
+      document.getElementById("pMobile").value = p.mobile || "";
+      document.getElementById("pName").value = p.patient_name || "";
+      document.getElementById("pAge").value = p.age || "";
+      document.getElementById("pAgeUnit").value = p.age_unit || "Y";
+      document.getElementById("pGender").value = p.gender || "Male";
+      document.getElementById("pDoctor").value = o.ref_doctor || "Self";
+      document.getElementById("pAddress").value = p.address || "";
+      document.getElementById("pDate").value = o.order_date || new Date().toISOString().slice(0, 10);
+      document.getElementById("billTotal").value = o.total_amount || 0;
+      document.getElementById("billDiscount").value = o.discount_amount || 0;
+      document.getElementById("billPaid").value = o.paid_amount || 0;
+      document.getElementById("billDue").value = o.due_amount || 0;
+
+      const mapped = mapOrderToPrintObj(o);
+      currentWorklistTests = mapped.test_results;
       renderResultGrid();
       switchView("viewEntry", document.querySelector('[data-view="viewEntry"]'));
     }
 
-    function printReportById(id) {
-      const r = savedReportsCache.find(x => x.id === id);
-      if (r && typeof window.openCombinedA4Report === "function") {
-        window.openCombinedA4Report(r, activeLab);
-      }
-    }
-
-    async function sendWhatsAppById(id) {
-      const r = savedReportsCache.find(x => x.id === id);
-      if (r && typeof window.sendDirectWhatsAppCloud === "function") {
-        await window.sendDirectWhatsAppCloud(r, activeLab, showToast);
-      }
-    }
-
     function resetPatientForm() {
       document.getElementById("editingOrderId").value = "";
+      document.getElementById("editingPatientId").value = "";
       document.getElementById("pMobile").value = "";
       document.getElementById("pName").value = "";
       document.getElementById("pAge").value = "";
@@ -1454,117 +1106,42 @@
       document.getElementById("billDiscount").value = 0;
       document.getElementById("billPaid").value = 0;
       document.getElementById("billDue").value = 0;
-      document.getElementById("btnVerifyReport").style.display = "none";
       currentWorklistTests = [];
       renderResultGrid();
       document.getElementById("pMobile").focus();
     }
 
-    // =========================================================================
-    // CLOUD FINANCE & INVENTORY
-    // =========================================================================
-    async function loadFinanceSummary() {
-      if (!activeLab) return;
-      const d = document.getElementById("finDate").value;
-      const dayOrders = savedReportsCache.filter(r => r.report_date === d);
-      const billed = dayOrders.reduce((a, b) => a + Number(b.total_amount || 0), 0);
-      const collected = dayOrders.reduce((a, b) => a + Number(b.paid_amount || 0), 0);
-
-      let exps = [];
-      if (navigator.onLine) {
-        const { data } = await sb.from("lab_expenses").select("*").eq("lab_id", activeLab.id).eq("expense_date", d);
-        exps = data || [];
+    async function syncOfflineQueueNow() {
+      const q = JSON.parse(localStorage.getItem("acd_offline_orders_queue") || "[]");
+      document.getElementById("offlinePendingCount").textContent = q.length;
+      if (!navigator.onLine || q.length === 0 || !sb) return;
+      for (const item of q) {
+        await sb.from("patients").upsert({
+          id: item.patientId, lab_id: activeLab.id, patient_name: item.printObj.patient_name,
+          gender: item.printObj.gender, mobile: item.printObj.mobile, address: item.printObj.address
+        });
+        await sb.from("orders").upsert({
+          id: item.orderId, lab_id: activeLab.id, patient_id: item.patientId,
+          order_date: item.printObj.report_date, ref_doctor: item.printObj.referred_by,
+          total_amount: item.printObj.total_amount, paid_amount: item.printObj.paid_amount,
+          due_amount: item.printObj.due_amount, status: "completed"
+        });
       }
-      const expTotal = exps.reduce((a, b) => a + Number(b.amount || 0), 0);
-
-      document.getElementById("sumBilled").textContent = billed;
-      document.getElementById("sumCollected").textContent = collected;
-      document.getElementById("sumExpenses").textContent = expTotal;
-      document.getElementById("sumNetCash").textContent = (collected - expTotal);
-
-      document.getElementById("expenseListBody").innerHTML = exps.map(e => `
-        <tr><td>${e.expense_date}</td><td>${e.category}</td><td>${e.description}</td><td>₹${e.amount}</td></tr>
-      `).join("");
+      localStorage.removeItem("acd_offline_orders_queue");
+      document.getElementById("offlinePendingCount").textContent = "0";
+      loadSavedReports();
+      showToast("Offline reports synced to cloud!");
     }
 
-    async function addCloudExpense() {
-      if (!activeLab || !navigator.onLine) { showToast("Connect online to record cloud expense."); return; }
-      const desc = document.getElementById("expDesc").value.trim();
-      const amt = Number(document.getElementById("expAmt").value || 0);
-      if (!desc || amt <= 0) return;
-
-      await sb.from("lab_expenses").insert({
-        lab_id: activeLab.id,
-        expense_date: document.getElementById("finDate").value,
-        category: document.getElementById("expCat").value,
-        description: desc,
-        amount: amt
-      });
-      document.getElementById("expDesc").value = "";
-      document.getElementById("expAmt").value = "";
-      loadFinanceSummary();
-    }
-
-    async function loadCloudInventory() {
-      if (!activeLab || !navigator.onLine) return;
-      const { data } = await sb.from("lab_inventory").select("*").eq("lab_id", activeLab.id);
-      document.getElementById("inventoryBody").innerHTML = (data || []).map(item => {
-        const low = Number(item.qty) <= Number(item.min_alert);
-        return `
-          <tr>
-            <td><strong>${item.item_name}</strong></td>
-            <td>${item.qty}</td>
-            <td>${item.unit}</td>
-            <td>${item.min_alert}</td>
-            <td class="${low ? 'flag-high' : 'flag-normal'}">${low ? 'LOW STOCK' : 'OK'}</td>
-          </tr>
-        `;
-      }).join("");
-    }
-
-    async function addCloudInventory() {
-      if (!activeLab || !navigator.onLine) return;
-      const name = document.getElementById("invName").value.trim();
-      if (!name) return;
-      await sb.from("lab_inventory").insert({
-        lab_id: activeLab.id,
-        item_name: name,
-        qty: Number(document.getElementById("invQty").value || 0),
-        unit: document.getElementById("invUnit").value || "Pack",
-        min_alert: Number(document.getElementById("invMin").value || 5)
-      });
-      document.getElementById("invName").value = "";
-      loadCloudInventory();
-    }
-
-    // =========================================================================
-    // LAB & PRINT SETUP + SUPER ADMIN REMOTE LOCK & PLAN CONTROL
-    // =========================================================================
     async function saveLabPrintSetup() {
       if (!activeLab) return;
-      const labName = document.getElementById("setLabName").value.trim();
-      const tagline = document.getElementById("setTagline").value.trim();
+      const name = document.getElementById("setLabName").value.trim();
       const address = document.getElementById("setAddress").value.trim();
-      const waMode = document.getElementById("setWaMode").value;
-      const waApiUrl = document.getElementById("setWaApiUrl").value.trim();
-      const waApiToken = document.getElementById("setWaApiToken").value.trim();
-
-      if (navigator.onLine) {
-        await sb.from("labs").update({
-          lab_name: labName,
-          tagline,
-          address,
-          wa_mode: waMode,
-          wa_api_url: waApiUrl,
-          wa_api_token: waApiToken
-        }).eq("id", activeLab.id);
+      if (navigator.onLine && sb) {
+        await sb.from("labs").update({ name, address }).eq("id", activeLab.id);
       }
-      activeLab.lab_name = labName;
-      activeLab.tagline = tagline;
+      activeLab.name = name;
       activeLab.address = address;
-      activeLab.wa_mode = waMode;
-      activeLab.wa_api_url = waApiUrl;
-      activeLab.wa_api_token = waApiToken;
 
       localStorage.setItem("acd_print_cfg_" + activeLab.id, JSON.stringify({
         leftSig: document.getElementById("setLeftSig").value,
@@ -1573,109 +1150,51 @@
         rightQual: document.getElementById("setRightQual").value,
         topMargin: Number(document.getElementById("setTopMargin").value || 10),
         showHeader: document.getElementById("setShowHeader").value,
-        waMode,
-        waApiUrl,
-        waApiToken
+        waMode: document.getElementById("setWaMode").value,
+        waApiUrl: document.getElementById("setWaApiUrl").value.trim(),
+        waApiToken: document.getElementById("setWaApiToken").value.trim()
       }));
-
-      localStorage.setItem("acd_menu_prefs_" + activeLab.id, JSON.stringify({
-        rates: document.getElementById("prefShowRates").checked,
-        expenses: document.getElementById("prefShowFinance").checked,
-        inventory: document.getElementById("prefShowInventory").checked
-      }));
-
-      applyActiveLabSettings();
-      showToast("Lab Letterhead, Direct WhatsApp API & Print Settings Saved to Cloud!");
+      showToast("Lab & Print Setup + Direct WhatsApp API Saved!");
     }
 
-    function previewSampleA4() {
-      const sampleOrder = {
-        id: "SAMPLE-A4-001",
-        patient_name: "Mr. Rajesh Kumar",
-        age: "32 Y",
-        gender: "Male",
-        mobile: "9876543210",
-        referred_by: "DR. S. K. SHARMA (MD)",
-        address: "Station Road, Jamui",
-        report_date: new Date().toISOString().slice(0, 10),
-        is_verified: true,
-        test_results: [MASTER_TESTS[0]]
-      };
-      if (typeof window.openCombinedA4Report === "function") {
-        window.openCombinedA4Report(sampleOrder, activeLab);
-      }
+    async function loadSuperAdminData() {
+      if (!isSuperAdmin || !navigator.onLine || !sb) return;
+      const { data: allLabs } = await sb.from("labs").select("*").order("created_at", { ascending: false });
+      const { data: allProfiles } = await sb.from("profiles").select("*");
+      const profMap = {};
+      (allProfiles || []).forEach(p => { profMap[p.id] = p; });
+
+      document.getElementById("superAdminLabsBody").innerHTML = (allLabs || []).map(l => {
+        const owner = profMap[l.owner_id] || {};
+        return `
+          <tr>
+            <td><strong>${l.name || "Lab"}</strong></td>
+            <td>${l.phone || ""} ${l.address || ""}</td>
+            <td>
+              <div>${owner.full_name || ""}</div>
+              <div style="font-size:11px;color:#64748b;">Device: ${owner.locked_device_id || "Not Bound"}</div>
+            </td>
+            <td>
+              ${owner.id ? `<button class="btn btn-outline" style="padding:4px 8px;font-size:11px;" onclick="adminResetProfileDevice('${owner.id}')">Reset Device Lock</button>` : ""}
+            </td>
+          </tr>
+        `;
+      }).join("");
     }
 
-    async function loadAllLabsForAdmin() {
-      if (!isSuperAdmin || !navigator.onLine) return;
-      const { data } = await sb.from("labs").select("*").order("created_at", { ascending: false });
-      const tbody = document.getElementById("superAdminLabsBody");
-      tbody.innerHTML = (data || []).map(l => `
-        <tr>
-          <td><strong>${l.lab_name || "Lab"}</strong><div style="font-size:11px;color:#64748b;">${l.owner_email || ""}</div></td>
-          <td>
-            <select class="inp" style="width:145px;" onchange="adminUpdateLabPlan('${l.id}', this.value)">
-              <option value="standard" ${l.plan_tier === "standard" ? "selected" : ""}>Standard (₹10k)</option>
-              <option value="advanced" ${l.plan_tier === "advanced" ? "selected" : ""}>Advanced NABL (₹18k)</option>
-              <option value="enterprise" ${l.plan_tier === "enterprise" ? "selected" : ""}>Enterprise (₹30k)</option>
-            </select>
-          </td>
-          <td>
-            <input type="date" class="inp" style="width:140px;" value="${l.subscription_end || ""}" onchange="adminUpdateLabExpiry('${l.id}', this.value)" />
-          </td>
-          <td>
-            <div style="font-size:11px;">${l.active_device_id || "Not Bound"}</div>
-            ${l.active_device_id ? `<button class="btn btn-outline" style="padding:2px 6px;font-size:10.5px;margin-top:3px;" onclick="adminResetDevice('${l.id}')">Reset Device</button>` : ""}
-          </td>
-          <td>
-            ${l.is_locked
-              ? `<span class="badge badge-offline" style="background:#fee2e2;color:#b91c1c;">🔒 LOCKED</span>`
-              : `<span class="badge badge-online">✓ Active</span>`}
-          </td>
-          <td>
-            ${l.is_locked
-              ? `<button class="btn btn-green" style="padding:4px 9px;font-size:11px;" onclick="adminToggleLock('${l.id}', false)">Unlock Lab</button>`
-              : `<button class="btn btn-red" style="padding:4px 9px;font-size:11px;" onclick="adminToggleLock('${l.id}', true)">🔒 Lock / Suspend</button>`}
-          </td>
-        </tr>
-      `).join("");
+    async function adminResetProfileDevice(profileId) {
+      if (sb) await sb.from("profiles").update({ locked_device_id: null }).eq("id", profileId);
+      loadSuperAdminData();
+      showToast("Device lock reset!");
     }
 
-    async function adminUpdateLabPlan(labId, tier) {
-      const defaults = {
-        standard: { rates: true, expenses: true, inventory: false, nablVerify: false },
-        advanced: { rates: true, expenses: true, inventory: true, nablVerify: true },
-        enterprise: { rates: true, expenses: true, inventory: true, nablVerify: true }
-      };
-      await sb.from("labs").update({ plan_tier: tier, feature_flags: defaults[tier] || defaults.standard }).eq("id", labId);
-      showToast("Plan & modules updated for lab!");
-    }
-
-    async function adminUpdateLabExpiry(labId, newDate) {
-      await sb.from("labs").update({ subscription_end: newDate }).eq("id", labId);
-      showToast("Subscription expiry updated to " + newDate);
-    }
-
-    async function adminResetDevice(labId) {
-      await sb.from("labs").update({ active_device_id: "", active_device_info: "" }).eq("id", labId);
-      loadAllLabsForAdmin();
-      showToast("Device lock cleared! Lab can now log in on a new computer.");
-    }
-
-    async function adminToggleLock(labId, shouldLock) {
-      await sb.from("labs").update({
-        is_locked: shouldLock,
-        lock_reason: shouldLock ? "Suspended by Super Admin due to pending renewal or policy hold." : ""
-      }).eq("id", labId);
-      loadAllLabsForAdmin();
-      showToast(shouldLock ? "Lab locked! Next sync/offline check will block access." : "Lab unlocked!");
-    }
-
-    function switchView(viewId, btnEl) {
+    function switchView(id, btn) {
+      if (id === "viewSuperAdmin" && !isSuperAdmin) return;
       document.querySelectorAll(".view-section").forEach(s => s.classList.remove("active"));
-      document.getElementById(viewId).classList.add("active");
+      const target = document.getElementById(id);
+      if (target) target.classList.add("active");
       document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
-      if (btnEl) btnEl.classList.add("active");
+      if (btn) btn.classList.add("active");
     }
 
     function showToast(msg) {
@@ -1683,18 +1202,18 @@
       if (!t) {
         t = document.createElement("div");
         t.id = "acdToast";
-        t.style.cssText = "position:fixed;bottom:18px;right:18px;background:#0f294a;color:#fff;padding:10px 16px;border-radius:9px;font-size:13px;font-weight:600;z-index:99998;box-shadow:0 10px 25px rgba(0,0,0,0.25);";
+        t.style.cssText = "position:fixed;bottom:18px;right:18px;background:#07172d;color:#fff;padding:10px 16px;border-radius:9px;font-size:13px;font-weight:600;z-index:99998;box-shadow:0 10px 25px rgba(0,0,0,0.25);";
         document.body.appendChild(t);
       }
       t.textContent = msg;
       t.style.display = "block";
-      clearTimeout(window._toastTimer);
-      window._toastTimer = setTimeout(() => { t.style.display = "none"; }, 3400);
+      clearTimeout(window._tt);
+      window._tt = setTimeout(() => { t.style.display = "none"; }, 3400);
     }
 
     async function logoutUser() {
-      if (navigator.onLine) await sb.auth.signOut();
-      window.location.href = "index.html";
+      if (navigator.onLine && sb) await sb.auth.signOut();
+      location.href = "index.html";
     }
 
     document.addEventListener("keydown", (e) => {
