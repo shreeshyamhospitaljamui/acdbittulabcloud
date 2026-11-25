@@ -16,11 +16,17 @@
     fontFamily: "Arial, Helvetica, sans-serif",
     fontSize: "11px",
     headerFontSize: "20px",
+    subHeaderFontSize: "10.5px",
     patientFontSize: "11px",
+    testHeadingFontSize: "11.5px",
     rowSpacing: "4.5px",
     marginTopMm: 10,
     marginBottomMm: 9,
     marginSideMm: 12,
+    headerHeightMm: 0,
+    patientGapMm: 2,
+    reportGapMm: 2,
+    patientBoxStyle: "boxed",
     showHeader: true,
     showLabName: true,
     showReportBanner: true,
@@ -203,7 +209,8 @@
 
   function buildFullHeaderHTML(design) {
     if (design.showHeader === false) {
-      return "";
+      const reservedH = Number(design.headerHeightMm || 0);
+      return reservedH > 0 ? `<div class="acd-lab-header-spacer"></div>` : "";
     }
 
     const banner = design.headerBanner
@@ -244,12 +251,19 @@
       p.gender || ""
     ].filter(Boolean).join(" / ") || "-";
 
+    const boxStyleClass =
+      design.patientBoxStyle === "lines"
+        ? "style-lines"
+        : design.patientBoxStyle === "clean"
+          ? "style-clean"
+          : "";
+
     const bannerTitle = design.showReportBanner !== false
       ? `<div class="acd-report-banner-title">LABORATORY INVESTIGATION REPORT</div>`
       : "";
 
     return `
-      <div class="acd-patient-box">
+      <div class="acd-patient-box ${boxStyleClass}">
         <div class="acd-patient-col">
           <div class="acd-patient-row"><b>Patient Name:</b><span><strong>${esc(fullName)}</strong></span></div>
           <div class="acd-patient-row"><b>Age / Gender:</b><span>${esc(ageGender)}</span></div>
@@ -405,15 +419,21 @@
   function createPageShell(report, design, pageIndex) {
     const page = document.createElement("div");
     page.className = "acd-a4-page";
+    const headerH = Number(design.headerHeightMm || 0);
     page.style.setProperty("--report-accent", design.accentColor || "#0b4fa8");
     page.style.setProperty("--report-font-family", design.fontFamily || "Arial, Helvetica, sans-serif");
     page.style.setProperty("--report-font-size", design.fontSize || "11px");
     page.style.setProperty("--report-header-size", design.headerFontSize || "20px");
+    page.style.setProperty("--report-sub-header-size", design.subHeaderFontSize || "10.5px");
     page.style.setProperty("--report-patient-size", design.patientFontSize || "11px");
+    page.style.setProperty("--report-heading-size", design.testHeadingFontSize || "11.5px");
     page.style.setProperty("--report-row-pad", design.rowSpacing || "4.5px");
     page.style.setProperty("--report-margin-top", (Number(design.marginTopMm ?? 10)) + "mm");
     page.style.setProperty("--report-margin-bottom", (Number(design.marginBottomMm ?? 9)) + "mm");
     page.style.setProperty("--report-margin-side", (Number(design.marginSideMm ?? 12)) + "mm");
+    page.style.setProperty("--report-header-min-h", headerH > 0 ? headerH + "mm" : "auto");
+    page.style.setProperty("--patient-gap-top", (Number(design.patientGapMm ?? 2)) + "mm");
+    page.style.setProperty("--report-gap-top", (Number(design.reportGapMm ?? 2)) + "mm");
 
     const topHtml = buildFullHeaderHTML(design) + buildPatientBoxHTML(report, design, pageIndex);
 
