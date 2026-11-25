@@ -1,96 +1,5 @@
-/* =========================================================
-ACD BITTU LAB CLOUD — CUSTOMIZABLE A4 PRINT & PREVIEW CSS
-========================================================= */
-
-#acdPrintOverlay {
-position: fixed;
-inset: 0;
-z-index: 99999;
-background: rgba(10, 22, 40, 0.88);
-display: flex;
-flex-direction: column;
-overflow: hidden;
-}
-
-#acdPrintOverlay.hidden {
-display: none !important;
-}
-
-.acd-print-toolbar {
-background: #07172d;
-color: #fff;
-padding: 10px 16px;
-display: flex;
-align-items: center;
-justify-content: space-between;
-gap: 10px;
-flex-wrap: wrap;
-border-bottom: 1px solid #1e3554;
-}
-
-.acd-print-toolbar-title {
-font-size: 13px;
-font-weight: 700;
-display: flex;
-align-items: center;
-gap: 8px;
-}
-
-.acd-print-toolbar-actions {
-display: flex;
-align-items: center;
-gap: 8px;
-flex-wrap: wrap;
-}
-
-.acd-btn-print {
-border: 0;
-border-radius: 6px;
-padding: 8px 13px;
-font-size: 12px;
-font-weight: 700;
-cursor: pointer;
-display: inline-flex;
-align-items: center;
-gap: 6px;
-}
-
-.acd-btn-print:disabled {
-opacity: 0.6;
-cursor: wait;
-}
-
-.acd-btn-print.primary {
-background: #0866df;
-color: #fff;
-}
-
-.acd-btn-print.pdf {
-background: #7c3aed;
-color: #fff;
-}
-
-.acd-btn-print.whatsapp {
-background: #16a34a;
-color: #fff;
-}
-
-.acd-btn-print.close {
-background: #e2e8f0;
-color: #1e293b;
-}
-
-.acd-print-viewport {
-flex: 1;
-overflow: auto;
-padding: 18px 12px 40px;
-display: flex;
-flex-direction: column;
-align-items: center;
-gap: 18px;
-}
-
-/* Exact A4 Sheet Container with Dynamic Margins & Font Family */
+/* ... existing code ... /
+/ Exact A4 Sheet Container with Dynamic Margins & Font Family */
 .acd-a4-page {
 width: 210mm;
 height: 297mm;
@@ -119,7 +28,7 @@ flex: 0 0 auto;
 .acd-a4-body {
 flex: 1 1 auto;
 overflow: hidden;
-margin-top: 6px;
+margin-top: var(--report-gap-top, 6px);
 }
 
 /* Bottom Pinned Signature Area on EVERY A4 Page */
@@ -136,8 +45,14 @@ display: flex;
 align-items: center;
 justify-content: space-between;
 gap: 12px;
+min-height: var(--report-header-min-h, auto);
 padding-bottom: 8px;
 border-bottom: 2.5px solid var(--report-accent, #0b4fa8);
+}
+
+.acd-lab-header-spacer {
+height: var(--report-header-min-h, 0mm);
+width: 100%;
 }
 
 .acd-lab-header-banner {
@@ -170,22 +85,22 @@ text-transform: uppercase;
 }
 
 .acd-lab-tagline {
-font-size: 10.5px;
+font-size: var(--report-sub-header-size, 10.5px);
 font-weight: 700;
 color: #334155;
 margin-top: 2px;
 }
 
 .acd-lab-contact {
-font-size: 10px;
+font-size: calc(var(--report-sub-header-size, 10.5px) - 0.5px);
 color: #475569;
 margin-top: 3px;
 line-height: 1.35;
 }
 
-/* Patient Meta Box */
+/* Patient Meta Box (Supports Boxed, Lines & Borderless Styles + Independent Gap) */
 .acd-patient-box {
-margin-top: 6px;
+margin-top: var(--patient-gap-top, 6px);
 border: 1px solid #94a3b8;
 border-radius: 5px;
 padding: 7px 9px;
@@ -197,270 +112,30 @@ align-items: center;
 font-size: var(--report-patient-size, 11px);
 }
 
-.acd-patient-col {
-display: flex;
-flex-direction: column;
-gap: 3px;
-}
-
-.acd-patient-row {
-display: flex;
-gap: 4px;
-line-height: 1.3;
-}
-
-.acd-patient-row b {
-min-width: 78px;
-color: #1e293b;
-}
-
-.acd-qr-box {
-width: 68px;
-height: 68px;
-display: flex;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-background: #fff;
-border: 1px solid #cbd5e1;
-padding: 3px;
-border-radius: 4px;
-}
-
-.acd-qr-box img,
-.acd-qr-box canvas {
-width: 60px !important;
-height: 60px !important;
-}
-
-.acd-report-banner-title {
-text-align: center;
-font-size: 12px;
-font-weight: 800;
-letter-spacing: 1.2px;
-color: #ffffff;
-background: var(--report-accent, #0b4fa8);
-padding: 4px 8px;
-margin-top: 7px;
-border-radius: 3px;
-text-transform: uppercase;
-}
-
-/* Report Results Table */
-.acd-report-table {
-width: 100%;
-border-collapse: collapse;
-font-size: var(--report-font-size, 11px);
-}
-
-.acd-report-table thead th {
-background: #e2e8f0;
-color: #0f172a;
-font-weight: 800;
-text-align: left;
-padding: var(--report-row-pad, 4.5px) 7px;
+.acd-patient-box.style-lines {
+border: 0;
 border-top: 1.5px solid #64748b;
 border-bottom: 1.5px solid #64748b;
-font-size: calc(var(--report-font-size, 11px) - 0.5px);
-text-transform: uppercase;
+border-radius: 0;
+background: transparent;
+padding: 6px 2px;
 }
 
-.acd-report-table td {
-padding: var(--report-row-pad, 4.5px) 7px;
-border-bottom: 1px solid #e2e8f0;
-vertical-align: top;
-color: #111827;
+.acd-patient-box.style-clean {
+border: 0;
+border-radius: 0;
+background: transparent;
+padding: 4px 0;
 }
-
+/* ... existing code ... /
 .acd-test-group-header td {
 background: #f1f5f9;
 color: var(--report-accent, #0b4fa8);
 font-weight: 800;
-font-size: var(--report-font-size, 11px);
+font-size: var(--report-heading-size, 11.5px);
 padding: calc(var(--report-row-pad, 4.5px) + 0.5px) 7px;
 border-top: 1px solid #94a3b8;
 border-bottom: 1px solid #cbd5e1;
 letter-spacing: 0.3px;
 }
-
-.acd-clinical-note-row td {
-background: #f8fafc;
-color: #334155;
-font-size: calc(var(--report-font-size, 11px) - 1.5px);
-font-style: italic;
-padding: 4px 8px;
-border-bottom: 1px solid #cbd5e1;
-line-height: 1.4;
-}
-
-.acd-res-abnormal {
-font-weight: 800;
-color: #b91c1c;
-}
-
-.acd-res-normal {
-font-weight: 600;
-color: #111827;
-}
-
-/* Widal Sub-table inside Report */
-.acd-widal-table {
-width: 100%;
-border-collapse: collapse;
-margin: 4px 0;
-font-size: calc(var(--report-font-size, 11px) - 1px);
-}
-
-.acd-widal-table th,
-.acd-widal-table td {
-border: 1px solid #94a3b8;
-padding: 4px 5px;
-text-align: center;
-}
-
-.acd-widal-table th:first-child,
-.acd-widal-table td:first-child {
-text-align: left;
-font-weight: 700;
-}
-
-/* Signatures & Footer */
-.acd-sig-grid {
-display: flex;
-justify-content: space-between;
-align-items: flex-end;
-gap: 16px;
-min-height: 54px;
-}
-
-.acd-sig-block {
-width: 36%;
-text-align: center;
-}
-
-.acd-sig-img {
-max-height: 36px;
-max-width: 130px;
-object-fit: contain;
-display: block;
-margin: 0 auto 2px;
-}
-
-.acd-sig-line {
-border-top: 1px solid #475569;
-padding-top: 3px;
-font-size: 10.5px;
-font-weight: 700;
-color: #0f172a;
-}
-
-.acd-sig-sub {
-font-size: 9px;
-color: #475569;
-}
-
-.acd-footer-center {
-text-align: center;
-font-size: 9px;
-color: #64748b;
-}
-
-.acd-footer-note {
-margin-top: 4px;
-font-size: 9px;
-color: #475569;
-display: flex;
-justify-content: space-between;
-align-items: center;
-}
-
-.acd-barcode-box {
-min-height: 28px;
-max-width: 150px;
-overflow: hidden;
-margin-top: 2px;
-color: #111827;
-font-size: 8px;
-text-align: center;
-}
-
-.acd-barcode-box svg {
-width: 100%;
-height: 32px;
-}
-
-.acd-barcode-fallback {
-letter-spacing: 1px;
-overflow-wrap: anywhere;
-}
-
-/* Mobile Preview Scaling */
-@media screen and (max-width: 820px) {
-.acd-print-viewport {
-align-items: flex-start;
-padding: 10px 8px 30px;
-}
-.acd-a4-page {
-transform-origin: top left;
-}
-}
-
-/* =========================================================
-ACTUAL PRINTER / SAVE AS PDF RULES (@media print)
-========================================================= */
-@page {
-size: A4 portrait;
-margin: 0;
-}
-
-@media print {
-html, body {
-margin: 0 !important;
-padding: 0 !important;
-background: #ffffff !important;
-width: 210mm !important;
--webkit-print-color-adjust: exact !important;
-print-color-adjust: exact !important;
-}
-
-body > *:not(#acdPrintOverlay) {
-display: none !important;
-}
-
-#acdPrintOverlay {
-position: static !important;
-inset: auto !important;
-background: #ffffff !important;
-display: block !important;
-overflow: visible !important;
-}
-
-.acd-print-toolbar,
-.no-print {
-display: none !important;
-}
-
-.acd-print-viewport {
-padding: 0 !important;
-margin: 0 !important;
-display: block !important;
-overflow: visible !important;
-}
-
-.acd-a4-page {
-width: 210mm !important;
-height: 296.5mm !important;
-min-height: 296.5mm !important;
-max-height: 296.5mm !important;
-margin: 0 !important;
-box-shadow: none !important;
-transform: none !important;
-page-break-after: always !important;
-break-after: page !important;
-}
-
-.acd-a4-page:last-child {
-page-break-after: auto !important;
-break-after: auto !important;
-}
-}
+/ ... existing code ... */
