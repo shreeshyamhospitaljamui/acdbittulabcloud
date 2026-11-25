@@ -1,0 +1,141 @@
+/* ... existing code ... /
+/ Exact A4 Sheet Container with Dynamic Margins & Font Family */
+.acd-a4-page {
+width: 210mm;
+height: 297mm;
+min-height: 297mm;
+max-height: 297mm;
+background: #ffffff;
+color: #111827;
+box-shadow: 0 12px 35px rgba(0, 0, 0, 0.45);
+padding-top: var(--report-margin-top, 10mm);
+padding-bottom: var(--report-margin-bottom, 9mm);
+padding-left: var(--report-margin-side, 12mm);
+padding-right: var(--report-margin-side, 12mm);
+display: flex;
+flex-direction: column;
+justify-content: space-between;
+position: relative;
+overflow: hidden;
+box-sizing: border-box;
+font-family: var(--report-font-family, Arial, Helvetica, sans-serif);
+}
+
+.acd-a4-top {
+flex: 0 0 auto;
+}
+
+.acd-a4-body {
+flex: 1 1 auto;
+overflow: hidden;
+margin-top: var(--report-gap-top, 6px);
+}
+
+/* Bottom Pinned Signature Area on EVERY A4 Page */
+.acd-a4-footer {
+flex: 0 0 auto;
+margin-top: auto;
+padding-top: 6px;
+border-top: 1.5px solid #cbd5e1;
+}
+
+/* Header Styles */
+.acd-lab-header {
+display: flex;
+align-items: center;
+justify-content: space-between;
+gap: 12px;
+min-height: var(--report-header-min-h, auto);
+padding-bottom: 8px;
+border-bottom: 2.5px solid var(--report-accent, #0b4fa8);
+}
+
+.acd-lab-header-spacer {
+height: var(--report-header-min-h, 0mm);
+width: 100%;
+}
+
+.acd-lab-header-banner {
+width: 100%;
+max-height: 32mm;
+object-fit: contain;
+display: block;
+margin-bottom: 6px;
+}
+
+.acd-lab-logo {
+width: 56px;
+height: 56px;
+object-fit: contain;
+border-radius: 6px;
+flex-shrink: 0;
+}
+
+.acd-lab-info {
+flex: 1;
+}
+
+.acd-lab-name {
+margin: 0;
+font-size: var(--report-header-size, 20px);
+font-weight: 800;
+letter-spacing: 0.4px;
+color: var(--report-accent, #0b4fa8);
+text-transform: uppercase;
+}
+
+.acd-lab-tagline {
+font-size: var(--report-sub-header-size, 10.5px);
+font-weight: 700;
+color: #334155;
+margin-top: 2px;
+}
+
+.acd-lab-contact {
+font-size: calc(var(--report-sub-header-size, 10.5px) - 0.5px);
+color: #475569;
+margin-top: 3px;
+line-height: 1.35;
+}
+
+/* Patient Meta Box (Supports Boxed, Lines & Borderless Styles + Independent Gap) */
+.acd-patient-box {
+margin-top: var(--patient-gap-top, 6px);
+border: 1px solid #94a3b8;
+border-radius: 5px;
+padding: 7px 9px;
+background: #f8fafc;
+display: grid;
+grid-template-columns: 1fr 1fr auto;
+gap: 8px;
+align-items: center;
+font-size: var(--report-patient-size, 11px);
+}
+
+.acd-patient-box.style-lines {
+border: 0;
+border-top: 1.5px solid #64748b;
+border-bottom: 1.5px solid #64748b;
+border-radius: 0;
+background: transparent;
+padding: 6px 2px;
+}
+
+.acd-patient-box.style-clean {
+border: 0;
+border-radius: 0;
+background: transparent;
+padding: 4px 0;
+}
+/* ... existing code ... /
+.acd-test-group-header td {
+background: #f1f5f9;
+color: var(--report-accent, #0b4fa8);
+font-weight: 800;
+font-size: var(--report-heading-size, 11.5px);
+padding: calc(var(--report-row-pad, 4.5px) + 0.5px) 7px;
+border-top: 1px solid #94a3b8;
+border-bottom: 1px solid #cbd5e1;
+letter-spacing: 0.3px;
+}
+/ ... existing code ... */
