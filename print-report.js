@@ -1,6 +1,6 @@
 /* =========================================================
    ACD BITTU LAB CLOUD — CUSTOMIZABLE A4 PRINT, DIRECT PDF,
-   QR VERIFICATION & WHATSAPP MODULE
+   NABL VERIFICATION STAMP, QR VERIFICATION & WHATSAPP MODULE
    ========================================================= */
 (function () {
   "use strict";
@@ -49,11 +49,7 @@
 
   function esc(val) {
     return String(val ?? "").replace(/[&<>"']/g, c => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;"
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
     }[c]));
   }
 
@@ -66,9 +62,7 @@
     try {
       const raw = localStorage.getItem(getDesignStorageKey(currentLabId));
       if (raw) saved = JSON.parse(raw);
-    } catch (e) {
-      console.warn("Design local load warning:", e);
-    }
+    } catch (e) {}
 
     const merged = Object.assign({}, DEFAULT_DESIGN, saved);
     if (!merged.labName && labObj?.name) merged.labName = labObj.name;
@@ -78,20 +72,12 @@
   }
 
   async function saveReportDesign(currentLabId, designData, supabaseClient) {
-    const key = getDesignStorageKey(currentLabId);
-    localStorage.setItem(key, JSON.stringify(designData));
-
-    // Also sync to Supabase acd_lab_report_settings if online & available
+    localStorage.setItem(getDesignStorageKey(currentLabId), JSON.stringify(designData));
     const client = supabaseClient || window.db;
     if (client && currentLabId) {
       try {
-        await client.rpc("acd_save_lab_report_settings", {
-          p_lab_id: currentLabId,
-          p_settings: designData
-        });
-      } catch (err) {
-        console.warn("Cloud report settings sync warning:", err.message);
-      }
+        await client.rpc("acd_save_lab_report_settings", { p_lab_id: currentLabId, p_settings: designData });
+      } catch (err) {}
     }
     return designData;
   }
@@ -101,9 +87,7 @@
     const localDesign = loadReportDesign(currentLabId, labObj);
     if (!client || !currentLabId) return localDesign;
     try {
-      const { data, error } = await client.rpc("acd_get_lab_report_settings", {
-        p_lab_id: currentLabId
-      });
+      const { data, error } = await client.rpc("acd_get_lab_report_settings", { p_lab_id: currentLabId });
       if (!error && data && typeof data === "object") {
         const cloudSettings = data.settings && typeof data.settings === "object" ? data.settings : data;
         if (Object.keys(cloudSettings).length) {
@@ -113,9 +97,7 @@
           return merged;
         }
       }
-    } catch (e) {
-      console.warn("Cloud report design fetch skipped:", e.message);
-    }
+    } catch (e) {}
     return localDesign;
   }
 
@@ -144,22 +126,14 @@
 
     if (client && currentLabId && orderId && !orderId.startsWith("DRAFT") && !orderId.startsWith("SAMPLE")) {
       try {
-        const { data, error } = await client.rpc("acd_issue_report_qr_token", {
-          p_lab_id: currentLabId,
-          p_order_id: orderId
-        });
+        const { data, error } = await client.rpc("acd_issue_report_qr_token", { p_lab_id: currentLabId, p_order_id: orderId });
         if (!error && data) {
           const token = data.token || data.qr_token || (typeof data === "string" ? data : "");
-          if (token) {
-            return `${base}?token=${encodeURIComponent(token)}`;
-          }
+          if (token) return `${base}?token=${encodeURIComponent(token)}`;
         }
-      } catch (e) {
-        console.warn("QR token issue fallback:", e.message);
-      }
+      } catch (e) {}
     }
 
-    // Fallback URL carrying order & patient reference
     const params = new URLSearchParams();
     if (orderId) params.set("order", orderId);
     if (currentLabId) params.set("lab", currentLabId);
@@ -182,7 +156,6 @@
       }
     } else {
       container.textContent = text;
-      container.classList.add("acd-barcode-fallback");
     }
   }
 
@@ -191,19 +164,10 @@
     container.innerHTML = "";
     try {
       if (typeof window.QRCode === "function") {
-        new window.QRCode(container, {
-          text: text,
-          width: 60,
-          height: 60,
-          colorDark: "#000000",
-          colorLight: "#ffffff",
-          correctLevel: window.QRCode.CorrectLevel.M
-        });
+        new window.QRCode(container, { text, width: 60, height: 60, colorDark: "#000000", colorLight: "#ffffff", correctLevel: window.QRCode.CorrectLevel.M });
         return;
       }
-    } catch (e) {
-      console.warn("QRCode library fallback:", e);
-    }
+    } catch (e) {}
     container.innerHTML = '<div style="font-size:8px;text-align:center;color:#334155">SCAN<br>REPORT</div>';
   }
 
@@ -213,12 +177,8 @@
       return reservedH > 0 ? `<div class="acd-lab-header-spacer"></div>` : "";
     }
 
-    const banner = design.headerBanner
-      ? `<img src="${design.headerBanner}" class="acd-lab-header-banner" alt="Lab Banner">`
-      : "";
-    const logo = !design.headerBanner && design.headerLogo
-      ? `<img src="${design.headerLogo}" class="acd-lab-logo" alt="Lab Logo">`
-      : "";
+    const banner = design.headerBanner ? `<img src="${design.headerBanner}" class="acd-lab-header-banner" alt="Lab Banner">` : "";
+    const logo = !design.headerBanner && design.headerLogo ? `<img src="${design.headerLogo}" class="acd-lab-logo" alt="Lab Logo">` : "";
     const regHtml = design.regNo ? ` • Reg. No: ${esc(design.regNo)}` : "";
     const contactParts = [
       design.address ? esc(design.address) : "",
@@ -226,9 +186,7 @@
       design.email ? "Email: " + esc(design.email) : ""
     ].filter(Boolean).join(" | ");
 
-    const labNameHtml = design.showLabName !== false
-      ? `<h1 class="acd-lab-name">${esc(design.labName || "PATHOLOGY LABORATORY")}</h1>`
-      : "";
+    const labNameHtml = design.showLabName !== false ? `<h1 class="acd-lab-name">${esc(design.labName || "PATHOLOGY LABORATORY")}</h1>` : "";
 
     return `
       ${banner}
@@ -251,15 +209,13 @@
       p.gender || ""
     ].filter(Boolean).join(" / ") || "-";
 
-    const boxStyleClass =
-      design.patientBoxStyle === "lines"
-        ? "style-lines"
-        : design.patientBoxStyle === "clean"
-          ? "style-clean"
-          : "";
+    const boxStyleClass = design.patientBoxStyle === "lines" ? "style-lines" : design.patientBoxStyle === "clean" ? "style-clean" : "";
+    const isUnverified = report.is_verified === false;
+    const bannerLabel = isUnverified ? "PRELIMINARY LABORATORY REPORT (PENDING PATHOLOGIST VERIFICATION)" : "LABORATORY INVESTIGATION REPORT";
+    const bannerStyle = isUnverified ? 'style="background:#b45309"' : "";
 
     const bannerTitle = design.showReportBanner !== false
-      ? `<div class="acd-report-banner-title">LABORATORY INVESTIGATION REPORT</div>`
+      ? `<div class="acd-report-banner-title" ${bannerStyle}>${bannerLabel}</div>`
       : "";
 
     return `
@@ -283,7 +239,7 @@
     `;
   }
 
-  function buildFooterHTML(design, pageNum, totalPages) {
+  function buildFooterHTML(design, pageNum, totalPages, isVerified = true) {
     const isLast = pageNum === totalPages;
     return `
       <div class="acd-a4-footer">
@@ -295,10 +251,10 @@
           </div>
           <div class="acd-footer-center">
             <div><strong>${isLast ? "*** END OF REPORT ***" : "Continued on Next Page →"}</strong></div>
-            <div style="margin-top:2px">Page ${pageNum} of ${totalPages}</div>
+            <div style="margin-top:2px">Page ${pageNum} of ${totalPages}${isVerified ? " • Digitally Verified" : " • Preliminary"}</div>
           </div>
           <div class="acd-sig-block">
-            ${design.rightSigImg ? `<img src="${design.rightSigImg}" class="acd-sig-img" alt="Pathologist Signature">` : `<div style="height:32px"></div>`}
+            ${isVerified && design.rightSigImg ? `<img src="${design.rightSigImg}" class="acd-sig-img" alt="Pathologist Signature">` : `<div style="height:32px"></div>`}
             <div class="acd-sig-line">${esc(design.rightSigName || "Consultant Pathologist")}</div>
             <div class="acd-sig-sub">${esc(design.rightSigQual || "")}</div>
           </div>
@@ -370,12 +326,7 @@
         <tr>
           <td colspan="${colSpan}">
             <table class="acd-widal-table">
-              <thead>
-                <tr>
-                  <th>ANTIGEN</th>
-                  ${dilutions.map(d => `<th>${d}</th>`).join("")}
-                </tr>
-              </thead>
+              <thead><tr><th>ANTIGEN</th>${dilutions.map(d => `<th>${d}</th>`).join("")}</tr></thead>
               <tbody>
                 ${antigens.map(ant => `
                   <tr>
@@ -396,7 +347,7 @@
         const val = String(r.result_value ?? "").trim();
         if (!val) return;
         const flag = r.status_flag || evaluateFlag(val, r.reference_range);
-        const isAbnormal = flag === "Low" || flag === "High";
+        const isAbnormal = flag === "Low" || flag === "High" || flag === "CRITICAL";
         html += `
           <tr>
             <td>${esc(r.parameter_name)}</td>
@@ -436,14 +387,10 @@
     page.style.setProperty("--report-gap-top", (Number(design.reportGapMm ?? 2)) + "mm");
 
     const topHtml = buildFullHeaderHTML(design) + buildPatientBoxHTML(report, design, pageIndex);
-
     page.innerHTML = `
       <div class="acd-a4-top">${topHtml}</div>
       <div class="acd-a4-body">
-        <table class="acd-report-table">
-          ${buildTableHeadHTML(design)}
-          <tbody></tbody>
-        </table>
+        <table class="acd-report-table">${buildTableHeadHTML(design)}<tbody></tbody></table>
       </div>
       <div class="acd-a4-footer-slot"></div>
     `;
@@ -462,10 +409,7 @@
         p.style.marginBottom = `-${Math.round(1123 * (1 - scale) - 14)}px`;
       });
     } else {
-      pages.forEach(p => {
-        p.style.transform = "";
-        p.style.marginBottom = "";
-      });
+      pages.forEach(p => { p.style.transform = ""; p.style.marginBottom = ""; });
     }
   }
 
@@ -479,9 +423,7 @@
       `🆔 *Patient ID:* ${patientId(report)}`,
       `📅 *Date:* ${report.order_date || "-"}`
     ];
-    if (verifyUrl) {
-      lines.push(`🔗 *View & Download Verified Report PDF:* ${verifyUrl}`);
-    }
+    if (verifyUrl) lines.push(`🔗 *View & Download Verified Report PDF:* ${verifyUrl}`);
     lines.push(`Please find your attached A4 PDF Pathology Report.`);
     return lines.join("\n");
   }
@@ -510,71 +452,53 @@
 
     if (!validGroups.length) return [];
 
+    const isVerified = report.is_verified !== false;
     const pages = [];
     let currentPage = createPageShell(report, design, 1);
-    currentPage.querySelector(".acd-a4-footer-slot").innerHTML = buildFooterHTML(design, 1, 1);
+    currentPage.querySelector(".acd-a4-footer-slot").innerHTML = buildFooterHTML(design, 1, 1, isVerified);
     container.appendChild(currentPage);
     pages.push(currentPage);
 
-    const getMaxBodyHeight = pageEl => {
-      const bodyEl = pageEl.querySelector(".acd-a4-body");
-      return bodyEl.clientHeight || 620;
-    };
+    const getMaxBodyHeight = pageEl => pageEl.querySelector(".acd-a4-body").clientHeight || 620;
 
     validGroups.forEach(group => {
       const tbody = currentPage.querySelector("tbody");
       const groupHtml = buildTestGroupRowsHTML(group, design);
-
       const beforeHtml = tbody.innerHTML;
       tbody.insertAdjacentHTML("beforeend", groupHtml);
 
-      const tableHeight = currentPage.querySelector(".acd-report-table").offsetHeight;
-      const maxH = getMaxBodyHeight(currentPage);
-
-      if (tableHeight > maxH && beforeHtml.trim() !== "") {
+      if (currentPage.querySelector(".acd-report-table").offsetHeight > getMaxBodyHeight(currentPage) && beforeHtml.trim() !== "") {
         tbody.innerHTML = beforeHtml;
         currentPage = createPageShell(report, design, pages.length + 1);
-        currentPage.querySelector(".acd-a4-footer-slot").innerHTML = buildFooterHTML(design, pages.length + 1, pages.length + 1);
+        currentPage.querySelector(".acd-a4-footer-slot").innerHTML = buildFooterHTML(design, pages.length + 1, pages.length + 1, isVerified);
         container.appendChild(currentPage);
         pages.push(currentPage);
-
-        const nextTbody = currentPage.querySelector("tbody");
-        nextTbody.insertAdjacentHTML("beforeend", groupHtml);
+        currentPage.querySelector("tbody").insertAdjacentHTML("beforeend", groupHtml);
       }
 
       while (currentPage.querySelector(".acd-report-table").offsetHeight > getMaxBodyHeight(currentPage)) {
         const activeTbody = currentPage.querySelector("tbody");
-        const allTrs = [...activeTbody.querySelectorAll("tr")];
-        if (allTrs.length <= 2) break;
-
+        if (activeTbody.querySelectorAll("tr").length <= 2) break;
         const overflowRows = [];
-        while (
-          currentPage.querySelector(".acd-report-table").offsetHeight > getMaxBodyHeight(currentPage) &&
-          activeTbody.querySelectorAll("tr").length > 2
-        ) {
+        while (currentPage.querySelector(".acd-report-table").offsetHeight > getMaxBodyHeight(currentPage) && activeTbody.querySelectorAll("tr").length > 2) {
           const lastTr = activeTbody.lastElementChild;
           overflowRows.unshift(lastTr.outerHTML);
           lastTr.remove();
         }
-
         if (!overflowRows.length) break;
-
         currentPage = createPageShell(report, design, pages.length + 1);
-        currentPage.querySelector(".acd-a4-footer-slot").innerHTML = buildFooterHTML(design, pages.length + 1, pages.length + 1);
+        currentPage.querySelector(".acd-a4-footer-slot").innerHTML = buildFooterHTML(design, pages.length + 1, pages.length + 1, isVerified);
         container.appendChild(currentPage);
         pages.push(currentPage);
-
         const colSpan = 2 + (design.showUnit ? 1 : 0) + (design.showRef ? 1 : 0) + (design.showStatus ? 1 : 0);
-        const contTbody = currentPage.querySelector("tbody");
-        contTbody.innerHTML =
-          `<tr class="acd-test-group-header"><td colspan="${colSpan}">${esc(fullTestName(group.test_name))} (Contd.)</td></tr>` +
-          overflowRows.join("");
+        currentPage.querySelector("tbody").innerHTML =
+          `<tr class="acd-test-group-header"><td colspan="${colSpan}">${esc(fullTestName(group.test_name))} (Contd.)</td></tr>` + overflowRows.join("");
       }
     });
 
     const totalPages = pages.length;
     pages.forEach((pg, idx) => {
-      pg.querySelector(".acd-a4-footer-slot").innerHTML = buildFooterHTML(design, idx + 1, totalPages);
+      pg.querySelector(".acd-a4-footer-slot").innerHTML = buildFooterHTML(design, idx + 1, totalPages, isVerified);
     });
 
     const qrUrl = await resolveQrVerificationUrl(report, currentLabId);
@@ -589,8 +513,6 @@
   async function generateReportPdfBlob(report, currentLabId, labObj) {
     const design = loadReportDesign(currentLabId, labObj);
     const html2pdf = await ensureHtml2Pdf();
-
-    // Render off-screen unscaled A4 sheets for crisp PDF output
     const host = document.createElement("div");
     host.style.cssText = "position:fixed;left:-9999px;top:0;width:210mm;background:#fff;z-index:-1;";
     document.body.appendChild(host);
@@ -606,30 +528,19 @@
         pg.style.boxShadow = "none";
         pg.style.margin = "0";
         pg.style.transform = "none";
-        if (idx < pages.length - 1) {
-          pg.style.pageBreakAfter = "always";
-        }
+        if (idx < pages.length - 1) pg.style.pageBreakAfter = "always";
         wrapper.appendChild(pg);
       });
       host.innerHTML = "";
       host.appendChild(wrapper);
 
-      const safeName = String(report.patient?.patient_name || "Patient")
-        .replace(/[^a-zA-Z0-9_-]+/g, "_")
-        .replace(/^_+|_+$/g, "") || "Patient";
+      const safeName = String(report.patient?.patient_name || "Patient").replace(/[^a-zA-Z0-9_-]+/g, "_").replace(/^_+|_+$/g, "") || "Patient";
       const fileName = `${safeName}_Lab_Report.pdf`;
 
-      const worker = html2pdf()
-        .set({
-          margin: 0,
-          filename: fileName,
-          image: { type: "jpeg", quality: 0.96 },
-          html2canvas: { scale: 2, useCORS: true, logging: false },
-          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
-        })
-        .from(wrapper);
-
-      const blob = await worker.outputPdf("blob");
+      const blob = await html2pdf()
+        .set({ margin: 0, filename: fileName, image: { type: "jpeg", quality: 0.96 }, html2canvas: { scale: 2, useCORS: true, logging: false }, jsPDF: { unit: "mm", format: "a4", orientation: "portrait" } })
+        .from(wrapper)
+        .outputPdf("blob");
       return { blob, fileName, qrUrl: rendered.qrUrl };
     } finally {
       host.remove();
@@ -652,27 +563,18 @@
   async function shareReportOnWhatsApp(report, currentLabId, labObj, triggerBtn = null) {
     const design = loadReportDesign(currentLabId, labObj);
     const originalLabel = triggerBtn ? triggerBtn.textContent : "";
-    if (triggerBtn) {
-      triggerBtn.disabled = true;
-      triggerBtn.textContent = "⏳ Generating PDF...";
-    }
+    if (triggerBtn) { triggerBtn.disabled = true; triggerBtn.textContent = "⏳ Generating PDF..."; }
 
     try {
       const { blob, fileName, qrUrl } = await generateReportPdfBlob(report, currentLabId, labObj);
       const pdfFile = new File([blob], fileName, { type: "application/pdf" });
       const msgText = buildWhatsAppMessage(report, design, qrUrl);
 
-      // 1. Mobile / Tablet Web Share API (Attaches real PDF file directly into WhatsApp!)
       if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
-        await navigator.share({
-          files: [pdfFile],
-          title: fileName,
-          text: msgText
-        });
+        await navigator.share({ files: [pdfFile], title: fileName, text: msgText });
         return;
       }
 
-      // 2. Desktop / Browser Fallback: Download PDF + Open WhatsApp chat with verified link & message
       const dlUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = dlUrl;
@@ -684,24 +586,14 @@
 
       const rawMobile = String(report.patient?.mobile || "").replace(/\D/g, "");
       const phone = rawMobile.length === 10 ? "91" + rawMobile : rawMobile;
-      const waUrl = phone
-        ? `https://wa.me/${phone}?text=${encodeURIComponent(msgText)}`
-        : `https://api.whatsapp.com/send?text=${encodeURIComponent(msgText)}`;
-      window.open(waUrl, "_blank", "noopener");
+      window.open(phone ? `https://wa.me/${phone}?text=${encodeURIComponent(msgText)}` : `https://api.whatsapp.com/send?text=${encodeURIComponent(msgText)}`, "_blank", "noopener");
     } catch (err) {
-      console.warn("WhatsApp PDF share fallback:", err);
       const text = buildWhatsAppMessage(report, design, "");
       const rawMobile = String(report.patient?.mobile || "").replace(/\D/g, "");
       const phone = rawMobile.length === 10 ? "91" + rawMobile : rawMobile;
-      const url = phone
-        ? `https://wa.me/${phone}?text=${encodeURIComponent(text)}`
-        : `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
-      window.open(url, "_blank", "noopener");
+      window.open(phone ? `https://wa.me/${phone}?text=${encodeURIComponent(text)}` : `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, "_blank", "noopener");
     } finally {
-      if (triggerBtn) {
-        triggerBtn.disabled = false;
-        triggerBtn.textContent = originalLabel;
-      }
+      if (triggerBtn) { triggerBtn.disabled = false; triggerBtn.textContent = originalLabel; }
     }
   }
 
@@ -729,16 +621,10 @@
     `;
     document.body.appendChild(overlay);
 
-    document.getElementById("acdClosePrintBtn").onclick = () => {
-      overlay.classList.add("hidden");
-    };
-    document.getElementById("acdDoPrintBtn").onclick = () => {
-      window.print();
-    };
+    document.getElementById("acdClosePrintBtn").onclick = () => overlay.classList.add("hidden");
+    document.getElementById("acdDoPrintBtn").onclick = () => window.print();
     window.addEventListener("resize", () => {
-      if (!overlay.classList.contains("hidden")) {
-        applyMobileViewportScale(document.getElementById("acdPrintViewport"));
-      }
+      if (!overlay.classList.contains("hidden")) applyMobileViewportScale(document.getElementById("acdPrintViewport"));
     });
 
     return overlay;
@@ -750,17 +636,11 @@
     const design = loadReportDesign(currentLabId, labObj);
 
     const validGroups = (report.tests || [])
-      .map(t => ({
-        test_name: t.test_name,
-        clinical_note: t.clinical_note || "",
-        rows: (t.rows || []).filter(r => String(r.result_value ?? "").trim() !== "")
-      }))
+      .map(t => ({ test_name: t.test_name, clinical_note: t.clinical_note || "", rows: (t.rows || []).filter(r => String(r.result_value ?? "").trim() !== "") }))
       .filter(t => t.rows.length > 0);
 
     if (!validGroups.length) {
-      if (typeof window.acdNotify === "function") {
-        window.acdNotify("Print करने के लिए कम से कम एक Test Result भरें।");
-      }
+      if (typeof window.acdNotify === "function") window.acdNotify("Print करने के लिए कम से कम एक Test Result भरें।");
       return;
     }
 
@@ -777,23 +657,15 @@
       const orig = pdfBtn.textContent;
       pdfBtn.disabled = true;
       pdfBtn.textContent = "⏳ Saving PDF...";
-      try {
-        await downloadReportAsPdf(report, currentLabId, labObj);
-      } finally {
-        pdfBtn.disabled = false;
-        pdfBtn.textContent = orig;
-      }
+      try { await downloadReportAsPdf(report, currentLabId, labObj); }
+      finally { pdfBtn.disabled = false; pdfBtn.textContent = orig; }
     };
 
     const { pages } = await renderPagesIntoContainer(viewport, report, design, currentLabId);
-    const totalPages = pages.length;
-
-    document.getElementById("acdPrintPageCount").textContent = `(${totalPages} A4 Page${totalPages > 1 ? "s" : ""})`;
+    document.getElementById("acdPrintPageCount").textContent = `(${pages.length} A4 Page${pages.length > 1 ? "s" : ""})`;
     applyMobileViewportScale(viewport);
 
-    if (options.autoPrint) {
-      setTimeout(() => window.print(), 250);
-    }
+    if (options.autoPrint) setTimeout(() => window.print(), 250);
   }
 
   window.ACDPrintModule = {
