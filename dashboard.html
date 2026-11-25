@@ -754,33 +754,159 @@ html.acd-lab-admin #nav [data-sa-nav] {
       </div>
 
       <hr style="border:0;border-top:1px solid #e2e8f0;margin:14px 0">
-      <h4 style="margin:0 0 8px;color:#075ec9">Signatures (Displayed at Bottom of Every A4 Page)</h4>
-      <div class="fields" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px">
-        <div class="panel" style="padding:10px">
-          <b>Left Signature (Lab Technician / In-Charge)</b>
-          <label>Name</label>
-          <input id="rdLeftSigName" placeholder="e.g. R. K. Verma">
-          <label>Qualification / Designation</label>
-          <input id="rdLeftSigQual" placeholder="e.g. DMLT, Lab Technologist">
-          <label>Upload Signature Image (PNG/JPG)</label>
-          <input id="rdLeftSigFile" type="file" accept="image/*">
-          <div style="margin-top:6px;display:flex;align-items:center;gap:8px">
-            <img id="rdLeftSigPreview" alt="" style="max-height:36px;border:1px dashed #cbd5e1;padding:2px;display:none">
-            <button class="btn light" id="rdClearLeftSig" type="button">Clear</button>
+      <h4 style="margin:0 0 8px;color:#075ec9">📐 Independent Print Layout Designer (Header, Patient Details &amp; Report Spacing/Sizes)</h4>
+      <div style="display:flex;flex-wrap:wrap;gap:14px;font-size:11px;margin-bottom:10px;background:#f8fafc;padding:9px;border-radius:6px;border:1px solid #e2e8f0">
+        <label style="display:flex;align-items:center;gap:5px;font-weight:700;color:#0f172a"><input type="checkbox" id="rdShowHeader" style="width:auto;height:auto" checked> Show Digital Lab Header (Uncheck to Hide Header for Pre-Printed Letterhead)</label>
+        <label style="display:flex;align-items:center;gap:5px;font-weight:700;color:#0f172a"><input type="checkbox" id="rdShowLabName" style="width:auto;height:auto" checked> Show Lab Name</label>
+        <label style="display:flex;align-items:center;gap:5px;font-weight:700;color:#0f172a"><input type="checkbox" id="rdShowReportBanner" style="width:auto;height:auto" checked> Show Report Title Bar</label>
+      </div>
+
+      <!-- 1. LAB HEADER POSITION & SIZE -->
+      <div style="background:#f8fafc;border:1px solid #dce3eb;border-radius:6px;padding:9px;margin-bottom:9px">
+        <strong style="font-size:11px;color:#0b4fa8;display:block;margin-bottom:6px">1. Lab Header &amp; Page Margin Control (ऊपर-नीचे और साइज़)</strong>
+        <div class="fields" style="grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:8px">
+          <div class="field">
+            <label>Top Page Margin / ऊपर से जगह (mm)</label>
+            <input id="rdMarginTop" type="number" min="0" max="120" value="10" placeholder="e.g. 40 for letterhead">
+          </div>
+          <div class="field">
+            <label>Header Height / खाली जगह (mm)</label>
+            <input id="rdHeaderHeight" type="number" min="0" max="90" value="0" placeholder="0 = Auto">
+          </div>
+          <div class="field">
+            <label>Lab Name Size (छोटा-बड़ा)</label>
+            <select id="rdHeaderFontSize">
+              <option value="14px">14px (Extra Small)</option>
+              <option value="16px">16px (Small)</option>
+              <option value="18px">18px (Medium)</option>
+              <option value="20px" selected>20px (Standard)</option>
+              <option value="23px">23px (Large)</option>
+              <option value="26px">26px (Extra Large)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Address / Tagline Size</label>
+            <select id="rdSubHeaderFontSize">
+              <option value="8.5px">8.5px (Compact)</option>
+              <option value="9.5px">9.5px (Small)</option>
+              <option value="10.5px" selected>10.5px (Standard)</option>
+              <option value="12px">12px (Large)</option>
+            </select>
           </div>
         </div>
+      </div>
 
-        <div class="panel" style="padding:10px">
-          <b>Right Signature (Pathologist / Authorized Signatory)</b>
-          <label>Name</label>
-          <input id="rdRightSigName" placeholder="e.g. Dr. A. K. Sharma">
-          <label>Qualification / Reg. No.</label>
-          <input id="rdRightSigQual" placeholder="e.g. MBBS, MD (Pathology)">
-          <label>Upload Signature Image (PNG/JPG)</label>
-          <input id="rdRightSigFile" type="file" accept="image/*">
-          <div style="margin-top:6px;display:flex;align-items:center;gap:8px">
-            <img id="rdRightSigPreview" alt="" style="max-height:36px;border:1px dashed #cbd5e1;padding:2px;display:none">
-            <button class="btn light" id="rdClearRightSig" type="button">Clear</button>
+      <!-- 2. PATIENT DETAILS POSITION & SIZE -->
+      <div style="background:#f8fafc;border:1px solid #dce3eb;border-radius:6px;padding:9px;margin-bottom:9px">
+        <strong style="font-size:11px;color:#087f70;display:block;margin-bottom:6px">2. Patient Details Position &amp; Size (मरीज़ विवरण ऊपर-नीचे और साइज़)</strong>
+        <div class="fields" style="grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:8px">
+          <div class="field">
+            <label>Gap Below Header / नीचे खिसकाएं (mm)</label>
+            <input id="rdPatientGap" type="number" min="0" max="60" value="2">
+          </div>
+          <div class="field">
+            <label>Patient Details Text Size</label>
+            <select id="rdPatientFontSize">
+              <option value="9px">9px (Extra Compact)</option>
+              <option value="10px">10px (Compact)</option>
+              <option value="11px" selected>11px (Standard)</option>
+              <option value="12px">12px (Large)</option>
+              <option value="13px">13px (Extra Large)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Patient Block Border Style</label>
+            <select id="rdPatientBoxStyle">
+              <option value="boxed" selected>Boxed (चारों तरफ़ बॉर्डर)</option>
+              <option value="lines">Top &amp; Bottom Lines (केवल लाइन)</option>
+              <option value="clean">Clean Borderless (बिना बॉर्डर - Pre-printed)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. REPORT TABLE POSITION, FONT & SPACING -->
+      <div style="background:#f8fafc;border:1px solid #dce3eb;border-radius:6px;padding:9px;margin-bottom:9px">
+        <strong style="font-size:11px;color:#8a43b6;display:block;margin-bottom:6px">3. Report Table Position, Font &amp; Sizes (रिपोर्ट ऊपर-नीचे और साइज़)</strong>
+        <div class="fields" style="grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:8px">
+          <div class="field">
+            <label>Gap Below Patient / रिपोर्ट नीचे करें (mm)</label>
+            <input id="rdReportGap" type="number" min="0" max="60" value="2">
+          </div>
+          <div class="field">
+            <label>Test Heading Size</label>
+            <select id="rdTestHeadingFontSize">
+              <option value="10px">10px (Compact)</option>
+              <option value="11.5px" selected>11.5px (Standard)</option>
+              <option value="13px">13px (Large)</option>
+              <option value="14.5px">14.5px (Extra Large)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Parameters Text Size</label>
+            <select id="rdFontSize">
+              <option value="9px">9px (Extra Compact)</option>
+              <option value="10px">10px (Compact)</option>
+              <option value="11px" selected>11px (Standard A4)</option>
+              <option value="12px">12px (Medium Large)</option>
+              <option value="13px">13px (Large)</option>
+              <option value="14px">14px (Extra Large)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Parameter Row Spacing (ऊँचाई)</label>
+            <select id="rdRowSpacing">
+              <option value="2.5px">Extra Compact</option>
+              <option value="3.5px">Compact</option>
+              <option value="4.5px" selected>Normal Spacing</option>
+              <option value="6px">Medium Open</option>
+              <option value="8px">Spacious Layout</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Bottom Margin / सिग्नेचर से जगह (mm)</label>
+            <input id="rdMarginBottom" type="number" min="5" max="70" value="9">
+          </div>
+          <div class="field">
+            <label>Left / Right Margin (mm)</label>
+            <input id="rdMarginSide" type="number" min="5" max="30" value="12">
+          </div>
+          <div class="field">
+            <label>Report Font Style</label>
+            <select id="rdFontFamily">
+              <option value="Arial, Helvetica, sans-serif">Arial (Clean Standard)</option>
+              <option value="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif">Segoe UI / Modern</option>
+              <option value="'Times New Roman', Times, serif">Times New Roman (Classic)</option>
+              <option value="Georgia, serif">Georgia (Formal)</option>
+              <option value="'Courier New', Courier, monospace">Courier New (Monospace)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <hr style="border:0;border-top:1px solid #e2e8f0;margin:14px 0">
+      <h4 style="margin:0 0 8px;color:#075ec9">✍️ Authorized Signatures Setup (Left &amp; Right)</h4>
+      <div class="fields" style="grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px">
+        <div style="background:#f8fafc;border:1px solid #dce3eb;border-radius:6px;padding:9px">
+          <strong style="font-size:11px;color:#0f172a">Left Signature (Technician)</strong>
+          <div class="field"><label>Name</label><input id="rdLeftSigName" placeholder="e.g. Lab Technician"></div>
+          <div class="field"><label>Qualification</label><input id="rdLeftSigQual" placeholder="e.g. DMLT / BMLT"></div>
+          <div class="field">
+            <label>Signature Image (Optional)</label>
+            <input id="rdLeftSigFile" type="file" accept="image/*">
+            <img id="rdLeftSigPreview" alt="Left Signature" style="display:none;max-height:46px;margin-top:6px;border:1px solid #cbd5e1;border-radius:4px;background:#fff;padding:2px">
+            <button class="btn light" id="rdClearLeftSig" type="button" style="margin-top:4px">Remove</button>
+          </div>
+        </div>
+        <div style="background:#f8fafc;border:1px solid #dce3eb;border-radius:6px;padding:9px">
+          <strong style="font-size:11px;color:#0f172a">Right Signature (Pathologist / Doctor)</strong>
+          <div class="field"><label>Name</label><input id="rdRightSigName" placeholder="e.g. Dr. R. K. Singh"></div>
+          <div class="field"><label>Qualification</label><input id="rdRightSigQual" placeholder="e.g. MBBS, MD (Pathology)"></div>
+          <div class="field">
+            <label>Signature Image (Optional)</label>
+            <input id="rdRightSigFile" type="file" accept="image/*">
+            <img id="rdRightSigPreview" alt="Right Signature" style="display:none;max-height:46px;margin-top:6px;border:1px solid #cbd5e1;border-radius:4px;background:#fff;padding:2px">
+            <button class="btn light" id="rdClearRightSig" type="button" style="margin-top:4px">Remove</button>
           </div>
         </div>
       </div>
@@ -2363,12 +2489,18 @@ function showReportDesignerPage() {
   $("rdShowLabName").checked = rdTempState.showLabName !== false;
   $("rdShowReportBanner").checked = rdTempState.showReportBanner !== false;
   $("rdMarginTop").value = rdTempState.marginTopMm ?? 10;
+  $("rdHeaderHeight").value = rdTempState.headerHeightMm ?? 0;
   $("rdMarginBottom").value = rdTempState.marginBottomMm ?? 9;
   $("rdMarginSide").value = rdTempState.marginSideMm ?? 12;
+  $("rdPatientGap").value = rdTempState.patientGapMm ?? 2;
+  $("rdReportGap").value = rdTempState.reportGapMm ?? 2;
+  $("rdPatientBoxStyle").value = rdTempState.patientBoxStyle || "boxed";
   $("rdFontFamily").value = rdTempState.fontFamily || "Arial, Helvetica, sans-serif";
   $("rdFontSize").value = rdTempState.fontSize || "11px";
   $("rdHeaderFontSize").value = rdTempState.headerFontSize || "20px";
+  $("rdSubHeaderFontSize").value = rdTempState.subHeaderFontSize || "10.5px";
   $("rdPatientFontSize").value = rdTempState.patientFontSize || "11px";
+  $("rdTestHeadingFontSize").value = rdTempState.testHeadingFontSize || "11.5px";
   $("rdRowSpacing").value = rdTempState.rowSpacing || "4.5px";
 
   $("rdLeftSigName").value = rdTempState.leftSigName || "";
@@ -2467,12 +2599,18 @@ function collectReportDesignerForm() {
     showLabName: $("rdShowLabName").checked,
     showReportBanner: $("rdShowReportBanner").checked,
     marginTopMm: Math.max(0, Math.min(120, Number($("rdMarginTop").value || 10))),
+    headerHeightMm: Math.max(0, Math.min(90, Number($("rdHeaderHeight").value || 0))),
     marginBottomMm: Math.max(5, Math.min(70, Number($("rdMarginBottom").value || 9))),
     marginSideMm: Math.max(5, Math.min(30, Number($("rdMarginSide").value || 12))),
+    patientGapMm: Math.max(0, Math.min(60, Number($("rdPatientGap").value || 0))),
+    reportGapMm: Math.max(0, Math.min(60, Number($("rdReportGap").value || 0))),
+    patientBoxStyle: $("rdPatientBoxStyle").value || "boxed",
     fontFamily: $("rdFontFamily").value || "Arial, Helvetica, sans-serif",
     fontSize: $("rdFontSize").value || "11px",
     headerFontSize: $("rdHeaderFontSize").value || "20px",
+    subHeaderFontSize: $("rdSubHeaderFontSize").value || "10.5px",
     patientFontSize: $("rdPatientFontSize").value || "11px",
+    testHeadingFontSize: $("rdTestHeadingFontSize").value || "11.5px",
     rowSpacing: $("rdRowSpacing").value || "4.5px",
     leftSigName: $("rdLeftSigName").value.trim(),
     leftSigQual: $("rdLeftSigQual").value.trim(),
