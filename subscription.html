@@ -4,27 +4,36 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07172d">
-<title>Subscription &amp; Billing | ACD BITTU LAB CLOUD</title>
+<title>Subscription Plans &amp; Billing | ACD BITTU LAB CLOUD</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{--navy:#07172d;--blue:#0866df;--ink:#18263a;--muted:#667085;--line:#e1e7ef;--bg:#f3f6fa;--green:#078447;--red:#b42318}
+:root{--navy:#07172d;--blue:#0866df;--ink:#18263a;--muted:#667085;--line:#e1e7ef;--bg:#f3f6fa;--green:#078447;--red:#b42318;--purple:#7c3aed}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:14px Inter,Arial,Helvetica,sans-serif}
 .top{min-height:58px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:10px 22px;gap:12px}
 .brand{font-weight:800;letter-spacing:.3px}
 .top button,.btn{border:0;border-radius:8px;padding:10px 14px;font-weight:700;cursor:pointer;transition:opacity .15s ease}
 .top button{background:#fff;color:var(--navy)}
-.wrap{max-width:1120px;margin:24px auto;padding:0 16px}
+.wrap{max-width:1140px;margin:24px auto;padding:0 16px}
 .heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
-h1{font-size:25px;margin:0 0 6px}
+h1{font-size:24px;margin:0 0 6px}
 .sub{color:var(--muted);font-size:13px}
 .btn{background:var(--blue);color:#fff}
 .btn.secondary{background:#e8eef6;color:#344054}
+.btn.purple{background:var(--purple);color:#fff}
 .btn:disabled{opacity:.55;cursor:not-allowed}
 .notice{padding:12px 14px;border-radius:8px;background:#edf5ff;border:1px solid #d5e7ff;color:#245a9d;margin:12px 0;line-height:1.5}
 .notice.error{background:#fff0f1;border-color:#ffd6da;color:var(--red)}
 .notice.success{background:#eaf8ef;border-color:#ccebd6;color:#176b3b}
 .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:16px 0}
+.plans-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:16px 0}
+.plan-card{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:18px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 2px 8px rgba(15,23,42,.04)}
+.plan-card.popular{border-color:var(--blue);box-shadow:0 8px 24px rgba(8,102,223,.12);position:relative}
+.plan-badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:10px;font-weight:800;background:#dbeafe;color:#1d4ed8;margin-bottom:8px}
+.plan-title{font-size:17px;font-weight:800;margin:0 0 6px}
+.plan-price{font-size:24px;font-weight:900;color:var(--navy);margin:6px 0}
+.plan-renew{font-size:12px;color:var(--green);font-weight:700;margin-bottom:12px}
+.plan-features{list-style:none;padding:0;margin:0 0 16px;font-size:12.5px;color:#334155;display:flex;flex-direction:column;gap:7px}
 .card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0;box-shadow:0 1px 3px #152b4509}
 .kicker{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
 .value{font-size:21px;font-weight:800;margin-top:9px;overflow-wrap:anywhere}
@@ -32,11 +41,6 @@ h1{font-size:25px;margin:0 0 6px}
 .section{background:#fff;border:1px solid var(--line);border-radius:10px;margin:14px 0;overflow:hidden}
 .section h2{font-size:16px;margin:0;padding:15px 17px;border-bottom:1px solid var(--line)}
 .section-body{padding:16px}
-.cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #edf0f4}
-.row:last-child{border-bottom:0}
-.row span:first-child{color:var(--muted)}
-.row strong{text-align:right;overflow-wrap:anywhere}
 .pill{display:inline-block;padding:5px 10px;border-radius:20px;background:#e8f7ee;color:var(--green);font-size:11px;font-weight:800;text-transform:capitalize}
 .pill.warn{background:#fff4e5;color:#9a5700}
 .pill.neutral{background:#edf1f6;color:#475467}
@@ -45,23 +49,21 @@ table{border-collapse:collapse;width:100%;min-width:580px;font-size:12px}
 th,td{text-align:left;padding:11px 10px;border-bottom:1px solid #edf0f4}
 th{background:#f7f9fc;color:#475467;font-size:11px;text-transform:uppercase}
 .empty{padding:18px;color:var(--muted);font-size:12px;text-align:center}
-.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .footer{color:#98a2b3;text-align:center;font-size:11px;padding:20px}
-@media(max-width:800px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.cols{grid-template-columns:1fr}}
-@media(max-width:420px){.grid{grid-template-columns:1fr 1fr}.value{font-size:18px}.top{padding:10px 12px}.wrap{padding:0 10px}}
+@media(max-width:860px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.plans-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <header class="top">
   <div class="brand">✚ ACD BITTU LAB CLOUD</div>
-  <button id="backBtn" type="button">← Back to Dashboard</button>
+  <button id="backBtn" type="button">← Back to LIMS Console</button>
 </header>
 
 <main class="wrap">
   <div class="heading">
     <div>
-      <h1>Subscription &amp; Billing</h1>
-      <div class="sub">View your trial, subscription validity, payments and official invoices.</div>
+      <h1>Feature-Based Subscription Plans &amp; Billing</h1>
+      <div class="sub">Choose the plan that matches your laboratory's size and required features.</div>
     </div>
     <button class="btn secondary" id="refreshBtn" type="button">↻ Refresh</button>
   </div>
@@ -85,40 +87,73 @@ th{background:#f7f9fc;color:#475467;font-size:11px;text-transform:uppercase}
       <div class="small" id="expiryHint">Subscription expiry date</div>
     </div>
     <div class="card">
-      <div class="kicker">Active Laboratories</div>
+      <div class="kicker">Active Centers</div>
       <div class="value" id="labsValue">—</div>
       <div class="small">Laboratories linked to this owner</div>
     </div>
   </div>
 
+  <!-- 3 MARKET-ALIGNED FEATURE TIERS -->
   <section class="section">
-    <h2>Plans &amp; Pricing</h2>
-    <div class="section-body cols">
-      <div>
-        <div class="kicker">First Registration Fee</div>
-        <div class="value" id="firstRegFeeDisplay">₹10,000</div>
-        <div class="small">First paid activation for 12 months. A 3-day trial may be used before payment.</div>
-      </div>
-      <div>
-        <div class="kicker">Annual Renewal</div>
-        <div class="value" id="renewalFeeDisplay">₹2,000 / year</div>
-        <div class="small">Renewal for the next 12-month subscription period.</div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
-    <h2>Subscription Overview</h2>
-    <div class="section-body cols">
-      <div id="overviewRows"><div class="empty">Subscription information will appear here after loading.</div></div>
-      <div>
-        <div class="kicker">Subscription Action</div>
-        <p class="small" id="actionDescription">Your subscription remains active until its expiry date.</p>
-        <div class="actions">
-          <button class="btn" id="renewBtn" type="button">Activate / Renew Subscription</button>
+    <h2>Choose Your Laboratory Plan (Pay Only for the Features You Need)</h2>
+    <div class="section-body">
+      <div class="plans-grid">
+        <!-- Tier 1: Standard -->
+        <div class="plan-card">
+          <div>
+            <span class="plan-badge">FOR SOLO &amp; SMALL LABS</span>
+            <h3 class="plan-title">Tier 1: Standard Lab</h3>
+            <div class="plan-price" id="p1Setup">₹10,000 <small style="font-size:12px;font-weight:500">/ 1st Year</small></div>
+            <div class="plan-renew" id="p1Renew">Annual Renewal: ₹2,000 / year</div>
+            <ul class="plan-features">
+              <li>✓ Fast Patient Entry &amp; Auto-Calculation (CBC, LFT, KFT, Widal)</li>
+              <li>✓ Editable Test Rate List &amp; Auto-Billing</li>
+              <li>✓ Custom A4 Print &amp; Pre-Printed Letterhead Setup</li>
+              <li>✓ QR Code Online Verification &amp; Direct WhatsApp PDF</li>
+              <li>✓ Hybrid Offline Mode + Cloud Auto-Sync</li>
+            </ul>
+          </div>
+          <button class="btn" type="button" data-select-plan="standard">Activate Standard Plan →</button>
         </div>
-        <div class="small" id="actionHint">Payment is securely processed through Razorpay and verified by Supabase.</div>
+
+        <!-- Tier 2: Advanced NABL -->
+        <div class="plan-card popular">
+          <div>
+            <span class="plan-badge" style="background:#0866df;color:#fff">MOST POPULAR • DIAGNOSTIC CENTERS</span>
+            <h3 class="plan-title">Tier 2: Advanced NABL Center</h3>
+            <div class="plan-price" id="p2Setup">₹18,000 <small style="font-size:12px;font-weight:500">/ 1st Year</small></div>
+            <div class="plan-renew" id="p2Renew">Annual Renewal: ₹4,000 / year</div>
+            <ul class="plan-features">
+              <li>✓ <strong>Everything in Standard Lab</strong></li>
+              <li>✓ Barcode Sample &amp; TAT Processing Tracker</li>
+              <li>✓ Full Accounts, Due Ledger &amp; Expense Register</li>
+              <li>✓ Doctor Referral &amp; B2B Commission Calculator</li>
+              <li>✓ Reagent &amp; Kit Stock Inventory + Expiry Alerts</li>
+              <li>✓ NABL MD Pathologist Verify &amp; Report Lock</li>
+            </ul>
+          </div>
+          <button class="btn" type="button" data-select-plan="advanced">Activate Advanced Plan →</button>
+        </div>
+
+        <!-- Tier 3: Enterprise Multi-Branch -->
+        <div class="plan-card">
+          <div>
+            <span class="plan-badge" style="background:#f3e8ff;color:#6b21a8">FOR CHAINS &amp; HOSPITAL LABS</span>
+            <h3 class="plan-title">Tier 3: Enterprise Multi-Branch</h3>
+            <div class="plan-price" id="p3Setup">₹30,000 <small style="font-size:12px;font-weight:500">/ 1st Year</small></div>
+            <div class="plan-renew" id="p3Renew">Annual Renewal: ₹7,000 / year</div>
+            <ul class="plan-features">
+              <li>✓ <strong>Everything in Advanced NABL Center</strong></li>
+              <li>✓ Multi-Branch / Collection Center Management</li>
+              <li>✓ Multi-User Staff Logins (Technician, Reception, Pathologist)</li>
+              <li>✓ Priority Support &amp; Custom Print Templates</li>
+              <li>✓ Centralized Multi-Lab Owner Analytics</li>
+            </ul>
+          </div>
+          <button class="btn purple" type="button" data-select-plan="enterprise">Activate Enterprise Plan →</button>
+        </div>
       </div>
+      <div class="small">Note: Custom enterprise packages can also be configured directly by the Super Admin after payment.</div>
     </div>
   </section>
 
@@ -127,17 +162,9 @@ th{background:#f7f9fc;color:#475467;font-size:11px;text-transform:uppercase}
     <div class="tablewrap">
       <table>
         <thead>
-          <tr>
-            <th>Date</th>
-            <th>Payment Type</th>
-            <th>Amount</th>
-            <th>Status</th>
-            <th>Payment ID</th>
-          </tr>
+          <tr><th>Date</th><th>Payment Type</th><th>Amount</th><th>Status</th><th>Payment ID</th></tr>
         </thead>
-        <tbody id="paymentsBody">
-          <tr><td colspan="5" class="empty">Loading payment history…</td></tr>
-        </tbody>
+        <tbody id="paymentsBody"><tr><td colspan="5" class="empty">Loading payment history…</td></tr></tbody>
       </table>
     </div>
   </section>
@@ -147,28 +174,14 @@ th{background:#f7f9fc;color:#475467;font-size:11px;text-transform:uppercase}
     <div class="tablewrap">
       <table>
         <thead>
-          <tr>
-            <th>Invoice Number</th>
-            <th>Date</th>
-            <th>Type</th>
-            <th>Amount</th>
-            <th>Document</th>
-          </tr>
+          <tr><th>Invoice Number</th><th>Date</th><th>Type</th><th>Amount</th><th>Document</th></tr>
         </thead>
-        <tbody id="invoicesBody">
-          <tr><td colspan="5" class="empty">Loading invoices…</td></tr>
-        </tbody>
+        <tbody id="invoicesBody"><tr><td colspan="5" class="empty">Loading invoices…</td></tr></tbody>
       </table>
     </div>
-    <div class="section-body small">Click <strong>Download PDF</strong> on any invoice record to generate and download your official GST/billing receipt.</div>
   </section>
 
-  <section class="section">
-    <h2>Billing Details</h2>
-    <div class="section-body" id="billingRows"><div class="empty">Loading billing details…</div></div>
-  </section>
-
-  <div class="footer">ACD BITTU LAB CLOUD · Secure subscription management</div>
+  <div class="footer">ACD BITTU LAB CLOUD · Secure Razorpay Subscription Management</div>
 </main>
 
 <script>
@@ -176,186 +189,99 @@ th{background:#f7f9fc;color:#475467;font-size:11px;text-transform:uppercase}
 const SUPABASE_URL = "https://axfvvquhswapiwmvrepe.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_n6jRvVDjw2kOF7CS46omqQ_6qGkdR-q";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
 const $ = id => document.getElementById(id);
 
 const fmtDate = v => {
   if (!v) return "—";
   const d = new Date(v);
-  return Number.isNaN(d.getTime())
-    ? String(v)
-    : d.toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  return Number.isNaN(d.getTime()) ? String(v) : d.toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 };
-
 const money = v => {
   if (v === null || v === undefined || v === "") return "—";
   const n = Number(v);
-  return Number.isFinite(n)
-    ? "₹" + (n / 100).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-    : String(v);
+  return Number.isFinite(n) ? "₹" + (n / 100).toLocaleString("en-IN", { minimumFractionDigits: 2 }) : String(v);
 };
-
-const text = v => (v === null || v === undefined || v === "" ? "—" : String(v));
-
-const pick = (obj, keys) => {
-  for (const k of keys) {
-    if (obj && obj[k] !== undefined && obj[k] !== null) return obj[k];
-  }
-  return null;
-};
-
-const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({
-  "&": "&amp;",
-  "<": "&lt;",
-  ">": "&gt;",
-  '"': "&quot;",
-  "'": "&#39;"
-}[c]));
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 function setNotice(msg, type = "info") {
   $("notice").textContent = msg;
   $("notice").className = "notice" + (type === "error" ? " error" : type === "success" ? " success" : "");
 }
 
-function rows(obj, keys) {
-  return keys.map(([label, fields]) => {
-    const v = pick(obj, fields);
-    if (v === null) return "";
-    return '<div class="row"><span>' + esc(label) + '</span><strong>' + esc(/date|period|trial/i.test(label) ? fmtDate(v) : text(v)) + '</strong></div>';
-  }).filter(Boolean).join("") || '<div class="empty">No additional billing details available.</div>';
+function loadConfiguredTiers() {
+  try {
+    const raw = JSON.parse(localStorage.getItem("acd_subscription_tiers") || "null");
+    if (raw) return raw;
+  } catch (e) {}
+  return {
+    standard: { setup_paise: 1000000, renew_paise: 200000 },
+    advanced: { setup_paise: 1800000, renew_paise: 400000 },
+    enterprise: { setup_paise: 3000000, renew_paise: 700000 }
+  };
 }
 
-function normalizeOverview(raw) {
-  let x = raw;
-  if (Array.isArray(x)) x = x[0] || {};
-  if (typeof x === "string") {
-    try { x = JSON.parse(x); } catch {}
-  }
-  return x && typeof x === "object" ? x : {};
+function renderTierPrices() {
+  const tiers = loadConfiguredTiers();
+  $("p1Setup").innerHTML = `₹${(tiers.standard.setup_paise / 100).toLocaleString("en-IN")} <small style="font-size:12px;font-weight:500">/ 1st Year</small>`;
+  $("p1Renew").textContent = `Annual Renewal: ₹${(tiers.standard.renew_paise / 100).toLocaleString("en-IN")} / year`;
+  $("p2Setup").innerHTML = `₹${(tiers.advanced.setup_paise / 100).toLocaleString("en-IN")} <small style="font-size:12px;font-weight:500">/ 1st Year</small>`;
+  $("p2Renew").textContent = `Annual Renewal: ₹${(tiers.advanced.renew_paise / 100).toLocaleString("en-IN")} / year`;
+  $("p3Setup").innerHTML = `₹${(tiers.enterprise.setup_paise / 100).toLocaleString("en-IN")} <small style="font-size:12px;font-weight:500">/ 1st Year</small>`;
+  $("p3Renew").textContent = `Annual Renewal: ₹${(tiers.enterprise.renew_paise / 100).toLocaleString("en-IN")} / year`;
 }
 
-function firstObject(...values) {
-  for (const v of values) {
-    if (Array.isArray(v) && v.length) return v[0];
-    if (v && typeof v === "object") return v;
-  }
-  return {};
-}
-
-function listValue(...values) {
-  for (const v of values) {
-    if (Array.isArray(v)) return v;
-  }
-  return [];
-}
-
-function render(data) {
-  const owner = firstObject(data.subscription, data.owner_subscription, data.ownerSubscription, data.owner);
-  const status = String(pick(owner, ["status"]) || pick(data, ["status", "subscription_status"]) || "unknown").toLowerCase();
-  const trialEnd = pick(data, ["trial_ends_at"]) || pick(owner, ["trial_ends_at"]);
-  const paidExpiry = pick(owner, ["current_period_end", "period_end", "expires_at", "expiry_date", "end_date"]) ||
-                     pick(data, ["current_period_end", "expires_at", "expiry_date"]);
+function render(raw) {
+  const data = Array.isArray(raw) ? (raw[0] || {}) : (raw || {});
+  const owner = data.subscription || data.owner_subscription || data;
+  const status = String(owner.status || data.subscription_status || "trial").toLowerCase();
   const isTrial = status === "trial";
-  const expiry = isTrial ? (trialEnd || paidExpiry) : paidExpiry;
-  const activeLabs = pick(data, ["active_centers", "active_lab_count", "active_labs_count", "lab_count"]) ??
-                     (Array.isArray(data.labs) ? data.labs.length : null);
-  const plan = pick(owner, ["plan_name", "plan", "name", "plan_code"]) || pick(data, ["plan_name", "plan"]);
+  const expiry = isTrial ? (data.trial_ends_at || owner.trial_ends_at) : (owner.current_period_end || data.current_period_end);
 
-  // Dynamic fees configured by Super Admin in acd_billing_settings
-  const prices = data.billing_prices || {};
-  const firstPaise = Number(prices.first_registration_fee_paise || 1000000);
-  const renewPaise = Number(prices.annual_renewal_fee_paise || 200000);
-  const firstRupees = (firstPaise / 100).toLocaleString("en-IN");
-  const renewRupees = (renewPaise / 100).toLocaleString("en-IN");
-
-  $("firstRegFeeDisplay").textContent = "₹" + firstRupees;
-  $("renewalFeeDisplay").textContent = "₹" + renewRupees + " / year";
-
-  $("planValue").textContent = text(plan || (isTrial ? "3-Day Free Trial" : "Annual Subscription"));
-  $("planHint").textContent = isTrial ? "Temporary trial access" : (plan ? "Current subscribed plan" : "Standard owner plan");
-  $("statusValue").innerHTML = '<span class="pill ' + (status === "expired" || status === "payment_pending" ? "warn" : status === "trial" ? "neutral" : "") + '">' + esc(status.replace("_", " ")) + '</span>';
-  $("statusHint").textContent = isTrial ? "Trial access is time-limited" : (status === "active" ? "Paid subscription is active" : "Subscription status from Supabase");
+  $("planValue").textContent = owner.plan_name || (isTrial ? "3-Day Free Trial" : "Standard Lab");
+  $("planHint").textContent = isTrial ? "Temporary trial access" : "Active subscription tier";
+  $("statusValue").innerHTML = `<span class="pill ${status === "expired" ? "warn" : isTrial ? "neutral" : ""}">${esc(status)}</span>`;
   $("expiryValue").textContent = fmtDate(expiry);
-  $("expiryHint").textContent = isTrial ? "Trial expiry date" : "Subscription expiry date";
-  $("labsValue").textContent = text(activeLabs);
+  $("labsValue").textContent = data.active_centers ?? "1";
 
-  $("overviewRows").innerHTML = rows(owner, [
-    ["Subscription ID", ["id", "subscription_id", "owner_user_id"]],
-    ["Subscription Start", ["current_period_start", "period_start", "started_at"]],
-    ["Subscription Expiry", ["current_period_end", "period_end", "expires_at", "expiry_date"]],
-    ["Trial Started", ["trial_started_at"]],
-    ["Trial Expires", ["trial_ends_at"]],
-    ["Plan Code", ["plan_code", "billing_cycle", "interval"]],
-    ["Currency", ["currency"]]
-  ]);
-
-  const billingAction = data.billing_action || (status === "active" ? "annual_renewal" : "first_registration");
-  if (isTrial) {
-    $("actionDescription").textContent = "Your 3-day free trial is active. You can continue using the trial or activate the 12-month paid subscription now.";
-    $("renewBtn").textContent = "Pay ₹" + firstRupees + " & Activate";
-  } else if (status === "active" || billingAction === "annual_renewal") {
-    $("actionDescription").textContent = "Your subscription remains active until its expiry date. Renew anytime to extend validity by 12 months.";
-    $("renewBtn").textContent = "Renew for ₹" + renewRupees;
-  } else {
-    $("actionDescription").textContent = "Your subscription is not currently active. Complete payment to activate 12-month access.";
-    $("renewBtn").textContent = "Pay ₹" + firstRupees + " & Activate";
-  }
-
-  const payments = listValue(data.payments, data.payment_records, data.payment_history);
+  const payments = Array.isArray(data.payments) ? data.payments : [];
   $("paymentsBody").innerHTML = payments.length
-    ? payments.map(p => '<tr><td>' + esc(fmtDate(p.created_at || p.paid_at || p.payment_date)) + '</td><td>' + esc(text(p.billing_type || p.payment_type || p.description)) + '</td><td>' + esc(money(p.amount_paise ?? p.amount)) + '</td><td>' + esc(text(p.payment_status || p.status)) + '</td><td>' + esc(text(p.gateway_payment_id || p.gateway_order_id || p.razorpay_payment_id || p.payment_id || p.id)) + '</td></tr>').join("")
+    ? payments.map(p => `<tr><td>${esc(fmtDate(p.created_at))}</td><td>${esc(p.billing_type || "Subscription")}</td><td>${esc(money(p.amount_paise ?? p.amount))}</td><td>${esc(p.payment_status || p.status)}</td><td>${esc(p.gateway_payment_id || p.id)}</td></tr>`).join("")
     : '<tr><td colspan="5" class="empty">No payment records found.</td></tr>';
 
-  const invoices = listValue(data.invoices, data.invoice_records);
+  const invoices = Array.isArray(data.invoices) ? data.invoices : [];
   $("invoicesBody").innerHTML = invoices.length
-    ? invoices.map(i => '<tr><td>' + esc(text(i.invoice_number)) + '</td><td>' + esc(fmtDate(i.invoice_date || i.created_at)) + '</td><td>' + esc(text(i.billing_type)) + '</td><td>' + esc(money(i.amount_paise ?? i.amount)) + '</td><td><button class="btn" data-invoice-id="' + esc(i.id) + '">Download PDF</button></td></tr>').join("")
+    ? invoices.map(i => `<tr><td>${esc(i.invoice_number)}</td><td>${esc(fmtDate(i.invoice_date || i.created_at))}</td><td>${esc(i.billing_type)}</td><td>${esc(money(i.amount_paise ?? i.amount))}</td><td><button class="btn" data-invoice-id="${esc(i.id)}">Download PDF</button></td></tr>`).join("")
     : '<tr><td colspan="5" class="empty">No invoice records found.</td></tr>';
 
-  $("invoicesBody").querySelectorAll("[data-invoice-id]").forEach(button => {
-    button.addEventListener("click", () => downloadInvoice(button.dataset.invoiceId, button));
+  $("invoicesBody").querySelectorAll("[data-invoice-id]").forEach(btn => {
+    btn.onclick = () => downloadInvoice(btn.dataset.invoiceId, btn);
   });
 }
 
 async function load() {
+  renderTierPrices();
   $("refreshBtn").disabled = true;
   setNotice("Loading subscription details from Supabase…");
   try {
-    const { data: { session }, error: sessionError } = await db.auth.getSession();
-    if (sessionError) throw sessionError;
-    if (!session) {
-      location.replace("index.html");
-      return;
-    }
-
+    const { data: { session } } = await db.auth.getSession();
+    if (!session) { location.replace("index.html"); return; }
     const { data, error } = await db.rpc("acd_owner_billing_overview");
     if (error) throw error;
-
-    const overview = normalizeOverview(data);
-    render(overview);
-
-    $("billingRows").innerHTML =
-      '<div class="row"><span>Owner Email</span><strong>' + esc(session.user.email || "Not available") + '</strong></div>' +
-      '<div class="row"><span>Active Centers</span><strong>' + esc(text(overview.active_centers ?? "—")) + '</strong></div>' +
-      '<div class="row"><span>Billing Currency</span><strong>INR</strong></div>';
-
-    setNotice("Subscription information loaded successfully.", "success");
+    render(data);
+    setNotice("Subscription & billing details loaded.", "success");
   } catch (e) {
-    console.error("Subscription page load:", e);
-    setNotice("Could not load subscription information: " + (e.message || "Unknown error") + ". Please check your account access and Supabase connection.", "error");
+    setNotice("Notice: " + e.message, "error");
   } finally {
     $("refreshBtn").disabled = false;
   }
 }
 
-async function startPayment() {
-  const b = $("renewBtn");
-  b.disabled = true;
-  const original = b.textContent;
-  b.textContent = "Preparing secure payment…";
-
+async function startPlanCheckout(planKey, btn) {
+  btn.disabled = true;
+  const orig = btn.textContent;
+  btn.textContent = "Preparing Razorpay…";
   try {
-    const { data: { session }, error: se } = await db.auth.getSession();
-    if (se) throw se;
+    const { data: { session } } = await db.auth.getSession();
     if (!session) throw new Error("Please sign in again.");
 
     const response = await fetch(SUPABASE_URL + "/functions/v1/razorpay-create-order", {
@@ -365,19 +291,18 @@ async function startPayment() {
         "apikey": SUPABASE_ANON_KEY,
         "Authorization": "Bearer " + session.access_token
       },
-      body: JSON.stringify({})
+      body: JSON.stringify({ plan_tier: planKey })
     });
 
     const order = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(order.error || "Could not create Razorpay order.");
-    if (!order.order_id || !order.key_id || !order.amount) throw new Error("Payment order response is incomplete.");
+    if (!response.ok) throw new Error(order.error || "Could not create payment order.");
 
     if (!window.Razorpay) {
       await new Promise((resolve, reject) => {
         const s = document.createElement("script");
         s.src = "https://checkout.razorpay.com/v1/checkout.js";
         s.onload = resolve;
-        s.onerror = () => reject(new Error("Razorpay checkout could not load."));
+        s.onerror = () => reject(new Error("Razorpay failed to load."));
         document.head.appendChild(s);
       });
     }
@@ -387,7 +312,7 @@ async function startPayment() {
       amount: order.amount,
       currency: order.currency || "INR",
       name: "ACD BITTU LAB CLOUD",
-      description: order.billing_type === "annual_renewal" ? "Annual Renewal — 12 Months" : "First Registration — 12 Months",
+      description: `Plan Activation — ${planKey.toUpperCase()}`,
       order_id: order.order_id,
       prefill: { email: session.user.email || "" },
       theme: { color: "#0866df" },
@@ -403,42 +328,38 @@ async function startPayment() {
             body: JSON.stringify({
               razorpay_order_id: r.razorpay_order_id,
               razorpay_payment_id: r.razorpay_payment_id,
-              razorpay_signature: r.razorpay_signature
+              razorpay_signature: r.razorpay_signature,
+              plan_tier: planKey
             })
           });
-
           const result = await verify.json().catch(() => ({}));
           if (!verify.ok || (result.ok !== true && result.success !== true)) {
             throw new Error(result.error || "Payment verification failed.");
           }
-
-          setNotice("Payment verified and subscription activated. Refreshing subscription details…", "success");
+          setNotice("Payment verified! Plan activated successfully.", "success");
           await load();
-        } catch (e) {
-          setNotice("Payment verification needs attention: " + e.message + ". Please contact support and keep your payment ID.", "error");
+        } catch (err) {
+          setNotice("Verification notice: " + err.message, "error");
         }
       }
     });
-
-    checkout.on("payment.failed", r => setNotice(r.error?.description || "Payment failed. You can try again.", "error"));
     checkout.open();
   } catch (e) {
-    setNotice(e.message || "Payment could not be started.", "error");
+    setNotice(e.message, "error");
   } finally {
-    b.disabled = false;
-    b.textContent = original;
+    btn.disabled = false;
+    btn.textContent = orig;
   }
 }
+
+document.querySelectorAll("[data-select-plan]").forEach(btn => {
+  btn.onclick = () => startPlanCheckout(btn.dataset.selectPlan, btn);
+});
 
 async function downloadInvoice(invoiceId, button) {
   if (button) button.disabled = true;
   try {
-    const { data: { session }, error: sessionError } = await db.auth.getSession();
-    if (sessionError) throw sessionError;
-    if (!session) throw new Error("Please sign in again.");
-
-    setNotice("Generating invoice PDF...");
-
+    const { data: { session } } = await db.auth.getSession();
     const response = await fetch(SUPABASE_URL + "/functions/v1/acd-invoice-pdf", {
       method: "POST",
       headers: {
@@ -448,23 +369,16 @@ async function downloadInvoice(invoiceId, button) {
       },
       body: JSON.stringify({ invoice_id: invoiceId })
     });
-
     const result = await response.json().catch(() => ({}));
-    if (!response.ok || result.ok !== true || !result.download_url) {
-      throw new Error(result.error || "PDF generation failed.");
-    }
-
+    if (!response.ok || !result.download_url) throw new Error(result.error || "PDF generation failed.");
     const link = document.createElement("a");
     link.href = result.download_url;
     link.download = (result.invoice_number || "invoice") + ".pdf";
     document.body.appendChild(link);
     link.click();
     link.remove();
-
-    setNotice("Invoice PDF download started.", "success");
-  } catch (error) {
-    console.error("Invoice PDF download:", error);
-    setNotice("Download failed: " + error.message, "error");
+  } catch (e) {
+    setNotice("Download failed: " + e.message, "error");
   } finally {
     if (button) button.disabled = false;
   }
@@ -472,7 +386,6 @@ async function downloadInvoice(invoiceId, button) {
 
 $("backBtn").onclick = () => location.href = "dashboard.html";
 $("refreshBtn").onclick = load;
-$("renewBtn").onclick = startPayment;
 load();
 </script>
 </body>
