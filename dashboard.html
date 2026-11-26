@@ -10,7 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 <link rel="stylesheet" href="./print-report.css?v=6">
-<script src="./print-report.js?v=7"></script>
+<script src="./print-report.js?v=8"></script>
 
 <style>
 :root{
@@ -18,8 +18,8 @@
   --navy-2:#0e2547;
   --blue:#0866df;
   --blue-soft:#edf5ff;
-  --line:#dce3eb;
-  --bg:#f1f5f9;
+  --line:#d5dee8;
+  --bg:#eef2f6;
   --text:#182436;
   --muted:#64748b;
   --green:#0f9d58;
@@ -27,11 +27,11 @@
   --amber:#d97706;
 }
 *{box-sizing:border-box}
-html,body{margin:0;padding:0;font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);font-size:12.5px}
+html,body{margin:0;padding:0;font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);font-size:13.5px}
 
 /* Live Animated Festival Ribbon */
 .fest-top-strip{
-  color:#fff;padding:5px 14px;text-align:center;font-size:12px;font-weight:800;
+  color:#fff;padding:6px 14px;text-align:center;font-size:13px;font-weight:800;
   position:relative;overflow:hidden;display:none;letter-spacing:.3px;flex:0 0 auto;
 }
 .fest-top-strip::before{
@@ -46,52 +46,53 @@ html,body{margin:0;padding:0;font-family:Inter,Arial,Helvetica,sans-serif;backgr
 .fest-theme-gold{background:linear-gradient(90deg,#1e3a8a,#1d4ed8,#0284c7)}
 @keyframes festShine{0%{left:-120%}65%,100%{left:160%}}
 
+/* Fixed 100vh Desktop LIMS Shell — Zero Page Shake */
 @media(min-width:960px){
   html,body{height:100vh;overflow:hidden}
   .lims-shell{height:100vh;display:flex;flex-direction:column;overflow:hidden}
   .lims-body{flex:1;min-height:0;display:flex;overflow:hidden}
-  .queue-rail{width:238px;flex:0 0 238px;height:100%;display:flex;flex-direction:column;overflow:hidden}
+  .queue-rail{width:248px;flex:0 0 248px;height:100%;display:flex;flex-direction:column;overflow:hidden}
   .queue-list{flex:1;min-height:0;overflow-y:auto}
   .workspace-stage{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;overflow:hidden}
   #entryPage:not(.hidden){height:100%;display:flex !important;flex-direction:column;overflow:hidden}
   .entry-cards{flex:0 0 auto}
   .results-panel{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
   .results-panel .table-wrap{flex:1;min-height:0;overflow-y:auto}
-  .scroll-view{flex:1;min-height:0;overflow-y:auto;padding-bottom:18px}
+  .scroll-view{flex:1;min-height:0;overflow-y:auto;padding-bottom:22px}
 }
 @media(max-width:959px){
   .lims-shell{min-height:100vh;display:flex;flex-direction:column}
   .lims-body{display:flex;flex-direction:column}
-  .queue-rail{width:100%;max-height:185px;border-right:0 !important;border-bottom:1px solid var(--line)}
-  .queue-list{max-height:125px;overflow-y:auto}
+  .queue-rail{width:100%;max-height:175px;border-right:0 !important;border-bottom:1px solid var(--line)}
+  .queue-list{max-height:115px;overflow-y:auto}
 }
 
 .cmd-bar{
-  height:48px;
-  flex:0 0 48px;
+  height:52px;
+  flex:0 0 52px;
   background:var(--navy);
   color:#f8fafc;
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding:0 12px;
+  padding:0 14px;
   gap:10px;
   border-bottom:1px solid #1e3557;
   z-index:200;
 }
-.cmd-brand{display:flex;align-items:center;gap:8px;white-space:nowrap}
-.cmd-logo{width:28px;height:28px;border-radius:7px;background:var(--blue);color:#fff;display:grid;place-items:center;font-weight:900;font-size:16px}
-.cmd-brand strong{font-size:11.5px;letter-spacing:.3px;display:block;color:#fff}
-.cmd-brand small{font-size:8.5px;color:#93c5fd;display:block}
+.cmd-brand{display:flex;align-items:center;gap:9px;white-space:nowrap}
+.cmd-logo{width:32px;height:32px;border-radius:8px;background:var(--blue);color:#fff;display:grid;place-items:center;font-weight:900;font-size:18px}
+.cmd-brand strong{font-size:13px;letter-spacing:.3px;display:block;color:#fff}
+.cmd-brand small{font-size:9.5px;color:#93c5fd;display:block}
 
-.cmd-nav{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.cmd-nav{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
 .nav-btn{
   border:0;
   background:transparent;
   color:#dbeafe;
-  padding:7px 10px;
-  border-radius:6px;
-  font-size:11.5px;
+  padding:8px 12px;
+  border-radius:7px;
+  font-size:12.5px;
   font-weight:700;
   cursor:pointer;
   display:inline-flex;
@@ -107,15 +108,15 @@ html,body{margin:0;padding:0;font-family:Inter,Arial,Helvetica,sans-serif;backgr
 .nav-dd{position:relative;display:inline-block}
 .nav-dd-menu{
   position:absolute;
-  top:calc(100% + 4px);
+  top:calc(100% + 5px);
   left:0;
-  min-width:215px;
+  min-width:235px;
   background:#ffffff;
   color:var(--text);
   border:1px solid #cbd5e1;
-  border-radius:8px;
-  box-shadow:0 12px 28px rgba(15,23,42,.22);
-  padding:5px;
+  border-radius:9px;
+  box-shadow:0 14px 30px rgba(15,23,42,.22);
+  padding:6px;
   z-index:5000;
 }
 .nav-dd-menu.hidden{display:none !important}
@@ -125,9 +126,9 @@ html,body{margin:0;padding:0;font-family:Inter,Arial,Helvetica,sans-serif;backgr
   background:transparent;
   color:#1e293b;
   text-align:left;
-  padding:8px 10px;
+  padding:9px 11px;
   border-radius:6px;
-  font-size:11.5px;
+  font-size:12.5px;
   font-weight:600;
   cursor:pointer;
   display:flex;
@@ -138,69 +139,69 @@ html,body{margin:0;padding:0;font-family:Inter,Arial,Helvetica,sans-serif;backgr
 .nav-dd-item:hover,.nav-dd-item.active{background:var(--blue-soft);color:var(--blue);font-weight:700}
 
 .cmd-right{display:flex;align-items:center;gap:8px;white-space:nowrap}
-.status-pill{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:999px;background:#0f294a;color:#6ee7b7;cursor:pointer}
-.cmd-clock{font-family:monospace;font-size:11.5px;color:#cbd5e1}
-.cmd-user{font-size:11px;color:#e2e8f0;max-width:130px;overflow:hidden;text-overflow:ellipsis}
+.status-pill{font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:999px;background:#0f294a;color:#6ee7b7;cursor:pointer}
+.cmd-clock{font-family:monospace;font-size:12.5px;color:#cbd5e1}
+.cmd-user{font-size:12px;color:#e2e8f0;max-width:140px;overflow:hidden;text-overflow:ellipsis}
 
 .sub-ribbon{
   background:#ffffff;
   border-bottom:1px solid var(--line);
-  padding:5px 12px;
+  padding:5px 14px;
   display:flex;
   align-items:center;
-  gap:8px;
+  gap:10px;
   flex-wrap:wrap;
   flex:0 0 auto;
 }
-.sub-ribbon select{max-width:240px;height:26px;font-size:11px}
+.sub-ribbon select{max-width:250px;height:28px;font-size:12px}
 
 .queue-rail{background:#ffffff;border-right:1px solid var(--line)}
-.queue-head{padding:8px 10px;border-bottom:1px solid var(--line);background:#f8fafc}
+.queue-head{padding:9px 11px;border-bottom:1px solid var(--line);background:#f8fafc}
 .queue-head-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
-.queue-head-top strong{font-size:11.5px;color:#0f172a}
+.queue-head-top strong{font-size:12.5px;color:#0f172a}
 .queue-item{
   width:100%;
   border:0;
   border-bottom:1px solid #eef2f6;
   background:#fff;
-  padding:7px 10px;
+  padding:8px 11px;
   text-align:left;
   cursor:pointer;
   display:block;
 }
 .queue-item:hover{background:#f1f7ff}
-.queue-item.active{background:#e6f0ff;border-left:3px solid var(--blue)}
-.queue-item-top{display:flex;justify-content:space-between;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#0f172a}
-.queue-item-sub{font-size:10px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.queue-item.active{background:#e6f0ff;border-left:3.5px solid var(--blue)}
+.queue-item-top{display:flex;justify-content:space-between;align-items:center;gap:4px;font-size:12px;font-weight:700;color:#0f172a}
+.queue-item-sub{font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-.workspace-stage{padding:8px 10px;gap:8px}
-.entry-cards{display:grid;grid-template-columns:1.1fr 1fr .95fr;gap:8px;margin-bottom:8px}
-@media(max-width:900px){.entry-cards{grid-template-columns:1fr 1fr}.panel.billing{grid-column:1/-1}}
+.workspace-stage{padding:9px 12px;gap:9px}
+.entry-cards{display:grid;grid-template-columns:1.25fr 1fr .8fr;gap:9px;margin-bottom:9px}
+@media(max-width:960px){.entry-cards{grid-template-columns:1fr 1fr}.panel.billing{grid-column:1/-1}}
 @media(max-width:580px){.entry-cards{grid-template-columns:1fr}.panel.billing{grid-column:auto}}
 
-.panel{background:#fff;border:1px solid #dce3eb;border-radius:8px;box-shadow:0 1px 2px rgba(15,23,42,.04);overflow:hidden}
-.panel-head{padding:7px 10px;border-top:3px solid #2e8bea;color:#075ec9;font-weight:800;font-size:11.5px;display:flex;align-items:center;justify-content:space-between;background:#fbfdff}
+.panel{background:#fff;border:1px solid #d5dee8;border-radius:9px;box-shadow:0 1px 3px rgba(15,23,42,.04);overflow:hidden}
+.panel-head{padding:7px 11px;border-top:3px solid #2e8bea;color:#075ec9;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:space-between;background:#fbfdff}
 .panel.doctor .panel-head{color:#087f70;border-top-color:#14b8a6}
 .panel.billing .panel-head{color:#7e22ce;border-top-color:#9333ea}
-.panel-body{padding:7px 10px 9px}
+.panel-body{padding:8px 11px 9px}
 
 .fields{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .field{min-width:0}
 .field.full{grid-column:1/-1}
-label{display:block;font-size:9.5px;font-weight:700;color:#475569;margin:2px 0 3px}
-input,select,textarea{width:100%;height:27px;border:1px solid #cbd5e1;border-radius:5px;padding:3px 7px;background:#fff;color:#0f172a;font-size:11.5px;min-width:0}
+label{display:block;font-size:10.5px;font-weight:700;color:#475569;margin:1px 0 3px}
+input,select,textarea{width:100%;height:31px;border:1px solid #cbd5e1;border-radius:6px;padding:4px 8px;background:#fff;color:#0f172a;font-size:12.5px;min-width:0}
 textarea{height:auto}
 input:focus,select:focus,textarea:focus{outline:2px solid #bfdbfe;border-color:#2563eb}
 
-.addrow{display:flex;gap:5px}
+.addrow{display:flex;gap:6px}
 .test-search-wrap{position:relative;flex:1;min-width:0}
-.test-search-results{position:absolute;z-index:2000;top:calc(100% + 3px);left:0;right:0;max-height:240px;overflow:auto;background:#fff;border:1px solid #93c5fd;border-radius:6px;box-shadow:0 10px 24px rgba(15,23,42,.2)}
-.test-search-option{display:block;width:100%;padding:8px 10px;border:0;border-bottom:1px solid #f1f5f9;background:#fff;text-align:left;color:#1e293b;font-size:11.5px;cursor:pointer}
+.test-search-results{position:absolute;z-index:2000;top:calc(100% + 3px);left:0;right:0;max-height:250px;overflow:auto;background:#fff;border:1px solid #93c5fd;border-radius:7px;box-shadow:0 10px 24px rgba(15,23,42,.2)}
+.test-search-option{display:block;width:100%;padding:9px 11px;border:0;border-bottom:1px solid #f1f5f9;background:#fff;text-align:left;color:#1e293b;font-size:12.5px;cursor:pointer}
 .test-search-option:hover{background:#eff6ff}
-.test-search-option small{display:block;color:#64748b;font-size:10px;margin-top:2px}
-.test-search-empty{padding:10px;color:#94a3b8;font-size:11px}
+.test-search-option small{display:block;color:#64748b;font-size:11px;margin-top:2px}
+.test-search-empty{padding:11px;color:#94a3b8;font-size:12px}
 
-.btn{border:0;border-radius:5px;padding:6px 10px;background:var(--blue);color:#fff;font-size:10.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap}
+.btn{border:0;border-radius:6px;padding:7px 12px;background:var(--blue);color:#fff;font-size:11.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap}
 .btn:hover{filter:brightness(1.06)}
 .btn.green{background:var(--green)}
 .btn.light{background:#e2e8f0;color:#1e293b}
@@ -210,22 +211,22 @@ input:focus,select:focus,textarea:focus{outline:2px solid #bfdbfe;border-color:#
 .btn.teal{background:#0d9488;color:#fff}
 button:disabled{opacity:.55;cursor:not-allowed}
 
-.amounts{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.amounts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .paid input{color:#059669;font-weight:800}
 .due input{color:#dc2626;font-weight:800}
 
-.results-head{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;gap:8px;border-bottom:1px solid #e2e8f0;background:#f8fafc;flex-wrap:wrap}
-.results-title{font-weight:800;font-size:11.5px;color:#0f172a;display:flex;align-items:center;gap:6px}
-.actions{display:flex;gap:5px;flex-wrap:wrap}
-.table-wrap{padding:6px 8px 10px;overflow:auto}
-table{border-collapse:collapse;width:100%;font-size:11px}
-th{background:#173f83;color:#fff;text-align:left;padding:6px 7px;white-space:nowrap;position:sticky;top:0;z-index:5}
-td{border:1px solid #e2e8f0;padding:4px 6px}
-td input,td select{height:25px;min-width:65px}
-td.empty{text-align:center;color:#94a3b8;font-style:italic;height:32px}
-#notice{font-size:10.5px;color:#059669;min-height:15px;font-weight:700}
+.results-head{display:flex;justify-content:space-between;align-items:center;padding:7px 11px;gap:8px;border-bottom:1px solid #e2e8f0;background:#f8fafc;flex-wrap:wrap}
+.results-title{font-weight:800;font-size:12.5px;color:#0f172a;display:flex;align-items:center;gap:6px}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+.table-wrap{padding:7px 9px 10px;overflow:auto}
+table{border-collapse:collapse;width:100%;font-size:12px}
+th{background:#173f83;color:#fff;text-align:left;padding:7px 8px;white-space:nowrap;position:sticky;top:0;z-index:5;font-size:11.5px}
+td{border:1px solid #e2e8f0;padding:5px 7px}
+td input,td select{height:28px;min-width:70px;font-size:12.5px}
+td.empty{text-align:center;color:#94a3b8;font-style:italic;height:36px}
+#notice{font-size:11.5px;color:#059669;min-height:16px;font-weight:700}
 
-.badge{display:inline-block;padding:2px 7px;border-radius:999px;font-size:9.5px;font-weight:800;background:#e2e8f0;color:#334155}
+.badge{display:inline-block;padding:2.5px 8px;border-radius:999px;font-size:10px;font-weight:800;background:#e2e8f0;color:#334155}
 .badge-normal{background:#dcfce7;color:#15803d}
 .badge-abnormal{background:#fee2e2;color:#b91c1c}
 .badge-critical{background:#991b1b;color:#ffffff;animation:pulseCrit 1.4s infinite}
@@ -235,18 +236,18 @@ td.empty{text-align:center;color:#94a3b8;font-style:italic;height:32px}
 
 .hidden{display:none !important}
 .kpi-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:10px}
-.kpi-box{background:#fff;border:1px solid #dce3eb;border-radius:8px;padding:11px}
-.kpi-box small{display:block;font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase}
-.kpi-box h2{margin:5px 0 0;font-size:19px;color:#0f172a}
+.kpi-box{background:#fff;border:1px solid #d5dee8;border-radius:8px;padding:12px}
+.kpi-box small{display:block;font-size:11px;color:#64748b;font-weight:700;text-transform:uppercase}
+.kpi-box h2{margin:5px 0 0;font-size:21px;color:#0f172a}
 
-.catalogue-layout{display:grid;grid-template-columns:minmax(220px,280px) 1fr;gap:10px;min-height:420px}
+.catalogue-layout{display:grid;grid-template-columns:minmax(240px,300px) 1fr;gap:10px;min-height:440px}
 .catalogue-list{background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px}
-.catalogue-test{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;border:1px solid #e2e8f0;background:#fff;color:#334155;padding:8px 9px;border-radius:6px;margin:4px 0;cursor:pointer;font-size:11px}
+.catalogue-test{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;border:1px solid #e2e8f0;background:#fff;color:#334155;padding:9px 10px;border-radius:6px;margin:4px 0;cursor:pointer;font-size:12px}
 .catalogue-test.active{border-color:#2563eb;background:#eff6ff;color:#1d4ed8;font-weight:700}
 .catalogue-detail{background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px;min-width:0}
 
 .sa-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;background:#0f172a;padding:8px;border-radius:8px}
-.sa-tab{border:0;border-radius:6px;padding:7px 11px;background:#1e293b;color:#cbd5e1;font-size:11px;font-weight:700;cursor:pointer}
+.sa-tab{border:0;border-radius:6px;padding:8px 12px;background:#1e293b;color:#cbd5e1;font-size:12px;font-weight:700;cursor:pointer}
 .sa-tab.active{background:#0866df;color:#fff}
 
 html.acd-lab-admin .super-btn,
@@ -267,7 +268,7 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
       <div class="cmd-logo">✚</div>
       <div>
         <strong>ACD BITTU LAB CLOUD</strong>
-        <small>India's #1 Enterprise Pathology LIMS</small>
+        <small>Enterprise Pathology LIMS</small>
       </div>
     </div>
 
@@ -275,7 +276,6 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
       <button class="nav-btn active" data-page="New Patient Entry" title="Shortcut: F2">♟ Worklist / Entry <small style="opacity:.75">[F2]</small></button>
       <button class="nav-btn" data-page="Saved Reports" title="Shortcut: F4">▣ Saved Reports <small style="opacity:.75">[F4]</small></button>
 
-      <!-- Dropdown 1: Master & Rate List -->
       <div class="nav-dd" data-dd-group="masters">
         <button type="button" class="nav-btn" data-dd-trigger="ddMasters">☷ Master &amp; Rates ▾</button>
         <div class="nav-dd-menu hidden" id="ddMasters">
@@ -284,7 +284,6 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
         </div>
       </div>
 
-      <!-- Dropdown 2: Operations & Finance -->
       <div class="nav-dd" data-dd-group="finance">
         <button type="button" class="nav-btn" data-dd-trigger="ddFinance">▤ Finance &amp; Stock ▾</button>
         <div class="nav-dd-menu hidden" id="ddFinance">
@@ -294,7 +293,6 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
         </div>
       </div>
 
-      <!-- Dropdown 3: Settings & Plan -->
       <div class="nav-dd" data-dd-group="settings">
         <button type="button" class="nav-btn" data-dd-trigger="ddSettings">⚙ Setup &amp; Plan ▾</button>
         <div class="nav-dd-menu hidden" id="ddSettings">
@@ -307,20 +305,21 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
     </nav>
 
     <div class="cmd-right">
+      <button type="button" class="btn purple" id="dashInstallAppBtn" style="padding:5px 10px;font-size:11px">📲 Install App</button>
       <span class="status-pill" id="offlineSyncStatus" title="Click to Sync Offline Records">🟢 Online</span>
       <span class="cmd-clock" id="clock">00:00:00</span>
       <span class="cmd-user" id="account"></span>
-      <button class="btn light" id="logout" style="padding:5px 9px">Logout</button>
+      <button class="btn light" id="logout" style="padding:6px 10px">Logout</button>
     </div>
   </header>
 
   <!-- LABORATORY SELECTOR & ANNOUNCEMENT SUB-BAR -->
   <div class="sub-ribbon hidden" id="labChooser">
-    <strong style="font-size:11px;color:#0f172a">Active Center:</strong>
+    <strong style="font-size:12px;color:#0f172a">Active Center:</strong>
     <select id="labSelect"><option value="">Loading laboratories…</option></select>
     <span class="badge badge-normal" id="labStatus">Connected</span>
     <span id="labPlanBadge" class="badge badge-verified">Plan: Standard</span>
-    <span id="labAnnouncementBanner" style="margin-left:auto;font-size:11px;color:#0866df;font-weight:700"></span>
+    <span id="labAnnouncementBanner" style="margin-left:auto;font-size:12px;color:#0866df;font-weight:700"></span>
   </div>
 
   <!-- MAIN BODY: LEFT LIVE QUEUE + RIGHT FIXED STAGE -->
@@ -330,13 +329,13 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
     <aside class="queue-rail" id="liveQueueRail">
       <div class="queue-head">
         <div class="queue-head-top">
-          <strong>📋 Today's Live Queue (<span id="queueCount">0</span>)</strong>
-          <button type="button" class="btn light" id="refreshQueueBtn" style="padding:3px 7px;font-size:10px">↻</button>
+          <strong>📋 Today's Queue (<span id="queueCount">0</span>)</strong>
+          <button type="button" class="btn light" id="refreshQueueBtn" style="padding:4px 8px;font-size:11px">↻</button>
         </div>
-        <input id="queueQuickFilter" placeholder="Filter today's patients..." style="height:24px;font-size:10.5px">
+        <input id="queueQuickFilter" placeholder="Filter today's patients..." style="height:28px;font-size:11.5px">
       </div>
       <div class="queue-list" id="liveQueueList">
-        <div style="padding:14px;text-align:center;color:#94a3b8;font-size:11px">Loading today's queue...</div>
+        <div style="padding:14px;text-align:center;color:#94a3b8;font-size:12px">Loading today's queue...</div>
       </div>
     </aside>
 
@@ -344,19 +343,19 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
     <section class="workspace-stage" id="workspace">
 
       <!-- =========================================================
-           1. NEW PATIENT & RESULT ENTRY (MOBILE FIRST → ENTER → NAME)
+           1. NEW PATIENT & RESULT ENTRY (COMPACT TOP, LARGE RESULT TABLE)
            ========================================================= -->
       <div id="entryPage">
         <div class="entry-cards">
-          <!-- Card 1: Patient Details -->
+          <!-- Card 1: Patient Details (3 columns compact so vertical height stays small) -->
           <section class="panel">
             <div class="panel-head">
               <span>1. Patient Registration (Mobile First → Enter)</span>
               <span id="verificationStatusPill" class="badge badge-warn">Unverified Draft</span>
             </div>
             <div class="panel-body">
-              <div class="fields">
-                <div class="field"><label>1. Mobile / WhatsApp (Enter → Name)</label><input id="mobile" inputmode="numeric" maxlength="10" placeholder="10 Digits"></div>
+              <div class="fields" style="grid-template-columns:1fr 1.2fr .8fr">
+                <div class="field"><label>1. Mobile / WhatsApp *</label><input id="mobile" inputmode="numeric" maxlength="10" placeholder="10 Digits"></div>
                 <div class="field"><label>2. Patient Name *</label><input id="patient" placeholder="Full patient name"></div>
                 <div class="field">
                   <label>Title</label>
@@ -374,19 +373,18 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
                   <label>Age (Auto-Range)</label>
                   <div style="display:flex;gap:4px">
                     <input id="age" type="number" min="0" placeholder="Age">
-                    <select id="ageUnit" style="width:54px"><option>Y</option><option>M</option><option>D</option></select>
+                    <select id="ageUnit" style="width:56px"><option>Y</option><option>M</option><option>D</option></select>
                   </div>
                 </div>
                 <div class="field">
-                  <label>Gender (Auto-Range)</label>
+                  <label>Gender</label>
                   <select id="gender"><option>Male</option><option>Female</option><option>Other</option></select>
                 </div>
-                <div class="field"><label>Patient Address</label><input id="patientAddress" maxlength="300" placeholder="Village / City / Area"></div>
                 <div class="field">
                   <label>Sample Type</label>
                   <select id="sampleType">
-                    <option value="">Select Sample</option>
-                    <option value="Whole Blood (EDTA)">Whole Blood (EDTA)</option>
+                    <option value="">Select</option>
+                    <option value="Whole Blood (EDTA)">EDTA Blood</option>
                     <option value="Serum">Serum</option>
                     <option value="Plasma">Plasma</option>
                     <option value="Urine">Urine</option>
@@ -395,6 +393,7 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
                     <option value="Swab">Swab</option>
                   </select>
                 </div>
+                <div class="field" style="grid-column:span 2"><label>Patient Address</label><input id="patientAddress" maxlength="300" placeholder="Village / City / Area"></div>
                 <div class="field"><label>Center / Lab</label><input id="labId" disabled></div>
               </div>
             </div>
@@ -404,14 +403,14 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
           <section class="panel doctor">
             <div class="panel-head">
               <span>2. Referral &amp; Test Investigation</span>
-              <span style="font-size:10px;color:#0f766e">Auto-Rate Enabled</span>
+              <span style="font-size:10.5px;color:#0f766e">Auto-Rate Enabled</span>
             </div>
             <div class="panel-body">
               <div class="fields">
                 <div class="field"><label>Report Date</label><input id="date" type="date"></div>
                 <div class="field"><label>Ref. Doctor / B2B Source</label><input id="doctor" value="Self"></div>
                 <div class="field full">
-                  <label>Search Test (Type CBC, Widal, Malaria, Typhoid, LFT &amp; Press Enter)</label>
+                  <label>Search Test (CBC, Widal, Malaria, Typhoid, LFT &amp; Press Enter)</label>
                   <div class="addrow">
                     <div class="test-search-wrap">
                       <input id="testSearch" autocomplete="off" placeholder="Search test name or code...">
@@ -420,7 +419,7 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
                     <button class="btn" id="addTest" type="button">+ Add</button>
                   </div>
                 </div>
-                <div class="field full"><small id="selectedTestsLabel" style="color:#334155;font-weight:600">Selected tests: none</small></div>
+                <div class="field full"><small id="selectedTestsLabel" style="color:#334155;font-weight:600;font-size:11px">Selected tests: none</small></div>
                 <div class="field full"><div id="notice"></div></div>
               </div>
             </div>
@@ -430,14 +429,14 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
           <section class="panel billing">
             <div class="panel-head">
               <span>3. Billing &amp; Payment</span>
-              <button type="button" class="btn green" id="markFullPaidBtn" style="padding:2px 7px;font-size:9.5px">✓ Full Paid</button>
+              <button type="button" class="btn green" id="markFullPaidBtn" style="padding:3px 8px;font-size:10px">✓ Full Paid</button>
             </div>
             <div class="panel-body">
               <div class="amounts">
-                <div class="field"><label>Total Amount (₹)</label><input id="total" type="number" min="0" value="0"></div>
+                <div class="field"><label>Total (₹)</label><input id="total" type="number" min="0" value="0"></div>
                 <div class="field"><label>Discount (₹)</label><input id="discount" type="number" min="0" value="0"></div>
-                <div class="field paid"><label>Paid / Jama (₹)</label><input id="paid" type="number" min="0" value="0"></div>
-                <div class="field due"><label>Due Balance (₹)</label><input id="due" type="number" value="0" readonly></div>
+                <div class="field paid"><label>Paid (₹)</label><input id="paid" type="number" min="0" value="0"></div>
+                <div class="field due"><label>Due (₹)</label><input id="due" type="number" value="0" readonly></div>
                 <div class="field full">
                   <label>Payment Mode</label>
                   <select id="payment"><option>Cash</option><option>UPI</option><option>Card</option><option>Bank Transfer</option></select>
@@ -466,9 +465,9 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
               <thead>
                 <tr>
                   <th style="width:28%">Investigation / Parameter</th>
-                  <th style="width:16%">Result Value</th>
+                  <th style="width:17%">Result Value</th>
                   <th style="width:13%">Unit</th>
-                  <th style="width:25%">Reference Range (Age/Sex)</th>
+                  <th style="width:24%">Reference Range (Age/Sex)</th>
                   <th style="width:14%">Flag / Alert</th>
                   <th style="width:4%"></th>
                 </tr>
@@ -531,7 +530,7 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
                 <button class="btn" id="srNext" disabled>Next</button>
               </div>
             </div>
-            <div id="srMessage" style="margin-top:8px;font-size:11px;color:#0f9d58"></div>
+            <div id="srMessage" style="margin-top:8px;font-size:12px;color:#0f9d58"></div>
           </div>
         </section>
       </div>
@@ -543,20 +542,20 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
         <div class="catalogue-layout">
           <aside class="catalogue-list">
             <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;margin-bottom:8px;flex-wrap:wrap">
-              <strong style="font-size:12px;color:#0f172a">Test Rate List (<span id="catCountBadge">0</span>)</strong>
+              <strong style="font-size:12.5px;color:#0f172a">Test Rate List (<span id="catCountBadge">0</span>)</strong>
               <div class="actions">
                 <button class="btn purple" id="catSeedPackBtn" type="button">⚡ Standard Pack</button>
                 <button class="btn green" id="catNewTestBtn" type="button">+ New Test</button>
               </div>
             </div>
             <input id="catalogueFilter" placeholder="Search test (CBC, Malaria, Typhoid)..." style="margin-bottom:8px">
-            <div id="catalogueTestList" style="max-height:58vh;overflow:auto"></div>
+            <div id="catalogueTestList" style="max-height:62vh;overflow:auto"></div>
           </aside>
 
           <section class="catalogue-detail">
             <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;border-bottom:1px solid #e2e8f0;padding-bottom:8px;margin-bottom:10px">
               <div>
-                <h3 id="catalogueSelectedTitle" style="margin:0;font-size:14px;color:#0b4fa8">Select a Test</h3>
+                <h3 id="catalogueSelectedTitle" style="margin:0;font-size:15px;color:#0b4fa8">Select a Test</h3>
                 <small id="catalogueSelectedMeta" style="color:#64748b">बाईं तरफ़ से कोई टेस्ट चुनकर उसका रेट और पैरामीटर बदलें।</small>
               </div>
               <div class="actions">
@@ -579,7 +578,7 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
               <textarea id="catClinicalNoteInput" rows="2" placeholder="Optional clinical interpretation note..."></textarea>
             </div>
 
-            <div id="catStatusMsg" style="font-size:11.5px;color:#059669;font-weight:700;margin-bottom:8px"></div>
+            <div id="catStatusMsg" style="font-size:12px;color:#059669;font-weight:700;margin-bottom:8px"></div>
             <div class="table-wrap">
               <table>
                 <thead>
@@ -615,8 +614,8 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
           <div class="panel-body">
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
               <input id="stSearchInput" placeholder="Search patient name, mobile or ID..." style="max-width:260px">
-              <input id="stDateInput" type="date" style="max-width:150px">
-              <select id="stStatusFilter" style="max-width:175px">
+              <input id="stDateInput" type="date" style="max-width:160px">
+              <select id="stStatusFilter" style="max-width:185px">
                 <option value="all">All Sample Statuses</option>
                 <option value="Pending">Pending</option>
                 <option value="Sample Collected">Sample Collected</option>
@@ -633,7 +632,7 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
                 <tbody id="stRows"><tr><td colspan="6" class="empty">Loading samples...</td></tr></tbody>
               </table>
             </div>
-            <div id="stNotice" style="font-size:11px;color:#0f9d58;margin-top:6px"></div>
+            <div id="stNotice" style="font-size:12px;color:#0f9d58;margin-top:6px"></div>
           </div>
         </section>
       </div>
@@ -653,9 +652,9 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
             <div class="panel-head"><span>💰 Billing &amp; Due Collection Register</span></div>
             <div class="panel-body">
               <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-                <input id="accFromDate" type="date" style="max-width:145px">
-                <input id="accToDate" type="date" style="max-width:145px">
-                <select id="accDueFilter" style="max-width:145px">
+                <input id="accFromDate" type="date" style="max-width:150px">
+                <input id="accToDate" type="date" style="max-width:150px">
+                <select id="accDueFilter" style="max-width:150px">
                   <option value="all">All Bills</option>
                   <option value="due">Due Only</option>
                   <option value="paid">Paid Only</option>
@@ -704,7 +703,7 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
           <div class="panel-body">
             <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
               <label style="margin:0">Commission %:</label>
-              <input id="docCommPercent" type="number" min="0" max="80" value="15" style="max-width:80px">
+              <input id="docCommPercent" type="number" min="0" max="80" value="15" style="max-width:85px">
               <button class="btn light" id="docCommRecalcBtn" type="button">Recalculate</button>
             </div>
             <div class="table-wrap">
@@ -730,7 +729,7 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
         <section class="panel">
           <div class="panel-head"><span>📦 Reagent &amp; Consumable Stock Management</span></div>
           <div class="panel-body">
-            <div class="fields" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:10px">
+            <div class="fields" style="grid-template-columns:repeat(auto-fit,minmax(145px,1fr));margin-bottom:10px">
               <div class="field"><label>Item Name *</label><input id="invName" placeholder="e.g. EDTA Tube"></div>
               <div class="field"><label>Category</label>
                 <select id="invCategory">
@@ -770,7 +769,7 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
                 <div class="field full"><label>Address</label><input id="newCenterAddress"></div>
                 <div class="field full"><button class="btn green" id="createCenterBtn" type="button">+ Create Branch</button></div>
               </div>
-              <div id="centerMsg" style="font-size:11px;color:#0f9d58;margin:5px 0"></div>
+              <div id="centerMsg" style="font-size:12px;color:#0f9d58;margin:5px 0"></div>
               <div class="table-wrap">
                 <table>
                   <thead><tr><th>#</th><th>Branch Name</th><th>Contact</th><th>Status</th></tr></thead>
@@ -795,7 +794,7 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
                 </div>
                 <div class="field full"><button class="btn" id="sendStaffInviteBtn" type="button">+ Generate Staff Invite</button></div>
               </div>
-              <div id="staffInviteMsg" style="font-size:11px;color:#0f9d58;margin:5px 0"></div>
+              <div id="staffInviteMsg" style="font-size:12px;color:#0f9d58;margin:5px 0"></div>
               <div class="table-wrap">
                 <table>
                   <thead><tr><th>Email</th><th>Role</th><th>Status</th></tr></thead>
@@ -819,7 +818,7 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
                   <div class="field full"><label>Issue Details *</label><textarea id="labTicketMessage" rows="2"></textarea></div>
                   <div class="field full"><button class="btn green" id="labCreateTicketBtn" type="button">Submit Ticket</button></div>
                 </div>
-                <div id="labTicketNotice" style="font-size:11px;color:#0f9d58;margin-top:5px"></div>
+                <div id="labTicketNotice" style="font-size:12px;color:#0f9d58;margin-top:5px"></div>
               </div>
               <div>
                 <div class="table-wrap">
@@ -829,7 +828,7 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
                   </table>
                 </div>
                 <div id="labTicketThreadBox" class="hidden" style="margin-top:8px;border:1px solid #cbd5e1;border-radius:6px;padding:8px;background:#f8fafc">
-                  <strong id="labThreadTitle" style="font-size:11.5px">Ticket Thread</strong>
+                  <strong id="labThreadTitle" style="font-size:12px">Ticket Thread</strong>
                   <div id="labThreadList" style="max-height:130px;overflow:auto;margin:6px 0"></div>
                   <div class="addrow">
                     <input id="labThreadReplyInput" placeholder="Write reply...">
@@ -851,51 +850,51 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
         <div class="panel doctor" style="margin-bottom:10px">
           <div class="panel-head"><span>🎛️ Lab Menu &amp; Workspace Hide/Show Customizer (अपनी ज़रूरत के अनुसार मेनू छिपाएं या दिखाएं)</span></div>
           <div class="panel-body">
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;font-size:11px">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px;font-size:12px">
               <label style="display:flex;align-items:center;gap:7px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:8px;cursor:pointer">
-                <input type="checkbox" id="visLiveQueue" style="width:15px;height:15px" checked>
+                <input type="checkbox" id="visLiveQueue" style="width:16px;height:16px" checked>
                 <span><strong>Today's Live Patient Queue</strong><br><small style="color:#64748b">बाएँ तरफ़ आज के मरीज़ों की लाइव लिस्ट दिखाएं</small></span>
               </label>
               <label style="display:flex;align-items:center;gap:7px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:8px;cursor:pointer">
-                <input type="checkbox" id="visSampleTracking" style="width:15px;height:15px" checked>
+                <input type="checkbox" id="visSampleTracking" style="width:16px;height:16px" checked>
                 <span><strong>Sample &amp; Barcode Tracking Menu</strong><br><small style="color:#64748b">सैंपल ट्रैकिंग और TAT मेनू दिखाएं</small></span>
               </label>
               <label style="display:flex;align-items:center;gap:7px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:8px;cursor:pointer">
-                <input type="checkbox" id="visAccounts" style="width:15px;height:15px" checked>
+                <input type="checkbox" id="visAccounts" style="width:16px;height:16px" checked>
                 <span><strong>Accounts &amp; Expenses Menu</strong><br><small style="color:#64748b">बकाया बिल और खर्च हिसाब मेनू दिखाएं</small></span>
               </label>
               <label style="display:flex;align-items:center;gap:7px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:8px;cursor:pointer">
-                <input type="checkbox" id="visInventory" style="width:15px;height:15px" checked>
+                <input type="checkbox" id="visInventory" style="width:16px;height:16px" checked>
                 <span><strong>Reagent &amp; Kit Inventory Menu</strong><br><small style="color:#64748b">स्टॉक और एक्सपायरी मेनू दिखाएं</small></span>
               </label>
               <label style="display:flex;align-items:center;gap:7px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:8px;cursor:pointer">
-                <input type="checkbox" id="visCentersStaff" style="width:15px;height:15px" checked>
+                <input type="checkbox" id="visCentersStaff" style="width:16px;height:16px" checked>
                 <span><strong>Centers, Staff &amp; Helpdesk Menu</strong><br><small style="color:#64748b">ब्रांच, स्टाफ़ और सपोर्ट टिकट मेनू दिखाएं</small></span>
               </label>
               <label style="display:flex;align-items:center;gap:7px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:8px;cursor:pointer">
-                <input type="checkbox" id="optPathVerify" style="width:15px;height:15px" checked>
+                <input type="checkbox" id="optPathVerify" style="width:16px;height:16px" checked>
                 <span><strong>NABL Pathologist Verify &amp; Lock</strong><br><small style="color:#64748b">रिपोर्ट अप्रूव और लॉक करने का बटन दिखाएं</small></span>
               </label>
               <label style="display:flex;align-items:center;gap:7px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:8px;cursor:pointer">
-                <input type="checkbox" id="optDoctorComm" style="width:15px;height:15px">
+                <input type="checkbox" id="optDoctorComm" style="width:16px;height:16px">
                 <span><strong>Doctor Referral &amp; Commission</strong><br><small style="color:#64748b">डॉक्टर-वाइज कमीशन रजिस्टर दिखाएं</small></span>
               </label>
               <label style="display:flex;align-items:center;gap:7px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:8px;cursor:pointer">
-                <input type="checkbox" id="optRepeatPatient" style="width:15px;height:15px" checked>
+                <input type="checkbox" id="optRepeatPatient" style="width:16px;height:16px" checked>
                 <span><strong>Repeat Patient Auto-Fill</strong><br><small style="color:#64748b">मोबाइल नंबर डालते ही पुराना मरीज़ भरें</small></span>
               </label>
               <label style="display:flex;align-items:center;gap:7px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:8px;cursor:pointer">
-                <input type="checkbox" id="optThermalSlip" style="width:15px;height:15px">
+                <input type="checkbox" id="optThermalSlip" style="width:16px;height:16px">
                 <span><strong>Counter Cash / Token Slip</strong><br><small style="color:#64748b">टोकन और कैश रसीद प्रिंट बटन दिखाएं</small></span>
               </label>
               <label style="display:flex;align-items:center;gap:7px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:8px;cursor:pointer">
-                <input type="checkbox" id="optClinicalNotes" style="width:15px;height:15px">
+                <input type="checkbox" id="optClinicalNotes" style="width:16px;height:16px">
                 <span><strong>Test Clinical Notes on Report</strong><br><small style="color:#64748b">टेस्ट के नीचे डॉक्टर नोट प्रिंट करें</small></span>
               </label>
             </div>
             <div class="actions" style="margin-top:10px">
               <button class="btn green" id="saveOptionalFeaturesBtn" type="button">💾 Save Menu &amp; Workspace Preferences</button>
-              <span id="optSaveStatus" style="font-size:11px;color:#059669;font-weight:700;align-self:center"></span>
+              <span id="optSaveStatus" style="font-size:12px;color:#059669;font-weight:700;align-self:center"></span>
             </div>
           </div>
         </div>
@@ -934,14 +933,14 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
               <div class="field"><label>Reg. / License No.</label><input id="rdRegNo"></div>
               <div class="field"><label>Phone / Helpline</label><input id="rdPhone"></div>
               <div class="field"><label>Email</label><input id="rdEmail"></div>
-              <div class="field"><label>Accent Color</label><input id="rdAccentColor" type="color" value="#0b4fa8" style="height:28px;padding:2px"></div>
+              <div class="field"><label>Accent Color</label><input id="rdAccentColor" type="color" value="#0b4fa8" style="height:31px;padding:2px"></div>
               <div class="field full"><label>Full Lab Address</label><input id="rdAddress"></div>
               <div class="field"><label>Lab Logo</label><input id="rdLogoFile" type="file" accept="image/*"><button class="btn light" id="rdClearLogo" type="button" style="margin-top:3px">Remove</button></div>
               <div class="field"><label>Full Header Banner</label><input id="rdBannerFile" type="file" accept="image/*"><button class="btn light" id="rdClearBanner" type="button" style="margin-top:3px">Remove</button></div>
             </div>
 
             <hr style="border:0;border-top:1px solid #e2e8f0;margin:12px 0">
-            <div style="display:flex;flex-wrap:wrap;gap:14px;font-size:11px;margin-bottom:8px;background:#f8fafc;padding:8px;border-radius:6px;border:1px solid #cbd5e1">
+            <div style="display:flex;flex-wrap:wrap;gap:14px;font-size:12px;margin-bottom:8px;background:#f8fafc;padding:8px;border-radius:6px;border:1px solid #cbd5e1">
               <label style="display:flex;align-items:center;gap:5px;font-weight:700"><input type="checkbox" id="rdShowHeader" style="width:auto;height:auto" checked> Show Digital Lab Header (Uncheck for Pre-Printed Letterhead)</label>
               <label style="display:flex;align-items:center;gap:5px;font-weight:700"><input type="checkbox" id="rdShowLabName" style="width:auto;height:auto" checked> Show Lab Name</label>
               <label style="display:flex;align-items:center;gap:5px;font-weight:700"><input type="checkbox" id="rdShowReportBanner" style="width:auto;height:auto" checked> Show Report Title Bar</label>
@@ -983,20 +982,20 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
             <hr style="border:0;border-top:1px solid #e2e8f0;margin:12px 0">
             <div class="fields" style="grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px">
               <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:8px">
-                <strong style="font-size:11px">Left Signature (Technician)</strong>
+                <strong style="font-size:12px">Left Signature (Technician)</strong>
                 <div class="field"><label>Name</label><input id="rdLeftSigName"></div>
                 <div class="field"><label>Qualification</label><input id="rdLeftSigQual"></div>
                 <div class="field"><label>Signature Image</label><input id="rdLeftSigFile" type="file" accept="image/*"><img id="rdLeftSigPreview" style="display:none;max-height:42px;margin-top:4px"><button class="btn light" id="rdClearLeftSig" type="button" style="margin-top:3px">Remove</button></div>
               </div>
               <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:8px">
-                <strong style="font-size:11px">Right Signature (Pathologist)</strong>
+                <strong style="font-size:12px">Right Signature (Pathologist)</strong>
                 <div class="field"><label>Name</label><input id="rdRightSigName"></div>
                 <div class="field"><label>Qualification</label><input id="rdRightSigQual"></div>
                 <div class="field"><label>Signature Image</label><input id="rdRightSigFile" type="file" accept="image/*"><img id="rdRightSigPreview" style="display:none;max-height:42px;margin-top:4px"><button class="btn light" id="rdClearRightSig" type="button" style="margin-top:3px">Remove</button></div>
               </div>
             </div>
 
-            <div style="display:flex;flex-wrap:wrap;gap:12px;font-size:11px;margin-bottom:8px">
+            <div style="display:flex;flex-wrap:wrap;gap:12px;font-size:12px;margin-bottom:8px">
               <label style="display:flex;align-items:center;gap:4px"><input type="checkbox" id="rdShowQr" style="width:auto;height:auto" checked> QR Code</label>
               <label style="display:flex;align-items:center;gap:4px"><input type="checkbox" id="rdShowUnit" style="width:auto;height:auto" checked> Unit Column</label>
               <label style="display:flex;align-items:center;gap:4px"><input type="checkbox" id="rdShowRef" style="width:auto;height:auto" checked> Reference Range</label>
@@ -1009,7 +1008,7 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
             <div class="actions" style="margin-top:10px">
               <button class="btn green" id="rdSaveBtn" type="button">💾 Save Report Design, Signatures &amp; WhatsApp API</button>
               <button class="btn" id="rdTestPreviewBtn" type="button">👁️ Sample A4 Preview</button>
-              <span id="rdSaveStatus" style="font-size:11px;color:#059669;font-weight:700;align-self:center"></span>
+              <span id="rdSaveStatus" style="font-size:12px;color:#059669;font-weight:700;align-self:center"></span>
             </div>
           </div>
         </div>
@@ -1043,7 +1042,7 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
               <div class="actions">
                 <button type="button" class="btn amber" id="saSetTestModeBtn">Set TEST Mode (Free Access for Testing)</button>
                 <button type="button" class="btn green" id="saSetLiveModeBtn">Set LIVE Mode (Enforce Trial &amp; Razorpay Plans)</button>
-                <span id="saModeMsg" style="font-size:11.5px;color:#0f9d58;font-weight:700;align-self:center"></span>
+                <span id="saModeMsg" style="font-size:12px;color:#0f9d58;font-weight:700;align-self:center"></span>
               </div>
             </div>
           </section>
@@ -1095,7 +1094,7 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
               </div>
               <div class="actions">
                 <button type="button" class="btn green" id="saSaveFestBtn">✨ Publish Festival Banner Live</button>
-                <span id="saFestMsg" style="font-size:11.5px;color:#0f9d58;font-weight:700;align-self:center"></span>
+                <span id="saFestMsg" style="font-size:12px;color:#0f9d58;font-weight:700;align-self:center"></span>
               </div>
             </div>
           </section>
@@ -1122,36 +1121,36 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
                 <button type="button" class="btn purple" id="saApplyPresetBtn">Apply Plan Preset</button>
               </div>
 
-              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;font-size:11.5px;margin-bottom:12px" id="saFeatureChecklist">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px;font-size:12px;margin-bottom:12px" id="saFeatureChecklist">
                 <label style="display:flex;align-items:center;gap:7px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:8px">
-                  <input type="checkbox" data-sa-feat="patient_entry" style="width:15px;height:15px" checked> <span><strong>1. Patient Entry &amp; A4 Print</strong> (Core)</span>
+                  <input type="checkbox" data-sa-feat="patient_entry" style="width:16px;height:16px" checked> <span><strong>1. Patient Entry &amp; A4 Print</strong> (Core)</span>
                 </label>
                 <label style="display:flex;align-items:center;gap:7px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:8px">
-                  <input type="checkbox" data-sa-feat="saved_reports" style="width:15px;height:15px" checked> <span><strong>2. Saved Reports &amp; WhatsApp PDF</strong> (Core)</span>
+                  <input type="checkbox" data-sa-feat="saved_reports" style="width:16px;height:16px" checked> <span><strong>2. Saved Reports &amp; WhatsApp PDF</strong> (Core)</span>
                 </label>
                 <label style="display:flex;align-items:center;gap:7px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:8px">
-                  <input type="checkbox" data-sa-feat="test_catalogue" style="width:15px;height:15px" checked> <span><strong>3. Editable Rate List &amp; Catalogue</strong> (Core)</span>
+                  <input type="checkbox" data-sa-feat="test_catalogue" style="width:16px;height:16px" checked> <span><strong>3. Editable Rate List &amp; Catalogue</strong> (Core)</span>
                 </label>
                 <label style="display:flex;align-items:center;gap:7px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:8px">
-                  <input type="checkbox" data-sa-feat="sample_tracking" style="width:15px;height:15px" checked> <span><strong>4. Barcode Sample Tracking</strong> (Advanced+)</span>
+                  <input type="checkbox" data-sa-feat="sample_tracking" style="width:16px;height:16px" checked> <span><strong>4. Barcode Sample Tracking</strong> (Advanced+)</span>
                 </label>
                 <label style="display:flex;align-items:center;gap:7px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:8px">
-                  <input type="checkbox" data-sa-feat="accounts_expenses" style="width:15px;height:15px" checked> <span><strong>5. Accounts, Due &amp; Doctor Commission</strong> (Advanced+)</span>
+                  <input type="checkbox" data-sa-feat="accounts_expenses" style="width:16px;height:16px" checked> <span><strong>5. Accounts, Due &amp; Doctor Commission</strong> (Advanced+)</span>
                 </label>
                 <label style="display:flex;align-items:center;gap:7px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:8px">
-                  <input type="checkbox" data-sa-feat="inventory_stock" style="width:15px;height:15px"> <span><strong>6. Reagent &amp; Kit Inventory</strong> (Advanced+)</span>
+                  <input type="checkbox" data-sa-feat="inventory_stock" style="width:16px;height:16px"> <span><strong>6. Reagent &amp; Kit Inventory</strong> (Advanced+)</span>
                 </label>
                 <label style="display:flex;align-items:center;gap:7px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:8px">
-                  <input type="checkbox" data-sa-feat="multi_branch_staff" style="width:15px;height:15px"> <span><strong>7. Multi-Branch &amp; Staff Logins</strong> (Enterprise)</span>
+                  <input type="checkbox" data-sa-feat="multi_branch_staff" style="width:16px;height:16px"> <span><strong>7. Multi-Branch &amp; Staff Logins</strong> (Enterprise)</span>
                 </label>
                 <label style="display:flex;align-items:center;gap:7px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:8px">
-                  <input type="checkbox" data-sa-feat="nabl_verify_lock" style="width:15px;height:15px" checked> <span><strong>8. NABL Pathologist Verify Lock</strong> (Advanced+)</span>
+                  <input type="checkbox" data-sa-feat="nabl_verify_lock" style="width:16px;height:16px" checked> <span><strong>8. NABL Pathologist Verify Lock</strong> (Advanced+)</span>
                 </label>
               </div>
 
               <div class="actions">
                 <button type="button" class="btn green" id="saSaveLabFeaturesBtn">💾 Save Lab Plan &amp; Feature Permissions</button>
-                <span id="saFeatStatusMsg" style="font-size:11.5px;color:#0f9d58;font-weight:700;align-self:center"></span>
+                <span id="saFeatStatusMsg" style="font-size:12px;color:#0f9d58;font-weight:700;align-self:center"></span>
               </div>
             </div>
           </section>
@@ -1184,7 +1183,7 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
               </div>
               <div class="actions">
                 <button type="button" class="btn green" id="saSavePricingBtn">💾 Save Subscription Tiers to Cloud</button>
-                <span id="saPricingMsg" style="font-size:11.5px;color:#0f9d58;font-weight:700;align-self:center"></span>
+                <span id="saPricingMsg" style="font-size:12px;color:#0f9d58;font-weight:700;align-self:center"></span>
               </div>
             </div>
           </section>
@@ -1199,7 +1198,7 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
                 <div class="field"><label>Lab Owner Email to Reset Device Lock</label><input id="saResetEmail" placeholder="owner@example.com"></div>
                 <button type="button" class="btn danger" id="saResetDeviceBtn">Reset Device Lock</button>
               </div>
-              <div id="saSecurityMsg" style="font-size:11.5px;color:#0f9d58;margin-top:8px"></div>
+              <div id="saSecurityMsg" style="font-size:12px;color:#0f9d58;margin-top:8px"></div>
             </div>
           </section>
         </div>
@@ -1214,7 +1213,7 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
                 <div class="field"><label>Message</label><input id="saAnnBody" placeholder="Message shown on every lab top ribbon..."></div>
                 <div class="field full"><button type="button" class="btn green" id="saPublishAnnBtn">Publish Live Notice</button></div>
               </div>
-              <div id="saAnnMsg" style="font-size:11.5px;color:#0f9d58;margin-top:6px"></div>
+              <div id="saAnnMsg" style="font-size:12px;color:#0f9d58;margin-top:6px"></div>
             </div>
           </section>
         </div>
@@ -1226,9 +1225,9 @@ html.acd-lab-admin #superAdminCenter{display:none !important}
 
 <!-- Custom Non-Blocking Dialog -->
 <dialog id="acdCustomDialog" style="width:min(440px,92vw);border:1px solid #cbd5e1;border-radius:12px;padding:18px;color:#0f172a;box-shadow:0 20px 45px rgba(15,23,42,.25)">
-  <h3 id="acdDlgTitle" style="margin:0 0 8px;font-size:15px">Confirm</h3>
-  <p id="acdDlgMessage" style="margin:0 0 12px;font-size:12.5px;color:#475569;white-space:pre-line;line-height:1.5"></p>
-  <input id="acdDlgInput" class="hidden" style="margin-bottom:12px;height:34px;font-size:12.5px">
+  <h3 id="acdDlgTitle" style="margin:0 0 8px;font-size:16px">Confirm</h3>
+  <p id="acdDlgMessage" style="margin:0 0 12px;font-size:13px;color:#475569;white-space:pre-line;line-height:1.5"></p>
+  <input id="acdDlgInput" class="hidden" style="margin-bottom:12px;height:36px;font-size:13px">
   <div style="display:flex;justify-content:flex-end;gap:8px">
     <button type="button" class="btn light" id="acdDlgCancel">Cancel</button>
     <button type="button" class="btn green" id="acdDlgOk">OK</button>
@@ -1245,9 +1244,26 @@ window.db = db;
 window.ACD_UNIFIED_SUPER_ADMIN = true;
 const $=id=>document.getElementById(id);
 
-let user=null,role=null,labId=null,labs=[],catalogue=[],allParametersCache=[],selectedTests=[],flatRows=[];
+let user=null,role=null,labId=null,labs=[],catalogue=[],allParametersCache=[],selectedTests=[],flatRows=[],deferredPwaPrompt=null;
 let currentReportVerified = false;
 let superAdminBlockedFeatures = new Set();
+
+window.addEventListener("beforeinstallprompt", e => {
+  e.preventDefault();
+  deferredPwaPrompt = e;
+  if ($("dashInstallAppBtn")) $("dashInstallAppBtn").textContent = "📲 Install App";
+});
+
+$("dashInstallAppBtn")?.addEventListener("click", async () => {
+  if (deferredPwaPrompt) {
+    deferredPwaPrompt.prompt();
+    const res = await deferredPwaPrompt.userChoice;
+    deferredPwaPrompt = null;
+    if (res?.outcome === "accepted") $("dashInstallAppBtn").style.display = "none";
+  } else {
+    alert("App Install करने के लिए:\n\n• Android Chrome में: ऊपर दाईं तरफ़ 3-Dots (⋮) दबाएं → 'Install app' या 'Add to Home screen' चुनें।\n• Windows/Laptop Chrome या Edge में: Address Bar के दाईं तरफ़ Install (⊕ / 🖥️) आइकन पर क्लिक करें।\n• iPhone Safari में: Share बटन दबाकर 'Add to Home Screen' चुनें।");
+  }
+});
 
 function acdNotify(msg, isError = false) {
   say(msg);
@@ -1255,7 +1271,7 @@ function acdNotify(msg, isError = false) {
   if (!bar) {
     bar = document.createElement("div");
     bar.id = "acdGlobalToast";
-    bar.style.cssText = "position:fixed;bottom:14px;right:14px;z-index:100000;background:#0f172a;color:#fff;padding:9px 14px;border-radius:8px;font-size:12px;box-shadow:0 8px 20px rgba(0,0,0,.25);max-width:360px";
+    bar.style.cssText = "position:fixed;bottom:14px;right:14px;z-index:100000;background:#0f172a;color:#fff;padding:10px 15px;border-radius:8px;font-size:12.5px;box-shadow:0 8px 20px rgba(0,0,0,.25);max-width:380px";
     document.body.appendChild(bar);
   }
   bar.textContent = msg;
@@ -1723,7 +1739,7 @@ function renderRows() {
     out.push(
       '<tr class="test-heading-row" style="background:#eef5ff;font-weight:800;color:#0b4fa8">' +
       '<td colspan="4">' + safe(t.test_name.toUpperCase()) + '</td>' +
-      '<td><div style="display:flex;align-items:center;gap:3px"><span style="font-size:10px">₹</span><input type="number" min="0" data-inline-price="' + safe(t.id) + '" value="' + priceVal + '" title="Editable Test Rate" style="height:22px;width:64px;font-weight:700;color:#059669"></div></td>' +
+      '<td><div style="display:flex;align-items:center;gap:3px"><span style="font-size:11px">₹</span><input type="number" min="0" data-inline-price="' + safe(t.id) + '" value="' + priceVal + '" title="Editable Test Rate" style="height:25px;width:70px;font-weight:700;color:#059669"></div></td>' +
       '<td><button type="button" class="btn danger" data-remove-test="' + safe(t.id) + '" title="Remove Test">×</button></td>' +
       '</tr>'
     );
@@ -1751,7 +1767,7 @@ function renderRows() {
           const r = rows.find(x => x.parameter_name === ant + " - " + d);
           if (!r) { matrix += '<td>-</td>'; return; }
           const idx = flatRows.indexOf(r);
-          matrix += '<td><input type="text" data-result="' + idx + '" data-titre="true" list="widalCellList" placeholder="+ / - / 20" style="min-width:54px;text-align:center"></td>';
+          matrix += '<td><input type="text" data-result="' + idx + '" data-titre="true" list="widalCellList" placeholder="+ / - / 20" style="min-width:56px;text-align:center"></td>';
         });
         matrix += '</tr>';
       });
@@ -1769,8 +1785,8 @@ function renderRows() {
         '<tr>' +
         '<td class="param-name"><strong>' + safe(r.parameter_name) + '</strong></td>' +
         '<td>' + resultControl(r, i) + '</td>' +
-        '<td><input data-edit-unit="' + i + '" value="' + safe(r.unit || "-") + '" style="height:24px;min-width:55px"></td>' +
-        '<td><input data-edit-ref="' + i + '" value="' + safe(r.reference_range || "-") + '" style="height:24px;min-width:95px"></td>' +
+        '<td><input data-edit-unit="' + i + '" value="' + safe(r.unit || "-") + '" style="height:27px;min-width:58px"></td>' +
+        '<td><input data-edit-ref="' + i + '" value="' + safe(r.reference_range || "-") + '" style="height:27px;min-width:100px"></td>' +
         '<td class="result-status">' + (st ? '<span class="badge ' + badgeCls + '">' + st + '</span>' : '') + '</td>' +
         '<td><button type="button" class="btn danger" data-remove-param="' + i + '" title="Remove Row">−</button></td>' +
         '</tr>'
@@ -2842,7 +2858,7 @@ async function loadTodayLiveQueue() {
     todayQueueCache = [...offlineToday.filter(o => !onlineIds.has(o.id)), ...orders];
     renderTodayLiveQueue();
   } catch (e) {
-    listEl.innerHTML = '<div style="padding:10px;color:#94a3b8;font-size:11px">Queue ready</div>';
+    listEl.innerHTML = '<div style="padding:10px;color:#94a3b8;font-size:11.5px">Queue ready</div>';
   }
 }
 
@@ -2868,7 +2884,7 @@ function renderTodayLiveQueue() {
           </button>
         `;
       }).join("")
-    : '<div style="padding:14px;text-align:center;color:#94a3b8;font-size:11px">आज अभी तक कोई मरीज़ नहीं।</div>';
+    : '<div style="padding:14px;text-align:center;color:#94a3b8;font-size:11.5px">आज अभी तक कोई मरीज़ नहीं।</div>';
 
   listEl.querySelectorAll("[data-queue-open]").forEach(btn => {
     btn.onclick = async () => {
@@ -3316,7 +3332,7 @@ function renderSampleTracking() {
         <td>${safe(o.order_date || "—")}</td>
         <td>${safe(o.tests.join(", ") || "—")}</td>
         <td>
-          <select data-st-order="${safe(o.id)}" style="min-width:130px">
+          <select data-st-order="${safe(o.id)}" style="min-width:135px">
             ${["Pending", "Sample Collected", "In Processing", "Completed"].map(opt => `<option value="${opt}" ${o.status === opt ? "selected" : ""}>${opt}</option>`).join("")}
           </select>
         </td>
@@ -3568,7 +3584,7 @@ async function openLabSupportThread(ticketId) {
     const msgs = d.messages || d.thread || [];
     $("labThreadTitle").textContent = d.ticket?.subject || "Ticket Thread";
     $("labThreadList").innerHTML = msgs.length
-      ? msgs.filter(m => !m.is_internal).map(m => `<div style="background:#fff;border:1px solid #cbd5e1;border-radius:5px;padding:5px 7px;font-size:11px;margin-bottom:4px"><strong>${safe(m.sender_name || "Support")}</strong>: ${safe(m.body || m.message || "")}</div>`).join("")
+      ? msgs.filter(m => !m.is_internal).map(m => `<div style="background:#fff;border:1px solid #cbd5e1;border-radius:5px;padding:5px 7px;font-size:11.5px;margin-bottom:4px"><strong>${safe(m.sender_name || "Support")}</strong>: ${safe(m.body || m.message || "")}</div>`).join("")
       : "<small>No messages yet.</small>";
   } catch (e) {}
 }
@@ -3865,7 +3881,6 @@ async function init() {
   } catch (e) {}
 
   const cachedSnap = loadOfflineSessionSnapshot();
-  // Instant offline boot if device matches the locked device!
   if ((!session || !navigator.onLine) && cachedSnap?.userId && cachedSnap?.deviceId === deviceId()) {
     user = { id: cachedSnap.userId, email: cachedSnap.email || "Offline User" };
     role = cachedSnap.role || "lab_admin";
@@ -4556,7 +4571,7 @@ async function updateFeatureNavigation() {
 }
 
 function setupEnterFlow() {
-  const ids = ["mobile", "patient", "age", "ageUnit", "gender", "patientAddress", "sampleType", "doctor", "testSearch"];
+  const ids = ["mobile", "patient", "age", "ageUnit", "gender", "sampleType", "patientAddress", "doctor", "testSearch"];
   ids.forEach((id, i) => {
     const el = $(id);
     if (!el) return;
