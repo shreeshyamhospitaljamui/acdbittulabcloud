@@ -1,6 +1,6 @@
 /* =========================================================
    ACD BITTU LAB CLOUD — CUSTOMIZABLE A4 PRINT, DIRECT PDF,
-   NABL VERIFICATION STAMP, QR VERIFICATION & WHATSAPP MODULE
+   NABL VERIFICATION STAMP, QR VERIFICATION & DIRECT CLOUD WHATSAPP
    ========================================================= */
 (function () {
   "use strict";
@@ -44,7 +44,10 @@
     showStatus: true,
     showAddress: true,
     showSampleType: true,
-    footerNote: "Note: Clinical correlation is essential. Test results pertain only to the sample tested."
+    footerNote: "Note: Clinical correlation is essential. Test results pertain only to the sample tested.",
+    waDeliveryMode: "cloud_api",
+    waCloudUrl: "",
+    waCloudToken: ""
   };
 
   function esc(val) {
@@ -416,15 +419,19 @@
   function buildWhatsAppMessage(report, design, verifyUrl = "") {
     const p = report.patient || {};
     const fullName = [p.title, p.patient_name].filter(Boolean).join(" ").trim() || "Patient";
+    const testsList = (report.tests || []).map(t => t.test_name).filter(Boolean).join(", ");
     const lines = [
       `*${design.labName || "PATHOLOGY LABORATORY"}*`,
-      `📋 *Pathology Investigation Report*`,
+      `📋 *Billing & Pathology Investigation Report*`,
       `👤 *Patient:* ${fullName} (${p.age || "-"} ${p.age_unit || "Y"} / ${p.gender || "-"})`,
       `🆔 *Patient ID:* ${patientId(report)}`,
       `📅 *Date:* ${report.order_date || "-"}`
     ];
+    if (testsList) lines.push(`🧪 *Tests:* ${testsList}`);
+    if (report.billing) {
+      lines.push(`💰 *Billing:* Total ₹${report.billing.total || 0} | Paid ₹${report.billing.paid || 0} | Due ₹${report.billing.due || 0}`);
+    }
     if (verifyUrl) lines.push(`🔗 *View & Download Verified Report PDF:* ${verifyUrl}`);
-    lines.push(`Please find your attached A4 PDF Pathology Report.`);
     return lines.join("\n");
   }
 
@@ -563,12 +570,44 @@
   async function shareReportOnWhatsApp(report, currentLabId, labObj, triggerBtn = null) {
     const design = loadReportDesign(currentLabId, labObj);
     const originalLabel = triggerBtn ? triggerBtn.textContent : "";
-    if (triggerBtn) { triggerBtn.disabled = true; triggerBtn.textContent = "⏳ Generating PDF..."; }
+    if (triggerBtn) { triggerBtn.disabled = true; triggerBtn.textContent = "⏳ Sending WhatsApp..."; }
 
     try {
-      const { blob, fileName, qrUrl } = await generateReportPdfBlob(report, currentLabId, labObj);
-      const pdfFile = new File([blob], fileName, { type: "application/pdf" });
+      const rawMobile = String(report.patient?.mobile || "").replace(/\D/g, "");
+      const phone = rawMobile.length === 10 ? "91" + rawMobile : rawMobile;
+      const qrUrl = await resolveQrVerificationUrl(report, currentLabId);
       const msgText = buildWhatsAppMessage(report, design, qrUrl);
+
+      if (design.waDeliveryMode === "cloud_api" && design.waCloudUrl && design.waCloudToken) {
+        if (!phone || phone.length < 10) {
+          if (typeof window.acdNotify === "function") window.acdNotify("Valid 10-digit mobile number required for Direct WhatsApp.", true);
+          return;
+        }
+        const apiRes = await fetch(design.waCloudUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + design.waCloudToken
+          },
+          body: JSON.stringify({
+            messaging_product: "whatsapp",
+            to: phone,
+            type: "text",
+            text: { body: msgText }
+          })
+        });
+        if (!apiRes.ok) {
+          const errJ = await apiRes.json().catch(() => ({}));
+          throw new Error(errJ.error?.message || "WhatsApp Cloud API error.");
+        }
+        if (typeof window.acdNotify === "function") {
+          window.acdNotify("✓ Billing & Report sent directly to +" + phone + " (Zero Login Needed)!");
+        }
+        return;
+      }
+
+      const { blob, fileName } = await generateReportPdfBlob(report, currentLabId, labObj);
+      const pdfFile = new File([blob], fileName, { type: "application/pdf" });
 
       if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
         await navigator.share({ files: [pdfFile], title: fileName, text: msgText });
@@ -584,10 +623,9 @@
       a.remove();
       setTimeout(() => URL.revokeObjectURL(dlUrl), 15000);
 
-      const rawMobile = String(report.patient?.mobile || "").replace(/\D/g, "");
-      const phone = rawMobile.length === 10 ? "91" + rawMobile : rawMobile;
       window.open(phone ? `https://wa.me/${phone}?text=${encodeURIComponent(msgText)}` : `https://api.whatsapp.com/send?text=${encodeURIComponent(msgText)}`, "_blank", "noopener");
     } catch (err) {
+      if (typeof window.acdNotify === "function") window.acdNotify("WhatsApp Notice: " + err.message, true);
       const text = buildWhatsAppMessage(report, design, "");
       const rawMobile = String(report.patient?.mobile || "").replace(/\D/g, "");
       const phone = rawMobile.length === 10 ? "91" + rawMobile : rawMobile;
