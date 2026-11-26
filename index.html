@@ -1,594 +1,1185 @@
 <!doctype html>
+
 <html lang="en">
+
 <head>
+
 <meta charset="utf-8">
+
 <meta name="viewport" content="width=device-width,initial-scale=1">
+
 <meta name="theme-color" content="#0b1b33">
+
 <title>ACD Bittu Lab Cloud | Sign in</title>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <link rel="manifest" href="./manifest.webmanifest">
+
 <style>
+
 :root{--navy:#0b1b33;--blue:#1769e0;--ink:#18263a;--muted:#718096;--line:#dfe6ef;--bg:#f4f7fb}*{box-sizing:border-box}html,body{min-height:100%;margin:0}body{font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
 
+
+
 .fest-banner{width:min(100%,980px);margin-bottom:14px;border-radius:14px;padding:11px 18px;text-align:center;color:#fff;position:relative;overflow:hidden;box-shadow:0 10px 26px rgba(15,23,42,.22);display:none;animation:festFloat 3s ease-in-out infinite}
+
 .fest-banner::before{content:"";position:absolute;top:0;left:-120%;width:85%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.38),transparent);transform:skewX(-22deg);animation:festShine 2.8s infinite}
+
 .fest-theme-diwali{background:linear-gradient(135deg,#b45309,#ea580c,#d97706)}
+
 .fest-theme-durga{background:linear-gradient(135deg,#991b1b,#dc2626,#b91c1c)}
+
 .fest-theme-holi{background:linear-gradient(135deg,#7e22ce,#db2777,#2563eb)}
+
 .fest-theme-eid{background:linear-gradient(135deg,#065f46,#059669,#0d9488)}
+
 .fest-theme-gold{background:linear-gradient(135deg,#1e3a8a,#1d4ed8,#0284c7)}
+
 .fest-title{font-size:15px;font-weight:800;letter-spacing:.3px;text-shadow:0 2px 6px rgba(0,0,0,.3)}
+
 .fest-sub{font-size:12px;opacity:.95;margin-top:2px}
+
 .fest-sparkle{display:inline-block;animation:festPulse 1.2s alternate infinite}
+
 @keyframes festShine{0%{left:-120%}65%,100%{left:160%}}
+
 @keyframes festFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+
 @keyframes festPulse{from{transform:scale(.9);opacity:.85}to{transform:scale(1.2);opacity:1}}
 
+
+
 .page{width:min(100%,980px);min-height:610px;background:#fff;border:1px solid #e7edf4;border-radius:24px;overflow:hidden;display:grid;grid-template-columns:.92fr 1.08fr;box-shadow:0 24px 70px #12233f18}.visual{background:linear-gradient(145deg,var(--navy),#12345d 70%,#14529a);color:white;padding:42px 36px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}.brand{display:flex;align-items:center;gap:12px}.brandmark{width:46px;height:46px;border-radius:14px;background:#fff;color:#1769e0;display:grid;place-items:center;font-size:24px;font-weight:900}.brandname{font-size:16px;font-weight:800}.brandtag{font-size:10px;color:#b8c9df;letter-spacing:1.2px;margin-top:4px}.hero{margin:50px 0}.eyebrow{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8dbdff;font-weight:800}.hero h1{font-size:34px;line-height:1.15;margin:14px 0}.hero p{font-size:13px;line-height:1.7;color:#c5d4e6}.features{display:grid;gap:13px;color:#d9e5f4;font-size:12px}.install-pill{margin-top:16px;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.14);color:#fff;padding:11px 16px;border-radius:11px;font-size:13px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%}.install-pill:hover{background:rgba(255,255,255,.24)}.formside{padding:42px 52px;display:flex;flex-direction:column;justify-content:center}.formhead h2{font-size:25px;margin:0 0 7px}.formhead p{font-size:12px;color:var(--muted);margin:0 0 22px}.role-label,.field label{font-size:11.5px;font-weight:750;color:#42516a}.roles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:9px 0 20px}.role{border:1px solid var(--line);border-radius:12px;background:#fff;padding:13px 10px;text-align:left;color:#40516a;cursor:pointer}.role.active{border:2px solid var(--blue);background:#f1f6ff;color:#1459bd;padding:12px 9px}.role .ico{font-size:20px;display:block;margin-bottom:7px}.role b{display:block;font-size:12.5px}.role small{display:block;font-size:10.5px;color:#8290a3;margin-top:4px}.field{margin:11px 0}.field label{display:block;margin-bottom:6px}.field input{width:100%;height:44px;border:1px solid #dce4ee;border-radius:9px;padding:0 12px;background:#fff;color:#17243a;font-size:13.5px;outline:none}.field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px #1769e018}.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:11px 0 18px;font-size:11.5px;color:#64748b}.link{border:0;background:transparent;color:var(--blue);padding:0;font-size:11.5px;font-weight:700;cursor:pointer}.submit,.choice{width:100%;min-height:46px;border:0;border-radius:9px;background:var(--blue);color:#fff;font-size:13.5px;font-weight:800;box-shadow:0 7px 15px #1769e02b;cursor:pointer}.submit:disabled,.choice:disabled{opacity:.65;cursor:wait}.message{display:none;border-radius:8px;padding:10px 12px;margin:0 0 12px;font-size:11.5px;line-height:1.5}.message.show{display:block}.message.error{background:#fff0f1;color:#a52c3a;border:1px solid #ffd6da}.message.info,.message.success{background:#edf5ff;color:#245a9d;border:1px solid #d5e7ff}.message.success{background:#eaf8ef;color:#176b3b;border-color:#ccebd6}.security,.foot{font-size:10.5px;color:#8996a8;text-align:center;margin-top:17px}#signupForm,#accessPanel{display:none}#accessPanel .choice{margin:9px 0;text-align:left;padding:13px 15px}.choice.secondary{background:#fff;color:#1459bd;border:1px solid #b9d2f5;box-shadow:none}.choice span{display:block;font-size:10.5px;font-weight:500;margin-top:4px}.backlink{margin-top:10px}@media(max-width:760px){body{padding:0;background:#fff}.fest-banner{border-radius:0;margin-bottom:0}.page{min-height:100vh;width:100%;border:0;border-radius:0;grid-template-columns:1fr;box-shadow:none}.visual{padding:20px 22px 16px;min-height:165px}.hero{margin:16px 0 4px}.hero h1{font-size:23px;margin:8px 0}.hero p,.features{display:none}.formside{padding:25px 24px 35px}.formhead h2{font-size:23px}.field-grid{grid-template-columns:1fr}}
+
 </style>
+
 </head>
+
 <body>
 
+
+
 <div id="loginFestBanner" class="fest-banner fest-theme-diwali">
+
   <div class="fest-title"><span class="fest-sparkle">✨</span> <span id="loginFestTitle"></span> <span class="fest-sparkle">✨</span></div>
+
   <div class="fest-sub" id="loginFestSub"></div>
+
 </div>
+
+
 
 <main class="page">
+
 <section class="visual">
+
   <div class="brand"><div class="brandmark">✚</div><div><div class="brandname">ACD BITTU LAB CLOUD</div><div class="brandtag">DESKTOP + MOBILE + CLOUD LIMS</div></div></div>
+
   <div class="hero"><div class="eyebrow">Laboratory Management Platform</div><h1>One platform.<br>Every laboratory.</h1><p>Securely manage patient entries, pathology reports, billing and laboratory operations from one connected workspace.</p></div>
+
   <div>
+
     <div class="features"><div>♙ Patient registration and test entry</div><div>▤ Reports, billing and sample tracking</div><div>♜ Centralized multi-lab administration</div></div>
+
     <button type="button" id="pwaInstallBtn" class="install-pill">📲 Download / Install App (Phone &amp; PC)</button>
+
   </div>
+
 </section>
+
 <section class="formside">
+
 <div id="loginPanel">
+
   <div class="formhead" id="loginHead"><h2>Welcome back</h2><p>Choose your account type to sign in to your workspace.</p></div>
+
   <div class="role-label" id="roleLabel">SELECT LOGIN TYPE</div>
+
   <div class="roles" id="roles">
+
     <button class="role" id="superRole" type="button"><span class="ico">👑</span><b>Super Admin</b><small>Platform owner access</small></button>
+
     <button class="role active" id="labRole" type="button"><span class="ico">🏥</span><b>Lab Owner</b><small>Individual laboratory</small></button>
+
   </div>
+
   <div class="message" id="message" role="alert"></div>
+
   <form id="loginForm">
+
     <div class="field"><label for="username">Registered email address</label><input id="username" type="email" autocomplete="username" placeholder="Enter your registered email" required></div>
+
     <div class="field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" placeholder="Enter your password" required></div>
+
     <div class="row"><label style="display:flex;align-items:center;gap:7px;cursor:pointer"><input type="checkbox" id="remember" style="width:auto;height:auto;margin:0">Remember email</label><button class="link" type="button" id="forgot">Forgot password?</button></div>
+
     <button class="submit" id="submit" type="submit">Sign in to Lab Owner →</button>
+
   </form>
+
   <div id="signupLinkWrap" style="text-align:center;margin-top:16px;display:block"><button class="link" type="button" id="showSignup">New Lab Owner? Create Account</button></div>
+
   <form id="signupForm">
+
     <div class="formhead"><h2>Create Lab Owner Account</h2><p>Register your laboratory on ACD BITTU LAB CLOUD.</p></div>
+
     <div class="field-grid">
+
       <div class="field"><label for="ownerName">Lab Owner Name *</label><input id="ownerName" required minlength="2" maxlength="120" placeholder="Enter owner name"></div>
+
       <div class="field"><label for="labName">Laboratory Name *</label><input id="labName" required minlength="2" maxlength="120" placeholder="Enter laboratory name"></div>
+
     </div>
+
     <div class="field-grid">
+
       <div class="field"><label for="signupEmail">Email Address *</label><input id="signupEmail" type="email" autocomplete="email" required placeholder="Enter email"></div>
+
       <div class="field"><label for="signupMobile">Mobile Number *</label><input id="signupMobile" type="tel" maxlength="15" required placeholder="10-digit mobile"></div>
+
     </div>
+
     <div class="field"><label for="signupAddress">Laboratory Address (Optional)</label><input id="signupAddress" maxlength="300" placeholder="City, State or full lab address"></div>
+
     <div class="field-grid">
+
       <div class="field"><label for="signupPassword">Password *</label><input id="signupPassword" type="password" minlength="8" autocomplete="new-password" required placeholder="Minimum 8 characters"></div>
+
       <div class="field"><label for="confirmPassword">Confirm Password *</label><input id="confirmPassword" type="password" minlength="8" autocomplete="new-password" required placeholder="Confirm password"></div>
+
     </div>
+
     <button class="submit" id="signupSubmit" type="submit" style="margin-top:6px">Create Lab Owner Account →</button>
+
     <div style="text-align:center;margin-top:15px"><button class="link" type="button" id="showLogin">Already registered? Login</button></div>
+
   </form>
+
   <div id="emergencyRecovery" style="margin-top:15px;border-top:1px solid #dfe6ef;padding-top:12px;display:none">
+
     <button type="button" id="toggleRecovery" class="link" style="font-size:12px">Lost your Super Admin device? Emergency Recovery</button>
+
     <div id="recoveryPanel" style="display:none;margin-top:12px">
+
       <p style="font-size:11px;color:#64748b;line-height:1.5">
+
         A secure, one-time sign-in link will be sent to the registered Super Admin email.
+
         Open that link on this device to restore access.
+
       </p>
+
       <button class="submit" type="button" id="sendRecoveryLink">
+
         Send secure recovery link
+
       </button>
+
       <div class="message" id="recoveryMessage" role="status" aria-live="polite"></div>
+
     </div>
+
   </div>
+
   <div class="security">🔒 Strict Single-Device Lock &amp; Offline Support Enabled</div><div class="foot">© <span id="year"></span> ACD Bittu Lab Cloud. All rights reserved.</div>
+
 </div>
+
+
 
 <div id="accessPanel">
+
   <div class="formhead"><h2 id="accessTitle">Choose Your Access</h2><p id="accessDescription">Select how you want to activate your laboratory account.</p></div>
+
   <div class="message" id="accessMessage" role="alert"></div>
+
   <button class="choice" id="trialBtn" type="button">🎁 3-Day Free Trial<span>Start your free 3-day trial.</span></button>
+
   <button class="choice secondary" id="payBtn" type="button">💳 Pay &amp; Activate<span>First registration ₹10,000 for 12 months.</span></button>
+
   <button class="link backlink" id="backToLogin" type="button">← Back to Login</button>
+
   <div class="security">🔒 Secure subscription activation</div>
+
 </div>
+
 </section>
+
 </main>
+
 <script>
+
 "use strict";
+
 const SUPABASE_URL="https://axfvvquhswapiwmvrepe.supabase.co";
+
 const SUPABASE_ANON_KEY="sb_publishable_n6jRvVDjw2kOF7CS46omqQ_6qGkdR-q";
+
 const SUPER_ADMIN_EMAIL="deepakkumar70612440@gmail.com";
+
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+
 const $=id=>document.getElementById(id);
+
 let selectedRole="Lab Admin",pendingLabId=null,accessOptions=null,deferredPrompt=null;
 
-// PWA App Install Prompt (Phone & Desktop)
+
+
 window.addEventListener("beforeinstallprompt",e=>{
+
   e.preventDefault();
+
   deferredPrompt=e;
+
   const btn=$("pwaInstallBtn");
+
   if(btn)btn.textContent="📲 Install App Now (Ready)";
+
 });
+
+
 
 $("pwaInstallBtn")?.addEventListener("click",async()=>{
+
   if(deferredPrompt){
+
     deferredPrompt.prompt();
+
     const res=await deferredPrompt.userChoice;
+
     deferredPrompt=null;
+
     if(res?.outcome==="accepted")$("pwaInstallBtn").textContent="✓ App Installed!";
+
   }else{
+
     alert("App Install करने के लिए:\n\n• Android Chrome में: ऊपर दाईं तरफ़ 3-Dots (⋮) दबाएं → 'Add to Home screen' या 'Install app' चुनें।\n• Windows/Laptop Chrome या Edge में: Address Bar के दाईं तरफ़ Install (⊕ / 🖥️) आइकन पर क्लिक करें।\n• iPhone Safari में: Share बटन दबाकर 'Add to Home Screen' चुनें।");
+
   }
+
 });
 
+
+
 (function checkOfflineResume(){
+
   if(navigator.onLine)return;
+
   try{
+
     const snap=JSON.parse(localStorage.getItem("acd_offline_session_snapshot")||"null");
+
     if(snap&&snap.userId&&snap.deviceId===deviceId()){
+
       location.replace("dashboard.html");
+
     }
+
   }catch(e){}
+
 })();
+
+
 
 (async function loadLoginFest(){
+
   try{
+
     let fest=JSON.parse(localStorage.getItem("acd_festival_banner_cache")||"null");
+
     if(navigator.onLine){
+
       const {data}=await db.from("saas_festival_banner").select("*").eq("id",1).maybeSingle();
+
       if(data){fest=data;localStorage.setItem("acd_festival_banner_cache",JSON.stringify(data));}
+
     }
+
     if(fest&&fest.is_active&&fest.title_text){
+
       const b=$("loginFestBanner");
+
       b.className="fest-banner fest-theme-"+(fest.theme||"diwali");
+
       $("loginFestTitle").textContent=fest.title_text;
+
       $("loginFestSub").textContent=fest.sub_text||"";
+
       b.style.display="block";
+
     }
+
   }catch(e){}
+
 })();
+
+
 
 function deviceId(){
+
   let id=localStorage.getItem("acd_device_id");
+
   if(!id){
+
     id=crypto.randomUUID?crypto.randomUUID():"acd-"+Date.now()+"-"+Math.random().toString(36).slice(2);
+
     localStorage.setItem("acd_device_id",id);
+
   }
+
   return id;
+
 }
+
 function msg(t,type="error",id="message"){$(id).textContent=t;$(id).className="message show "+type}
+
 function clear(id="message"){$(id).textContent="";$(id).className="message"}
+
 function formatRupees(paise,fallback){
+
   const n=Number(paise);
+
   if(Number.isFinite(n)&&n>0)return"₹"+(n/100).toLocaleString("en-IN");
+
   return fallback;
+
 }
+
+
 
 function authError(e){
+
   let c=(e?.code||"").toLowerCase(),m=(e?.message||"").toLowerCase();
+
   if(c==="invalid_credentials"||m.includes("invalid login credentials"))return"Incorrect email or password.";
+
   if(c==="email_not_confirmed")return"Please verify your email first from your inbox.";
+
   if(c==="user_already_exists"||m.includes("already registered"))return"This email is already registered. Please sign in.";
+
   if(c==="over_request_rate_limit"||c==="too_many_requests")return"Too many attempts. Please wait and try again.";
+
   return e?.message||"Request failed. Please try again.";
+
 }
+
+
 
 function chooseRole(r){
+
   selectedRole=r; clear();
+
   $("superRole").classList.toggle("active",r==="Super Admin");
+
   $("labRole").classList.toggle("active",r==="Lab Admin");
+
   $("submit").textContent=r==="Super Admin"?"Sign in to Super Admin →":"Sign in to Lab Owner →";
+
   $("signupLinkWrap").style.display=r==="Lab Admin"?"block":"none";
+
   $("emergencyRecovery").style.display=r==="Super Admin"?"block":"none";
+
 }
+
+
 
 function loginMode(){
+
   $("loginHead").style.display="block";
+
   $("roleLabel").style.display="block";
+
   $("loginForm").style.display="block";
+
   $("signupForm").style.display="none";
+
   $("roles").style.display="grid";
+
   $("signupLinkWrap").style.display=selectedRole==="Lab Admin"?"block":"none";
+
   $("emergencyRecovery").style.display=selectedRole==="Super Admin"?"block":"none";
+
   clear();
+
 }
+
+
 
 function signupMode(){
+
   chooseRole("Lab Admin");
+
   $("loginHead").style.display="none";
+
   $("roleLabel").style.display="none";
+
   $("loginForm").style.display="none";
+
   $("signupForm").style.display="block";
+
   $("roles").style.display="none";
+
   $("signupLinkWrap").style.display="none";
+
   $("emergencyRecovery").style.display="none";
+
   clear();
+
 }
+
+
 
 $("superRole").onclick=()=>{chooseRole("Super Admin");loginMode()};
+
 $("labRole").onclick=()=>{chooseRole("Lab Admin");loginMode()};
+
 $("showSignup").onclick=signupMode;
+
 $("showLogin").onclick=loginMode;
 
+
+
 const savedEmail=localStorage.getItem("acd_saved_email");
+
 if(savedEmail){$("username").value=savedEmail;$("remember").checked=true;}
 
+
+
 $("forgot").onclick=async()=>{
+
   clear();
+
   const email=$("username").value.trim();
+
   if(!email)return msg("Enter your registered email address first, then click Forgot password.");
+
   try{
+
     const {error}=await db.auth.resetPasswordForEmail(email,{
+
       redirectTo:window.location.origin+window.location.pathname
+
     });
+
     if(error)throw error;
+
     msg("Password reset link sent to "+email+". Please check your inbox.","success");
+
   }catch(e){
+
     msg(authError(e));
+
   }
+
 };
+
+
 
 $("toggleRecovery").onclick=()=>{
+
   $("recoveryPanel").style.display=$("recoveryPanel").style.display==="none"?"block":"none";
+
   clear("recoveryMessage");
+
 };
+
+
 
 $("sendRecoveryLink").onclick=async()=>{
+
   const b=$("sendRecoveryLink");
+
   const email=$("username").value.trim();
+
   clear("recoveryMessage");
+
   if(selectedRole!=="Super Admin")return msg("Select Super Admin login first.","error","recoveryMessage");
+
   if(!email)return msg("Enter your registered Super Admin email.","error","recoveryMessage");
 
+
+
   b.disabled=true;
+
   b.textContent="Sending secure link...";
+
   try{
+
     const redirectTo=window.location.origin+window.location.pathname+"?acd_recovery=1";
+
     const {error}=await db.auth.signInWithOtp({
+
       email,
+
       options:{emailRedirectTo:redirectTo,shouldCreateUser:false}
+
     });
+
     if(error)throw error;
+
     msg("Recovery link sent. Check your email inbox and spam folder.","success","recoveryMessage");
+
   }catch(e){
+
     msg(e.message,"error","recoveryMessage");
+
   }finally{
+
     b.disabled=false;
+
     b.textContent="Send secure recovery link";
+
   }
+
 };
 
+
+
 (async()=>{
+
   const params=new URLSearchParams(location.search);
+
   if(params.get("acd_recovery")!=="1")return;
+
   const b=$("sendRecoveryLink");
+
   if(b){b.disabled=true;b.textContent="Verifying secure link...";}
+
   try{
+
     const {data:{session},error}=await db.auth.getSession();
+
     if(error)throw error;
+
     if(!session)throw new Error("Email verification failed or link expired. Request a new link.");
+
     const {data:profile,error:profileError}=await db.from("profiles").select("platform_role").eq("id",session.user.id).maybeSingle();
+
     if(profileError)throw profileError;
+
     if(profile?.platform_role!=="super_admin"&&session.user.email!==SUPER_ADMIN_EMAIL)throw new Error("This email is not registered as Super Admin.");
+
     const {data,error:recoveryError}=await db.rpc("acd_super_admin_recover_device",{p_device_id:deviceId()});
+
     if(recoveryError)throw recoveryError;
+
     if(data?.status!=="granted")throw new Error("Device recovery was not granted.");
+
     sessionStorage.setItem("acd_role","super_admin");
+
     sessionStorage.removeItem("acd_lab_id");
+
     msg("Device recovery successful. Opening dashboard...","success","recoveryMessage");
+
     history.replaceState({},document.title,location.pathname);
+
     setTimeout(()=>{location.href="dashboard.html";},1200);
+
   }catch(e){
+
     msg(e.message,"error","recoveryMessage");
+
     if(b){b.disabled=false;b.textContent="Send secure recovery link";}
+
   }
+
 })();
 
+
+
 async function deviceSecurity(){
+
   if(!navigator.onLine)throw new Error("New login requires an internet connection.");
+
   const myDev=deviceId();
+
   let {data,error}=await db.rpc("acd_device_claim",{p_device_id:myDev});
+
   if(error)throw new Error("Secure device check failed: "+error.message);
+
   let s=data?.status;
+
   if(s==="waiting_for_old_device"||s==="blocked_old_device_offline"||s==="already_claimed"||s==="locked_other_device"){
+
     throw new Error("🔒 STRICT DEVICE LOCK: This account is already active/locked on another device (even if offline). Sign out from the first device online, or ask Super Admin to reset your Device Lock.");
+
   }
+
   if(s!=="granted"){
+
     throw new Error("Secure device check did not grant access.");
+
   }
+
 }
+
+
 
 async function routeLabOwner(uid){
+
   let {data:members,error:me}=await db
+
     .from("cloud_memberships")
+
     .select("id,lab_id,role")
+
     .eq("user_id",uid)
+
     .eq("is_active",true);
+
   if(me)throw new Error("Lab access check failed: "+me.message);
 
+
+
   if(!members?.length){
+
     const pendingRaw=localStorage.getItem("acd_pending_owner_signup");
+
     if(pendingRaw){
+
       try{
+
         const pData=JSON.parse(pendingRaw);
+
         const {data:regRes,error:regErr}=await db.rpc("acd_register_lab_owner",{
+
           p_owner_name:pData.owner_name,
+
           p_lab_name:pData.lab_name,
+
           p_address:pData.address||"",
+
           p_phone:pData.phone||""
+
         });
+
         if(regErr)throw regErr;
+
         localStorage.removeItem("acd_pending_owner_signup");
+
         const refreshed=await db.from("cloud_memberships").select("id,lab_id,role").eq("user_id",uid).eq("is_active",true);
+
         members=refreshed.data||[];
+
       }catch(regFail){
+
         throw new Error("Lab registration completion failed: "+regFail.message);
+
       }
+
     }
+
   }
+
+
 
   if(!members?.length)throw new Error("No active laboratory linked to this account.");
+
   pendingLabId=members[0].lab_id;
 
+
+
   try{
+
     const {data:labRec}=await db.from("cloud_labs").select("is_active").eq("id",pendingLabId).maybeSingle();
+
     if(labRec&&labRec.is_active===false){
+
       throw new Error("⛔ Your Laboratory account is temporarily suspended/locked by Super Admin. Contact support.");
+
     }
+
   }catch(lockErr){
+
     if(String(lockErr.message||"").includes("suspended"))throw lockErr;
+
   }
 
+
+
   sessionStorage.setItem("acd_role","lab_admin");
+
   sessionStorage.setItem("acd_lab_id",pendingLabId);
 
+
+
   let {data:modeData,error:modeError}=await db.rpc("acd_get_platform_mode");
+
   if(modeError)throw new Error("Platform mode check failed: "+modeError.message);
+
   const currentMode=String(modeData?.mode||"test").toLowerCase();
+
   if(currentMode==="test")return dashboard();
 
+
+
   let {data:opts,error:oe}=await db.rpc("acd_owner_access_options");
+
   if(oe)throw new Error("Subscription options failed: "+oe.message);
+
   let o=Array.isArray(opts)?opts[0]:opts;
+
   if(!o)throw new Error("Subscription status could not be verified.");
 
+
+
   if(String(o.subscription_status||"").toLowerCase()==="active")return dashboard();
+
   accessScreen(o);
+
 }
 
+
+
 $("loginForm").onsubmit=async e=>{
+
   e.preventDefault(); clear();
+
   let email=$("username").value.trim(), password=$("password").value;
+
   if(!email||!password)return msg("Enter your email and password.");
 
+
+
   if($("remember").checked)localStorage.setItem("acd_saved_email",email);
+
   else localStorage.removeItem("acd_saved_email");
 
+
+
   let b=$("submit"); b.disabled=true; b.textContent="Signing in…";
+
   let signed=false;
+
   try{
+
     if(!navigator.onLine)throw new Error("Internet connection is required for first-time sign in.");
+
     let {data,error}=await db.auth.signInWithPassword({email,password});
+
     if(error)throw error;
+
     signed=true;
+
     await deviceSecurity();
 
+
+
     let uid=data.user.id;
+
     let {data:p,error:pe}=await db.from("profiles").select("platform_role").eq("id",uid).maybeSingle();
+
     if(pe)throw new Error("Account role check failed: "+pe.message);
+
+
 
     const isSuper=(p?.platform_role==="super_admin"||email.toLowerCase()===SUPER_ADMIN_EMAIL);
 
+
+
     if(selectedRole==="Super Admin"){
+
       if(!isSuper)throw new Error("This account is not a Super Admin.");
+
       sessionStorage.setItem("acd_role","super_admin");
+
       sessionStorage.removeItem("acd_lab_id");
+
       return dashboard();
+
     }
+
     if(isSuper)throw new Error("Select Super Admin Login for this account.");
+
     await routeLabOwner(uid);
+
   }catch(e){
+
     msg(authError(e));
+
     if(signed)await db.auth.signOut();
+
   }finally{
+
     b.disabled=false;
+
     b.textContent=selectedRole==="Super Admin"?"Sign in to Super Admin →":"Sign in to Lab Owner →";
+
   }
+
 };
+
+
 
 $("signupForm").onsubmit=async e=>{
+
   e.preventDefault(); clear();
+
   const ownerName=$("ownerName").value.trim();
+
   const labName=$("labName").value.trim();
+
   const email=$("signupEmail").value.trim();
+
   const phone=$("signupMobile").value.trim();
+
   const address=$("signupAddress").value.trim();
+
   const password=$("signupPassword").value;
+
   const confirmPassword=$("confirmPassword").value;
 
+
+
   if(ownerName.length<2)return msg("Owner name must be at least 2 characters.");
+
   if(labName.length<2)return msg("Laboratory name must be at least 2 characters.");
+
   if(!email)return msg("Enter a valid email address.");
+
   if(!phone||phone.length<8)return msg("Enter a valid mobile number.");
+
   if(password.length<8)return msg("Password must be at least 8 characters.");
+
   if(password!==confirmPassword)return msg("Passwords do not match.");
 
+
+
   const b=$("signupSubmit");
+
   b.disabled=true;
+
   b.textContent="Creating laboratory account…";
 
+
+
   try{
+
     const {data:signData,error:signErr}=await db.auth.signUp({
+
       email,
+
       password,
+
       options:{data:{full_name:ownerName}}
+
     });
+
     if(signErr)throw signErr;
 
+
+
     if(!signData?.session){
+
       localStorage.setItem("acd_pending_owner_signup",JSON.stringify({
+
         owner_name:ownerName,
+
         lab_name:labName,
+
         address,
+
         phone
+
       }));
+
       loginMode();
+
       $("username").value=email;
+
       msg("Account created! Please verify your email link first, then sign in with your password to activate your laboratory.","success");
+
       return;
+
     }
 
+
+
     const {data:regData,error:regErr}=await db.rpc("acd_register_lab_owner",{
+
       p_owner_name:ownerName,
+
       p_lab_name:labName,
+
       p_address:address,
+
       p_phone:phone
+
     });
+
     if(regErr)throw regErr;
 
+
+
     await deviceSecurity();
+
     await routeLabOwner(signData.user.id);
+
   }catch(err){
+
     msg(authError(err));
+
   }finally{
+
     b.disabled=false;
+
     b.textContent="Create Lab Owner Account →";
+
   }
+
 };
 
+
+
 function accessScreen(o){
+
   accessOptions=o;
+
   let st=String(o.subscription_status||"").toLowerCase(),
+
       active=o.trial_active===true||st==="trial",
+
       available=o.trial_available===true&&!active;
+
   const isRenewal=o.payment_action==="annual_renewal";
+
   const feeLabel=isRenewal
+
     ?"Annual Renewal "+formatRupees(o.annual_renewal_fee_paise,"₹2,000")+" for 12 months."
+
     :"First registration "+formatRupees(o.first_registration_fee_paise,"₹10,000")+" for 12 months.";
 
+
+
   $("loginPanel").style.display="none";
+
   $("accessPanel").style.display="block";
+
   clear("accessMessage");
+
+
 
   $("payBtn").innerHTML=(isRenewal?"💳 Renew Subscription":"💳 Pay & Activate")+"<span>"+feeLabel+"</span>";
 
+
+
   if(active){
+
     $("accessTitle").textContent="Your Free Trial Is Active";
+
     $("trialBtn").innerHTML="✓ Continue Trial<span>Continue to your dashboard.</span>";
+
     $("trialBtn").disabled=false;
+
   }else if(available){
+
     $("accessTitle").textContent="Choose Your Subscription";
+
     $("trialBtn").innerHTML="🎁 3-Day Free Trial<span>Start your free 3-day trial.</span>";
+
     $("trialBtn").disabled=false;
+
   }else{
+
     $("accessTitle").textContent="Activate Your Laboratory";
+
     $("trialBtn").innerHTML="Free Trial Unavailable<span>Trial already claimed. Activate via payment below.</span>";
+
     $("trialBtn").disabled=true;
+
   }
+
 }
+
+
 
 function dashboard(){location.href="dashboard.html"}
 
+
+
 $("trialBtn").onclick=async()=>{
+
   let b=$("trialBtn"); b.disabled=true;
+
   try{
+
     if(accessOptions?.trial_active||String(accessOptions?.subscription_status).toLowerCase()==="trial")return dashboard();
+
     if(!pendingLabId)throw new Error("Laboratory ID missing.");
+
     let {data,error}=await db.rpc("acd_start_lab_trial",{p_lab_id:pendingLabId});
+
     if(error)throw error;
+
     dashboard();
+
   }catch(e){
+
     msg(e.message,"error","accessMessage");
+
     b.disabled=false;
+
   }
+
 };
+
+
 
 $("payBtn").onclick=async()=>{
+
   let b=$("payBtn"); b.disabled=true;
+
   try{
+
     let {data:{session},error}=await db.auth.getSession();
+
     if(error)throw error;
+
     if(!session)throw new Error("Login session expired.");
 
+
+
     let res=await fetch(SUPABASE_URL+"/functions/v1/razorpay-create-order",{
+
       method:"POST",
+
       headers:{"Content-Type":"application/json","apikey":SUPABASE_ANON_KEY,"Authorization":"Bearer "+session.access_token},
+
       body:"{}"
+
     });
+
     let order=await res.json().catch(()=>({}));
+
     if(!res.ok)throw new Error(order.error||"Could not create payment order.");
 
+
+
     if(!window.Razorpay)await new Promise((ok,no)=>{
+
       let s=document.createElement("script");
+
       s.src="https://checkout.razorpay.com/v1/checkout.js";
+
       s.onload=ok;
+
       s.onerror=()=>no(new Error("Razorpay failed to load."));
+
       document.head.appendChild(s);
+
     });
+
+
 
     const isRenewal=order.billing_type==="annual_renewal";
+
     let rz=new Razorpay({
+
       key:order.key_id,
+
       amount:order.amount,
+
       currency:order.currency||"INR",
+
       name:"ACD BITTU LAB CLOUD",
+
       description:isRenewal?"Annual Renewal — 12 Months":"First Registration — 12 Months",
+
       order_id:order.order_id,
+
       prefill:{email:session.user.email||""},
+
       theme:{color:"#1769e0"},
+
       handler:async r=>{
+
         try{
+
           let v=await fetch(SUPABASE_URL+"/functions/v1/razorpay-verify-payment",{
+
             method:"POST",
+
             headers:{"Content-Type":"application/json","apikey":SUPABASE_ANON_KEY,"Authorization":"Bearer "+session.access_token},
+
             body:JSON.stringify({
+
               razorpay_order_id:r.razorpay_order_id,
+
               razorpay_payment_id:r.razorpay_payment_id,
+
               razorpay_signature:r.razorpay_signature
+
             })
+
           });
+
           let out=await v.json().catch(()=>({}));
+
           if(!v.ok||(out.ok!==true&&out.success!==true))throw new Error(out.error||"Payment verification failed.");
+
           msg("Payment verified! Opening dashboard…","success","accessMessage");
+
           setTimeout(dashboard,1000);
+
         }catch(e){
+
           msg("Payment verification needs attention: "+e.message,"error","accessMessage");
+
         }
+
       }
+
     });
+
     rz.on("payment.failed",r=>msg(r.error?.description||"Payment failed.","error","accessMessage"));
+
     rz.open();
+
   }catch(e){
+
     msg(e.message||"Payment could not be started.","error","accessMessage");
+
   }finally{
+
     b.disabled=false;
+
   }
+
 };
 
+
+
 $("backToLogin").onclick=async()=>{
+
   await db.auth.signOut();
+
   $("accessPanel").style.display="none";
+
   $("loginPanel").style.display="block";
+
   clear();
+
 };
+
 $("year").textContent=new Date().getFullYear();
+
 </script>
+
 <script>
+
 if ("serviceWorker" in navigator) {
+
   window.addEventListener("load", () => {
+
     navigator.serviceWorker.register("./sw.js", { scope: "./" }).catch(e => console.error(e));
+
   });
+
 }
+
 </script>
+
 </body>
+
 </html>
