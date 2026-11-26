@@ -100,7 +100,7 @@
 
     cloudPdfBucket: "lab-reports-private",
 
-    enableCloudPdfArchive: false
+    enableCloudPdfArchive: true
 
   };
 
@@ -1122,178 +1122,110 @@
 
      ========================================================= */
 
-  async function uploadReportPdfToPrivateStorage(report, currentLabId, labObj) {
-
+  async function uploadReportPdfToPrivateStorage(report, currentLabId, labObj, existingBlob = null) {
     const client = window.db;
+    const labId = String(currentLabId || "").trim();
+    const orderId = String(report?.id || "").trim();
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-    if (!client || !currentLabId) {
-
-      throw new Error("Supabase client or authorized Laboratory ID is missing.");
-
+    if (!client || !uuidPattern.test(labId)) {
+      throw new Error("Supabase client or valid Laboratory ID is missing.");
     }
-
     if (!navigator.onLine) {
-
       throw new Error("Internet connection is required for Cloud PDF Storage upload.");
-
     }
-
-
-
-    const design = loadReportDesign(currentLabId, labObj);
-
-    const bucketName = design.cloudPdfBucket || "lab-reports-private";
-
-    const orderId = String(report.id || "").trim();
-
-    if (!orderId || orderId.startsWith("DRAFT") || orderId.startsWith("SAMPLE")) {
-
+    if (!uuidPattern.test(orderId)) {
       throw new Error("Please save the report first before uploading to Cloud Storage.");
-
+    }
+    if (report?.is_verified === false) {
+      throw new Error("Preliminary reports cannot be archived as final PDFs.");
     }
 
+    const design = loadReportDesign(labId, labObj);
+    const bucketName = design.cloudPdfBucket || "lab-reports-private";
+    const pdfResult = existingBlob
+      ? { blob: existingBlob, fileName: "report.pdf" }
+      : await generateReportPdfBlob(report, labId, labObj);
 
-
-    const { blob, fileName } = await generateReportPdfBlob(report, currentLabId, labObj);
-
-    const storagePath = `${currentLabId}/${orderId}/${fileName}`;
-
-
+    // This exact lab/order path is also validated by the database RPC.
+    const storagePath = `${labId}/${orderId}/report.pdf`;
 
     const { error: uploadErr } = await client.storage
-
       .from(bucketName)
-
-      .upload(storagePath, blob, {
-
+      .upload(storagePath, pdfResult.blob, {
         contentType: "application/pdf",
-
-        upsert: true
-
+        upsert: true,
+        cacheControl: "private, max-age=0"
       });
 
-
-
     if (uploadErr) {
-
       throw new Error("Cloud PDF upload failed: " + uploadErr.message);
-
     }
 
+    // Record the retention start date only after Storage confirms the upload.
+    const { data: archiveData, error: archiveErr } = await client.rpc(
+      "acd_mark_report_pdf_available",
+      {
+        p_lab_id: labId,
+        p_order_id: orderId,
+        p_storage_path: storagePath
+      }
+    );
 
-
-    const { data: signedData, error: signErr } = await client.storage
-
-      .from(bucketName)
-
-      .createSignedUrl(storagePath, 3600);
-
-
-
-    if (signErr) {
-
-      return {
-
-        uploaded: true,
-
-        bucket: bucketName,
-
-        path: storagePath,
-
-        signedUrl: null,
-
-        uploadedAt: new Date().toISOString()
-
-      };
-
+    if (archiveErr) {
+      throw new Error("PDF uploaded, but report archive date could not be recorded: " + archiveErr.message);
     }
-
-
 
     return {
-
       uploaded: true,
-
       bucket: bucketName,
-
       path: storagePath,
-
-      signedUrl: signedData?.signedUrl || null,
-
+      fileName: pdfResult.fileName,
+      archive: archiveData || null,
       uploadedAt: new Date().toISOString()
-
     };
-
   }
-
 
 
   async function downloadReportAsPdf(report, currentLabId, labObj) {
-
     const { blob, fileName } = await generateReportPdfBlob(report, currentLabId, labObj);
-
     const url = URL.createObjectURL(blob);
-
     const a = document.createElement("a");
-
     a.href = url;
-
     a.download = fileName;
-
     document.body.appendChild(a);
-
     a.click();
-
     a.remove();
-
     setTimeout(() => URL.revokeObjectURL(url), 10000);
 
-
-
-    // Optional private cloud backup if enabled; never blocks local PDF download on error
-
+    // Local download succeeds independently; Cloud archive failure never removes the PDF.
     const design = loadReportDesign(currentLabId, labObj);
-
-    if (design.enableCloudPdfArchive && navigator.onLine && report.id && !String(report.id).startsWith("DRAFT")) {
-
-      uploadReportPdfToPrivateStorage(report, currentLabId, labObj)
-
-        .then(res => {
-
-          localStorage.setItem("acd_last_pdf_backup_" + currentLabId, JSON.stringify({
-
-            ok: true,
-
-            path: res.path,
-
-            uploadedAt: res.uploadedAt
-
-          }));
-
-        })
-
-        .catch(err => {
-
-          localStorage.setItem("acd_last_pdf_backup_" + currentLabId, JSON.stringify({
-
-            ok: false,
-
-            error: err.message,
-
-            failedAt: new Date().toISOString()
-
-          }));
-
-        });
-
+    if (design.enableCloudPdfArchive && navigator.onLine && report?.id &&
+        !String(report.id).startsWith("DRAFT") && !String(report.id).startsWith("SAMPLE")) {
+      try {
+        const archive = await uploadReportPdfToPrivateStorage(report, currentLabId, labObj, blob);
+        localStorage.setItem("acd_last_pdf_backup_" + currentLabId, JSON.stringify({
+          ok: true,
+          path: archive.path,
+          uploadedAt: archive.uploadedAt
+        }));
+        if (typeof window.acdNotify === "function") {
+          window.acdNotify("✓ PDF downloaded and securely archived in Cloud Storage.");
+        }
+      } catch (err) {
+        localStorage.setItem("acd_last_pdf_backup_" + currentLabId, JSON.stringify({
+          ok: false,
+          error: err.message,
+          failedAt: new Date().toISOString()
+        }));
+        if (typeof window.acdNotify === "function") {
+          window.acdNotify("PDF downloaded, but Cloud Backup failed: " + err.message, true);
+        }
+      }
     }
 
-
-
     return fileName;
-
   }
-
 
 
   async function shareReportOnWhatsApp(report, currentLabId, labObj, triggerBtn = null) {
