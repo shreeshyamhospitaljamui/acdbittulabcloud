@@ -1,7 +1,6 @@
-```javascript
 "use strict";
 
-const CACHE_NAME = "acd-bittu-lab-offline-v9";
+const CACHE_NAME = "acd-bittu-lab-offline-v10";
 
 const CORE_ASSETS = [
   "./",
@@ -60,7 +59,6 @@ self.addEventListener("fetch", event => {
   if (req.method !== "GET") return;
   const url = new URL(req.url);
 
-  // Never intercept live Supabase API calls
   if (
     url.hostname.includes("supabase.co") ||
     url.pathname.includes("/rest/v1/") ||
@@ -70,7 +68,6 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  // External CDN libraries: Cache-First
   if (url.origin !== self.location.origin) {
     event.respondWith(
       caches.match(req, { ignoreSearch: true }).then(cached => {
@@ -87,7 +84,6 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  // Same-origin files: Network-first with guaranteed Cache fallback (Never ERR_FAILED)
   event.respondWith(
     fetch(req)
       .then(res => {
@@ -112,4 +108,3 @@ self.addEventListener("fetch", event => {
       })
   );
 });
-```
